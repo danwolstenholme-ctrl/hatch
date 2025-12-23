@@ -17,8 +17,8 @@ export default function Login() {
       body: JSON.stringify({ password }),
     })
 
-    if (res.ok) {
-      router.push('/')
+   if (res.ok) {
+  router.push('/builder')
     } else {
       setError('Wrong password')
     }
