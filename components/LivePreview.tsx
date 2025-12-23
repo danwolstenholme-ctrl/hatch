@@ -10,10 +10,8 @@ export default function LivePreview({ code }: LivePreviewProps) {
   const srcDoc = useMemo(() => {
     if (!code) return ''
 
-    // Always destructure common hooks
     const hooksDestructure = `const { useState, useEffect, useMemo, useCallback, useRef } = React;`
 
-    // Remove export statements and fix React.hook patterns
     const cleanedCode = code
       .replace(/export\s+default\s+/g, '')
       .replace(/export\s+/g, '')
@@ -51,18 +49,15 @@ export default function LivePreview({ code }: LivePreviewProps) {
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <script>
-    // Intercept all link clicks to prevent iframe navigation
     document.addEventListener('click', function(e) {
       const link = e.target.closest('a');
       if (link) {
         e.preventDefault();
         const href = link.getAttribute('href');
-        // Handle anchor links - scroll to element
         if (href && href.startsWith('#')) {
           const target = document.querySelector(href);
           if (target) target.scrollIntoView({ behavior: 'smooth' });
         }
-        // For other links, could show a toast or just ignore
       }
     });
   </script>
@@ -83,19 +78,21 @@ export default function LivePreview({ code }: LivePreviewProps) {
   }, [code])
 
   return (
-  <div className="flex-1 h-full bg-zinc-900 overflow-auto">
-    {code ? (
-      <iframe
-        srcDoc={srcDoc}
-        className="w-full h-full border-0 bg-white"
-        sandbox="allow-scripts"
-        title="Live Preview"
-      />
-    ) : (
-      <div className="p-4 text-sm text-zinc-600">
-        Live preview will render here.
-      </div>
-    )}
-  </div>
-)
+    <div className="h-full bg-zinc-800 overflow-auto p-4">
+      {code ? (
+        <div className="mx-auto bg-white h-full rounded-lg overflow-hidden shadow-xl">
+          <iframe
+            srcDoc={srcDoc}
+            className="w-full h-full border-0"
+            sandbox="allow-scripts"
+            title="Live Preview"
+          />
+        </div>
+      ) : (
+        <div className="p-4 text-sm text-zinc-600">
+          Live preview will render here.
+        </div>
+      )}
+    </div>
+  )
 }

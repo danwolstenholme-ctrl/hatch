@@ -85,7 +85,7 @@ export default function Chat({ onGenerate, isGenerating, currentCode }: ChatProp
         <div className="h-full overflow-y-auto p-4 space-y-3">
           {messages.length === 0 ? (
             <div className="text-zinc-500 text-sm">
-              Describe a component and I'll generate clean React + Tailwind code. Then ask for changes to iterate.
+              Describe a page or site and I'll build it. Ask for changes to refine.
             </div>
           ) : (
             <>
@@ -129,7 +129,7 @@ export default function Chat({ onGenerate, isGenerating, currentCode }: ChatProp
                 handleSubmit(e)
               }
             }}
-            placeholder={isGenerating ? "" : messages.length === 0 ? "A pricing card with three tiers..." : "What's next?"}
+            placeholder={isGenerating ? "" : messages.length === 0 ? "A landing page for my coffee shop..." : "What's next?"}
             className="flex-1 bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-zinc-600 resize-none"
             disabled={isGenerating}
           />
