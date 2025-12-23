@@ -87,7 +87,7 @@ export default function LivePreview({ code }: LivePreviewProps) {
     {code ? (
       <iframe
         srcDoc={srcDoc}
-        className="w-full h-full min-h-[200vh] border-0 bg-white"
+        className="w-full h-full border-0 bg-white"
         sandbox="allow-scripts"
         title="Live Preview"
       />

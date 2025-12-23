@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Group, Panel, Separator } from 'react-resizable-panels'
 import Chat from '@/components/Chat'
 import CodePreview from '@/components/CodePreview'
@@ -16,6 +16,21 @@ export default function Home() {
   const [code, setCode] = useState<string>('')
   const [isGenerating, setIsGenerating] = useState(false)
   const [activeTab, setActiveTab] = useState<'preview' | 'code'>('preview')
+
+  // Load from localStorage on mount
+  useEffect(() => {
+    const savedCode = localStorage.getItem('hatchit-code')
+    if (savedCode) {
+      setCode(savedCode)
+    }
+  }, [])
+
+  // Save to localStorage when code changes
+  useEffect(() => {
+    if (code) {
+      localStorage.setItem('hatchit-code', code)
+    }
+  }, [code])
 
   const handleGenerate = async (prompt: string, history: Message[], currentCode: string) => {
     setIsGenerating(true)
