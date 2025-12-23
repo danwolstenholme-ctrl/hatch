@@ -15,6 +15,20 @@ interface ChatProps {
   currentCode: string
 }
 
+const responses = [
+  "Done ✓",
+  "Here you go",
+  "That's ready",
+  "All yours",
+  "There we go",
+  "Ready to roll",
+  "Sorted",
+]
+
+function getRandomResponse() {
+  return responses[Math.floor(Math.random() * responses.length)]
+}
+
 function LoadingIndicator() {
   const [stage, setStage] = useState(0);
   const stages = ['Thinking', 'Building'];
@@ -30,7 +44,7 @@ function LoadingIndicator() {
   }, [stage]);
 
   return (
-    <div className="text-sm text-zinc-400 flex items-center gap-1">
+    <div className="text-sm text-zinc-500 flex items-center gap-1">
       <span>{stages[stage]}</span>
       <span className="flex gap-0.5">
         <span className="animate-bounce [animation-delay:0ms]">.</span>
@@ -57,7 +71,7 @@ export default function Chat({ onGenerate, isGenerating, currentCode }: ChatProp
     setMessages(updatedMessages)
 
     await onGenerate(userMessage, messages, currentCode)
-    setMessages(prev => [...prev, { role: 'assistant', content: 'Component updated.', code: currentCode }])
+    setMessages(prev => [...prev, { role: 'assistant', content: getRandomResponse(), code: currentCode }])
   }
 
   const clearChat = () => {
@@ -68,7 +82,7 @@ export default function Chat({ onGenerate, isGenerating, currentCode }: ChatProp
     <Group orientation="vertical" className="flex-1">
       {/* Messages */}
       <Panel id="messages" defaultSize={70} minSize={30}>
-        <div className="h-full overflow-y-auto p-4 space-y-4">
+        <div className="h-full overflow-y-auto p-4 space-y-3">
           {messages.length === 0 ? (
             <div className="text-zinc-500 text-sm">
               Describe a component and I'll generate clean React + Tailwind code. Then ask for changes to iterate.
@@ -78,20 +92,19 @@ export default function Chat({ onGenerate, isGenerating, currentCode }: ChatProp
               {messages.map((msg, i) => (
                 <div
                   key={i}
-                  className={`text-sm ${
-                    msg.role === 'user' ? 'text-zinc-100' : 'text-zinc-400'
+                  className={`text-sm px-3 py-2 rounded-lg max-w-[85%] ${
+                    msg.role === 'user' 
+                      ? 'bg-zinc-700 text-zinc-100 ml-auto' 
+                      : 'bg-zinc-800/50 text-zinc-400'
                   }`}
                 >
-                  <span className="font-medium">
-                    {msg.role === 'user' ? 'You: ' : 'Hatch: '}
-                  </span>
                   {msg.content}
                 </div>
               ))}
-              {messages.length > 0 && (
+              {messages.length > 0 && !isGenerating && (
                 <button
                   onClick={clearChat}
-                  className="text-xs text-zinc-500 hover:text-zinc-300 transition-colors"
+                  className="text-xs text-zinc-600 hover:text-zinc-400 transition-colors"
                 >
                   Clear & start new
                 </button>
@@ -117,7 +130,7 @@ export default function Chat({ onGenerate, isGenerating, currentCode }: ChatProp
               }
             }}
             placeholder={isGenerating ? "" : messages.length === 0 ? "A pricing card with three tiers..." : "What's next?"}
-            className="flex-1 bg-zinc-800 border border-zinc-600 rounded-lg px-3 py-2 text-sm text-zinc-100 placeholder-zinc-400 focus:outline-none focus:border-zinc-500 resize-none"
+            className="flex-1 bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-zinc-600 resize-none"
             disabled={isGenerating}
           />
           <button
