@@ -20,7 +20,19 @@ export default function Home() {
   const [activeTab, setActiveTab] = useState<'preview' | 'code'>('preview')
   const [previewWidth, setPreviewWidth] = useState(0)
   const [showClearModal, setShowClearModal] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
+  const [mobileModal, setMobileModal] = useState<'preview' | 'code' | null>(null)
   const previewContainerRef = useRef<HTMLDivElement>(null)
+
+  // Detect mobile viewport
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768)
+    }
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
 
   useEffect(() => {
     const savedCode = localStorage.getItem('hatchit-code')
@@ -74,6 +86,10 @@ export default function Home() {
       const data = await response.json()
       if (data.code) {
         setCode(data.code)
+        // Auto-open preview on mobile after generation
+        if (isMobile) {
+          setMobileModal('preview')
+        }
       }
     } catch (error) {
       console.error('Generation failed:', error)
@@ -98,6 +114,169 @@ export default function Home() {
     setShowClearModal(false)
   }
 
+  // Mobile Modal Component
+  const MobileModal = ({ type, onClose }: { type: 'preview' | 'code', onClose: () => void }) => (
+    <div className="fixed inset-0 z-50 bg-zinc-950 flex flex-col">
+      {/* Modal Header */}
+      <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-800 bg-zinc-900">
+        <div className="flex items-center gap-4">
+          <button
+            onClick={onClose}
+            className="p-2 -ml-2 text-zinc-400 hover:text-white transition-colors"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M19 12H5M12 19l-7-7 7-7"/>
+            </svg>
+          </button>
+          <div className="flex gap-1">
+            <button
+              onClick={() => setMobileModal('preview')}
+              className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-all ${
+                type === 'preview'
+                  ? 'bg-zinc-800 text-white'
+                  : 'text-zinc-500 hover:text-zinc-300'
+              }`}
+            >
+              Preview
+            </button>
+            <button
+              onClick={() => setMobileModal('code')}
+              className={`px-3 py-1.5 text-sm font-medium rounded-lg transition-all ${
+                type === 'code'
+                  ? 'bg-zinc-800 text-white'
+                  : 'text-zinc-500 hover:text-zinc-300'
+              }`}
+            >
+              Code
+            </button>
+          </div>
+        </div>
+        {type === 'preview' && (
+          <div className="flex items-center gap-2 text-xs text-zinc-600">
+            <span className="px-2 py-1 bg-zinc-800/50 rounded-md">
+              {window.innerWidth < 640 ? 'Mobile' : 'Tablet'}
+            </span>
+            <span className="font-mono">{window.innerWidth}px</span>
+          </div>
+        )}
+      </div>
+      
+      {/* Modal Content */}
+      <div className="flex-1 overflow-auto">
+        {type === 'preview' ? (
+          <LivePreview code={code} isLoading={isGenerating} />
+        ) : (
+          <CodePreview code={code} />
+        )}
+      </div>
+    </div>
+  )
+
+  // Mobile Layout
+  if (isMobile) {
+    return (
+      <div className="h-screen bg-zinc-950 flex flex-col">
+        {/* Clear Project Modal */}
+        {showClearModal && (
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
+            <div className="bg-zinc-900 border border-zinc-700 rounded-2xl p-6 max-w-sm mx-4 shadow-2xl">
+              <h2 className="text-lg font-semibold text-zinc-100 mb-2">Start New Project?</h2>
+              <p className="text-zinc-400 text-sm mb-6">This will clear all current code and chat history. This action cannot be undone.</p>
+              <div className="flex gap-3 justify-end">
+                <button
+                  onClick={() => setShowClearModal(false)}
+                  className="px-4 py-2 text-sm text-zinc-400 hover:text-zinc-200 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleClearProject}
+                  className="px-4 py-2 text-sm bg-red-600 hover:bg-red-500 text-white rounded-xl transition-colors"
+                >
+                  Clear Project
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Mobile Modal */}
+        {mobileModal && (
+          <MobileModal type={mobileModal} onClose={() => setMobileModal(null)} />
+        )}
+
+        {/* Header */}
+        <div className="px-4 py-3 border-b border-zinc-800 flex items-center justify-between bg-zinc-900">
+          <div className="flex items-baseline space-x-2">
+            <Link href="/" className="text-xl font-black hover:opacity-80 transition-opacity">
+              <span className="bg-gradient-to-r from-white via-zinc-200 to-zinc-500 bg-clip-text text-transparent">Hatch</span>
+              <span className="bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">It</span>
+            </Link>
+            <span className="text-zinc-700">|</span>
+            <span className="text-zinc-500 text-sm">Builder</span>
+          </div>
+          <div className="flex items-center gap-1">
+            {codeHistory.length > 0 && (
+              <button
+                onClick={handleUndo}
+                className="p-2 text-zinc-500 hover:text-white hover:bg-zinc-800 rounded-lg transition-all"
+                title={`Undo (${codeHistory.length} in history)`}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M3 7v6h6"/>
+                  <path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/>
+                </svg>
+              </button>
+            )}
+            {code && (
+              <button
+                onClick={() => setShowClearModal(true)}
+                className="p-2 text-zinc-500 hover:text-white hover:bg-zinc-800 rounded-lg transition-all"
+                title="New Project"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M12 5v14M5 12h14"/>
+                </svg>
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Chat - Full Width */}
+        <div className="flex-1 overflow-hidden">
+          <Chat onGenerate={handleGenerate} isGenerating={isGenerating} currentCode={code} />
+        </div>
+
+        {/* Mobile Bottom Bar */}
+        {code && (
+          <div className="px-4 py-3 border-t border-zinc-800 bg-zinc-900 flex gap-2">
+            <button
+              onClick={() => setMobileModal('preview')}
+              className="flex-1 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-semibold rounded-xl transition-all flex items-center justify-center gap-2"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+                <circle cx="12" cy="12" r="3"/>
+              </svg>
+              Preview
+            </button>
+            <button
+              onClick={() => setMobileModal('code')}
+              className="flex-1 py-3 bg-zinc-800 hover:bg-zinc-700 text-white font-semibold rounded-xl transition-all flex items-center justify-center gap-2"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="16 18 22 12 16 6"/>
+                <polyline points="8 6 2 12 8 18"/>
+              </svg>
+              Code
+            </button>
+          </div>
+        )}
+      </div>
+    )
+  }
+
+  // Desktop Layout (existing)
   return (
     <div className="h-screen bg-zinc-950 p-3">
       {/* Clear Project Modal */}
