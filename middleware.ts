@@ -1,25 +1,39 @@
-import { NextResponse } from 'next/server'
-import type { NextRequest } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 
 export function middleware(request: NextRequest) {
-  // Only protect /builder routes
-  if (!request.nextUrl.pathname.startsWith('/builder')) {
+  // Skip auth for static files and API routes
+  if (
+    request.nextUrl.pathname.startsWith('/_next') ||
+    request.nextUrl.pathname.startsWith('/api') ||
+    request.nextUrl.pathname === '/favicon.ico'
+  ) {
     return NextResponse.next()
   }
 
-  const authCookie = request.cookies.get('hatchit-auth')
-  
-  if (authCookie?.value === 'authenticated') {
-    return NextResponse.next()
+  const authHeader = request.headers.get('authorization')
+
+  if (authHeader) {
+    const [scheme, encoded] = authHeader.split(' ')
+    
+    if (scheme === 'Basic') {
+      const decoded = atob(encoded)
+      const [username, password] = decoded.split(':')
+      
+      // Change these credentials
+      if (username === 'HatchIt' && password === 'Admin') {
+        return NextResponse.next()
+      }
+    }
   }
 
-  if (request.nextUrl.pathname === '/api/auth') {
-    return NextResponse.next()
-  }
-
-  return NextResponse.redirect(new URL('/login', request.url))
+  return new NextResponse('Authentication required', {
+    status: 401,
+    headers: {
+      'WWW-Authenticate': 'Basic realm="HatchIt Beta"',
+    },
+  })
 }
 
 export const config = {
-  matcher: ['/((?!_next/static|_next/image|favicon.ico|logo.svg).*)'],
+  matcher: ['/((?!_next/static|_next/image|favicon.ico).*)'],
 }

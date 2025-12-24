@@ -1,12 +1,12 @@
 'use client'
 
-import { useState, useEffect, FormEvent } from 'react'
-import { Group, Panel, Separator } from 'react-resizable-panels'
+import { useState, FormEvent, useRef, useEffect } from 'react'
 
 interface Message {
   role: 'user' | 'assistant'
   content: string
   code?: string
+  isThinking?: boolean
 }
 
 interface ChatProps {
@@ -15,49 +15,48 @@ interface ChatProps {
   currentCode: string
 }
 
-const responses = [
-  "Done ✓",
-  "Here you go",
-  "That's ready",
-  "All yours",
-  "There we go",
-  "Ready to roll",
-  "Sorted",
+const thinkingMessages = [
+  "On it...",
+  "Building that...",
+  "Working on it...",
+  "Let me cook...",
+  "Generating...",
+  "On the case...",
 ]
+
+const responses = [
+  "Done — take a look →",
+  "There you go ✓",
+  "Ready for you",
+  "Built it →",
+  "All set",
+  "That's live now",
+  "Fresh out the oven 🍳",
+  "Shipped it →",
+  "Your turn to break it",
+  "Made the thing",
+]
+
+function getRandomThinking() {
+  return thinkingMessages[Math.floor(Math.random() * thinkingMessages.length)]
+}
 
 function getRandomResponse() {
   return responses[Math.floor(Math.random() * responses.length)]
 }
 
-function LoadingIndicator() {
-  const [stage, setStage] = useState(0);
-  const stages = ['Thinking', 'Building'];
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (stage < stages.length - 1) {
-        setStage(s => s + 1);
-      }
-    }, 2000);
-    
-    return () => clearTimeout(timer);
-  }, [stage]);
-
-  return (
-    <div className="text-sm text-zinc-500 flex items-center gap-1">
-      <span>{stages[stage]}</span>
-      <span className="flex gap-0.5">
-        <span className="animate-bounce [animation-delay:0ms]">.</span>
-        <span className="animate-bounce [animation-delay:150ms]">.</span>
-        <span className="animate-bounce [animation-delay:300ms]">.</span>
-      </span>
-    </div>
-  );
-}
-
 export default function Chat({ onGenerate, isGenerating, currentCode }: ChatProps) {
   const [input, setInput] = useState('')
   const [messages, setMessages] = useState<Message[]>([])
+  const messagesEndRef = useRef<HTMLDivElement>(null)
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }
+
+  useEffect(() => {
+    scrollToBottom()
+  }, [messages])
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
@@ -67,11 +66,16 @@ export default function Chat({ onGenerate, isGenerating, currentCode }: ChatProp
     setInput('')
 
     const newUserMessage: Message = { role: 'user', content: userMessage }
-    const updatedMessages = [...messages, newUserMessage]
-    setMessages(updatedMessages)
+    const thinkingMessage: Message = { role: 'assistant', content: getRandomThinking(), isThinking: true }
+    
+    setMessages(prev => [...prev, newUserMessage, thinkingMessage])
 
     await onGenerate(userMessage, messages, currentCode)
-    setMessages(prev => [...prev, { role: 'assistant', content: getRandomResponse(), code: currentCode }])
+    
+    setMessages(prev => {
+      const withoutThinking = prev.filter(m => !m.isThinking)
+      return [...withoutThinking, { role: 'assistant', content: getRandomResponse(), code: currentCode }]
+    })
   }
 
   const clearChat = () => {
@@ -79,47 +83,49 @@ export default function Chat({ onGenerate, isGenerating, currentCode }: ChatProp
   }
 
   return (
-    <Group orientation="vertical" className="flex-1">
+    <div className="flex flex-col h-full">
       {/* Messages */}
-      <Panel id="messages" defaultSize={70} minSize={30}>
-        <div className="h-full overflow-y-auto p-4 space-y-3">
-          {messages.length === 0 ? (
-            <div className="text-zinc-500 text-sm">
-              Describe a page or site and I'll build it. Ask for changes to refine.
+      <div className="flex-1 overflow-y-auto p-4 space-y-3">
+        {messages.length === 0 ? (
+          <div className="h-full flex flex-col items-center justify-center text-center px-4">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-500/20 to-purple-500/20 flex items-center justify-center mb-4">
+              <span className="text-2xl">✨</span>
             </div>
-          ) : (
-            <>
-              {messages.map((msg, i) => (
-                <div
-                  key={i}
-                  className={`text-sm px-3 py-2 rounded-lg max-w-[85%] ${
-                    msg.role === 'user' 
-                      ? 'bg-zinc-700 text-zinc-100 ml-auto' 
-                      : 'bg-zinc-800/50 text-zinc-400'
-                  }`}
-                >
-                  {msg.content}
-                </div>
-              ))}
-              {messages.length > 0 && !isGenerating && (
-                <button
-                  onClick={clearChat}
-                  className="text-xs text-zinc-600 hover:text-zinc-400 transition-colors"
-                >
-                  Clear & start new
-                </button>
-              )}
-            </>
-          )}
-          {isGenerating && <LoadingIndicator />}
-        </div>
-      </Panel>
-
-      <Separator className="h-2 bg-zinc-800 hover:bg-zinc-600 transition-colors cursor-row-resize" />
+            <p className="text-zinc-300 text-sm font-medium mb-1">What do you want to build?</p>
+            <p className="text-zinc-600 text-xs max-w-[200px]">Describe a component, page, or full site and watch it come to life.</p>
+          </div>
+        ) : (
+          <>
+            {messages.map((msg, i) => (
+              <div
+                key={i}
+                className={`text-sm px-3 py-2 rounded-2xl max-w-[85%] ${
+                  msg.role === 'user' 
+                    ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white ml-auto' 
+                    : msg.isThinking
+                      ? 'bg-zinc-800/80 text-zinc-500 italic animate-pulse'
+                      : 'bg-zinc-800/80 text-zinc-300'
+                }`}
+              >
+                {msg.content}
+              </div>
+            ))}
+            {messages.length > 0 && !isGenerating && (
+              <button
+                onClick={clearChat}
+                className="text-xs text-zinc-600 hover:text-zinc-400 transition-colors mx-auto block"
+              >
+                Clear chat
+              </button>
+            )}
+            <div ref={messagesEndRef} />
+          </>
+        )}
+      </div>
 
       {/* Input */}
-      <Panel id="input" defaultSize={30} minSize={15}>
-        <form onSubmit={handleSubmit} className="h-full p-4 flex flex-col">
+      <div className="p-3 border-t border-zinc-800/50">
+        <form onSubmit={handleSubmit} className="flex flex-col gap-2">
           <textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}
@@ -130,18 +136,19 @@ export default function Chat({ onGenerate, isGenerating, currentCode }: ChatProp
               }
             }}
             placeholder={isGenerating ? "" : messages.length === 0 ? "A landing page for my coffee shop..." : "What's next?"}
-            className="flex-1 bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none focus:border-zinc-600 resize-none"
+            className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3 text-sm text-zinc-100 placeholder-zinc-600 focus:outline-none focus:border-zinc-700 focus:ring-1 focus:ring-zinc-700 resize-none transition-all"
+            rows={3}
             disabled={isGenerating}
           />
           <button
             type="submit"
             disabled={isGenerating || !input.trim()}
-            className="mt-3 px-4 py-2 bg-zinc-100 text-zinc-900 rounded-lg text-sm font-medium hover:bg-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            className="w-full px-4 py-2.5 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white rounded-xl text-sm font-medium disabled:opacity-40 disabled:cursor-not-allowed transition-all"
           >
-            {messages.length === 0 ? 'Generate' : 'Update'}
+            {isGenerating ? 'Generating...' : messages.length === 0 ? 'Generate' : 'Update'}
           </button>
         </form>
-      </Panel>
-    </Group>
+      </div>
+    </div>
   )
 }
