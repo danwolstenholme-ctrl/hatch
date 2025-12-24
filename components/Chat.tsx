@@ -1,5 +1,4 @@
 'use client'
-
 import { useState, FormEvent, useRef, useEffect } from 'react'
 
 interface Message {
@@ -67,11 +66,11 @@ export default function Chat({ onGenerate, isGenerating, currentCode }: ChatProp
 
     const newUserMessage: Message = { role: 'user', content: userMessage }
     const thinkingMessage: Message = { role: 'assistant', content: getRandomThinking(), isThinking: true }
-    
+
     setMessages(prev => [...prev, newUserMessage, thinkingMessage])
 
     await onGenerate(userMessage, messages, currentCode)
-    
+
     setMessages(prev => {
       const withoutThinking = prev.filter(m => !m.isThinking)
       return [...withoutThinking, { role: 'assistant', content: getRandomResponse(), code: currentCode }]
@@ -84,7 +83,6 @@ export default function Chat({ onGenerate, isGenerating, currentCode }: ChatProp
 
   return (
     <div className="flex flex-col h-full">
-      {/* Messages */}
       <div className="flex-1 overflow-y-auto p-4 space-y-3">
         {messages.length === 0 ? (
           <div className="h-full flex flex-col items-center justify-center text-center px-4">
@@ -123,7 +121,6 @@ export default function Chat({ onGenerate, isGenerating, currentCode }: ChatProp
         )}
       </div>
 
-      {/* Input */}
       <div className="p-3 border-t border-zinc-800/50">
         <form onSubmit={handleSubmit} className="flex flex-col gap-2">
           <textarea
