@@ -99,6 +99,7 @@ export default function Home() {
   const [isDeploying, setIsDeploying] = useState(false)
   const [deployedUrl, setDeployedUrl] = useState<string | null>(null)
   const [showDeployModal, setShowDeployModal] = useState(false)
+  const [showShipModal, setShowShipModal] = useState(false)
   const [showDomainModal, setShowDomainModal] = useState(false)
   const [customDomain, setCustomDomain] = useState('')
   const [domainStatus, setDomainStatus] = useState<'idle' | 'adding' | 'pending' | 'success' | 'error'>('idle')
@@ -364,14 +365,14 @@ export default function Home() {
     }
   }
 
-  const handleDeployClick = () => {
+  const handleShipClick = () => {
     if (!isPaid) {
       setUpgradeReason('deploy')
       setShowUpgradeModal(true)
       return
     }
     if (isDeployed) {
-      handleDeploy(currentProject?.deployedSlug)
+      setShowShipModal(true)
     } else {
       setDeployName(currentProject?.name?.toLowerCase().replace(/[^a-z0-9-]/g, '-') || '')
       setShowDeployModal(true)
@@ -387,6 +388,16 @@ export default function Home() {
     setShowDomainModal(true)
     setDomainStatus('idle')
     setCustomDomain(currentProject?.customDomain || '')
+  }
+
+  const handleDownloadClick = async () => {
+    if (!isPaid) {
+      setUpgradeReason('download')
+      setShowUpgradeModal(true)
+      return
+    }
+    // Trigger download through a custom event
+    window.dispatchEvent(new CustomEvent('triggerDownload'))
   }
 
   const HatchedBadge = () => (
@@ -510,7 +521,7 @@ export default function Home() {
           <div className="flex-1 flex flex-col min-w-0">
             {previewVersionIndex !== null ? (
               <>
-                <div className="flex-1 overflow-auto bg-zinc-950"><LivePreview code={versions[previewVersionIndex]?.code || ''} isLoading={false} /></div>
+                <div className="flex-1 overflow-auto bg-zinc-950"><LivePreview code={versions[previewVersionIndex]?.code || ''} isLoading={false} isPaid={isPaid} setShowUpgradeModal={setShowUpgradeModal} /></div>
                 <div className="px-4 py-3 border-t border-zinc-800 flex items-center justify-between">
                   <span className="text-sm text-zinc-400">Previewing v{previewVersionIndex + 1}</span>
                   {previewVersionIndex !== currentVersionIndex && <button onClick={() => restoreVersion(previewVersionIndex)} className="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-500 text-white rounded-xl transition-colors">Restore This Version</button>}
@@ -646,7 +657,7 @@ export default function Home() {
         </div>
         {type === 'preview' && <div className="flex items-center gap-2 text-xs text-zinc-600"><span className="px-2 py-1 bg-zinc-800/50 rounded-md">{typeof window !== 'undefined' && window.innerWidth < 640 ? 'Mobile' : 'Tablet'}</span></div>}
       </div>
-      <div className="flex-1 overflow-auto">{type === 'preview' ? <LivePreview code={code} isLoading={isGenerating} /> : <CodePreview code={code} isPaid={isPaid} />}</div>
+      <div className="flex-1 overflow-auto">{type === 'preview' ? <LivePreview code={code} isLoading={isGenerating} isPaid={isPaid} setShowUpgradeModal={setShowUpgradeModal} /> : <CodePreview code={code} isPaid={isPaid} />}</div>
     </div>
   )
 
@@ -667,21 +678,22 @@ export default function Home() {
     </button>
   )
 
-  const DeployButton = ({ mobile = false }: { mobile?: boolean }) => (
+  const ShipButton = ({ mobile = false }: { mobile?: boolean }) => (
     <button 
-      onClick={handleDeployClick} 
+      onClick={handleShipClick} 
       disabled={!code || isDeploying} 
-      className={`${mobile ? 'flex-1 py-3 rounded-xl font-semibold' : 'px-3 py-1.5 rounded-lg text-xs font-medium'} ${isDeployed ? 'bg-blue-600 hover:bg-blue-500' : 'bg-green-600 hover:bg-green-500'} disabled:bg-zinc-700 disabled:cursor-not-allowed text-white transition-all flex items-center justify-center gap-1.5`}
+      className={`${mobile ? 'flex-1 py-3 rounded-xl font-semibold' : 'px-4 py-1.5 rounded-lg text-sm font-medium'} ${isDeployed ? 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500' : 'bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500'} disabled:bg-zinc-700 disabled:cursor-not-allowed text-white transition-all flex items-center justify-center gap-2`}
     >
       {isDeploying ? (
-        <div className="flex items-center gap-1.5">
-          <svg className="animate-spin h-3 w-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
-          <span>Building...</span>
+        <div className="flex items-center gap-2">
+          <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+          <span>Shipping...</span>
         </div>
-      ) : isDeployed ? (
-        <><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg>Update</>
       ) : (
-        <><svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 2L11 13"/><path d="M22 2L15 22l-4-9-9-4 20-7z"/></svg>Deploy</>
+        <>
+          <span>{isDeployed ? 'Manage Site' : 'Ship it'}</span>
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M5 12h14"/><path d="M12 5l7 7-7 7"/></svg>
+        </>
       )}
     </button>
   )
@@ -707,6 +719,59 @@ export default function Home() {
         {showHistoryModal && <HistoryModal />}
         {showDomainModal && <DomainModal />}
         {deployedUrl && <DeployedModal />}
+        {showShipModal && (
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
+            <div className="bg-zinc-900 rounded-xl p-8 max-w-md w-full mx-4 border border-zinc-800">
+              <h2 className="text-2xl font-bold mb-2">Ship your site</h2>
+              <p className="text-zinc-400 mb-6">Manage your deployed project</p>
+              
+              <div className="space-y-3">
+                <button
+                  onClick={() => handleDeploy()}
+                  className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white font-semibold py-3 rounded-lg transition-all flex items-center justify-center gap-2"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3v-6" />
+                  </svg>
+                  Push Update
+                </button>
+                
+                <button
+                  onClick={() => {
+                    setShowShipModal(false)
+                    setShowDomainModal(true)
+                  }}
+                  className="w-full bg-zinc-800 hover:bg-zinc-700 text-white font-semibold py-3 rounded-lg transition-all flex items-center justify-center gap-2"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM13 10H7" />
+                  </svg>
+                  Manage Domain
+                </button>
+                
+                <button
+                  onClick={() => {
+                    handleDownloadClick()
+                    setShowShipModal(false)
+                  }}
+                  className="w-full bg-zinc-800 hover:bg-zinc-700 text-white font-semibold py-3 rounded-lg transition-all flex items-center justify-center gap-2"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                  </svg>
+                  Download ZIP
+                </button>
+              </div>
+              
+              <button
+                onClick={() => setShowShipModal(false)}
+                className="w-full mt-4 text-zinc-400 hover:text-zinc-300 font-medium py-2"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        )}
         {showUpgradeModal && <UpgradeModal isOpen={showUpgradeModal} onClose={() => setShowUpgradeModal(false)} reason={upgradeReason} />}
         {mobileModal && <MobileModal type={mobileModal} onClose={() => setMobileModal(null)} />}
         <div className="px-4 py-3 border-b border-zinc-800 flex items-center justify-between bg-zinc-900">
@@ -734,7 +799,7 @@ export default function Home() {
               <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
               Preview
             </button>
-            <DeployButton mobile />
+            <ShipButton mobile />
           </div>
         )}
       </div>
@@ -799,12 +864,11 @@ export default function Home() {
                     <span className="font-mono text-zinc-600">{Math.round(previewWidth)}px</span>
                   </div>
                 )}
-                <DomainButton />
-                <DeployButton />
+                <ShipButton />
               </div>
             </div>
             <div ref={previewContainerRef} className="flex-1 overflow-auto min-h-0">
-              {activeTab === 'preview' ? <LivePreview code={code} isLoading={isGenerating} /> : <CodePreview code={code} isPaid={isPaid} />}
+              {activeTab === 'preview' ? <LivePreview code={code} isLoading={isGenerating} isPaid={isPaid} setShowUpgradeModal={setShowUpgradeModal} /> : <CodePreview code={code} isPaid={isPaid} />}
             </div>
           </div>
         </Panel>

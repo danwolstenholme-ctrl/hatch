@@ -1,13 +1,15 @@
 'use client'
 
-import { useMemo, useState } from 'react'
+import { useMemo, useState, useEffect } from 'react'
 
 interface LivePreviewProps {
   code: string
   isLoading?: boolean
+  isPaid?: boolean
+  setShowUpgradeModal?: (show: boolean) => void
 }
 
-export default function LivePreview({ code, isLoading = false }: LivePreviewProps) {
+export default function LivePreview({ code, isLoading = false, isPaid = false, setShowUpgradeModal }: LivePreviewProps) {
   const [iframeLoaded, setIframeLoaded] = useState(false)
   const [iframeKey, setIframeKey] = useState(0)
   const [isDownloading, setIsDownloading] = useState(false)
@@ -17,7 +19,20 @@ export default function LivePreview({ code, isLoading = false }: LivePreviewProp
     setIframeKey(prev => prev + 1)
   }
 
+  useEffect(() => {
+    const handleDownloadTrigger = () => {
+      downloadZip()
+    }
+    
+    window.addEventListener('triggerDownload', handleDownloadTrigger)
+    return () => window.removeEventListener('triggerDownload', handleDownloadTrigger)
+  }, [code])
+
   const downloadZip = async () => {
+    if (!isPaid) {
+      setShowUpgradeModal?.(true)
+      return
+    }
     if (!code) return
     setIsDownloading(true)
     
