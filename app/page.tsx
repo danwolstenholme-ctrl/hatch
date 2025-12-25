@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { SignInButton, SignedIn, SignedOut, UserButton } from '@clerk/nextjs'
 
 export default function Home() {
   const [isVisible, setIsVisible] = useState(false);
@@ -29,9 +30,20 @@ export default function Home() {
           <div className="flex items-center gap-6">
             <a href="#features" className="text-zinc-400 hover:text-white transition-colors hidden sm:block">Features</a>
             <a href="#pricing" className="text-zinc-400 hover:text-white transition-colors hidden sm:block">Pricing</a>
-            <Link href="/builder" className="px-5 py-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 rounded-lg font-semibold text-sm transition-all">
-              Launch App
-            </Link>
+            <SignedOut>
+              <SignInButton mode="modal">
+                <button className="text-zinc-400 hover:text-white transition-colors text-sm">Sign In</button>
+              </SignInButton>
+              <Link href="/builder" className="px-5 py-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 rounded-lg font-semibold text-sm transition-all">
+                Launch App
+              </Link>
+            </SignedOut>
+            <SignedIn>
+              <Link href="/builder" className="px-5 py-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 rounded-lg font-semibold text-sm transition-all">
+                Launch App
+              </Link>
+              <UserButton afterSignOutUrl="/" />
+            </SignedIn>
           </div>
         </div>
       </nav>
