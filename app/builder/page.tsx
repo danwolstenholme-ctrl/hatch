@@ -2,11 +2,13 @@
 import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { useUser } from '@clerk/nextjs'
+import { useSearchParams } from 'next/navigation'
 import { Group, Panel, Separator } from 'react-resizable-panels'
 import Chat from '@/components/Chat'
 import CodePreview from '@/components/CodePreview'
 import LivePreview from '@/components/LivePreview'
 import UpgradeModal from '@/components/upgradeModal'    
+import SuccessModal from '@/components/SuccessModal'
 import { isPaidUser } from '@/app/lib/generation-limit'
 
 interface Message {
@@ -108,9 +110,11 @@ export default function Home() {
   const [mobileModal, setMobileModal] = useState<'preview' | 'code' | null>(null)
   const [copied, setCopied] = useState(false)
   const { user } = useUser()
-const [isPaid, setIsPaid] = useState(false)
+  const searchParams = useSearchParams()
+  const [isPaid, setIsPaid] = useState(false)
   const [showUpgradeModal, setShowUpgradeModal] = useState(false)
   const [upgradeReason, setUpgradeReason] = useState<'generation_limit' | 'code_access' | 'deploy' | 'download'>('deploy')
+  const [showSuccessModal, setShowSuccessModal] = useState(false)
   const previewContainerRef = useRef<HTMLDivElement>(null)
   const dropdownRef = useRef<HTMLDivElement>(null)
   const domainInputRef = useRef<HTMLInputElement>(null)
@@ -180,6 +184,13 @@ const [isPaid, setIsPaid] = useState(false)
       domainInputRef.current?.focus()
     }
   }, [showDomainModal, customDomain, domainStatus])
+
+  useEffect(() => {
+    if (searchParams.get('success') === 'true') {
+      setShowSuccessModal(true)
+      window.history.replaceState({}, '', '/builder')
+    }
+  }, [searchParams])
 
   const getDevice = (width: number) => {
     if (width < 375) return { name: 'iPhone SE', icon: '📱' }
@@ -360,6 +371,13 @@ const [isPaid, setIsPaid] = useState(false)
     setDomainStatus('idle')
     setCustomDomain(currentProject?.customDomain || '')
   }
+
+  const HatchedBadge = () => (
+    <div className="flex items-center gap-1 px-2 py-1 bg-gradient-to-r from-purple-500/20 to-pink-500/20 border border-purple-500/30 rounded-full">
+      <span className="text-xs">🐣</span>
+      <span className="text-xs font-medium bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">Hatched</span>
+    </div>
+  )
 
   const ProjectDropdown = () => (
     <div ref={dropdownRef} className="absolute top-full left-0 mt-2 w-72 bg-zinc-900 border border-zinc-700 rounded-xl shadow-2xl z-50 overflow-hidden">
@@ -667,6 +685,7 @@ const [isPaid, setIsPaid] = useState(false)
             </Link>
             <span className="text-zinc-700">|</span>
             <ProjectSelector mobile />
+            {isPaid && <HatchedBadge />}
           </div>
           <div className="flex items-center gap-1">
             <HistoryButton />
@@ -699,6 +718,7 @@ const [isPaid, setIsPaid] = useState(false)
       {showDomainModal && <DomainModal />}
       {deployedUrl && <DeployedModal />}
       {showUpgradeModal && <UpgradeModal isOpen={showUpgradeModal} onClose={() => setShowUpgradeModal(false)} reason={upgradeReason} />}
+      {showSuccessModal && <SuccessModal isOpen={showSuccessModal} onClose={() => setShowSuccessModal(false)} />}
       <Group orientation="horizontal" className="h-full rounded-2xl overflow-hidden border border-zinc-800 shadow-2xl">
         <Panel id="chat" defaultSize={28} minSize={20}>
           <div className="h-full flex flex-col bg-zinc-900">
@@ -710,6 +730,7 @@ const [isPaid, setIsPaid] = useState(false)
                 </Link>
                 <span className="text-zinc-700">|</span>
                 <ProjectSelector />
+                {isPaid && <HatchedBadge />}
               </div>
               <div className="flex items-center gap-1">
                 <HistoryButton />
