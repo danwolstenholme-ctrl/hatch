@@ -1,5 +1,7 @@
 'use client'
 import { useState, FormEvent, useRef, useEffect } from 'react'
+import { canGenerate, recordGeneration, getGenerationsRemaining, getDailyLimit, isPaidUser } from '@/app/lib/generation-limit'
+import UpgradeModal from './upgradeModal'
 
 interface Message {
   role: 'user' | 'assistant'
@@ -47,7 +49,15 @@ function getRandomResponse() {
 export default function Chat({ onGenerate, isGenerating, currentCode }: ChatProps) {
   const [input, setInput] = useState('')
   const [messages, setMessages] = useState<Message[]>([])
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false)
+  const [remaining, setRemaining] = useState<number | null>(null)
+  const [isPaid, setIsPaid] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    setRemaining(getGenerationsRemaining())
+    setIsPaid(isPaidUser())
+  }, [])
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -61,6 +71,12 @@ export default function Chat({ onGenerate, isGenerating, currentCode }: ChatProp
     e.preventDefault()
     if (!input.trim() || isGenerating) return
 
+    // Check generation limit for free users
+    if (!isPaid && !canGenerate()) {
+      setShowUpgradeModal(true)
+      return
+    }
+
     const userMessage = input.trim()
     setInput('')
 
@@ -70,6 +86,12 @@ export default function Chat({ onGenerate, isGenerating, currentCode }: ChatProp
     setMessages(prev => [...prev, newUserMessage, thinkingMessage])
 
     await onGenerate(userMessage, messages, currentCode)
+
+    // Record the generation for free users
+    if (!isPaid) {
+      const result = recordGeneration()
+      setRemaining(result.remaining)
+    }
 
     setMessages(prev => {
       const withoutThinking = prev.filter(m => !m.isThinking)
@@ -81,8 +103,43 @@ export default function Chat({ onGenerate, isGenerating, currentCode }: ChatProp
     setMessages([])
   }
 
+  const limit = getDailyLimit()
+
   return (
     <div className="flex flex-col h-full">
+      {/* Generation limit indicator for free users */}
+      {!isPaid && remaining !== null && (
+        <div className="px-4 py-2 border-b border-zinc-800/50">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={remaining <= 5 ? 'text-amber-400' : 'text-zinc-500'}>
+                <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z" />
+              </svg>
+              <span className={`text-xs ${remaining <= 5 ? 'text-amber-400' : 'text-zinc-500'}`}>
+                {remaining} generations left today
+              </span>
+            </div>
+            {remaining <= 10 && (
+              <button 
+                onClick={() => setShowUpgradeModal(true)}
+                className="text-xs text-purple-400 hover:text-purple-300 font-medium transition-colors"
+              >
+                Upgrade
+              </button>
+            )}
+          </div>
+          {/* Progress bar */}
+          <div className="mt-1.5 h-1 bg-zinc-800 rounded-full overflow-hidden">
+            <div 
+              className={`h-full transition-all duration-300 ${
+                remaining <= 5 ? 'bg-amber-500' : 'bg-blue-500'
+              }`}
+              style={{ width: `${(remaining / limit) * 100}%` }}
+            />
+          </div>
+        </div>
+      )}
+
       <div className="flex-1 overflow-y-auto p-4 space-y-3">
         {messages.length === 0 ? (
           <div className="h-full flex flex-col items-center justify-center text-center px-4">
@@ -146,6 +203,12 @@ export default function Chat({ onGenerate, isGenerating, currentCode }: ChatProp
           </button>
         </form>
       </div>
+
+      <UpgradeModal
+        isOpen={showUpgradeModal}
+        onClose={() => setShowUpgradeModal(false)}
+        reason="generation_limit"
+      />
     </div>
   )
 }

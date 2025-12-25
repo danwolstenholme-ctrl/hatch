@@ -241,18 +241,36 @@ export default function RootLayout({
     const html = '<!DOCTYPE html>' +
       '<html><head>' +
       '<script src="https://cdn.tailwindcss.com"></script>' +
-      '<style>* { margin: 0; padding: 0; box-sizing: border-box; } html, body, #root { min-height: 100%; width: 100%; } body { background: #18181b; } .error { color: #ef4444; padding: 1rem; font-family: monospace; white-space: pre-wrap; background: #18181b; }</style>' +
+      '<style>* { margin: 0; padding: 0; box-sizing: border-box; } html, body, #root { min-height: 100%; width: 100%; } body { background: #18181b; } .error { color: #ef4444; padding: 1rem; font-family: monospace; white-space: pre-wrap; background: #18181b; } .loading { color: #71717a; padding: 2rem; text-align: center; font-family: system-ui; }</style>' +
       '</head><body>' +
-      '<div id="root"></div>' +
+      '<div id="root"><div class="loading">Loading preview...</div></div>' +
       '<script src="https://unpkg.com/react@18/umd/react.development.js"></script>' +
       '<script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>' +
       '<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>' +
       '<script>document.addEventListener("click", function(e) { var link = e.target.closest("a"); if (link) { e.preventDefault(); var href = link.getAttribute("href"); if (href && href.startsWith("#")) { var target = document.querySelector(href); if (target) target.scrollIntoView({ behavior: "smooth" }); } } });</script>' +
+      '<script>' +
+      'window.onerror = function(msg, url, line, col, error) {' +
+      '  document.getElementById("root").innerHTML = "<div class=\'error\'>Error: " + msg + "</div>";' +
+      '  return true;' +
+      '};' +
+      '</script>' +
       '<script type="text/babel" data-presets="react,typescript">' +
       hooksDestructure + '\n' +
+      'try {\n' +
       cleanedCode + '\n' +
-      'try { const root = ReactDOM.createRoot(document.getElementById("root")); root.render(<' + componentName + ' />); } catch (err) { document.getElementById("root").innerHTML = "<div class=\'error\'>Render Error: " + err.message + "</div>"; }' +
+      '  const root = ReactDOM.createRoot(document.getElementById("root"));\n' +
+      '  if (typeof ' + componentName + ' === "function") {\n' +
+      '    root.render(React.createElement(' + componentName + '));\n' +
+      '  } else if (typeof Component === "function") {\n' +
+      '    root.render(React.createElement(Component));\n' +
+      '  } else {\n' +
+      '    document.getElementById("root").innerHTML = "<div class=\'error\'>Component not found. Make sure code exports a function component.</div>";\n' +
+      '  }\n' +
+      '} catch (err) {\n' +
+      '  document.getElementById("root").innerHTML = "<div class=\'error\'>Render Error: " + err.message + "</div>";\n' +
+      '}\n' +
       '</script>' +
+      '<script>setTimeout(function() { if (document.querySelector(".loading")) { document.getElementById("root").innerHTML = "<div class=\'error\'>Preview timed out. Component may have an error.</div>"; } }, 5000);</script>' +
       '</body></html>'
 
     return html

@@ -6,6 +6,8 @@ import { Group, Panel, Separator } from 'react-resizable-panels'
 import Chat from '@/components/Chat'
 import CodePreview from '@/components/CodePreview'
 import LivePreview from '@/components/LivePreview'
+import UpgradeModal from '@/components/upgradeModal'    
+import { isPaidUser } from '@/app/lib/generation-limit'
 
 interface Message {
   role: 'user' | 'assistant'
@@ -105,8 +107,12 @@ export default function Home() {
   const [isMobile, setIsMobile] = useState(false)
   const [mobileModal, setMobileModal] = useState<'preview' | 'code' | null>(null)
   const [copied, setCopied] = useState(false)
+  const [isPaid, setIsPaid] = useState(false)
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false)
+  const [upgradeReason, setUpgradeReason] = useState<'generation_limit' | 'code_access' | 'deploy' | 'download'>('deploy')
   const previewContainerRef = useRef<HTMLDivElement>(null)
   const dropdownRef = useRef<HTMLDivElement>(null)
+  const domainInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     const savedProjects = localStorage.getItem('hatchit-projects')
@@ -144,6 +150,10 @@ export default function Home() {
   }, [])
 
   useEffect(() => {
+    setIsPaid(isPaidUser())
+  }, [])
+
+  useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768)
     checkMobile()
     window.addEventListener('resize', checkMobile)
@@ -159,7 +169,12 @@ export default function Home() {
     return () => observer.disconnect()
   }, [])
 
-  // Device breakpoints based on common screen sizes
+  useEffect(() => {
+    if (showDomainModal && (domainStatus === 'idle' || domainStatus === 'error')) {
+      domainInputRef.current?.focus()
+    }
+  }, [showDomainModal, customDomain, domainStatus])
+
   const getDevice = (width: number) => {
     if (width < 375) return { name: 'iPhone SE', icon: '📱' }
     if (width < 430) return { name: 'iPhone', icon: '📱' }
@@ -291,23 +306,16 @@ export default function Home() {
 
   const connectDomain = async () => {
     if (!customDomain || !currentProject?.deployedSlug) return
-    
     const domain = customDomain.toLowerCase().replace(/^https?:\/\//, '').replace(/\/.*$/, '').trim()
-    
     setDomainStatus('adding')
     setDomainError('')
-    
     try {
       const response = await fetch('/api/domain', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          domain,
-          projectSlug: currentProject.deployedSlug 
-        }),
+        body: JSON.stringify({ domain, projectSlug: currentProject.deployedSlug }),
       })
       const data = await response.json()
-      
       if (data.success) {
         setDomainStatus('pending')
         updateCurrentProject({ customDomain: domain })
@@ -320,6 +328,31 @@ export default function Home() {
       setDomainStatus('error')
       setDomainError('Failed to connect domain')
     }
+  }
+
+  const handleDeployClick = () => {
+    if (!isPaid) {
+      setUpgradeReason('deploy')
+      setShowUpgradeModal(true)
+      return
+    }
+    if (isDeployed) {
+      handleDeploy(currentProject?.deployedSlug)
+    } else {
+      setDeployName(currentProject?.name?.toLowerCase().replace(/[^a-z0-9-]/g, '-') || '')
+      setShowDeployModal(true)
+    }
+  }
+
+  const handleDomainClick = () => {
+    if (!isPaid) {
+      setUpgradeReason('deploy')
+      setShowUpgradeModal(true)
+      return
+    }
+    setShowDomainModal(true)
+    setDomainStatus('idle')
+    setCustomDomain(currentProject?.customDomain || '')
   }
 
   const ProjectDropdown = () => (
@@ -372,7 +405,7 @@ export default function Home() {
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
       <div className="bg-zinc-900 border border-zinc-700 rounded-2xl p-6 max-w-sm mx-4 shadow-2xl">
         <h2 className="text-lg font-semibold text-white mb-2">Delete Project?</h2>
-        <p className="text-zinc-400 text-sm mb-4">This will permanently delete "{currentProject?.name}". This action cannot be undone.</p>
+        <p className="text-zinc-400 text-sm mb-4">This will permanently delete &quot;{currentProject?.name}&quot;. This action cannot be undone.</p>
         {currentProject?.deployedSlug && (
           <div className="flex items-center gap-2 px-3 py-2 bg-amber-500/10 border border-amber-500/20 rounded-lg mb-4">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" strokeWidth="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
@@ -412,7 +445,7 @@ export default function Home() {
                       {isCurrent && <span className="text-[10px] px-1.5 py-0.5 bg-blue-500/20 text-blue-400 rounded">CURRENT</span>}
                     </div>
                     <div className="text-xs text-zinc-500 mb-1">{formatRelativeTime(version.timestamp)}</div>
-                    {version.prompt && <div className="text-xs text-zinc-400 truncate">"{version.prompt}"</div>}
+                    {version.prompt && <div className="text-xs text-zinc-400 truncate">&quot;{version.prompt}&quot;</div>}
                   </button>
                 )
               })
@@ -478,15 +511,6 @@ export default function Home() {
     </div>
   )
 
-  const domainInputRef = useRef<HTMLInputElement>(null)
-  
-  // Keep focus on domain input when modal is open
-  useEffect(() => {
-    if (showDomainModal && domainStatus === 'idle' || domainStatus === 'error') {
-      domainInputRef.current?.focus()
-    }
-  }, [showDomainModal, customDomain, domainStatus])
-  
   const DomainModal = () => (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
       <div className="bg-zinc-900 border border-zinc-700 rounded-2xl p-6 max-w-lg mx-4 shadow-2xl">
@@ -496,8 +520,6 @@ export default function Home() {
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
           </button>
         </div>
-
-        {/* Base Domain - Always shown */}
         <div className="mb-4">
           <div className="text-xs text-zinc-500 mb-1">Base Domain</div>
           <div className="flex items-center gap-2 px-3 py-2 bg-zinc-800 rounded-lg">
@@ -510,13 +532,9 @@ export default function Home() {
             </button>
           </div>
         </div>
-
-        {/* Custom Domain Section */}
         <div className="border-t border-zinc-800 pt-4">
           <div className="text-xs text-zinc-500 mb-2">Custom Domain</div>
-          
           {currentProject?.customDomain && domainStatus !== 'idle' && domainStatus !== 'adding' && domainStatus !== 'error' ? (
-            /* Has connected domain */
             <div className="flex items-center gap-2 px-3 py-2 bg-zinc-800 rounded-lg mb-3">
               <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg>
               <a href={`https://${currentProject.customDomain}`} target="_blank" rel="noopener noreferrer" className="text-sm text-blue-400 hover:text-blue-300 transition-colors">
@@ -525,25 +543,11 @@ export default function Home() {
               <button onClick={() => { setDomainStatus('idle'); setCustomDomain('') }} className="ml-auto text-xs text-zinc-500 hover:text-white">Change</button>
             </div>
           ) : null}
-        
           {domainStatus === 'idle' || domainStatus === 'adding' || domainStatus === 'error' ? (
             <>
-              <input 
-                ref={domainInputRef}
-                type="text" 
-                value={customDomain} 
-                onChange={(e) => setCustomDomain(e.target.value.toLowerCase())} 
-                onKeyDown={(e) => e.key === 'Enter' && customDomain && connectDomain()}
-                className="w-full px-4 py-3 bg-zinc-800 border border-zinc-700 rounded-xl text-white placeholder-zinc-500 focus:outline-none focus:border-blue-500 mb-2" 
-                placeholder="example.com or www.example.com"
-                autoFocus
-              />
+              <input ref={domainInputRef} type="text" value={customDomain} onChange={(e) => setCustomDomain(e.target.value.toLowerCase())} onKeyDown={(e) => e.key === 'Enter' && customDomain && connectDomain()} className="w-full px-4 py-3 bg-zinc-800 border border-zinc-700 rounded-xl text-white placeholder-zinc-500 focus:outline-none focus:border-blue-500 mb-2" placeholder="example.com or www.example.com" autoFocus />
               {domainError && <p className="text-red-400 text-sm mb-2">{domainError}</p>}
-              <button 
-                onClick={connectDomain} 
-                disabled={!customDomain || domainStatus === 'adding'} 
-                className="w-full px-4 py-3 text-sm bg-blue-600 hover:bg-blue-500 disabled:bg-zinc-700 disabled:cursor-not-allowed text-white rounded-xl transition-colors flex items-center justify-center gap-2"
-              >
+              <button onClick={connectDomain} disabled={!customDomain || domainStatus === 'adding'} className="w-full px-4 py-3 text-sm bg-blue-600 hover:bg-blue-500 disabled:bg-zinc-700 disabled:cursor-not-allowed text-white rounded-xl transition-colors flex items-center justify-center gap-2">
                 {domainStatus === 'adding' ? (
                   <><svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>Adding Domain...</>
                 ) : currentProject?.customDomain ? 'Update Domain' : 'Connect Domain'}
@@ -555,29 +559,12 @@ export default function Home() {
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
                 <span className="text-amber-400 text-sm">DNS Configuration Required</span>
               </div>
-              
               <div className="bg-zinc-800 rounded-xl p-4 mb-4 space-y-3">
-                <div>
-                  <div className="text-xs text-zinc-500 mb-1">Type</div>
-                  <div className="text-white font-mono text-sm">CNAME</div>
-                </div>
-                <div>
-                  <div className="text-xs text-zinc-500 mb-1">Name / Host</div>
-                  <div className="text-white font-mono text-sm">{customDomain.startsWith('www.') ? 'www' : '@'}</div>
-                </div>
-                <div>
-                  <div className="text-xs text-zinc-500 mb-1">Value / Target</div>
-                  <div className="text-white font-mono text-sm flex items-center gap-2">
-                    cname.vercel-dns.com
-                    <button onClick={() => { navigator.clipboard.writeText('cname.vercel-dns.com'); setCopied(true); setTimeout(() => setCopied(false), 2000) }} className="text-zinc-400 hover:text-white">
-                      {copied ? <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg> : <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>}
-                    </button>
-                  </div>
-                </div>
+                <div><div className="text-xs text-zinc-500 mb-1">Type</div><div className="text-white font-mono text-sm">CNAME</div></div>
+                <div><div className="text-xs text-zinc-500 mb-1">Name / Host</div><div className="text-white font-mono text-sm">{customDomain.startsWith('www.') ? 'www' : '@'}</div></div>
+                <div><div className="text-xs text-zinc-500 mb-1">Value / Target</div><div className="text-white font-mono text-sm flex items-center gap-2">cname.vercel-dns.com<button onClick={() => { navigator.clipboard.writeText('cname.vercel-dns.com'); setCopied(true); setTimeout(() => setCopied(false), 2000) }} className="text-zinc-400 hover:text-white">{copied ? <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg> : <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>}</button></div></div>
               </div>
-              
               <p className="text-zinc-500 text-xs mb-4">DNS changes can take 5-30 minutes to propagate.</p>
-              
               <div className="flex gap-2">
                 <button onClick={() => setShowDomainModal(false)} className="flex-1 px-4 py-2 text-sm text-zinc-400 hover:text-white transition-colors">Done</button>
                 <a href={`https://${customDomain}`} target="_blank" rel="noopener noreferrer" className="flex-1 px-4 py-2 text-sm bg-zinc-700 hover:bg-zinc-600 text-white rounded-xl transition-colors text-center">Check Domain</a>
@@ -603,7 +590,7 @@ export default function Home() {
         </div>
         {type === 'preview' && <div className="flex items-center gap-2 text-xs text-zinc-600"><span className="px-2 py-1 bg-zinc-800/50 rounded-md">{typeof window !== 'undefined' && window.innerWidth < 640 ? 'Mobile' : 'Tablet'}</span></div>}
       </div>
-      <div className="flex-1 overflow-auto">{type === 'preview' ? <LivePreview code={code} isLoading={isGenerating} /> : <CodePreview code={code} />}</div>
+      <div className="flex-1 overflow-auto">{type === 'preview' ? <LivePreview code={code} isLoading={isGenerating} /> : <CodePreview code={code} isPaid={isPaid} />}</div>
     </div>
   )
 
@@ -625,7 +612,11 @@ export default function Home() {
   )
 
   const DeployButton = ({ mobile = false }: { mobile?: boolean }) => (
-    <button onClick={() => { if (isDeployed) { handleDeploy(currentProject?.deployedSlug) } else { setDeployName(currentProject?.name?.toLowerCase().replace(/[^a-z0-9-]/g, '-') || ''); setShowDeployModal(true) } }} disabled={!code || isDeploying} className={`${mobile ? 'flex-1 py-3 rounded-xl font-semibold' : 'px-3 py-1.5 rounded-lg text-xs font-medium'} ${isDeployed ? 'bg-blue-600 hover:bg-blue-500' : 'bg-green-600 hover:bg-green-500'} disabled:bg-zinc-700 disabled:cursor-not-allowed text-white transition-all flex items-center justify-center gap-1.5`}>
+    <button 
+      onClick={handleDeployClick} 
+      disabled={!code || isDeploying} 
+      className={`${mobile ? 'flex-1 py-3 rounded-xl font-semibold' : 'px-3 py-1.5 rounded-lg text-xs font-medium'} ${isDeployed ? 'bg-blue-600 hover:bg-blue-500' : 'bg-green-600 hover:bg-green-500'} disabled:bg-zinc-700 disabled:cursor-not-allowed text-white transition-all flex items-center justify-center gap-1.5`}
+    >
       {isDeploying ? (
         <div className="flex items-center gap-1.5">
           <svg className="animate-spin h-3 w-3" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
@@ -641,7 +632,7 @@ export default function Home() {
 
   const DomainButton = ({ mobile = false }: { mobile?: boolean }) => (
     <button 
-      onClick={() => { setShowDomainModal(true); setDomainStatus('idle'); setCustomDomain(currentProject?.customDomain || '') }}
+      onClick={handleDomainClick}
       disabled={!isDeployed}
       className={`${mobile ? 'py-3 px-4 rounded-xl font-semibold' : 'px-2.5 py-1.5 rounded-lg text-xs font-medium'} border border-zinc-700 hover:border-zinc-600 disabled:opacity-50 disabled:cursor-not-allowed text-zinc-300 hover:text-white transition-all flex items-center justify-center gap-1.5`}
       title={isDeployed ? 'Manage domain' : 'Deploy first to connect a domain'}
@@ -660,6 +651,7 @@ export default function Home() {
         {showHistoryModal && <HistoryModal />}
         {showDomainModal && <DomainModal />}
         {deployedUrl && <DeployedModal />}
+        {showUpgradeModal && <UpgradeModal isOpen={showUpgradeModal} onClose={() => setShowUpgradeModal(false)} reason={upgradeReason} />}
         {mobileModal && <MobileModal type={mobileModal} onClose={() => setMobileModal(null)} />}
         <div className="px-4 py-3 border-b border-zinc-800 flex items-center justify-between bg-zinc-900">
           <div className="flex items-center gap-2">
@@ -700,6 +692,7 @@ export default function Home() {
       {showHistoryModal && <HistoryModal />}
       {showDomainModal && <DomainModal />}
       {deployedUrl && <DeployedModal />}
+      {showUpgradeModal && <UpgradeModal isOpen={showUpgradeModal} onClose={() => setShowUpgradeModal(false)} reason={upgradeReason} />}
       <Group orientation="horizontal" className="h-full rounded-2xl overflow-hidden border border-zinc-800 shadow-2xl">
         <Panel id="chat" defaultSize={28} minSize={20}>
           <div className="h-full flex flex-col bg-zinc-900">
@@ -752,7 +745,7 @@ export default function Home() {
               </div>
             </div>
             <div ref={previewContainerRef} className="flex-1 overflow-auto min-h-0">
-              {activeTab === 'preview' ? <LivePreview code={code} isLoading={isGenerating} /> : <CodePreview code={code} />}
+              {activeTab === 'preview' ? <LivePreview code={code} isLoading={isGenerating} /> : <CodePreview code={code} isPaid={isPaid} />}
             </div>
           </div>
         </Panel>

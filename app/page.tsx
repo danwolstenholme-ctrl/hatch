@@ -27,7 +27,6 @@ export default function Home() {
             <span className="bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">It</span>
           </h1>
           <div className="flex items-center gap-6">
-            <a href="#products" className="text-zinc-400 hover:text-white transition-colors hidden sm:block">Products</a>
             <a href="#features" className="text-zinc-400 hover:text-white transition-colors hidden sm:block">Features</a>
             <a href="#pricing" className="text-zinc-400 hover:text-white transition-colors hidden sm:block">Pricing</a>
             <Link href="/builder" className="px-5 py-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 rounded-lg font-semibold text-sm transition-all">
@@ -43,7 +42,7 @@ export default function Home() {
           <div className="mb-12">
             <div className="inline-flex items-center gap-2 bg-zinc-900/80 backdrop-blur-sm border border-zinc-800 rounded-full px-6 py-3 mb-8">
               <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-              <span className="text-sm text-zinc-400">Two products. One platform.</span>
+              <span className="text-sm text-zinc-400">Build for free. Pay when you go live.</span>
             </div>
             
             <h1 className="text-6xl md:text-8xl font-black mb-6 leading-tight">
@@ -57,24 +56,21 @@ export default function Home() {
             </h1>
             
             <div className="text-3xl md:text-5xl font-bold mb-8">
-              <span className="bg-gradient-to-r from-zinc-300 to-zinc-500 bg-clip-text text-transparent">Build. </span>
-              <span className="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">Design. Ship.</span>
+              <span className="bg-gradient-to-r from-zinc-300 to-zinc-500 bg-clip-text text-transparent">Describe. </span>
+              <span className="bg-gradient-to-r from-blue-400 to-purple-400 bg-clip-text text-transparent">Build. Ship.</span>
             </div>
             
             <p className="text-xl md:text-2xl text-zinc-400 max-w-4xl mx-auto leading-relaxed mb-4">
-              AI-powered tools that turn your ideas into reality.
+              AI-powered website builder that outputs real code.
             </p>
             <p className="text-lg text-zinc-500 max-w-3xl mx-auto mb-12">
-              Build React components with conversation. Design on a collaborative canvas. Export clean code.
+              Describe what you want. Get production-ready React + Tailwind. Deploy in one click.
             </p>
           </div>
           
           <div className="flex flex-col sm:flex-row justify-center gap-4 mb-16">
             <Link href="/builder" className="group px-10 py-5 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 rounded-xl font-bold text-lg transition-all duration-300 transform hover:scale-105 shadow-2xl shadow-purple-500/20">
-              Open Builder
-            </Link>
-            <Link href="/canvas" className="px-10 py-5 bg-zinc-900/80 backdrop-blur-sm hover:bg-zinc-800/80 border border-zinc-700 hover:border-zinc-600 rounded-xl font-semibold text-lg transition-all duration-300 transform hover:scale-105">
-              Try Canvas
+              Start Building — Free
             </Link>
           </div>
 
@@ -96,75 +92,8 @@ export default function Home() {
         </div>
       </section>
 
-      {/* Products Section */}
-      <section id="products" className="relative px-8 py-24 bg-zinc-900/30">
-        <div className="max-w-7xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl md:text-5xl font-bold mb-6">
-              <span className="bg-gradient-to-r from-zinc-200 to-zinc-400 bg-clip-text text-transparent">Two tools. Infinite possibilities.</span>
-            </h2>
-            <p className="text-xl text-zinc-400 max-w-3xl mx-auto">
-              Choose your workflow. Build components with AI, or design freely on a canvas.
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-2 gap-8 max-w-5xl mx-auto">
-            {/* Builder Card */}
-            <div className="group relative">
-              <div className="absolute -inset-0.5 bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl blur opacity-20 group-hover:opacity-40 transition-all duration-500"></div>
-              <div className="relative bg-zinc-900 border border-zinc-800 rounded-2xl p-8 h-full hover:border-zinc-700 transition-all">
-                <div className="w-14 h-14 bg-gradient-to-br from-blue-500 to-purple-500 rounded-xl flex items-center justify-center mb-6 text-2xl">
-                  ⚡
-                </div>
-                <h3 className="text-2xl font-bold text-white mb-3">HatchIt Builder</h3>
-                <p className="text-zinc-400 mb-6">
-                  Describe what you want in plain English. Get production-ready React components with Tailwind CSS. Iterate through conversation.
-                </p>
-                <ul className="space-y-2 mb-8 text-sm text-zinc-500">
-                  <li className="flex items-center gap-2"><span className="text-green-400">✓</span> AI-powered generation</li>
-                  <li className="flex items-center gap-2"><span className="text-green-400">✓</span> Live preview</li>
-                  <li className="flex items-center gap-2"><span className="text-green-400">✓</span> Auto-fix errors</li>
-                  <li className="flex items-center gap-2"><span className="text-green-400">✓</span> Undo/rollback</li>
-                </ul>
-                <Link href="/builder" className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 rounded-xl font-semibold transition-all transform hover:scale-105">
-                  <span>Open Builder</span>
-                  <span>→</span>
-                </Link>
-              </div>
-            </div>
-
-            {/* Canvas Card */}
-            <div className="group relative">
-              <div className="absolute -inset-0.5 bg-gradient-to-r from-purple-600 to-pink-600 rounded-2xl blur opacity-20 group-hover:opacity-40 transition-all duration-500"></div>
-              <div className="relative bg-zinc-900 border border-zinc-800 rounded-2xl p-8 h-full hover:border-zinc-700 transition-all">
-                <div className="inline-flex items-center gap-2 bg-green-500/10 border border-green-500/20 rounded-full px-3 py-1 mb-4">
-                  <span className="text-green-400 text-xs font-semibold">Built with Builder</span>
-                </div>
-                <div className="w-14 h-14 bg-gradient-to-br from-purple-500 to-pink-500 rounded-xl flex items-center justify-center mb-6 text-2xl">
-                  🎨
-                </div>
-                <h3 className="text-2xl font-bold text-white mb-3">HatchIt Canvas</h3>
-                <p className="text-zinc-400 mb-6">
-                  A collaborative whiteboard for visual thinking. Draw, design, and brainstorm. Built entirely through conversation with HatchIt Builder.
-                </p>
-                <ul className="space-y-2 mb-8 text-sm text-zinc-500">
-                  <li className="flex items-center gap-2"><span className="text-green-400">✓</span> Drawing tools</li>
-                  <li className="flex items-center gap-2"><span className="text-green-400">✓</span> Shapes & text</li>
-                  <li className="flex items-center gap-2"><span className="text-green-400">✓</span> Layers panel</li>
-                  <li className="flex items-center gap-2"><span className="text-green-400">✓</span> Colors & fill</li>
-                </ul>
-                <Link href="/canvas" className="inline-flex items-center gap-2 px-6 py-3 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 rounded-xl font-semibold transition-all transform hover:scale-105">
-                  <span>Try Canvas</span>
-                  <span>→</span>
-                </Link>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
       {/* What Makes Us Different */}
-      <section className="relative px-8 py-24">
+      <section className="relative px-8 py-24 bg-zinc-900/30">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-3xl md:text-5xl font-bold mb-6">
@@ -188,22 +117,22 @@ export default function Home() {
             </div>
             <div className="bg-zinc-900/50 border border-zinc-800 rounded-2xl p-8 hover:border-zinc-700 transition-all">
               <div className="text-red-400 text-sm font-semibold mb-4">❌ Others</div>
-              <h3 className="text-xl font-bold text-zinc-300 mb-3">Broken Output</h3>
-              <p className="text-zinc-500">Syntax errors, missing brackets, code that doesn't run.</p>
+              <h3 className="text-xl font-bold text-zinc-300 mb-3">Locked-in Code</h3>
+              <p className="text-zinc-500">Proprietary formats, hashed filenames, code you can't maintain.</p>
             </div>
           </div>
         </div>
       </section>
 
       {/* Features Section */}
-      <section id="features" className="relative px-8 py-32 bg-zinc-900/30">
+      <section id="features" className="relative px-8 py-32">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-20">
             <h2 className="text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-zinc-200 to-zinc-400 bg-clip-text text-transparent">
               Everything you need to ship
             </h2>
             <p className="text-xl text-zinc-400 max-w-3xl mx-auto">
-              From idea to working product, all in one place.
+              From idea to live website, all in one place.
             </p>
           </div>
           
@@ -211,26 +140,26 @@ export default function Home() {
             {[
               {
                 icon: "⚡",
-                title: "Instant Generation",
+                title: "AI Generation",
                 description: "Describe in plain English, get production React + Tailwind in seconds.",
                 gradient: "from-yellow-500 to-orange-500"
               },
               {
                 icon: "👁️",
                 title: "Live Preview",
-                description: "See your creation render in real-time. Responsive breakpoints included.",
+                description: "See your site render in real-time. Test responsive breakpoints instantly.",
                 gradient: "from-purple-500 to-pink-500"
               },
               {
                 icon: "🔧",
                 title: "Auto-Fix",
-                description: "Broken code? We detect it and fix it automatically. No more white screens.",
+                description: "Broken code? We detect and fix it automatically. No more white screens.",
                 gradient: "from-green-500 to-emerald-500"
               },
               {
-                icon: "↩️",
-                title: "Undo & Rollback",
-                description: "Made a mistake? Roll back to any previous version instantly.",
+                icon: "🚀",
+                title: "One-Click Deploy",
+                description: "Go live instantly. Custom domains. SSL included. No server setup.",
                 gradient: "from-blue-500 to-cyan-500"
               }
             ].map((feature, index) => (
@@ -250,7 +179,7 @@ export default function Home() {
       </section>
 
       {/* How It Works Section */}
-      <section id="how-it-works" className="relative px-8 py-32">
+      <section id="how-it-works" className="relative px-8 py-32 bg-zinc-900/30">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-20">
             <h2 className="text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-zinc-200 to-zinc-400 bg-clip-text text-transparent">
@@ -260,9 +189,9 @@ export default function Home() {
           
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-12 max-w-5xl mx-auto">
             {[
-              { step: "01", title: "Describe", desc: "Tell us what you want to build. A landing page, a dashboard, a whiteboard — anything.", color: "from-blue-500 to-cyan-500" },
-              { step: "02", title: "Iterate", desc: "Refine with conversation. 'Add a sidebar.' 'Make it darker.' 'Add copy/paste.' We build it.", color: "from-purple-500 to-pink-500" },
-              { step: "03", title: "Ship", desc: "Export clean code. Drop it in your project. Done.", color: "from-orange-500 to-red-500" }
+              { step: "01", title: "Describe", desc: "Tell us what you want to build. A landing page, a dashboard, a portfolio — anything.", color: "from-blue-500 to-cyan-500" },
+              { step: "02", title: "Iterate", desc: "Refine with conversation. 'Make the header sticky.' 'Add a contact form.' We build it.", color: "from-purple-500 to-pink-500" },
+              { step: "03", title: "Ship", desc: "One click to go live. Or download the code and host anywhere.", color: "from-orange-500 to-red-500" }
             ].map((item, index) => (
               <div key={index} className="text-center group">
                 <div className="relative mb-8">
@@ -282,30 +211,63 @@ export default function Home() {
       </section>
 
       {/* Pricing Section */}
-      <section id="pricing" className="relative px-8 py-24 bg-zinc-900/30">
+      <section id="pricing" className="relative px-8 py-24">
         <div className="max-w-5xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-zinc-200 to-zinc-400 bg-clip-text text-transparent">
               Simple pricing
             </h2>
             <p className="text-xl text-zinc-400">
-              Free while in beta. Seriously.
+              Build for free. Pay when you go live.
             </p>
           </div>
 
-          <div className="max-w-md mx-auto">
+          <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
             {/* Free Tier */}
-            <div className="bg-gradient-to-br from-zinc-900 to-zinc-800 border border-purple-500/30 rounded-2xl p-8 ring-1 ring-purple-500/20 relative">
-              <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-blue-500 to-purple-500 text-white text-xs font-bold px-3 py-1 rounded-full">
-                BETA
-              </div>
+            <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-8">
               <h3 className="text-2xl font-bold text-white mb-2">Free</h3>
-              <p className="text-zinc-400 mb-6">Everything. No limits. For now.</p>
-              <div className="text-4xl font-black text-white mb-6">$0<span className="text-lg text-zinc-500 font-normal">/month</span></div>
+              <p className="text-zinc-400 mb-6">Build and experiment forever</p>
+              <div className="text-4xl font-black text-white mb-6">$0</div>
               <ul className="space-y-3 mb-8">
-                {["Builder: Unlimited generations", "Canvas: Full access", "Live preview", "Auto-fix errors", "Undo/rollback", "Code export"].map((feature, i) => (
+                {[
+                  "Unlimited projects",
+                  "Unlimited generations",
+                  "Live preview",
+                  "Version history",
+                  "Undo/rollback",
+                  "Auto-fix errors"
+                ].map((feature, i) => (
                   <li key={i} className="flex items-center gap-3 text-zinc-300">
                     <span className="text-green-400">✓</span>
+                    {feature}
+                  </li>
+                ))}
+              </ul>
+              <Link href="/builder" className="block w-full py-3 text-center bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 rounded-lg font-semibold transition-all">
+                Start Building
+              </Link>
+            </div>
+
+            {/* Per Site Tier */}
+            <div className="bg-gradient-to-br from-zinc-900 to-zinc-800 border border-purple-500/30 rounded-2xl p-8 ring-1 ring-purple-500/20 relative">
+              <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-blue-500 to-purple-500 text-white text-xs font-bold px-3 py-1 rounded-full">
+                PER LIVE SITE
+              </div>
+              <h3 className="text-2xl font-bold text-white mb-2">Live</h3>
+              <p className="text-zinc-400 mb-6">Ship your site to the world</p>
+              <div className="text-4xl font-black text-white mb-2">$49<span className="text-lg text-zinc-500 font-normal">/month</span></div>
+              <p className="text-zinc-500 text-sm mb-6">per deployed site</p>
+              <ul className="space-y-3 mb-8">
+                {[
+                  "Deploy to live URL",
+                  "Custom domain",
+                  "Download clean code",
+                  "Unlimited updates",
+                  "SSL included",
+                  "Cancel anytime"
+                ].map((feature, i) => (
+                  <li key={i} className="flex items-center gap-3 text-zinc-300">
+                    <span className="text-purple-400">✓</span>
                     {feature}
                   </li>
                 ))}
@@ -315,11 +277,17 @@ export default function Home() {
               </Link>
             </div>
           </div>
+
+          <div className="mt-12 text-center">
+            <p className="text-zinc-500 text-sm">
+              Have 10+ sites? <a href="mailto:dan@wolstenstudios.com" className="text-purple-400 hover:text-purple-300">Contact us</a> for agency pricing.
+            </p>
+          </div>
         </div>
       </section>
 
       {/* CTA Section */}
-      <section className="relative px-8 py-32">
+      <section className="relative px-8 py-32 bg-zinc-900/30">
         <div className="max-w-5xl mx-auto">
           <div className="relative">
             <div className="absolute -inset-1 bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 rounded-3xl blur-lg opacity-30"></div>
@@ -332,26 +300,21 @@ export default function Home() {
               <p className="text-xl md:text-2xl text-zinc-400 mb-12 max-w-3xl mx-auto">
                 Stop thinking. Start building. Ship today.
               </p>
-              <div className="flex flex-col sm:flex-row justify-center gap-4">
-                <Link href="/builder" className="inline-block px-12 py-5 bg-gradient-to-r from-white to-zinc-100 text-zinc-900 rounded-xl font-bold text-xl transition-all duration-300 transform hover:scale-105 shadow-2xl">
-                  Open Builder
-                </Link>
-                <Link href="/canvas" className="inline-block px-12 py-5 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 text-white rounded-xl font-bold text-xl transition-all duration-300 transform hover:scale-105">
-                  Try Canvas
-                </Link>
-              </div>
+              <Link href="/builder" className="inline-block px-12 py-5 bg-gradient-to-r from-white to-zinc-100 text-zinc-900 rounded-xl font-bold text-xl transition-all duration-300 transform hover:scale-105 shadow-2xl">
+                Start Building — Free
+              </Link>
               <div className="mt-8 flex flex-wrap justify-center items-center gap-8 text-zinc-500">
                 <div className="flex items-center gap-2">
                   <span>✓</span>
-                  <span>No account needed</span>
+                  <span>No credit card required</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <span>✓</span>
-                  <span>Free during beta</span>
+                  <span>Build unlimited for free</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <span>✓</span>
-                  <span>Export clean code</span>
+                  <span>$49/month when you go live</span>
                 </div>
               </div>
             </div>
@@ -371,7 +334,6 @@ export default function Home() {
             </div>
             <div className="flex items-center gap-8 text-zinc-500 text-sm">
               <Link href="/builder" className="hover:text-white transition-colors">Builder</Link>
-              <Link href="/canvas" className="hover:text-white transition-colors">Canvas</Link>
               <a href="#features" className="hover:text-white transition-colors">Features</a>
               <a href="#pricing" className="hover:text-white transition-colors">Pricing</a>
             </div>
