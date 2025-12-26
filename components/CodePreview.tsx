@@ -74,6 +74,7 @@ export default function CodePreview({ code, isPaid = false, onCodeChange }: Code
             </>
           )}
         </button>
+        </div>
       </div>
 
       <div className="flex-1 overflow-auto relative bg-zinc-950">
@@ -87,56 +88,56 @@ export default function CodePreview({ code, isPaid = false, onCodeChange }: Code
         ) : (
           <>
             <pre className="p-4 text-sm font-mono leading-relaxed">
-          <code>
-            {visibleLines.map((line, i) => (
-              <div key={i} className="flex hover:bg-zinc-900/30 transition-colors">
-                <span className="w-10 text-zinc-700 text-right pr-4 select-none flex-shrink-0 text-xs">
-                  {String(i + 1).padStart(3, ' ')}
-                </span>
-                <span className="text-zinc-300">{line || '\u00A0'}</span>
-              </div>
-            ))}
-          </code>
-        </pre>
+              <code>
+                {visibleLines.map((line, i) => (
+                  <div key={i} className="flex hover:bg-zinc-900/30 transition-colors">
+                    <span className="w-10 text-zinc-700 text-right pr-4 select-none flex-shrink-0 text-xs">
+                      {String(i + 1).padStart(3, ' ')}
+                    </span>
+                    <span className="text-zinc-300">{line || '\u00A0'}</span>
+                  </div>
+                ))}
+              </code>
+            </pre>
 
-        {!isPaid && hiddenCount > 0 && (
-          <div className="absolute bottom-0 left-0 right-0">
-            <div className="h-32 bg-gradient-to-t from-zinc-950 via-zinc-950/95 to-transparent" />
-            
-            <div className="bg-zinc-950 px-4 pb-4">
-              <pre className="text-sm font-mono blur-sm select-none pointer-events-none opacity-50">
-                <code>
-                  {lines.slice(15, 25).map((line, i) => (
-                    <div key={i} className="flex">
-                      <span className="w-8 text-zinc-600 text-right pr-4 text-xs">
-                        {i + 16}
-                      </span>
-                      <span className="text-zinc-300 whitespace-pre">{line}</span>
-                    </div>
-                  ))}
-                </code>
-              </pre>
-            </div>
+            {!isPaid && hiddenCount > 0 && (
+              <div className="absolute bottom-0 left-0 right-0">
+                <div className="h-32 bg-gradient-to-t from-zinc-950 via-zinc-950/95 to-transparent" />
+                
+                <div className="bg-zinc-950 px-4 pb-4">
+                  <pre className="text-sm font-mono blur-sm select-none pointer-events-none opacity-50">
+                    <code>
+                      {lines.slice(15, 25).map((line, i) => (
+                        <div key={i} className="flex">
+                          <span className="w-8 text-zinc-600 text-right pr-4 text-xs">
+                            {i + 16}
+                          </span>
+                          <span className="text-zinc-300 whitespace-pre">{line}</span>
+                        </div>
+                      ))}
+                    </code>
+                  </pre>
+                </div>
 
-            <div className="absolute bottom-0 left-0 right-0 flex flex-col items-center justify-center pb-8 pt-16 bg-gradient-to-t from-zinc-950 via-zinc-950 to-transparent">
-              <div className="bg-zinc-900 border border-zinc-700 rounded-xl p-6 text-center max-w-sm mx-4">
-                <div className="text-2xl mb-2">🔒</div>
-                <h3 className="text-white font-semibold mb-1">
-                  {hiddenCount} more lines
-                </h3>
-                <p className="text-zinc-400 text-sm mb-4">
-                  Upgrade to view and copy your full code
-                </p>
-                <button
-                  onClick={() => setShowUpgradeModal(true)}
-                  className="w-full py-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white text-sm rounded-lg font-medium transition-all"
-                >
-                  Unlock Code — $49/mo
-                </button>
+                <div className="absolute bottom-0 left-0 right-0 flex flex-col items-center justify-center pb-8 pt-16 bg-gradient-to-t from-zinc-950 via-zinc-950 to-transparent">
+                  <div className="bg-zinc-900 border border-zinc-700 rounded-xl p-6 text-center max-w-sm mx-4">
+                    <div className="text-2xl mb-2">🔒</div>
+                    <h3 className="text-white font-semibold mb-1">
+                      {hiddenCount} more lines
+                    </h3>
+                    <p className="text-zinc-400 text-sm mb-4">
+                      Upgrade to view and copy your full code
+                    </p>
+                    <button
+                      onClick={() => setShowUpgradeModal(true)}
+                      className="w-full py-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white text-sm rounded-lg font-medium transition-all"
+                    >
+                      Unlock Code — $49/mo
+                    </button>
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
-        )}
+            )}
           </>
         )}
       </div>
