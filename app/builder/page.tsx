@@ -1388,15 +1388,16 @@ export default function Home() {
 
   if (isMobile) {
     return (
-      <div className="h-dvh bg-zinc-950 flex flex-col overflow-x-hidden">
+      <div className="h-dvh bg-zinc-950 flex flex-col overflow-hidden relative">
         {showWarningBanner && (
-          <div className="w-full bg-amber-500/20 border-b border-amber-400/30 text-amber-100 text-xs flex items-center justify-between px-3 py-2 z-50">
+          <div className="absolute top-0 left-0 right-0 bg-amber-500/20 border-b border-amber-400/30 text-amber-100 text-xs flex items-center justify-between px-3 py-2 z-50">
             <span className="flex items-center gap-2 whitespace-nowrap"><span role="img" aria-label="floppy">💾</span> Deploy to sync devices.</span>
             <button onClick={handleDismissWarning} className="ml-2 text-amber-200 hover:text-amber-100 p-1 rounded transition-colors flex-shrink-0" aria-label="Dismiss">
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
             </button>
           </div>
         )}
+        <div className={`flex-1 flex flex-col min-h-0 ${showWarningBanner ? 'pt-10' : ''}`}>
         {showRenameModal && <RenameModal />}
         {showDeleteModal && <DeleteModal />}
         {showDeployModal && <DeployConfirmModal />}
@@ -1541,6 +1542,7 @@ export default function Home() {
             <ShipButton mobile />
           </div>
         )}
+        </div>
       </div>
     )
   }
@@ -1566,6 +1568,7 @@ export default function Home() {
       {isDeploying && <DeployingOverlay />}
       {showUpgradeModal && <UpgradeModal isOpen={showUpgradeModal} onClose={() => setShowUpgradeModal(false)} reason={upgradeReason} projectSlug={currentProjectSlug} projectName={currentProject?.name || 'My Project'} />}
       {showSuccessModal && <SuccessModal isOpen={showSuccessModal} onClose={() => setShowSuccessModal(false)} />}
+      <div className={`h-full ${showWarningBanner ? 'pt-10' : ''}`}>
       <Group orientation="horizontal" className="h-full rounded-2xl overflow-hidden border border-zinc-800 shadow-2xl">
         <Panel id="chat" defaultSize={28} minSize={20}>
           <div className="h-full flex flex-col bg-zinc-900">
@@ -1669,6 +1672,7 @@ export default function Home() {
           </div>
         </Panel>
       </Group>
+      </div>
     </div>
   )
 }
