@@ -348,6 +348,8 @@ export default function Home() {
               <Link href="/builder" className="hover:text-white transition-colors">Builder</Link>
               <a href="#features" className="hover:text-white transition-colors">Features</a>
               <a href="#pricing" className="hover:text-white transition-colors">Pricing</a>
+              <Link href="/terms" className="hover:text-white transition-colors">Terms</Link>
+              <Link href="/privacy" className="hover:text-white transition-colors">Privacy</Link>
             </div>
             <p className="text-zinc-600 text-sm">© 2025 HatchIt. Built with HatchIt.</p>
           </div>

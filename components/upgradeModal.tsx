@@ -131,6 +131,12 @@ export default function UpgradeModal({ isOpen, onClose, reason }: UpgradeModalPr
         <p className="text-zinc-600 text-xs text-center mt-4">
           Cancel anytime. Your code is always yours.
         </p>
+
+        <div className="flex items-center justify-center gap-4 text-zinc-500 text-xs mt-6 pt-4 border-t border-zinc-800">
+          <a href="/terms" className="hover:text-white transition-colors">Terms</a>
+          <span>•</span>
+          <a href="/privacy" className="hover:text-white transition-colors">Privacy</a>
+        </div>
       </div>
     </div>
   )
