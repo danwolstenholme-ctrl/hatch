@@ -465,6 +465,9 @@ export default function Home() {
         
         if (!response.ok) {
           const errorData = await response.json().catch(() => ({}))
+          if (response.status === 404) {
+            throw new Error('Repository not found. Note: Private repositories are not supported.')
+          }
           throw new Error(errorData.message || 'Repository not found or inaccessible')
         }
         
@@ -579,18 +582,19 @@ export default function Home() {
       }
     } catch (error) {
       console.error('GitHub import error:', error)
+      const errorMessage = error instanceof Error ? error.message : 'Failed to import from GitHub'
       const toast = document.createElement('div')
-      toast.className = 'fixed top-4 left-1/2 -translate-x-1/2 z-[9999] bg-red-600 text-white px-6 py-3 rounded-xl shadow-2xl flex items-center gap-2 animate-fade-in'
+      toast.className = 'fixed top-4 left-1/2 -translate-x-1/2 z-[9999] bg-red-600 text-white px-6 py-3 rounded-xl shadow-2xl flex items-center gap-2 animate-fade-in max-w-md'
       toast.innerHTML = `
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
           <circle cx="12" cy="12" r="10"/>
           <line x1="15" y1="9" x2="9" y2="15"/>
           <line x1="9" y1="9" x2="15" y2="15"/>
         </svg>
-        <span>Failed to import from GitHub</span>
+        <span class="text-sm">${errorMessage}</span>
       `
       document.body.appendChild(toast)
-      setTimeout(() => toast.remove(), 3000)
+      setTimeout(() => toast.remove(), 5000)
     }
   }
 
@@ -1575,7 +1579,7 @@ export default function Home() {
                 className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-2.5 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 disabled={isLoading}
               />
-              <p className="text-xs text-zinc-500 mt-2">Paste a repo URL to import all files, or a specific file URL</p>
+              <p className="text-xs text-zinc-500 mt-2">Paste a public repo URL to import all files, or a specific file URL. Private repos are not supported.</p>
             </div>
             {progress && (
               <div className="mb-4 p-3 bg-blue-600/10 border border-blue-500/20 rounded-lg">
