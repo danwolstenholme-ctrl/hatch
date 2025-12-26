@@ -1548,9 +1548,9 @@ export default function Home() {
   }
 
   return (
-    <div className="h-dvh bg-zinc-950 p-3">
+    <div className="h-dvh bg-zinc-950 p-3 overflow-hidden relative">
       {showWarningBanner && (
-        <div className="w-full bg-amber-500/20 border-b border-amber-400/30 text-amber-100 text-xs flex items-center justify-between px-4 py-2 rounded-t-2xl z-50">
+        <div className="absolute top-3 left-3 right-3 bg-amber-500/20 border-b border-amber-400/30 text-amber-100 text-xs flex items-center justify-between px-4 py-2 rounded-t-2xl z-50">
           <span className="flex items-center gap-2 whitespace-nowrap"><span role="img" aria-label="floppy">💾</span> Deploy to sync devices.</span>
           <button onClick={handleDismissWarning} className="ml-2 text-amber-200 hover:text-amber-100 p-1 rounded transition-colors flex-shrink-0" aria-label="Dismiss">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
