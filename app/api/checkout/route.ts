@@ -1,17 +1,23 @@
 import { auth } from '@clerk/nextjs/server'
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import Stripe from 'stripe'
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
   apiVersion: '2025-12-15.clover',
 })
 
-export async function POST() {
+export async function POST(req: NextRequest) {
   try {
     const { userId } = await auth()
     
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const { projectSlug, projectName } = await req.json()
+
+    if (!projectSlug) {
+      return NextResponse.json({ error: 'Project slug required' }, { status: 400 })
     }
 
     const session = await stripe.checkout.sessions.create({
@@ -23,10 +29,13 @@ export async function POST() {
           quantity: 1,
         },
       ],
-      success_url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/builder?success=true`,
+      success_url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/builder?success=true&project=${encodeURIComponent(projectSlug)}`,
       cancel_url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/builder?canceled=true`,
       metadata: {
         userId,
+        projectSlug,
+        projectName: projectName || projectSlug,
+        type: 'site_subscription',
       },
     })
 

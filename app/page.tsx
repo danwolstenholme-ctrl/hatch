@@ -243,7 +243,7 @@ export default function Home() {
               <ul className="space-y-3 mb-8">
                 {[
                   "Unlimited projects",
-                  "Unlimited generations",
+                  "10 generations/day",
                   "Live preview",
                   "Undo/rollback",
                   "Auto-fix errors"
@@ -272,6 +272,7 @@ export default function Home() {
                 {[
                   "Deploy to live URL",
                   "Custom domain",
+                  "Buy domains in-app",
                   "Download clean code",
                   "Version history",
                   "Unlimited updates",

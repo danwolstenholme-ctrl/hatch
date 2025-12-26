@@ -6,9 +6,11 @@ interface UpgradeModalProps {
   isOpen: boolean
   onClose: () => void
   reason: 'generation_limit' | 'code_access' | 'deploy' | 'download'
+  projectSlug?: string
+  projectName?: string
 }
 
-export default function UpgradeModal({ isOpen, onClose, reason }: UpgradeModalProps) {
+export default function UpgradeModal({ isOpen, onClose, reason, projectSlug = '', projectName = 'this project' }: UpgradeModalProps) {
   const [isLoading, setIsLoading] = useState(false)
 
   if (!isOpen) return null
@@ -16,7 +18,7 @@ export default function UpgradeModal({ isOpen, onClose, reason }: UpgradeModalPr
   const messages = {
     generation_limit: {
       title: "You've hit today's limit",
-      description: "Free accounts get 20 generations per day. Go Hatched for unlimited builds.",
+      description: "Free accounts get 10 generations per day. Go Hatched for unlimited builds.",
       icon: "⚡"
     },
     code_access: {
@@ -26,12 +28,12 @@ export default function UpgradeModal({ isOpen, onClose, reason }: UpgradeModalPr
     },
     deploy: {
       title: "Ready to go live?",
-      description: "Go Hatched to deploy your site with a custom domain.",
+      description: `Go Hatched to deploy "${projectName}" with a custom domain.`,
       icon: "🚀"
     },
     download: {
       title: "Download your project",
-      description: "Go Hatched to get a clean, production-ready project you can host anywhere.",
+      description: `Go Hatched to download "${projectName}" as a clean, production-ready project.`,
       icon: "📦"
     }
   }
@@ -43,6 +45,8 @@ export default function UpgradeModal({ isOpen, onClose, reason }: UpgradeModalPr
     try {
       const response = await fetch('/api/checkout', {
         method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ projectSlug, projectName }),
       })
       const data = await response.json()
       
@@ -92,7 +96,7 @@ export default function UpgradeModal({ isOpen, onClose, reason }: UpgradeModalPr
             <span className="text-xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">Hatched</span>
           </div>
           <div className="flex items-baseline justify-center gap-1 mb-2">
-            <span className="text-4xl font-bold text-white">€49</span>
+            <span className="text-4xl font-bold text-white">$49</span>
             <span className="text-zinc-400">/month</span>
           </div>
           <p className="text-zinc-500 text-sm text-center mb-4">per live site</p>
@@ -101,6 +105,7 @@ export default function UpgradeModal({ isOpen, onClose, reason }: UpgradeModalPr
             {[
               'Deploy to live URL',
               'Custom domain',
+              'Buy domains in-app',
               'Full code access',
               'Download project',
               'Version history',

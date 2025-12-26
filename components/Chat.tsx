@@ -220,7 +220,7 @@ export default function Chat({ onGenerate, isGenerating, currentCode, isPaid = f
             <p className="text-zinc-300 text-sm font-medium mb-2">{mode === 'chat' ? 'Ask me anything' : 'Describe. Generate. Ship.'}</p>
             <p className="text-zinc-600 text-xs max-w-[220px] mb-6">{mode === 'chat' ? 'I can explain your code, suggest improvements, or help you brainstorm.' : 'Tell us what UI you want. We\'ll generate production React code in real-time. Not a chatbot — instant component generation.'}</p>
             
-            {mode === 'build' && messages.length === 0 && (
+            {mode === 'build' && (
               <div className="w-full space-y-2">
                 <p className="text-xs text-zinc-500 font-medium mb-3">Try these:</p>
                 {[
@@ -231,10 +231,28 @@ export default function Chat({ onGenerate, isGenerating, currentCode, isPaid = f
                 ].map((prompt, i) => (
                   <button
                     key={i}
-                    onClick={() => {
-                      setInput(prompt)
-                    }}
+                    onClick={() => setInput(prompt)}
                     className="w-full text-left px-3 py-2 text-xs bg-zinc-800/50 hover:bg-zinc-800 text-zinc-300 hover:text-white rounded-lg transition-colors border border-zinc-700/30 hover:border-zinc-700"
+                  >
+                    {prompt}
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {mode === 'chat' && (
+              <div className="w-full space-y-2">
+                <p className="text-xs text-zinc-500 font-medium mb-3">Try asking:</p>
+                {[
+                  'What does this component do?',
+                  'How can I make the design more modern?',
+                  'What features should I add next?',
+                  'Explain the responsive design'
+                ].map((prompt, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setInput(prompt)}
+                    className="w-full text-left px-3 py-2 text-xs bg-emerald-900/30 hover:bg-emerald-900/50 text-zinc-300 hover:text-white rounded-lg transition-colors border border-emerald-700/30 hover:border-emerald-700/50"
                   >
                     {prompt}
                   </button>
@@ -279,7 +297,13 @@ export default function Chat({ onGenerate, isGenerating, currentCode, isPaid = f
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => {
+              // Enter to submit, Shift+Enter for newline
               if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault()
+                handleSubmit(e)
+              }
+              // Cmd/Ctrl + Enter also submits
+              if (e.key === 'Enter' && (e.metaKey || e.ctrlKey)) {
                 e.preventDefault()
                 handleSubmit(e)
               }
@@ -312,6 +336,8 @@ export default function Chat({ onGenerate, isGenerating, currentCode, isPaid = f
         isOpen={showUpgradeModal}
         onClose={() => setShowUpgradeModal(false)}
         reason="generation_limit"
+        projectSlug=""
+        projectName=""
       />
     </div>
   )

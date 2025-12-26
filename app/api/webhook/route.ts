@@ -7,6 +7,15 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || '', {
   apiVersion: '2025-12-15.clover',
 })
 
+// Type for site subscription
+interface SiteSubscription {
+  projectSlug: string
+  projectName: string
+  stripeSubscriptionId: string
+  status: 'active' | 'canceled' | 'past_due'
+  createdAt: string
+}
+
 export async function POST(req: Request) {
   const body = await req.text()
   const headersList = await headers()
@@ -32,79 +41,168 @@ export async function POST(req: Request) {
   if (event.type === 'checkout.session.completed') {
     const session = event.data.object as Stripe.Checkout.Session
     const userId = session.metadata?.userId
+    const metadataType = session.metadata?.type
 
-    if (userId) {
-      try {
-        const client = await clerkClient()
-        await client.users.updateUser(userId, {
-          publicMetadata: {
-            paid: true,
-            stripeCustomerId: session.customer,
-            subscriptionId: session.subscription,
-          },
-        })
-        console.log(`User ${userId} marked as paid in Clerk`, {
-          paid: true,
-          stripeCustomerId: session.customer,
-          subscriptionId: session.subscription,
-        })
-      } catch (err) {
-        console.error('Failed to update user:', err)
+    // Handle domain purchase (one-time payment)
+    if (metadataType === 'domain_purchase') {
+      const domain = session.metadata?.domain
+      const projectSlug = session.metadata?.projectSlug
+
+      if (domain && projectSlug) {
+        try {
+          // Buy domain via Vercel API
+          const buyResponse = await fetch('https://api.vercel.com/v4/domains/buy', {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${process.env.VERCEL_TOKEN}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ name: domain }),
+          })
+
+          if (buyResponse.ok) {
+            console.log(`Domain ${domain} purchased successfully`)
+
+            // Add domain to the user's project
+            const addResponse = await fetch(`https://api.vercel.com/v10/projects/${projectSlug}/domains`, {
+              method: 'POST',
+              headers: {
+                'Authorization': `Bearer ${process.env.VERCEL_TOKEN}`,
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({ name: domain }),
+            })
+
+            if (addResponse.ok) {
+              console.log(`Domain ${domain} added to project ${projectSlug}`)
+            } else {
+              console.error(`Failed to add domain to project:`, await addResponse.json())
+            }
+          } else {
+            console.error(`Failed to buy domain ${domain}:`, await buyResponse.json())
+          }
+        } catch (err) {
+          console.error('Domain purchase error:', err)
+        }
+      }
+      return NextResponse.json({ received: true })
+    }
+
+    // Handle site subscription purchase
+    if (metadataType === 'site_subscription' && userId) {
+      const projectSlug = session.metadata?.projectSlug
+      const projectName = session.metadata?.projectName || projectSlug
+      const subscriptionId = session.subscription as string
+
+      if (projectSlug && subscriptionId) {
+        try {
+          const client = await clerkClient()
+          const user = await client.users.getUser(userId)
+          
+          // Get existing subscriptions array or create new one
+          const existingSubscriptions = (user.publicMetadata?.subscriptions as SiteSubscription[]) || []
+          
+          // Check if this project already has a subscription
+          const existingIndex = existingSubscriptions.findIndex(s => s.projectSlug === projectSlug)
+          
+          const newSubscription: SiteSubscription = {
+            projectSlug,
+            projectName: projectName || projectSlug,
+            stripeSubscriptionId: subscriptionId,
+            status: 'active',
+            createdAt: new Date().toISOString(),
+          }
+
+          let updatedSubscriptions: SiteSubscription[]
+          if (existingIndex >= 0) {
+            // Update existing subscription
+            updatedSubscriptions = [...existingSubscriptions]
+            updatedSubscriptions[existingIndex] = newSubscription
+          } else {
+            // Add new subscription
+            updatedSubscriptions = [...existingSubscriptions, newSubscription]
+          }
+
+          await client.users.updateUser(userId, {
+            publicMetadata: {
+              ...user.publicMetadata,
+              stripeCustomerId: session.customer,
+              subscriptions: updatedSubscriptions,
+            },
+          })
+
+          console.log(`Added subscription for project ${projectSlug} for user ${userId}`)
+        } catch (err) {
+          console.error('Failed to update user subscriptions:', err)
+        }
       }
     }
   }
 
   if (event.type === 'customer.subscription.deleted') {
     const subscription = event.data.object as Stripe.Subscription
+    const subscriptionId = subscription.id
     const customerId = subscription.customer as string
-    console.log(`Subscription canceled for customer: ${customerId}`)
+    
+    console.log(`Subscription ${subscriptionId} canceled for customer: ${customerId}`)
 
     try {
-      // Find the user by Stripe customer ID stored in their metadata
       const client = await clerkClient()
       
-      // Get all users and filter by stripeCustomerId in metadata
-      // This is more reliable than text search
+      // Find user by stripeCustomerId
       const allUsers = await client.users.getUserList({ limit: 100 })
       const user = allUsers.data.find(
         u => u.publicMetadata?.stripeCustomerId === customerId
       )
 
       if (user) {
-        const deployedSlugs = (user.publicMetadata?.deployedSlugs as string[]) || []
+        const existingSubscriptions = (user.publicMetadata?.subscriptions as SiteSubscription[]) || []
+        
+        // Find the subscription being canceled
+        const canceledSub = existingSubscriptions.find(s => s.stripeSubscriptionId === subscriptionId)
+        
+        if (canceledSub) {
+          // Remove from subscriptions array
+          const updatedSubscriptions = existingSubscriptions.filter(
+            s => s.stripeSubscriptionId !== subscriptionId
+          )
 
-        // Update Clerk to mark user as unpaid
-        await client.users.updateUser(user.id, {
-          publicMetadata: {
-            paid: false,
-            deployedSlugs: [], // Clear deployed slugs
-          },
-        })
+          // Update user metadata
+          await client.users.updateUser(user.id, {
+            publicMetadata: {
+              ...user.publicMetadata,
+              subscriptions: updatedSubscriptions,
+            },
+          })
 
-        console.log(`User ${user.id} marked as unpaid in Clerk`)
+          console.log(`Removed subscription for project ${canceledSub.projectSlug} from user ${user.id}`)
 
-        // Delete all deployed projects from Vercel
-        const vercelToken = process.env.VERCEL_TOKEN
-        if (vercelToken && deployedSlugs.length > 0) {
-          for (const slug of deployedSlugs) {
+          // Delete the deployed project from Vercel
+          const vercelToken = process.env.VERCEL_TOKEN
+          if (vercelToken && canceledSub.projectSlug) {
             try {
-              const deleteResponse = await fetch(`https://api.vercel.com/v9/projects/${slug}`, {
-                method: 'DELETE',
-                headers: {
-                  'Authorization': `Bearer ${vercelToken}`,
-                },
-              })
+              const deleteResponse = await fetch(
+                `https://api.vercel.com/v9/projects/${canceledSub.projectSlug}`,
+                {
+                  method: 'DELETE',
+                  headers: {
+                    'Authorization': `Bearer ${vercelToken}`,
+                  },
+                }
+              )
 
               if (deleteResponse.ok) {
-                console.log(`Successfully deleted deployed project: ${slug}`)
+                console.log(`Deleted Vercel project: ${canceledSub.projectSlug}`)
               } else {
-                console.error(`Failed to delete deployed project ${slug}:`, deleteResponse.status)
+                console.error(`Failed to delete Vercel project ${canceledSub.projectSlug}:`, deleteResponse.status)
               }
             } catch (err) {
-              console.error(`Error deleting deployed project ${slug}:`, err)
+              console.error(`Error deleting Vercel project:`, err)
             }
           }
         }
+      } else {
+        console.warn(`No user found for customer ${customerId}`)
       }
     } catch (err) {
       console.error('Failed to process subscription cancellation:', err)

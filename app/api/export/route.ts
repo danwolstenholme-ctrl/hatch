@@ -2,6 +2,15 @@ import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
 import { clerkClient } from '@clerk/nextjs/server'
 
+// Type for site subscription
+interface SiteSubscription {
+  projectSlug: string
+  projectName: string
+  stripeSubscriptionId: string
+  status: 'active' | 'canceled' | 'past_due'
+  createdAt: string
+}
+
 export async function POST(req: NextRequest) {
   // Authenticate user
   const { userId } = await auth()
@@ -9,18 +18,34 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
   }
 
-  // Check if user is paid (export is a paid feature)
+  const { code, projectSlug } = await req.json()
+
+  if (!code) {
+    return NextResponse.json({ error: 'No code provided' }, { status: 400 })
+  }
+
+  if (!projectSlug) {
+    return NextResponse.json({ error: 'Project slug required' }, { status: 400 })
+  }
+
+  // Check if this specific project has an active subscription
   try {
     const client = await clerkClient()
     const user = await client.users.getUser(userId)
-    if (user.publicMetadata?.paid !== true) {
-      return NextResponse.json({ error: 'Upgrade required to download projects' }, { status: 403 })
+    const subscriptions = (user.publicMetadata?.subscriptions as SiteSubscription[]) || []
+    const projectSubscription = subscriptions.find(
+      s => s.projectSlug === projectSlug && s.status === 'active'
+    )
+    
+    if (!projectSubscription) {
+      return NextResponse.json({ 
+        error: 'Subscription required for this project to download',
+        requiresUpgrade: true 
+      }, { status: 403 })
     }
   } catch {
     return NextResponse.json({ error: 'Failed to verify subscription' }, { status: 500 })
   }
-
-  const { code } = await req.json()
 
   if (!code) {
     return NextResponse.json({ error: 'No code provided' }, { status: 400 })

@@ -2,19 +2,21 @@ import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
 import { clerkClient } from '@clerk/nextjs/server'
 
+// Type for site subscription
+interface SiteSubscription {
+  projectSlug: string
+  projectName: string
+  stripeSubscriptionId: string
+  status: 'active' | 'canceled' | 'past_due'
+  createdAt: string
+}
+
 export async function POST(req: NextRequest) {
   try {
     // Authenticate user
     const { userId } = await auth()
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    // Verify user is paid (deploy is a paid feature)
-    const client = await clerkClient()
-    const user = await client.users.getUser(userId)
-    if (user.publicMetadata?.paid !== true) {
-      return NextResponse.json({ error: 'Upgrade required to deploy' }, { status: 403 })
     }
 
     const { code, projectName } = await req.json()
@@ -27,6 +29,22 @@ export async function POST(req: NextRequest) {
       ?.toLowerCase()
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/(^-|-$)/g, '') || `site-${Date.now()}`
+
+    // Verify this specific project has an active subscription
+    const client = await clerkClient()
+    const user = await client.users.getUser(userId)
+    const subscriptions = (user.publicMetadata?.subscriptions as SiteSubscription[]) || []
+    const projectSubscription = subscriptions.find(
+      s => s.projectSlug === slug && s.status === 'active'
+    )
+
+    if (!projectSubscription) {
+      return NextResponse.json({ 
+        error: 'Subscription required for this project',
+        requiresUpgrade: true,
+        projectSlug: slug
+      }, { status: 403 })
+    }
 
     // Create the file structure for deployment
     const files = [

@@ -1,15 +1,51 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { ClerkProvider } from "@clerk/nextjs";
+import { Analytics } from "@vercel/analytics/react";
 import "./globals.css";
 
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+}
+
 export const metadata: Metadata = {
-  title: 'HatchIt - From Prompt to Production',
-  description: 'AI-powered React component generator',
-  viewport: 'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no',
+  title: 'HatchIt - AI Website Builder',
+  description: 'Build production-ready React websites with AI. Describe what you want, get real code, deploy in one click.',
+  keywords: ['AI website builder', 'React', 'Tailwind CSS', 'no-code', 'code generator', 'web development'],
+  authors: [{ name: 'HatchIt' }],
+  creator: 'HatchIt',
   icons: {
     icon: [
       { url: '/favicon.png', type: 'image/png' },
     ],
+  },
+  openGraph: {
+    type: 'website',
+    locale: 'en_US',
+    url: 'https://hatchit.dev',
+    siteName: 'HatchIt',
+    title: 'HatchIt - AI Website Builder',
+    description: 'Build production-ready React websites with AI. Describe what you want, get real code, deploy in one click.',
+    images: [
+      {
+        url: '/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'HatchIt - AI Website Builder',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'HatchIt - AI Website Builder',
+    description: 'Build production-ready React websites with AI. Describe what you want, get real code, deploy in one click.',
+    images: ['/og-image.png'],
+  },
+  robots: {
+    index: true,
+    follow: true,
   },
 }
 
@@ -21,7 +57,10 @@ export default function RootLayout({
   return (
     <ClerkProvider>
       <html lang="en">
-        <body>{children}</body>
+        <body>
+          {children}
+          <Analytics />
+        </body>
       </html>
     </ClerkProvider>
   );

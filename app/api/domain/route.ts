@@ -2,6 +2,27 @@ import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
 import { clerkClient } from '@clerk/nextjs/server'
 
+// Type for site subscription
+interface SiteSubscription {
+  projectSlug: string
+  projectName: string
+  stripeSubscriptionId: string
+  status: 'active' | 'canceled' | 'past_due'
+  createdAt: string
+}
+
+// Helper to check if project has active subscription
+async function isProjectPaid(userId: string, projectSlug: string): Promise<boolean> {
+  try {
+    const client = await clerkClient()
+    const user = await client.users.getUser(userId)
+    const subscriptions = (user.publicMetadata?.subscriptions as SiteSubscription[]) || []
+    return subscriptions.some(s => s.projectSlug === projectSlug && s.status === 'active')
+  } catch {
+    return false
+  }
+}
+
 export async function POST(request: NextRequest) {
   try {
     // Authenticate user
@@ -10,21 +31,19 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Check if user is paid (custom domains are a paid feature)
-    try {
-      const client = await clerkClient()
-      const user = await client.users.getUser(userId)
-      if (user.publicMetadata?.paid !== true) {
-        return NextResponse.json({ success: false, error: 'Upgrade required for custom domains' }, { status: 403 })
-      }
-    } catch {
-      return NextResponse.json({ success: false, error: 'Failed to verify subscription' }, { status: 500 })
-    }
-
     const { domain, projectSlug } = await request.json()
 
     if (!domain || !projectSlug) {
       return NextResponse.json({ success: false, error: 'Missing domain or project' }, { status: 400 })
+    }
+
+    // Check if this specific project has an active subscription
+    if (!await isProjectPaid(userId, projectSlug)) {
+      return NextResponse.json({ 
+        success: false, 
+        error: 'Subscription required for custom domains',
+        requiresUpgrade: true 
+      }, { status: 403 })
     }
 
     // Clean the domain

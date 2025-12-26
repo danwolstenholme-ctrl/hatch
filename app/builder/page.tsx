@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useMemo } from 'react'
 import Link from 'next/link'
 import { useUser } from '@clerk/nextjs'
 import { useSearchParams } from 'next/navigation'
@@ -10,6 +10,15 @@ import LivePreview from '@/components/LivePreview'
 import UpgradeModal from '@/components/upgradeModal'    
 import SuccessModal from '@/components/SuccessModal'
 import { isPaidUser } from '@/app/lib/generation-limit'
+
+// Type for site subscriptions in user metadata
+interface SiteSubscription {
+  projectSlug: string
+  projectName: string
+  stripeSubscriptionId: string
+  status: 'active' | 'canceled' | 'past_due'
+  createdAt: string
+}
 
 interface Message {
   role: 'user' | 'assistant'
@@ -35,6 +44,24 @@ interface Project {
   customDomain?: string
   code?: string
   codeHistory?: string[]
+  assets?: Asset[]
+}
+
+interface Asset {
+  id: string
+  name: string
+  type: 'logo' | 'image' | 'icon'
+  dataUrl: string
+  createdAt: string
+}
+
+// Type for site subscription (from user metadata)
+interface SiteSubscription {
+  projectSlug: string
+  projectName: string
+  stripeSubscriptionId: string
+  status: 'active' | 'canceled' | 'past_due'
+  createdAt: string
 }
 
 const generateId = () => Math.random().toString(36).substring(2, 9)
@@ -131,14 +158,41 @@ export default function Home() {
   const [copied, setCopied] = useState(false)
   const { user, isLoaded } = useUser()
   const searchParams = useSearchParams()
-  const [isPaid, setIsPaid] = useState(false)
   const [showUpgradeModal, setShowUpgradeModal] = useState(false)
   const [upgradeReason, setUpgradeReason] = useState<'generation_limit' | 'code_access' | 'deploy' | 'download'>('deploy')
   const [showSuccessModal, setShowSuccessModal] = useState(false)
   const [showFaqModal, setShowFaqModal] = useState(false)
+  const [showAssetsModal, setShowAssetsModal] = useState(false)
+  const [domainSearch, setDomainSearch] = useState('')
+  const [domainSearchResult, setDomainSearchResult] = useState<{ domain: string; available: boolean; price?: number } | null>(null)
+  const [isSearchingDomain, setIsSearchingDomain] = useState(false)
+  const [isBuyingDomain, setIsBuyingDomain] = useState(false)
   const previewContainerRef = useRef<HTMLDivElement>(null)
   const dropdownRef = useRef<HTMLDivElement>(null)
   const domainInputRef = useRef<HTMLInputElement>(null)
+
+  // Get subscriptions from user metadata
+  const subscriptions = useMemo(() => {
+    return (user?.publicMetadata?.subscriptions as SiteSubscription[]) || []
+  }, [user?.publicMetadata?.subscriptions])
+
+  // Get the project slug for the current project (what it would be when deployed)
+  const currentProjectSlug = useMemo(() => {
+    if (!currentProject) return ''
+    return currentProject.deployedSlug || 
+      currentProject.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
+  }, [currentProject])
+
+  // Check if CURRENT PROJECT has an active subscription
+  const isCurrentProjectPaid = useMemo(() => {
+    if (!currentProjectSlug) return false
+    return subscriptions.some(s => s.projectSlug === currentProjectSlug && s.status === 'active')
+  }, [subscriptions, currentProjectSlug])
+
+  // Legacy: check if user has ANY paid subscription (for things like unlimited generations)
+  const hasAnyPaidSubscription = useMemo(() => {
+    return subscriptions.some(s => s.status === 'active')
+  }, [subscriptions])
 
   useEffect(() => {
     const savedProjects = localStorage.getItem('hatchit-projects')
@@ -176,18 +230,6 @@ export default function Home() {
   }, [])
 
   useEffect(() => {
-    // Wait for Clerk to finish loading before checking paid status
-    if (!isLoaded) return
-    
-    // Check Clerk metadata for paid status
-    if (user?.publicMetadata?.paid === true) {
-      setIsPaid(true)
-    } else {
-      setIsPaid(false)
-    }
-  }, [isLoaded, user?.publicMetadata?.paid])
-
-  useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768)
     checkMobile()
     window.addEventListener('resize', checkMobile)
@@ -214,7 +256,40 @@ export default function Home() {
       setShowSuccessModal(true)
       window.history.replaceState({}, '', '/builder')
     }
+    // Handle domain purchase success
+    if (searchParams.get('domain_success') === 'true') {
+      const purchasedDomain = searchParams.get('domain')
+      if (purchasedDomain) {
+        setCustomDomain(purchasedDomain)
+        updateCurrentProject({ customDomain: purchasedDomain })
+        alert(`🎉 Domain ${purchasedDomain} purchased and connected! It may take a few minutes to go live.`)
+      }
+      window.history.replaceState({}, '', '/builder')
+    }
   }, [searchParams])
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Cmd/Ctrl + Z for undo
+      if ((e.metaKey || e.ctrlKey) && e.key === 'z' && !e.shiftKey) {
+        e.preventDefault()
+        if (canUndo) {
+          updateCurrentProject({ currentVersionIndex: currentVersionIndex - 1 })
+        }
+      }
+      // Cmd/Ctrl + Shift + Z or Cmd/Ctrl + Y for redo
+      if ((e.metaKey || e.ctrlKey) && (e.key === 'z' && e.shiftKey || e.key === 'y')) {
+        e.preventDefault()
+        if (canRedo) {
+          updateCurrentProject({ currentVersionIndex: currentVersionIndex + 1 })
+        }
+      }
+    }
+    
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [canUndo, canRedo, currentVersionIndex])
 
   const getDevice = (width: number) => {
     if (width < 375) return { name: 'iPhone SE', icon: '📱' }
@@ -233,8 +308,9 @@ export default function Home() {
   }
 
   const createProject = () => {
-    // Free users can only have 1 project
-    if (!isPaid && projects.length >= 1) {
+    // Free users can only have 1 project (any paid subscription allows multiple)
+    if (!hasAnyPaidSubscription && projects.length >= 1) {
+      setUpgradeReason('deploy')
       setShowUpgradeModal(true)
       setShowProjectDropdown(false)
       return
@@ -272,8 +348,9 @@ export default function Home() {
   }
 
   const duplicateProject = () => {
-    // Free users can only have 1 project
-    if (!isPaid && projects.length >= 1) {
+    // Free users can only have 1 project (any paid subscription allows multiple)
+    if (!hasAnyPaidSubscription && projects.length >= 1) {
+      setUpgradeReason('deploy')
       setShowUpgradeModal(true)
       setShowProjectDropdown(false)
       return
@@ -386,8 +463,52 @@ export default function Home() {
     }
   }
 
+  const searchDomain = async () => {
+    if (!domainSearch.trim()) return
+    setIsSearchingDomain(true)
+    setDomainSearchResult(null)
+    try {
+      const response = await fetch(`/api/domain-search?domain=${encodeURIComponent(domainSearch.trim())}`)
+      const data = await response.json()
+      if (data.domain) {
+        setDomainSearchResult(data)
+      }
+    } catch (error) {
+      console.error('Domain search failed:', error)
+    } finally {
+      setIsSearchingDomain(false)
+    }
+  }
+
+  const buyDomain = async () => {
+    if (!domainSearchResult?.available || !domainSearchResult.price || !currentProject?.deployedSlug) return
+    setIsBuyingDomain(true)
+    try {
+      const response = await fetch('/api/domain-checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          domain: domainSearchResult.domain,
+          price: domainSearchResult.price,
+          projectSlug: currentProject.deployedSlug,
+        }),
+      })
+      const data = await response.json()
+      if (data.url) {
+        window.location.href = data.url
+      } else {
+        alert(data.error || 'Failed to start checkout')
+      }
+    } catch (error) {
+      console.error('Domain checkout failed:', error)
+      alert('Failed to start checkout')
+    } finally {
+      setIsBuyingDomain(false)
+    }
+  }
+
   const handleShipClick = () => {
-    if (!isPaid) {
+    if (!isCurrentProjectPaid) {
       setUpgradeReason('deploy')
       setShowUpgradeModal(true)
       return
@@ -401,7 +522,7 @@ export default function Home() {
   }
 
   const handleDomainClick = () => {
-    if (!isPaid) {
+    if (!isCurrentProjectPaid) {
       setUpgradeReason('deploy')
       setShowUpgradeModal(true)
       return
@@ -412,7 +533,7 @@ export default function Home() {
   }
 
   const handleDownloadClick = async () => {
-    if (!isPaid) {
+    if (!isCurrentProjectPaid) {
       setUpgradeReason('download')
       setShowUpgradeModal(true)
       return
@@ -432,10 +553,10 @@ export default function Home() {
     <div ref={dropdownRef} className="absolute top-full left-0 mt-2 w-72 bg-zinc-900 border border-zinc-700 rounded-xl shadow-2xl z-[9999] overflow-hidden">
       <button 
         onClick={createProject} 
-        className={`w-full px-4 py-3 flex items-center gap-3 hover:bg-zinc-800 transition-colors border-b border-zinc-800 ${!isPaid && projects.length >= 1 ? 'opacity-50' : ''}`}
+        className={`w-full px-4 py-3 flex items-center gap-3 hover:bg-zinc-800 transition-colors border-b border-zinc-800 ${!hasAnyPaidSubscription && projects.length >= 1 ? 'opacity-50' : ''}`}
       >
-        <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${!isPaid && projects.length >= 1 ? 'bg-zinc-700' : 'bg-gradient-to-r from-blue-600 to-purple-600'}`}>
-          {!isPaid && projects.length >= 1 ? (
+        <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${!hasAnyPaidSubscription && projects.length >= 1 ? 'bg-zinc-700' : 'bg-gradient-to-r from-blue-600 to-purple-600'}`}>
+          {!hasAnyPaidSubscription && projects.length >= 1 ? (
             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-zinc-400">
               <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
               <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
@@ -446,7 +567,7 @@ export default function Home() {
         </div>
         <div className="flex-1 text-left">
           <span className="text-sm font-medium text-white">New Project</span>
-          {!isPaid && projects.length >= 1 && (
+          {!hasAnyPaidSubscription && projects.length >= 1 && (
             <span className="block text-xs text-purple-400">Upgrade to unlock</span>
           )}
         </div>
@@ -469,7 +590,7 @@ export default function Home() {
       {currentProject && (
         <div className="border-t border-zinc-800 p-2 flex gap-1">
           <button onClick={() => { setRenameValue(currentProject.name); setShowRenameModal(true); setShowProjectDropdown(false) }} className="flex-1 px-3 py-2 text-xs text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors">Rename</button>
-          <button onClick={duplicateProject} disabled={!isPaid && projects.length >= 1} className={`flex-1 px-3 py-2 text-xs rounded-lg transition-colors ${!isPaid && projects.length >= 1 ? 'text-zinc-600 cursor-not-allowed opacity-50' : 'text-zinc-400 hover:text-white hover:bg-zinc-800'}`} title={!isPaid && projects.length >= 1 ? 'Upgrade to duplicate projects' : ''}>Duplicate</button>
+          <button onClick={duplicateProject} disabled={!hasAnyPaidSubscription && projects.length >= 1} className={`flex-1 px-3 py-2 text-xs rounded-lg transition-colors ${!hasAnyPaidSubscription && projects.length >= 1 ? 'text-zinc-600 cursor-not-allowed opacity-50' : 'text-zinc-400 hover:text-white hover:bg-zinc-800'}`} title={!hasAnyPaidSubscription && projects.length >= 1 ? 'Upgrade to duplicate projects' : ''}>Duplicate</button>
           <button onClick={() => { setShowDeleteModal(true); setShowProjectDropdown(false) }} className="flex-1 px-3 py-2 text-xs text-red-400 hover:text-red-300 hover:bg-zinc-800 rounded-lg transition-colors">Delete</button>
         </div>
       )}
@@ -542,7 +663,7 @@ export default function Home() {
           <div className="flex-1 flex flex-col min-w-0 min-h-0">
             {previewVersionIndex !== null ? (
               <>
-                <div className="flex-1 overflow-auto bg-zinc-950 min-h-0"><LivePreview code={versions[previewVersionIndex]?.code || ''} isLoading={false} isPaid={isPaid} setShowUpgradeModal={setShowUpgradeModal} /></div>
+                <div className="flex-1 overflow-auto bg-zinc-950 min-h-0"><LivePreview code={versions[previewVersionIndex]?.code || ''} isLoading={false} isPaid={isCurrentProjectPaid} setShowUpgradeModal={setShowUpgradeModal} /></div>
                 <div className="px-4 py-3 border-t border-zinc-800 flex items-center justify-between flex-shrink-0">
                   <span className="text-sm text-zinc-400">Previewing v{previewVersionIndex + 1}</span>
                   {previewVersionIndex !== currentVersionIndex && <button onClick={() => restoreVersion(previewVersionIndex)} className="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-500 text-white rounded-xl transition-colors whitespace-nowrap ml-2">Restore</button>}
@@ -735,7 +856,57 @@ export default function Home() {
         {/* Help section */}
         {(domainStatus === 'idle' || domainStatus === 'adding' || domainStatus === 'error') && (
           <div className="pt-4 border-t border-zinc-800">
-            <p className="text-xs text-zinc-500 mb-3">
+            {/* Domain Search Section */}
+            <div className="mb-4">
+              <p className="text-xs font-medium text-zinc-400 mb-3">🔍 Need a domain?</p>
+              <div className="flex gap-2 mb-3">
+                <input
+                  type="text"
+                  value={domainSearch}
+                  onChange={(e) => setDomainSearch(e.target.value.toLowerCase().replace(/[^a-z0-9.-]/g, ''))}
+                  onKeyDown={(e) => e.key === 'Enter' && searchDomain()}
+                  placeholder="Search for a domain..."
+                  className="flex-1 px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-white placeholder-zinc-500 focus:outline-none focus:border-purple-500 text-sm"
+                />
+                <button
+                  onClick={searchDomain}
+                  disabled={!domainSearch.trim() || isSearchingDomain}
+                  className="px-4 py-2 bg-purple-600 hover:bg-purple-500 disabled:bg-zinc-700 disabled:cursor-not-allowed text-white rounded-lg text-sm font-medium transition-colors"
+                >
+                  {isSearchingDomain ? '...' : 'Search'}
+                </button>
+              </div>
+              
+              {/* Search Result */}
+              {domainSearchResult && (
+                <div className={`p-3 rounded-lg border ${domainSearchResult.available ? 'bg-emerald-900/20 border-emerald-700/30' : 'bg-red-900/20 border-red-700/30'}`}>
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <span className="text-sm font-medium text-white">{domainSearchResult.domain}</span>
+                      {domainSearchResult.available ? (
+                        <span className="ml-2 text-xs text-emerald-400">✓ Available</span>
+                      ) : (
+                        <span className="ml-2 text-xs text-red-400">✗ Taken</span>
+                      )}
+                      {domainSearchResult.available && domainSearchResult.price && (
+                        <span className="block text-xs text-zinc-400 mt-1">${Math.ceil(domainSearchResult.price * 1.2)}/year</span>
+                      )}
+                    </div>
+                    {domainSearchResult.available && domainSearchResult.price && (
+                      <button
+                        onClick={buyDomain}
+                        disabled={isBuyingDomain}
+                        className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 disabled:bg-zinc-700 text-white rounded-lg text-xs font-medium transition-colors"
+                      >
+                        {isBuyingDomain ? 'Loading...' : 'Buy Now →'}
+                      </button>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <p className="text-xs text-zinc-500">
               <span className="block font-medium text-zinc-400 mb-2">Need help?</span>
               Contact <a href="mailto:support@hatchit.dev" className="text-blue-400 hover:text-blue-300 transition-colors">support@hatchit.dev</a>
             </p>
@@ -759,7 +930,7 @@ export default function Home() {
         </div>
         {type === 'preview' && <div className="flex items-center gap-2 text-xs text-zinc-600"><span className="px-2 py-1 bg-zinc-800/50 rounded-md">{typeof window !== 'undefined' && window.innerWidth < 640 ? 'Mobile' : 'Tablet'}</span></div>}
       </div>
-      <div className="flex-1 overflow-auto">{type === 'preview' ? <LivePreview code={code} isLoading={isGenerating} isPaid={isPaid} setShowUpgradeModal={setShowUpgradeModal} /> : <CodePreview code={code} isPaid={isPaid} />}</div>
+      <div className="flex-1 overflow-auto">{type === 'preview' ? <LivePreview code={code} isLoading={isGenerating} isPaid={isCurrentProjectPaid} setShowUpgradeModal={setShowUpgradeModal} /> : <CodePreview code={code} isPaid={isCurrentProjectPaid} />}</div>
     </div>
   )
 
@@ -775,7 +946,7 @@ export default function Home() {
   )
 
   const HistoryButton = () => {
-    if (!isPaid) {
+    if (!isCurrentProjectPaid) {
       return (
         <button 
           onClick={() => {
@@ -793,6 +964,216 @@ export default function Home() {
       <button onClick={() => setShowHistoryModal(true)} disabled={versions.length === 0} className="p-2 text-zinc-500 hover:text-white hover:bg-zinc-800 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed" title={`Version history (${versions.length} versions)`}>
         <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
       </button>
+    )
+  }
+
+  const AssetsButton = () => (
+    <button 
+      onClick={() => setShowAssetsModal(true)} 
+      className="p-2 text-zinc-500 hover:text-white hover:bg-zinc-800 rounded-lg transition-all" 
+      title={`Assets (${currentProject?.assets?.length || 0})`}
+    >
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+    </button>
+  )
+
+  const handleAssetUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files
+    if (!files || !currentProject) return
+    
+    const newAssets: Asset[] = []
+    
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i]
+      if (!file.type.startsWith('image/')) continue
+      
+      // Convert to base64
+      const dataUrl = await new Promise<string>((resolve) => {
+        const reader = new FileReader()
+        reader.onload = () => resolve(reader.result as string)
+        reader.readAsDataURL(file)
+      })
+      
+      // Determine type based on filename/usage
+      let type: 'logo' | 'image' | 'icon' = 'image'
+      const name = file.name.toLowerCase()
+      if (name.includes('logo')) type = 'logo'
+      else if (name.includes('icon') || name.includes('favicon')) type = 'icon'
+      
+      newAssets.push({
+        id: Date.now().toString() + i,
+        name: file.name,
+        type,
+        dataUrl,
+        createdAt: new Date().toISOString()
+      })
+    }
+    
+    if (newAssets.length > 0) {
+      updateCurrentProject({
+        assets: [...(currentProject.assets || []), ...newAssets]
+      })
+    }
+    
+    // Reset input
+    e.target.value = ''
+  }
+
+  const handleAssetDrop = async (e: React.DragEvent) => {
+    e.preventDefault()
+    const files = e.dataTransfer.files
+    if (!files || !currentProject) return
+    
+    const newAssets: Asset[] = []
+    
+    for (let i = 0; i < files.length; i++) {
+      const file = files[i]
+      if (!file.type.startsWith('image/')) continue
+      
+      const dataUrl = await new Promise<string>((resolve) => {
+        const reader = new FileReader()
+        reader.onload = () => resolve(reader.result as string)
+        reader.readAsDataURL(file)
+      })
+      
+      let type: 'logo' | 'image' | 'icon' = 'image'
+      const name = file.name.toLowerCase()
+      if (name.includes('logo')) type = 'logo'
+      else if (name.includes('icon') || name.includes('favicon')) type = 'icon'
+      
+      newAssets.push({
+        id: Date.now().toString() + i,
+        name: file.name,
+        type,
+        dataUrl,
+        createdAt: new Date().toISOString()
+      })
+    }
+    
+    if (newAssets.length > 0) {
+      updateCurrentProject({
+        assets: [...(currentProject.assets || []), ...newAssets]
+      })
+    }
+  }
+
+  const deleteAsset = (assetId: string) => {
+    if (!currentProject) return
+    updateCurrentProject({
+      assets: (currentProject.assets || []).filter(a => a.id !== assetId)
+    })
+  }
+
+  const copyAssetUrl = async (dataUrl: string) => {
+    await navigator.clipboard.writeText(dataUrl)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
+
+  const AssetsModal = () => {
+    const assets = currentProject?.assets || []
+    const [dragOver, setDragOver] = useState(false)
+    
+    return (
+      <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => setShowAssetsModal(false)}>
+        <div 
+          className="bg-zinc-900 border border-zinc-700 rounded-2xl p-6 w-full max-w-lg shadow-2xl max-h-[90vh] overflow-y-auto"
+          onClick={e => e.stopPropagation()}
+        >
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-lg font-semibold text-white">Assets</h2>
+            <button onClick={() => setShowAssetsModal(false)} className="p-2 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors">
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+            </button>
+          </div>
+          
+          <p className="text-sm text-zinc-400 mb-4">
+            Upload logos, photos, and icons. You can reference these in your prompts by describing them (e.g. &quot;use my uploaded logo&quot;).
+          </p>
+          
+          {/* Upload Zone */}
+          <div 
+            className={`border-2 border-dashed rounded-xl p-6 text-center transition-all mb-4 ${dragOver ? 'border-purple-500 bg-purple-500/10' : 'border-zinc-700 hover:border-zinc-600'}`}
+            onDragOver={(e) => { e.preventDefault(); setDragOver(true) }}
+            onDragLeave={() => setDragOver(false)}
+            onDrop={(e) => { setDragOver(false); handleAssetDrop(e) }}
+          >
+            <input 
+              type="file" 
+              accept="image/*" 
+              multiple 
+              onChange={handleAssetUpload}
+              className="hidden" 
+              id="asset-upload"
+            />
+            <label htmlFor="asset-upload" className="cursor-pointer">
+              <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" className="mx-auto mb-2 text-zinc-500"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              <p className="text-sm text-zinc-400">
+                <span className="text-purple-400 font-medium">Click to upload</span> or drag and drop
+              </p>
+              <p className="text-xs text-zinc-500 mt-1">PNG, JPG, SVG, WebP</p>
+            </label>
+          </div>
+          
+          {/* Guidelines */}
+          <div className="bg-zinc-800/50 rounded-lg p-3 mb-4">
+            <h4 className="text-xs font-medium text-zinc-300 mb-2">📋 Guidelines</h4>
+            <ul className="text-xs text-zinc-500 space-y-1">
+              <li>• <strong>Logos:</strong> Include &quot;logo&quot; in filename (e.g. my-logo.png)</li>
+              <li>• <strong>Icons:</strong> Include &quot;icon&quot; in filename</li>
+              <li>• <strong>Best size:</strong> Under 100KB for fast loading</li>
+              <li>• <strong>Format:</strong> PNG or SVG for logos, JPG for photos</li>
+            </ul>
+          </div>
+          
+          {/* Assets Grid */}
+          {assets.length > 0 && (
+            <div className="space-y-3">
+              <h4 className="text-sm font-medium text-white">Uploaded ({assets.length})</h4>
+              <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                {assets.map(asset => (
+                  <div key={asset.id} className="group relative bg-zinc-800 rounded-lg overflow-hidden aspect-square">
+                    <img 
+                      src={asset.dataUrl} 
+                      alt={asset.name}
+                      className="w-full h-full object-contain p-2"
+                    />
+                    <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-2">
+                      <span className={`text-[10px] px-2 py-0.5 rounded-full ${asset.type === 'logo' ? 'bg-purple-500/30 text-purple-300' : asset.type === 'icon' ? 'bg-blue-500/30 text-blue-300' : 'bg-green-500/30 text-green-300'}`}>
+                        {asset.type}
+                      </span>
+                      <p className="text-xs text-white truncate px-2 max-w-full">{asset.name}</p>
+                      <div className="flex gap-2">
+                        <button 
+                          onClick={() => copyAssetUrl(asset.dataUrl)}
+                          className="p-1.5 bg-zinc-700 hover:bg-zinc-600 rounded text-white transition-colors"
+                          title="Copy data URL"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                        </button>
+                        <button 
+                          onClick={() => deleteAsset(asset.id)}
+                          className="p-1.5 bg-red-600/80 hover:bg-red-600 rounded text-white transition-colors"
+                          title="Delete"
+                        >
+                          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          
+          {assets.length === 0 && (
+            <div className="text-center py-6 text-zinc-500">
+              <svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" className="mx-auto mb-2 opacity-50"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+              <p className="text-sm">No assets uploaded yet</p>
+            </div>
+          )}
+        </div>
+      </div>
     )
   }
 
@@ -925,6 +1306,7 @@ export default function Home() {
         {showDeleteModal && <DeleteModal />}
         {showDeployModal && <DeployConfirmModal />}
         {showHistoryModal && <HistoryModal />}
+        {showAssetsModal && <AssetsModal />}
         {showDomainModal && <DomainModal />}
         {deployedUrl && <DeployedModal />}
         {showFaqModal && <FaqModal />}
@@ -978,7 +1360,7 @@ export default function Home() {
             </div>
           </div>
         )}
-        {showUpgradeModal && <UpgradeModal isOpen={showUpgradeModal} onClose={() => setShowUpgradeModal(false)} reason={upgradeReason} />}
+        {showUpgradeModal && <UpgradeModal isOpen={showUpgradeModal} onClose={() => setShowUpgradeModal(false)} reason={upgradeReason} projectSlug={currentProjectSlug} projectName={currentProject?.name || 'My Project'} />}
         {mobileModal && <MobileModal type={mobileModal} onClose={() => setMobileModal(null)} />}
         <div className="px-4 py-3 border-b border-zinc-800 flex items-center justify-between bg-zinc-900">
           <div className="flex items-center gap-2">
@@ -988,17 +1370,18 @@ export default function Home() {
             </Link>
             <span className="text-zinc-700">|</span>
             <ProjectSelector mobile />
-            {isPaid && <HatchedBadge />}
+            {isCurrentProjectPaid && <HatchedBadge />}
           </div>
           <div className="flex items-center gap-1">
             <button onClick={() => setShowFaqModal(true)} className="p-2 text-zinc-500 hover:text-white hover:bg-zinc-800 rounded-lg transition-all" title="Help & FAQ"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg></button>
+            <AssetsButton />
             <HistoryButton />
             {canRedo && <button onClick={handleRedo} className="p-2 text-zinc-500 hover:text-white hover:bg-zinc-800 rounded-lg transition-all" title="Redo"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 7v6h-6"/><path d="M3 17a9 9 0 0 1 9-9 9 9 0 0 1 6 2.3l3 2.7"/></svg></button>}
             {canUndo && <button onClick={handleUndo} className="p-2 text-zinc-500 hover:text-white hover:bg-zinc-800 rounded-lg transition-all" title="Undo"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/></svg></button>}
           </div>
         </div>
         <div className="flex-1 overflow-hidden">
-          <Chat onGenerate={handleGenerate} isGenerating={isGenerating} currentCode={code} isPaid={isPaid} key={currentProjectId} />
+          <Chat onGenerate={handleGenerate} isGenerating={isGenerating} currentCode={code} isPaid={hasAnyPaidSubscription} key={currentProjectId} />
         </div>
         {code && (
           <div className="px-4 py-3 border-t border-zinc-800 bg-zinc-900 flex gap-2" style={{ paddingBottom: 'max(12px, env(safe-area-inset-bottom))' }}>
@@ -1019,10 +1402,11 @@ export default function Home() {
       {showDeleteModal && <DeleteModal />}
       {showDeployModal && <DeployConfirmModal />}
       {showHistoryModal && <HistoryModal />}
+      {showAssetsModal && <AssetsModal />}
       {showDomainModal && <DomainModal />}
       {showShipModal && <ShipModal />}
       {deployedUrl && <DeployedModal />}
-      {showUpgradeModal && <UpgradeModal isOpen={showUpgradeModal} onClose={() => setShowUpgradeModal(false)} reason={upgradeReason} />}
+      {showUpgradeModal && <UpgradeModal isOpen={showUpgradeModal} onClose={() => setShowUpgradeModal(false)} reason={upgradeReason} projectSlug={currentProjectSlug} projectName={currentProject?.name || 'My Project'} />}
       {showSuccessModal && <SuccessModal isOpen={showSuccessModal} onClose={() => setShowSuccessModal(false)} />}
       <Group orientation="horizontal" className="h-full rounded-2xl overflow-hidden border border-zinc-800 shadow-2xl">
         <Panel id="chat" defaultSize={28} minSize={20}>
@@ -1039,18 +1423,19 @@ export default function Home() {
                 </div>
                 <div className="flex items-center gap-1 flex-shrink-0 ml-2">
                   <button onClick={() => setShowFaqModal(true)} className="p-2 text-zinc-500 hover:text-white hover:bg-zinc-800 rounded-lg transition-all" title="Help & FAQ"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg></button>
+                  <AssetsButton />
                   <HistoryButton />
                 </div>
               </div>
               <div className="flex items-center justify-between">
-                {isPaid && <HatchedBadge />}
+                {isCurrentProjectPaid && <HatchedBadge />}
                 <div className="flex items-center gap-1 flex-shrink-0 ml-auto">
                   {canRedo && <button onClick={handleRedo} className="p-2 text-zinc-500 hover:text-white hover:bg-zinc-800 rounded-lg transition-all" title="Redo"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 7v6h-6"/><path d="M3 17a9 9 0 0 1 9-9 9 9 0 0 1 6 2.3l3 2.7"/></svg></button>}
                   {canUndo && <button onClick={handleUndo} className="p-2 text-zinc-500 hover:text-white hover:bg-zinc-800 rounded-lg transition-all" title="Undo"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/></svg></button>}
                 </div>
               </div>
             </div>
-            <Chat onGenerate={handleGenerate} isGenerating={isGenerating} currentCode={code} isPaid={isPaid} key={currentProjectId} />
+            <Chat onGenerate={handleGenerate} isGenerating={isGenerating} currentCode={code} isPaid={hasAnyPaidSubscription} key={currentProjectId} />
           </div>
         </Panel>
         <Separator className="w-2 bg-zinc-800 hover:bg-zinc-700 transition-colors cursor-col-resize flex items-center justify-center group">
@@ -1083,7 +1468,7 @@ export default function Home() {
               </div>
             </div>
             <div ref={previewContainerRef} className="flex-1 overflow-auto min-h-0">
-              {activeTab === 'preview' ? <LivePreview code={code} isLoading={isGenerating} isPaid={isPaid} setShowUpgradeModal={setShowUpgradeModal} /> : <CodePreview code={code} isPaid={isPaid} />}
+              {activeTab === 'preview' ? <LivePreview code={code} isLoading={isGenerating} isPaid={isCurrentProjectPaid} setShowUpgradeModal={setShowUpgradeModal} /> : <CodePreview code={code} isPaid={isCurrentProjectPaid} />}
             </div>
           </div>
         </Panel>
