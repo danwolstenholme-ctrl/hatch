@@ -663,50 +663,81 @@ export default function Home() {
         // Determine branch (main or master)
         const branch = apiUrl.includes('/main?') ? 'main' : 'master'
         
-        // Import each file
-        const newProjects: Project[] = []
-        for (let i = 0; i < relevantFiles.length; i++) {
-          const file = relevantFiles[i]
-          onProgress?.(`Importing ${i + 1}/${relevantFiles.length}: ${file.path}`)
+        // Import each HTML file as a page in the current project
+        if (currentProject && relevantFiles.length > 0) {
+          const newPages: Page[] = []
           
-          const rawUrl = `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${file.path}`
-          const fileResponse = await fetch(rawUrl)
-          if (!fileResponse.ok) continue
-          
-          const content = await fileResponse.text()
-          const fileName = file.path.split('/').pop() || file.path
-          
-          const newProject: Project = {
-            id: generateId(),
-            name: fileName.replace(/\.(html|htm|jsx|tsx|js|ts)$/i, ''),
-            versions: [{
+          for (let i = 0; i < relevantFiles.length; i++) {
+            const file = relevantFiles[i]
+            onProgress?.(`Importing ${i + 1}/${relevantFiles.length}: ${file.path}`)
+            
+            const rawUrl = `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${file.path}`
+            const fileResponse = await fetch(rawUrl)
+            if (!fileResponse.ok) continue
+            
+            const content = await fileResponse.text()
+            const fileName = file.path.split('/').pop() || file.path
+            const pageName = fileName.replace(/\.(html|htm)$/i, '')
+            
+            // Determine URL path from file name
+            let urlPath = '/'
+            if (fileName.toLowerCase() === 'index.html' || fileName.toLowerCase() === 'index.htm') {
+              urlPath = '/'
+            } else {
+              urlPath = '/' + pageName.toLowerCase().replace(/[^a-z0-9]+/g, '-')
+            }
+            
+            // Create page
+            const newPage: Page = {
               id: generateId(),
-              code: content,
-              timestamp: new Date().toISOString(),
-              prompt: `Imported from GitHub: ${repo}/${file.path}`
-            }],
-            currentVersionIndex: 0,
-            createdAt: new Date().toISOString(),
-            updatedAt: new Date().toISOString(),
+              name: pageName.charAt(0).toUpperCase() + pageName.slice(1),
+              path: urlPath,
+              versions: [{
+                id: generateId(),
+                code: content,
+                timestamp: new Date().toISOString(),
+                prompt: `Imported from GitHub: ${repo}/${file.path}`
+              }],
+              currentVersionIndex: 0
+            }
+            newPages.push(newPage)
           }
-          newProjects.push(newProject)
+          
+          // Convert current project to multi-page if it isn't already
+          const migratedProject = migrateToMultiPage(currentProject)
+          
+          // Remove the default Home page if it's empty
+          let existingPages = migratedProject.pages || []
+          const homePage = existingPages.find(p => p.path === '/')
+          if (homePage && homePage.versions[0]?.code === '') {
+            existingPages = existingPages.filter(p => p.path !== '/')
+          }
+          
+          // Add new pages
+          const updatedPages = [...existingPages, ...newPages]
+          
+          // Set first imported page as current
+          const firstImportedPage = newPages[0]
+          
+          updateCurrentProject({ 
+            pages: updatedPages,
+            currentPageId: firstImportedPage.id
+          })
+          
+          setShowGithubModal(false)
+          
+          // Show success toast
+          const toast = document.createElement('div')
+          toast.className = 'fixed top-4 left-1/2 -translate-x-1/2 z-[9999] bg-green-600 text-white px-6 py-3 rounded-xl shadow-2xl flex items-center gap-2 animate-fade-in'
+          toast.innerHTML = `
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/>
+            </svg>
+            <span>Imported ${newPages.length} pages from ${repo}!</span>
+          `
+          document.body.appendChild(toast)
+          setTimeout(() => toast.remove(), 3000)
         }
-        
-        setProjects(prev => [...newProjects, ...prev])
-        setCurrentProjectId(newProjects[0].id)
-        setShowGithubModal(false)
-        
-        // Show success toast
-        const toast = document.createElement('div')
-        toast.className = 'fixed top-4 left-1/2 -translate-x-1/2 z-[9999] bg-green-600 text-white px-6 py-3 rounded-xl shadow-2xl flex items-center gap-2 animate-fade-in'
-        toast.innerHTML = `
-          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-            <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/>
-          </svg>
-          <span>Imported ${newProjects.length} files from ${repo}!</span>
-        `
-        document.body.appendChild(toast)
-        setTimeout(() => toast.remove(), 3000)
       } else {
         // Import single file
         let rawUrl = url
