@@ -602,64 +602,145 @@ export default function Home() {
   const DomainModal = () => (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <div className="bg-zinc-900 border border-zinc-700 rounded-2xl p-6 w-full max-w-lg shadow-2xl max-h-[90vh] overflow-y-auto">
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-white">Domain Settings</h2>
-          <button onClick={() => setShowDomainModal(false)} className="p-2 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors flex-shrink-0 ml-2">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h2 className="text-lg font-semibold text-white">Connect Custom Domain</h2>
+            <p className="text-xs text-zinc-500 mt-1">Point your domain to your deployed site</p>
+          </div>
+          <button onClick={() => setShowDomainModal(false)} className="p-2 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors flex-shrink-0">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
           </button>
         </div>
-        <div className="mb-4">
-          <div className="text-xs text-zinc-500 mb-1">Base Domain</div>
-          <div className="flex items-center gap-2 px-3 py-2 bg-zinc-800 rounded-lg overflow-hidden">
+
+        {/* Current deployment domain */}
+        <div className="mb-6 pb-6 border-b border-zinc-800">
+          <div className="text-xs text-zinc-500 mb-2">Your Current Site</div>
+          <div className="flex items-center gap-2 px-3 py-2 bg-zinc-800 rounded-lg">
             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg>
-            <a href={`https://${currentProject?.deployedSlug}.hatchitsites.dev`} target="_blank" rel="noopener noreferrer" className="text-sm text-blue-400 hover:text-blue-300 transition-colors truncate">
+            <a href={`https://${currentProject?.deployedSlug}.hatchitsites.dev`} target="_blank" rel="noopener noreferrer" className="text-sm text-blue-400 hover:text-blue-300 transition-colors truncate flex-1">
               {currentProject?.deployedSlug}.hatchitsites.dev
             </a>
-            <button onClick={() => { navigator.clipboard.writeText(`https://${currentProject?.deployedSlug}.hatchitsites.dev`); setCopied(true); setTimeout(() => setCopied(false), 2000) }} className="ml-auto text-zinc-400 hover:text-white flex-shrink-0 p-1">
+            <button onClick={() => { navigator.clipboard.writeText(`https://${currentProject?.deployedSlug}.hatchitsites.dev`); setCopied(true); setTimeout(() => setCopied(false), 2000) }} className="text-zinc-400 hover:text-white flex-shrink-0 p-1 transition-colors">
               {copied ? <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg> : <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>}
             </button>
           </div>
         </div>
-        <div className="border-t border-zinc-800 pt-4">
-          <div className="text-xs text-zinc-500 mb-2">Custom Domain</div>
+
+        {/* Custom domain input */}
+        <div className="mb-6">
+          <div className="text-xs text-zinc-500 mb-2 font-medium">Custom Domain</div>
           {currentProject?.customDomain && domainStatus !== 'idle' && domainStatus !== 'adding' && domainStatus !== 'error' ? (
             <div className="flex items-center gap-2 px-3 py-2 bg-zinc-800 rounded-lg mb-3">
               <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg>
-              <a href={`https://${currentProject.customDomain}`} target="_blank" rel="noopener noreferrer" className="text-sm text-blue-400 hover:text-blue-300 transition-colors truncate">
+              <a href={`https://${currentProject.customDomain}`} target="_blank" rel="noopener noreferrer" className="text-sm text-blue-400 hover:text-blue-300 transition-colors truncate flex-1">
                 {currentProject.customDomain}
               </a>
-              <button onClick={() => { setDomainStatus('idle'); setCustomDomain('') }} className="ml-auto text-xs text-zinc-500 hover:text-white whitespace-nowrap">Change</button>
+              <button onClick={() => { setDomainStatus('idle'); setCustomDomain('') }} className="text-xs text-zinc-500 hover:text-white transition-colors">Change</button>
             </div>
           ) : null}
+          
           {domainStatus === 'idle' || domainStatus === 'adding' || domainStatus === 'error' ? (
-            <>
-              <input ref={domainInputRef} type="text" value={customDomain} onChange={(e) => setCustomDomain(e.target.value.toLowerCase())} onKeyDown={(e) => e.key === 'Enter' && customDomain && connectDomain()} className="w-full px-4 py-3 bg-zinc-800 border border-zinc-700 rounded-xl text-white placeholder-zinc-500 focus:outline-none focus:border-blue-500 mb-2 text-base" placeholder="example.com or www.example.com" autoFocus />
-              {domainError && <p className="text-red-400 text-sm mb-2">{domainError}</p>}
-              <button onClick={connectDomain} disabled={!customDomain || domainStatus === 'adding'} className="w-full px-4 py-3 text-sm bg-blue-600 hover:bg-blue-500 disabled:bg-zinc-700 disabled:cursor-not-allowed text-white rounded-xl transition-colors flex items-center justify-center gap-2">
+            <div>
+              <input 
+                ref={domainInputRef} 
+                type="text" 
+                value={customDomain} 
+                onChange={(e) => setCustomDomain(e.target.value.toLowerCase())} 
+                onKeyDown={(e) => e.key === 'Enter' && customDomain && connectDomain()} 
+                className="w-full px-4 py-3 bg-zinc-800 border border-zinc-700 rounded-lg text-white placeholder-zinc-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/50 mb-3 text-base transition-all" 
+                placeholder="example.com or www.example.com" 
+                autoFocus 
+              />
+              {domainError && <p className="text-red-400 text-sm mb-3 flex items-center gap-2"><span>⚠️</span>{domainError}</p>}
+              
+              <button 
+                onClick={connectDomain} 
+                disabled={!customDomain || domainStatus === 'adding'} 
+                className="w-full px-4 py-3 text-sm bg-blue-600 hover:bg-blue-500 disabled:bg-zinc-700 disabled:cursor-not-allowed disabled:text-zinc-500 text-white rounded-lg transition-colors flex items-center justify-center gap-2 font-medium"
+              >
                 {domainStatus === 'adding' ? (
-                  <><svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>Adding Domain...</>
-                ) : currentProject?.customDomain ? 'Update Domain' : 'Connect Domain'}
+                  <><svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>Checking Domain...</>
+                ) : 'Verify Connection'}
               </button>
-            </>
-          ) : domainStatus === 'pending' || domainStatus === 'success' ? (
-            <>
-              <div className="flex items-center gap-2 px-3 py-2 bg-amber-500/10 border border-amber-500/20 rounded-lg mb-4">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                <span className="text-amber-400 text-sm">DNS Configuration Required</span>
-              </div>
-              <div className="bg-zinc-800 rounded-xl p-4 mb-4 space-y-3 text-sm">
-                <div><div className="text-xs text-zinc-500 mb-1">Type</div><div className="text-white font-mono break-all">CNAME</div></div>
-                <div><div className="text-xs text-zinc-500 mb-1">Name / Host</div><div className="text-white font-mono">{customDomain.startsWith('www.') ? 'www' : '@'}</div></div>
-                <div><div className="text-xs text-zinc-500 mb-1">Value / Target</div><div className="text-white font-mono flex items-center gap-2 break-all">cname.vercel-dns.com<button onClick={() => { navigator.clipboard.writeText('cname.vercel-dns.com'); setCopied(true); setTimeout(() => setCopied(false), 2000) }} className="text-zinc-400 hover:text-white flex-shrink-0">{copied ? <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg> : <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>}</button></div></div>
-              </div>
-              <p className="text-zinc-500 text-xs mb-4">DNS changes can take 5-30 minutes to propagate.</p>
-              <div className="flex gap-2">
-                <button onClick={() => setShowDomainModal(false)} className="flex-1 px-4 py-2.5 text-sm text-zinc-400 hover:text-white transition-colors border border-zinc-700 rounded-lg">Done</button>
-                <a href={`https://${customDomain}`} target="_blank" rel="noopener noreferrer" className="flex-1 px-4 py-2.5 text-sm bg-zinc-700 hover:bg-zinc-600 text-white rounded-lg transition-colors text-center">Check Domain</a>
-              </div>
-            </>
+            </div>
           ) : null}
         </div>
+
+        {/* DNS Instructions - Show after domain is submitted */}
+        {(domainStatus === 'pending' || domainStatus === 'success') && (
+          <div className="mb-6 pb-6 border-b border-zinc-800">
+            <div className="flex items-center gap-2 mb-4">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              <span className="text-amber-400 text-sm font-medium">DNS Configuration Required</span>
+            </div>
+            
+            <p className="text-xs text-zinc-400 mb-4">Add this CNAME record to your domain provider (GoDaddy, Namecheap, Cloudflare, etc.):</p>
+            
+            <div className="space-y-3 bg-zinc-800/50 rounded-lg p-4 mb-4 border border-zinc-700">
+              <div>
+                <div className="text-xs text-zinc-500 mb-1.5 font-medium">Record Type</div>
+                <div className="text-sm text-white font-mono bg-zinc-900 px-3 py-2 rounded flex items-center justify-between">
+                  CNAME
+                  <button onClick={() => { navigator.clipboard.writeText('CNAME'); setCopied(true); setTimeout(() => setCopied(false), 2000) }} className="text-zinc-400 hover:text-white transition-colors">
+                    {copied ? '✓' : '⎘'}
+                  </button>
+                </div>
+              </div>
+              
+              <div>
+                <div className="text-xs text-zinc-500 mb-1.5 font-medium">Name/Host</div>
+                <div className="text-sm text-white font-mono bg-zinc-900 px-3 py-2 rounded flex items-center justify-between">
+                  {customDomain.startsWith('www.') ? 'www' : '@'}
+                  <button onClick={() => { navigator.clipboard.writeText(customDomain.startsWith('www.') ? 'www' : '@'); setCopied(true); setTimeout(() => setCopied(false), 2000) }} className="text-zinc-400 hover:text-white transition-colors">
+                    {copied ? '✓' : '⎘'}
+                  </button>
+                </div>
+              </div>
+              
+              <div>
+                <div className="text-xs text-zinc-500 mb-1.5 font-medium">Value/Target</div>
+                <div className="text-sm text-white font-mono bg-zinc-900 px-3 py-2 rounded flex items-center justify-between">
+                  cname.vercel-dns.com
+                  <button onClick={() => { navigator.clipboard.writeText('cname.vercel-dns.com'); setCopied(true); setTimeout(() => setCopied(false), 2000) }} className="text-zinc-400 hover:text-white transition-colors">
+                    {copied ? '✓' : '⎘'}
+                  </button>
+                </div>
+              </div>
+            </div>
+            
+            <div className="bg-blue-900/20 border border-blue-700/30 rounded-lg p-3 text-xs text-blue-200 mb-4">
+              <p className="font-medium mb-1">⏱️ DNS Propagation</p>
+              <p>DNS changes can take up to 48 hours to fully propagate, but usually appear within 5-30 minutes.</p>
+            </div>
+
+            <div className="flex gap-2">
+              <button 
+                onClick={() => setShowDomainModal(false)} 
+                className="flex-1 px-4 py-2.5 text-sm text-zinc-300 hover:text-white border border-zinc-700 hover:border-zinc-600 rounded-lg transition-colors font-medium"
+              >
+                Close
+              </button>
+              <a 
+                href={`https://${customDomain}`} 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="flex-1 px-4 py-2.5 text-sm bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg transition-colors text-center font-medium"
+              >
+                Check Connection
+              </a>
+            </div>
+          </div>
+        )}
+
+        {/* Help section */}
+        {(domainStatus === 'idle' || domainStatus === 'adding' || domainStatus === 'error') && (
+          <div className="pt-4 border-t border-zinc-800">
+            <p className="text-xs text-zinc-500 mb-3">
+              <span className="block font-medium text-zinc-400 mb-2">Need help?</span>
+              Contact <a href="mailto:support@hatchit.dev" className="text-blue-400 hover:text-blue-300 transition-colors">support@hatchit.dev</a>
+            </p>
+          </div>
+        )}
       </div>
     </div>
   )
