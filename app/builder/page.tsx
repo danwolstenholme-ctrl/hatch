@@ -586,7 +586,6 @@ export default function Home() {
               </div>
               <div className="text-xs text-zinc-500">{project.versions?.length || 0} versions</div>
             </div>
-            {project.id === currentProjectId && <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg>}
           </button>
         ))}
       </div>
@@ -954,9 +953,9 @@ export default function Home() {
   const ProjectSelector = ({ mobile = false }: { mobile?: boolean }) => (
     <div className="relative z-[9999]">
       <button onClick={() => setShowProjectDropdown(!showProjectDropdown)} className={`flex items-center gap-2 hover:bg-zinc-800 rounded-lg transition-colors ${mobile ? 'px-2 py-1.5' : 'px-3 py-1.5'}`}>
-        <span className={`font-medium text-white truncate ${mobile ? 'max-w-[120px] text-sm' : 'max-w-[180px]'}`}>{currentProject?.name || 'Select Project'}</span>
-        {isDeployed && <span className="text-[10px] px-1.5 py-0.5 bg-green-500/20 text-green-400 rounded">LIVE</span>}
-        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={`text-zinc-500 transition-transform ${showProjectDropdown ? 'rotate-180' : ''}`}><polyline points="6 9 12 15 18 9"/></svg>
+        <span className={`font-medium text-white truncate ${mobile ? 'max-w-[140px] text-sm' : 'max-w-[180px]'}`}>{currentProject?.name || 'Select Project'}</span>
+        {!mobile && isDeployed && <span className="text-[10px] px-1.5 py-0.5 bg-green-500/20 text-green-400 rounded">LIVE</span>}
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className={`text-zinc-500 flex-shrink-0 transition-transform ${showProjectDropdown ? 'rotate-180' : ''}`}><polyline points="6 9 12 15 18 9"/></svg>
       </button>
       {showProjectDropdown && <ProjectDropdown />}
     </div>
