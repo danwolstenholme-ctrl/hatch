@@ -1639,7 +1639,7 @@ export default function Home() {
         </Separator>
         <Panel id="right" defaultSize={72} minSize={40}>
           <div className="h-full flex flex-col bg-zinc-900">
-            <div className="flex items-center justify-between border-b border-zinc-800 px-4">
+            <div className="flex items-center justify-between border-b border-zinc-800 px-6 py-2">
               <div className="flex">
                 <button onClick={() => setActiveTab('preview')} className={`px-4 py-3 text-sm font-medium transition-all relative ${activeTab === 'preview' ? 'text-white' : 'text-zinc-500 hover:text-zinc-300'}`}>
                   Preview
