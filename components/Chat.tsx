@@ -64,6 +64,38 @@ export default function Chat({ onGenerate, isGenerating, currentCode, isPaid = f
   const messages = mode === 'build' ? buildMessages : chatMessages
   const setMessages = mode === 'build' ? setBuildMessages : setChatMessages
 
+  // Load chat history from localStorage on mount/project change
+  useEffect(() => {
+    if (!projectSlug) return
+    try {
+      const savedBuild = localStorage.getItem(`chat-build-${projectSlug}`)
+      const savedChat = localStorage.getItem(`chat-chat-${projectSlug}`)
+      if (savedBuild) setBuildMessages(JSON.parse(savedBuild))
+      if (savedChat) setChatMessages(JSON.parse(savedChat))
+    } catch (e) {
+      console.error('Failed to load chat history:', e)
+    }
+  }, [projectSlug])
+
+  // Save chat history to localStorage when messages change
+  useEffect(() => {
+    if (!projectSlug || buildMessages.length === 0) return
+    try {
+      localStorage.setItem(`chat-build-${projectSlug}`, JSON.stringify(buildMessages.filter(m => !m.isThinking)))
+    } catch (e) {
+      console.error('Failed to save build history:', e)
+    }
+  }, [buildMessages, projectSlug])
+
+  useEffect(() => {
+    if (!projectSlug || chatMessages.length === 0) return
+    try {
+      localStorage.setItem(`chat-chat-${projectSlug}`, JSON.stringify(chatMessages))
+    } catch (e) {
+      console.error('Failed to save chat history:', e)
+    }
+  }, [chatMessages, projectSlug])
+
   useEffect(() => {
     setRemaining(getGenerationsRemaining())
   }, [isPaid])
@@ -142,6 +174,14 @@ export default function Chat({ onGenerate, isGenerating, currentCode, isPaid = f
 
   const clearChat = () => {
     setMessages([])
+    // Also clear from localStorage
+    if (projectSlug) {
+      try {
+        localStorage.removeItem(`chat-${mode}-${projectSlug}`)
+      } catch (e) {
+        console.error('Failed to clear chat history:', e)
+      }
+    }
   }
 
   const limit = getDailyLimit()
