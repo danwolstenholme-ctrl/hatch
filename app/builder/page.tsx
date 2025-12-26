@@ -176,6 +176,12 @@ export default function Home() {
   const [domainSearchResult, setDomainSearchResult] = useState<{ domain: string; available: boolean; price?: number } | null>(null)
   const [isSearchingDomain, setIsSearchingDomain] = useState(false)
   const [isBuyingDomain, setIsBuyingDomain] = useState(false)
+  const [showWarningBanner, setShowWarningBanner] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return localStorage.getItem('hatchit-warning-dismissed') !== 'true'
+    }
+    return true
+  })
   const previewContainerRef = useRef<HTMLDivElement>(null)
   const dropdownRef = useRef<HTMLDivElement>(null)
   const domainInputRef = useRef<HTMLInputElement>(null)
@@ -535,6 +541,13 @@ export default function Home() {
       console.error('Domain search failed:', error)
     } finally {
       setIsSearchingDomain(false)
+    }
+  }
+
+  const handleDismissWarning = () => {
+    setShowWarningBanner(false)
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('hatchit-warning-dismissed', 'true')
     }
   }
 
@@ -1376,6 +1389,14 @@ export default function Home() {
   if (isMobile) {
     return (
       <div className="h-dvh bg-zinc-950 flex flex-col overflow-x-hidden">
+        {showWarningBanner && (
+          <div className="w-full bg-amber-500/20 border-b border-amber-400/30 text-amber-900 text-xs flex items-center justify-between px-3 py-2 z-50">
+            <span className="flex items-center gap-2"><span role="img" aria-label="floppy">💾</span> Projects are saved on this device. Deploy to sync across devices.</span>
+            <button onClick={handleDismissWarning} className="ml-2 text-amber-700 hover:text-amber-900 p-1 rounded transition-colors" aria-label="Dismiss">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+            </button>
+          </div>
+        )}
         {showRenameModal && <RenameModal />}
         {showDeleteModal && <DeleteModal />}
         {showDeployModal && <DeployConfirmModal />}
@@ -1526,6 +1547,14 @@ export default function Home() {
 
   return (
     <div className="h-dvh bg-zinc-950 p-3">
+      {showWarningBanner && (
+        <div className="w-full bg-amber-500/20 border-b border-amber-400/30 text-amber-900 text-xs flex items-center justify-between px-4 py-2 rounded-t-2xl z-50">
+          <span className="flex items-center gap-2"><span role="img" aria-label="floppy">💾</span> Projects are saved on this device. Deploy to sync across devices.</span>
+          <button onClick={handleDismissWarning} className="ml-2 text-amber-700 hover:text-amber-900 p-1 rounded transition-colors" aria-label="Dismiss">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+          </button>
+        </div>
+      )}
       {showRenameModal && <RenameModal />}
       {showDeleteModal && <DeleteModal />}
       {showDeployModal && <DeployConfirmModal />}
