@@ -15,6 +15,7 @@ interface ChatProps {
   isGenerating: boolean
   currentCode: string
   isPaid?: boolean
+  onOpenAssets?: () => void
 }
 
 const thinkingMessages = [
@@ -47,7 +48,7 @@ function getRandomResponse() {
   return responses[Math.floor(Math.random() * responses.length)]
 }
 
-export default function Chat({ onGenerate, isGenerating, currentCode, isPaid = false }: ChatProps) {
+export default function Chat({ onGenerate, isGenerating, currentCode, isPaid = false, onOpenAssets }: ChatProps) {
   const [input, setInput] = useState('')
   const [buildMessages, setBuildMessages] = useState<Message[]>([])
   const [chatMessages, setChatMessages] = useState<Message[]>([])
@@ -318,17 +319,30 @@ export default function Chat({ onGenerate, isGenerating, currentCode, isPaid = f
             rows={3}
             disabled={isGenerating || isChatLoading}
           />
-          <button
-            type="submit"
-            disabled={isGenerating || isChatLoading || !input.trim()}
-            className={`w-full px-4 py-2.5 rounded-xl text-sm font-medium transition-all disabled:opacity-40 disabled:cursor-not-allowed ${
-              mode === 'chat'
-                ? 'bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white'
-                : 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white'
-            }`}
-          >
-            {isChatLoading ? 'Responding...' : isGenerating ? 'Generating...' : mode === 'chat' ? 'Send' : messages.length === 0 ? 'Generate' : 'Update'}
-          </button>
+          <div className="flex gap-2">
+            {onOpenAssets && (
+              <button
+                type="button"
+                onClick={onOpenAssets}
+                className="px-3 py-2.5 rounded-xl text-sm font-medium bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white transition-all flex items-center gap-2"
+                title="Upload images"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                <span className="hidden sm:inline">Assets</span>
+              </button>
+            )}
+            <button
+              type="submit"
+              disabled={isGenerating || isChatLoading || !input.trim()}
+              className={`flex-1 px-4 py-2.5 rounded-xl text-sm font-medium transition-all disabled:opacity-40 disabled:cursor-not-allowed ${
+                mode === 'chat'
+                  ? 'bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white'
+                  : 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white'
+              }`}
+            >
+              {isChatLoading ? 'Responding...' : isGenerating ? 'Generating...' : mode === 'chat' ? 'Send' : messages.length === 0 ? 'Generate' : 'Update'}
+            </button>
+          </div>
         </form>
       </div>
 
