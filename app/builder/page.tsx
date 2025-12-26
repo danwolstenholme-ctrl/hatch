@@ -247,10 +247,11 @@ export default function Home() {
   }, [])
 
   useEffect(() => {
-    if (showDomainModal && (domainStatus === 'idle' || domainStatus === 'error')) {
-      domainInputRef.current?.focus()
+    if (showDomainModal && domainStatus === 'idle' && !customDomain) {
+      // Only auto-focus when modal first opens with no domain entered
+      setTimeout(() => domainInputRef.current?.focus(), 100)
     }
-  }, [showDomainModal, customDomain, domainStatus])
+  }, [showDomainModal])
 
   useEffect(() => {
     if (searchParams.get('success') === 'true') {
@@ -772,7 +773,6 @@ export default function Home() {
                 onKeyDown={(e) => e.key === 'Enter' && customDomain && connectDomain()} 
                 className="w-full px-4 py-3 bg-zinc-800 border border-zinc-700 rounded-lg text-white placeholder-zinc-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500/50 mb-3 text-base transition-all" 
                 placeholder="example.com or www.example.com" 
-                autoFocus 
               />
               {domainError && <p className="text-red-400 text-sm mb-3 flex items-center gap-2"><span>⚠️</span>{domainError}</p>}
               
