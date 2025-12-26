@@ -245,7 +245,6 @@ export default function Home() {
                   "Unlimited projects",
                   "Unlimited generations",
                   "Live preview",
-                  "Version history",
                   "Undo/rollback",
                   "Auto-fix errors"
                 ].map((feature, i) => (
@@ -274,6 +273,7 @@ export default function Home() {
                   "Deploy to live URL",
                   "Custom domain",
                   "Download clean code",
+                  "Version history",
                   "Unlimited updates",
                   "SSL included",
                   "Cancel anytime"

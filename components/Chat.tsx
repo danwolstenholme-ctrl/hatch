@@ -112,7 +112,7 @@ export default function Chat({ onGenerate, isGenerating, currentCode, isPaid = f
           {isPaid ? (
             // Paid users - unlimited
             <div className="flex items-center gap-2">
-              <span className="text-lg">∞</span>
+              <span className="text-lg text-zinc-200">∞</span>
               <span className="text-xs text-zinc-400">Unlimited generations</span>
             </div>
           ) : (

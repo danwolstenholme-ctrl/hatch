@@ -102,6 +102,7 @@ export default function UpgradeModal({ isOpen, onClose, reason }: UpgradeModalPr
               'Custom domain',
               'Full code access',
               'Download project',
+              'Version history',
               'Unlimited generations',
               'Unlimited updates'
             ].map((feature, i) => (
