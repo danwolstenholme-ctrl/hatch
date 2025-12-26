@@ -52,6 +52,8 @@ export default function Chat({ onGenerate, isGenerating, currentCode, isPaid = f
   const [messages, setMessages] = useState<Message[]>([])
   const [showUpgradeModal, setShowUpgradeModal] = useState(false)
   const [remaining, setRemaining] = useState<number | null>(null)
+  const [mode, setMode] = useState<'build' | 'chat'>('build')
+  const [isChatLoading, setIsChatLoading] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
@@ -68,34 +70,57 @@ export default function Chat({ onGenerate, isGenerating, currentCode, isPaid = f
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
-    if (!input.trim() || isGenerating) return
-
-    // Check generation limit for free users
-    if (!isPaid && !canGenerate()) {
-      setShowUpgradeModal(true)
-      return
-    }
+    if (!input.trim() || isGenerating || isChatLoading) return
 
     const userMessage = input.trim()
     setInput('')
 
     const newUserMessage: Message = { role: 'user', content: userMessage }
-    const thinkingMessage: Message = { role: 'assistant', content: getRandomThinking(), isThinking: true }
+    setMessages(prev => [...prev, newUserMessage])
 
-    setMessages(prev => [...prev, newUserMessage, thinkingMessage])
+    if (mode === 'chat') {
+      // Chat mode - use assistant API
+      setIsChatLoading(true)
+      try {
+        const response = await fetch('/api/assistant', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ 
+            message: userMessage, 
+            currentCode 
+          })
+        })
+        const data = await response.json()
+        setMessages(prev => [...prev, { role: 'assistant', content: data.message }])
+      } catch (error) {
+        setMessages(prev => [...prev, { role: 'assistant', content: 'Sorry, I had trouble responding.' }])
+      } finally {
+        setIsChatLoading(false)
+      }
+    } else {
+      // Build mode - existing generation logic
+      // Check generation limit for free users
+      if (!isPaid && !canGenerate()) {
+        setShowUpgradeModal(true)
+        return
+      }
 
-    await onGenerate(userMessage, messages, currentCode)
+      const thinkingMessage: Message = { role: 'assistant', content: getRandomThinking(), isThinking: true }
+      setMessages(prev => [...prev, thinkingMessage])
 
-    // Record the generation for free users
-    if (!isPaid) {
-      const result = recordGeneration()
-      setRemaining(result.remaining)
+      await onGenerate(userMessage, messages, currentCode)
+
+      // Record the generation for free users
+      if (!isPaid) {
+        const result = recordGeneration()
+        setRemaining(result.remaining)
+      }
+
+      setMessages(prev => {
+        const withoutThinking = prev.filter(m => !m.isThinking)
+        return [...withoutThinking, { role: 'assistant', content: getRandomResponse(), code: currentCode }]
+      })
     }
-
-    setMessages(prev => {
-      const withoutThinking = prev.filter(m => !m.isThinking)
-      return [...withoutThinking, { role: 'assistant', content: getRandomResponse(), code: currentCode }]
-    })
   }
 
   const clearChat = () => {
@@ -149,13 +174,37 @@ export default function Chat({ onGenerate, isGenerating, currentCode, isPaid = f
       )}
 
       <div className="flex-1 overflow-y-auto p-4 space-y-3">
+        {/* Mode toggle */}
+        <div className="flex items-center gap-1 p-1 bg-zinc-800 rounded-lg sticky top-0 z-10">
+          <button
+            onClick={() => setMode('build')}
+            className={`flex-1 px-3 py-1.5 rounded-md text-sm font-medium transition-all ${
+              mode === 'build' 
+                ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white' 
+                : 'text-zinc-400 hover:text-white'
+            }`}
+          >
+            ⚡ Build
+          </button>
+          <button
+            onClick={() => setMode('chat')}
+            className={`flex-1 px-3 py-1.5 rounded-md text-sm font-medium transition-all ${
+              mode === 'chat' 
+                ? 'bg-gradient-to-r from-green-600 to-emerald-600 text-white' 
+                : 'text-zinc-400 hover:text-white'
+            }`}
+          >
+            💬 Chat
+          </button>
+        </div>
+
         {messages.length === 0 ? (
           <div className="h-full flex flex-col items-center justify-center text-center px-4">
             <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-500/20 to-purple-500/20 flex items-center justify-center mb-4">
-              <span className="text-2xl">⚡</span>
+              <span className="text-2xl">{mode === 'chat' ? '💬' : '⚡'}</span>
             </div>
-            <p className="text-zinc-300 text-sm font-medium mb-2">Describe. Generate. Ship.</p>
-            <p className="text-zinc-600 text-xs max-w-[220px]">Tell us what UI you want. We'll generate production React code in real-time. Not a chatbot — instant component generation.</p>
+            <p className="text-zinc-300 text-sm font-medium mb-2">{mode === 'chat' ? 'Ask me anything' : 'Describe. Generate. Ship.'}</p>
+            <p className="text-zinc-600 text-xs max-w-[220px]">{mode === 'chat' ? 'I can explain your code, suggest improvements, or help you brainstorm.' : 'Tell us what UI you want. We\'ll generate production React code in real-time. Not a chatbot — instant component generation.'}</p>
           </div>
         ) : (
           <>
@@ -167,6 +216,8 @@ export default function Chat({ onGenerate, isGenerating, currentCode, isPaid = f
                     ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white ml-auto' 
                     : msg.isThinking
                       ? 'bg-zinc-800/80 text-zinc-500 italic animate-pulse'
+                      : mode === 'chat'
+                      ? 'bg-emerald-900/40 border border-emerald-700/30 text-zinc-300'
                       : 'bg-zinc-800/80 text-zinc-300'
                 }`}
               >
@@ -197,17 +248,26 @@ export default function Chat({ onGenerate, isGenerating, currentCode, isPaid = f
                 handleSubmit(e)
               }
             }}
-            placeholder={isGenerating ? "" : messages.length === 0 ? "A landing page with a hero section and pricing table..." : "Modify the design..."}
+            placeholder={
+              isChatLoading ? "" : 
+              mode === 'chat' 
+                ? messages.length === 0 ? "Ask me anything..." : "Ask a follow-up question..." 
+                : messages.length === 0 ? "A landing page with a hero section and pricing table..." : "Modify the design..."
+            }
             className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3 text-sm text-zinc-100 placeholder-zinc-600 focus:outline-none focus:border-zinc-700 focus:ring-1 focus:ring-zinc-700 resize-none transition-all"
             rows={3}
-            disabled={isGenerating}
+            disabled={isGenerating || isChatLoading}
           />
           <button
             type="submit"
-            disabled={isGenerating || !input.trim()}
-            className="w-full px-4 py-2.5 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white rounded-xl text-sm font-medium disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+            disabled={isGenerating || isChatLoading || !input.trim()}
+            className={`w-full px-4 py-2.5 rounded-xl text-sm font-medium transition-all disabled:opacity-40 disabled:cursor-not-allowed ${
+              mode === 'chat'
+                ? 'bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white'
+                : 'bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white'
+            }`}
           >
-            {isGenerating ? 'Generating...' : messages.length === 0 ? 'Generate' : 'Update'}
+            {isChatLoading ? 'Responding...' : isGenerating ? 'Generating...' : mode === 'chat' ? 'Send' : messages.length === 0 ? 'Generate' : 'Update'}
           </button>
         </form>
       </div>
