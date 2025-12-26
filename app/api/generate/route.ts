@@ -18,6 +18,27 @@ function checkSyntax(code: string): { valid: boolean; error?: string } {
   }
 }
 
+// Aggressive code cleanup - remove all problematic patterns
+function cleanGeneratedCode(code: string): string {
+  return code
+    // Remove 'use client' directive
+    .replace(/['"]use client['"]\s*;?\n?/g, '')
+    // Remove all import statements
+    .replace(/^import\s+.*?;?\s*$/gm, '')
+    // Remove export default function ComponentName() - replace with plain function
+    .replace(/export\s+default\s+function\s+\w+\s*\(\s*\)\s*\{/, 'function Component() {')
+    // Remove standalone export default
+    .replace(/export\s+default\s+/g, '')
+    // Remove any remaining export statements
+    .replace(/^export\s+/gm, '')
+    // Remove type annotations and interfaces
+    .replace(/interface\s+\w+\s*\{[\s\S]*?\}/g, '')
+    .replace(/type\s+\w+\s*=[^;]+;/g, '')
+    // Clean up multiple blank lines
+    .replace(/\n{3,}/g, '\n\n')
+    .trim()
+}
+
 const systemPrompt = `You are the HatchIt component generator. You create production-ready React components that render in a browser iframe using React 18 (UMD) and Tailwind CSS (CDN).
 
 ## CRITICAL RULES
@@ -159,11 +180,8 @@ export async function POST(request: NextRequest) {
         code = codeMatch[1].trim()
       }
 
-      // Remove any 'use client' directives (not valid in iframe context)
-      code = code.replace(/^['"]use client['"];\s*\n*/gm, '')
-      
-      // Remove any import statements (hooks are available globally)
-      code = code.replace(/^import\s+.*from\s+['"].*['"];?\s*\n*/gm, '')
+      // Apply aggressive cleanup
+      code = cleanGeneratedCode(code)
 
       // Check syntax and auto-fix if needed
       const syntaxCheck = checkSyntax(code)
@@ -199,9 +217,8 @@ export async function POST(request: NextRequest) {
             fixedCode = fixMatch[1].trim()
           }
           
-          // Remove any 'use client' directives and imports
-          fixedCode = fixedCode.replace(/^['"]use client['"];\s*\n*/gm, '')
-          fixedCode = fixedCode.replace(/^import\s+.*from\s+['"].*['"];?\s*\n*/gm, '')
+          // Apply aggressive cleanup to fixed code too
+          fixedCode = cleanGeneratedCode(fixedCode)
           
           const recheck = checkSyntax(fixedCode)
           if (recheck.valid) {
@@ -211,7 +228,7 @@ export async function POST(request: NextRequest) {
         }
       }
 
-      return NextResponse.json({ code })
+      return NextResponse.json({ code: cleanGeneratedCode(code) })
     }
 
     return NextResponse.json({ error: 'No response' }, { status: 500 })

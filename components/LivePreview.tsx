@@ -285,7 +285,7 @@ export default function RootLayout({
       '<script>document.addEventListener("click", function(e) { var link = e.target.closest("a"); if (link) { e.preventDefault(); var href = link.getAttribute("href"); if (href && href.startsWith("#")) { var target = document.querySelector(href); if (target) target.scrollIntoView({ behavior: "smooth" }); } } });</script>' +
       '<script>' +
       'window.onerror = function(msg, url, line, col, error) {' +
-      '  document.getElementById("root").innerHTML = "<div class=\'error\'><h2>JavaScript Error:</h2>" + msg + "</div>";' +
+      '  document.getElementById("root").innerHTML = "<div class=\'error\'><h2>⚠️ Preview Unavailable</h2><p>Your code is ready in the <strong>Code</strong> tab</p><p style=\'font-size: 0.9em; color: #a1a1aa; margin-top: 1rem;\'>This component has a JavaScript issue. Check the browser console for details.</p></div>";' +
       '  return true;' +
       '};' +
       '</script>' +
@@ -299,15 +299,14 @@ export default function RootLayout({
       '  } else if (typeof Component === "function") {\n' +
       '    root.render(React.createElement(Component));\n' +
       '  } else {\n' +
-      '    document.getElementById("root").innerHTML = "<div class=\'error\'><h2>Component Not Found</h2>Make sure your code exports a function component. The first exported function should be your main component.</div>";\n' +
+      '    document.getElementById("root").innerHTML = "<div class=\'error\'><h2>Component Not Found</h2><p>Make sure your code exports a function component.</p></div>";\n' +
       '  }\n' +
       '} catch (err) {\n' +
       '  var msg = err.message || "Unknown error";\n' +
-      '  if (msg.includes("is not defined")) { msg += " — Check your variable names and imports"; }\n' +
-      '  document.getElementById("root").innerHTML = "<div class=\'error\'><h2>Render Error:</h2>" + msg + "</div>";\n' +
+      '  document.getElementById("root").innerHTML = "<div class=\'error\'><h2>⚠️ Preview Unavailable</h2><p>Your code is ready in the <strong>Code</strong> tab</p><p style=\'font-size: 0.9em; color: #a1a1aa; margin-top: 1rem;\'>Issue: " + msg + "</p></div>";\n' +
       '}\n' +
       '</script>' +
-      '<script>setTimeout(function() { if (document.querySelector(".loading")) { document.getElementById("root").innerHTML = "<div class=\'error\'><h2>Preview Timeout</h2>The component took too long to render. It may have an infinite loop or blocking operation. Check the console for errors.</div>"; } }, 8000);</script>' +
+      '<script>setTimeout(function() { if (document.querySelector(".loading")) { document.getElementById("root").innerHTML = "<div class=\'error\'><h2>⚠️ Preview Timeout</h2><p>Your code is ready in the <strong>Code</strong> tab</p><p style=\'font-size: 0.9em; color: #a1a1aa; margin-top: 1rem;\'>The component took too long to render. Check for infinite loops.</p></div>"; } }, 8000);</script>' +
       '</body></html>'
 
     return html
