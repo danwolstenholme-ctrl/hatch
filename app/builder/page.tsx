@@ -548,7 +548,7 @@ export default function Home() {
             <input type="text" value={deployName} onChange={(e) => setDeployName(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-'))} className="w-full px-4 py-3 bg-zinc-800 border border-zinc-700 rounded-xl text-white placeholder-zinc-500 focus:outline-none focus:border-blue-500 mb-2 text-base" placeholder="my-awesome-site" autoFocus />
             <div className="text-sm text-zinc-500 mb-6 break-all">Your site will be live at: <span className="text-blue-400 font-mono text-xs">{deployName || 'your-site'}.hatchitsites.dev</span></div>
           </>
-        )}}
+        )}
         <div className="flex gap-3">
           <button onClick={() => setShowDeployModal(false)} className="flex-1 px-4 py-2 text-sm text-zinc-400 hover:text-white transition-colors">Cancel</button>
           <button onClick={() => { setShowDeployModal(false); handleDeploy(isDeployed ? currentProject?.deployedSlug : deployName) }} disabled={!isDeployed && !deployName} className="flex-1 px-4 py-2 text-sm bg-green-600 hover:bg-green-500 disabled:bg-zinc-700 disabled:cursor-not-allowed text-white rounded-xl transition-colors">{isDeployed ? 'Update 🔄' : 'Deploy 🚀'}</button>
@@ -737,16 +737,16 @@ export default function Home() {
         {deployedUrl && <DeployedModal />}
         {showShipModal && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4\">
-            <div className="bg-zinc-900 rounded-xl p-6 md:p-8 w-full max-w-md border border-zinc-800\">
-              <h2 className="text-2xl font-bold mb-2\">Ship your site</h2>
-              <p className="text-zinc-400 mb-6\">Manage your deployed project</p>
+            <div className="bg-zinc-900 rounded-xl p-6 md:p-8 w-full max-w-md border border-zinc-800">
+              <h2 className="text-2xl font-bold mb-2">Ship your site</h2>
+              <p className="text-zinc-400 mb-6">Manage your deployed project</p>
               
-              <div className="space-y-3\">
+              <div className="space-y-3">
                 <button
                   onClick={() => handleDeploy()}
-                  className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white font-semibold py-3 rounded-lg transition-all flex items-center justify-center gap-2 active:scale-95\">
-                  <svg className="w-5 h-5\" fill=\"none\" stroke=\"currentColor\" viewBox=\"0 0 24 24\">
-                    <path strokeLinecap=\"round\" strokeLinejoin=\"round\" strokeWidth={2} d=\"M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3v-6\" />
+                  className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white font-semibold py-3 rounded-lg transition-all flex items-center justify-center gap-2 active:scale-95">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3v-6" />
                   </svg>
                   Push Update
                 </button>
@@ -756,9 +756,9 @@ export default function Home() {
                     setShowShipModal(false)
                     setShowDomainModal(true)
                   }}
-                  className=\"w-full bg-zinc-800 hover:bg-zinc-700 text-white font-semibold py-3 rounded-lg transition-all flex items-center justify-center gap-2 active:scale-95\">
-                  <svg className=\"w-5 h-5\" fill=\"none\" stroke=\"currentColor\" viewBox=\"0 0 24 24\">
-                    <path strokeLinecap=\"round\" strokeLinejoin=\"round\" strokeWidth={2} d=\"M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM13 10H7\" />
+                  className="w-full bg-zinc-800 hover:bg-zinc-700 text-white font-semibold py-3 rounded-lg transition-all flex items-center justify-center gap-2 active:scale-95">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM13 10H7" />
                   </svg>
                   Manage Domain
                 </button>
@@ -768,8 +768,8 @@ export default function Home() {
                     handleDownloadClick()
                     setShowShipModal(false)
                   }}
-                  className=\"w-full bg-zinc-800 hover:bg-zinc-700 text-white font-semibold py-3 rounded-lg transition-all flex items-center justify-center gap-2 active:scale-95\">
-                  <svg className=\"w-5 h-5\" fill=\"none\" stroke=\"currentColor\" viewBox=\"0 0 24 24\">\n
+                  className="w-full bg-zinc-800 hover:bg-zinc-700 text-white font-semibold py-3 rounded-lg transition-all flex items-center justify-center gap-2 active:scale-95">
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                   </svg>
                   Download ZIP
