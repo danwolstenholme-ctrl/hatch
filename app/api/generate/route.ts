@@ -22,18 +22,17 @@ const systemPrompt = `You are the HatchIt component generator. You create produc
 
 ## CRITICAL RULES
 
-### No Imports
-NEVER use import statements. These hooks are available globally as standalone functions:
+### No Imports or 'use client'
+NEVER use import statements or 'use client' directives. These hooks are available globally as standalone functions:
 - useState, useEffect, useMemo, useCallback, useRef
 
 WRONG: import { useState } from 'react'
+WRONG: 'use client'
 WRONG: React.useState()
 CORRECT: const [count, setCount] = useState(0)
 
 ### Component Structure
-Always use this exact format:
-
-'use client'
+Always use this exact format (NO 'use client' directive):
 
 export default function Component() {
   // hooks at top
@@ -160,6 +159,12 @@ export async function POST(request: NextRequest) {
         code = codeMatch[1].trim()
       }
 
+      // Remove any 'use client' directives (not valid in iframe context)
+      code = code.replace(/^['"]use client['"];\s*\n*/gm, '')
+      
+      // Remove any import statements (hooks are available globally)
+      code = code.replace(/^import\s+.*from\s+['"].*['"];?\s*\n*/gm, '')
+
       // Check syntax and auto-fix if needed
       const syntaxCheck = checkSyntax(code)
       if (!syntaxCheck.valid && syntaxCheck.error) {
@@ -193,6 +198,10 @@ export async function POST(request: NextRequest) {
           if (fixMatch) {
             fixedCode = fixMatch[1].trim()
           }
+          
+          // Remove any 'use client' directives and imports
+          fixedCode = fixedCode.replace(/^['"]use client['"];\s*\n*/gm, '')
+          fixedCode = fixedCode.replace(/^import\s+.*from\s+['"].*['"];?\s*\n*/gm, '')
           
           const recheck = checkSyntax(fixedCode)
           if (recheck.valid) {

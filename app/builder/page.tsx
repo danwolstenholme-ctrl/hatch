@@ -488,16 +488,16 @@ export default function Home() {
   )
 
   const HistoryModal = () => (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
-      <div className="bg-zinc-900 border border-zinc-700 rounded-2xl max-w-4xl w-full mx-4 shadow-2xl max-h-[80vh] flex flex-col">
-        <div className="px-6 py-4 border-b border-zinc-800 flex items-center justify-between">
-          <h2 className="text-lg font-semibold text-white">Version History</h2>
-          <button onClick={() => { setShowHistoryModal(false); setPreviewVersionIndex(null) }} className="p-2 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors">
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className="bg-zinc-900 border border-zinc-700 rounded-2xl w-full max-w-4xl shadow-2xl max-h-[90vh] flex flex-col overflow-hidden">
+        <div className="px-4 md:px-6 py-4 border-b border-zinc-800 flex items-center justify-between flex-shrink-0">
+          <h2 className="text-lg font-semibold text-white truncate">Version History</h2>
+          <button onClick={() => { setShowHistoryModal(false); setPreviewVersionIndex(null) }} className="p-2 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors flex-shrink-0 ml-2">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
           </button>
         </div>
-        <div className="flex-1 flex overflow-hidden">
-          <div className="w-72 border-r border-zinc-800 overflow-y-auto">
+        <div className="flex-1 flex overflow-hidden flex-col md:flex-row min-h-0">
+          <div className="w-full md:w-72 border-b md:border-b-0 md:border-r border-zinc-800 overflow-y-auto max-h-[40vh] md:max-h-none">
             {versions.length === 0 ? (
               <div className="p-4 text-zinc-500 text-sm text-center">No versions yet</div>
             ) : (
@@ -506,9 +506,9 @@ export default function Home() {
                 const isCurrent = index === currentVersionIndex
                 const isPreviewing = index === previewVersionIndex
                 return (
-                  <button key={version.id} onClick={() => setPreviewVersionIndex(index)} className={`w-full px-4 py-3 text-left border-b border-zinc-800/50 transition-colors ${isPreviewing ? 'bg-blue-600/20' : isCurrent ? 'bg-zinc-800' : 'hover:bg-zinc-800/50'}`}>
+                  <button key={version.id} onClick={() => setPreviewVersionIndex(index)} className={`w-full px-4 py-3 text-left border-b border-zinc-800/50 transition-colors text-sm md:text-base ${isPreviewing ? 'bg-blue-600/20' : isCurrent ? 'bg-zinc-800' : 'hover:bg-zinc-800/50'}`}>
                     <div className="flex items-center gap-2 mb-1">
-                      <span className="text-sm font-medium text-white">v{index + 1}</span>
+                      <span className="font-medium text-white">v{index + 1}</span>
                       {isCurrent && <span className="text-[10px] px-1.5 py-0.5 bg-blue-500/20 text-blue-400 rounded">CURRENT</span>}
                     </div>
                     <div className="text-xs text-zinc-500 mb-1">{formatRelativeTime(version.timestamp)}</div>
@@ -518,17 +518,17 @@ export default function Home() {
               })
             )}
           </div>
-          <div className="flex-1 flex flex-col min-w-0">
+          <div className="flex-1 flex flex-col min-w-0 min-h-0">
             {previewVersionIndex !== null ? (
               <>
-                <div className="flex-1 overflow-auto bg-zinc-950"><LivePreview code={versions[previewVersionIndex]?.code || ''} isLoading={false} isPaid={isPaid} setShowUpgradeModal={setShowUpgradeModal} /></div>
-                <div className="px-4 py-3 border-t border-zinc-800 flex items-center justify-between">
+                <div className="flex-1 overflow-auto bg-zinc-950 min-h-0"><LivePreview code={versions[previewVersionIndex]?.code || ''} isLoading={false} isPaid={isPaid} setShowUpgradeModal={setShowUpgradeModal} /></div>
+                <div className="px-4 py-3 border-t border-zinc-800 flex items-center justify-between flex-shrink-0">
                   <span className="text-sm text-zinc-400">Previewing v{previewVersionIndex + 1}</span>
-                  {previewVersionIndex !== currentVersionIndex && <button onClick={() => restoreVersion(previewVersionIndex)} className="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-500 text-white rounded-xl transition-colors">Restore This Version</button>}
+                  {previewVersionIndex !== currentVersionIndex && <button onClick={() => restoreVersion(previewVersionIndex)} className="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-500 text-white rounded-xl transition-colors whitespace-nowrap ml-2">Restore</button>}
                 </div>
               </>
             ) : (
-              <div className="flex-1 flex items-center justify-center text-zinc-500">Select a version to preview</div>
+              <div className="flex-1 flex items-center justify-center text-zinc-500 text-sm">Select a version</div>
             )}
           </div>
         </div>
@@ -537,18 +537,18 @@ export default function Home() {
   )
 
   const DeployConfirmModal = () => (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
-      <div className="bg-zinc-900 border border-zinc-700 rounded-2xl p-6 max-w-md mx-4 shadow-2xl">
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className="bg-zinc-900 border border-zinc-700 rounded-2xl p-6 w-full max-w-md shadow-2xl">
         <h2 className="text-lg font-semibold text-white mb-2">{isDeployed ? 'Update Site' : 'Deploy Site'}</h2>
         <p className="text-zinc-400 text-sm mb-4">{isDeployed ? 'Update your live site with the latest changes' : 'Choose a name for your site URL'}</p>
         {isDeployed ? (
-          <div className="text-sm text-zinc-500 mb-6">Updating: <span className="text-blue-400">{currentProject?.deployedSlug}.hatchitsites.dev</span></div>
+          <div className="text-sm text-zinc-500 mb-6 break-all">Updating: <span className="text-blue-400 font-mono text-xs">{currentProject?.deployedSlug}.hatchitsites.dev</span></div>
         ) : (
           <>
-            <input type="text" value={deployName} onChange={(e) => setDeployName(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-'))} className="w-full px-4 py-3 bg-zinc-800 border border-zinc-700 rounded-xl text-white placeholder-zinc-500 focus:outline-none focus:border-blue-500 mb-2" placeholder="my-awesome-site" autoFocus />
-            <div className="text-sm text-zinc-500 mb-6">Your site will be live at: <span className="text-blue-400">{deployName || 'your-site'}.hatchitsites.dev</span></div>
+            <input type="text" value={deployName} onChange={(e) => setDeployName(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, '-'))} className="w-full px-4 py-3 bg-zinc-800 border border-zinc-700 rounded-xl text-white placeholder-zinc-500 focus:outline-none focus:border-blue-500 mb-2 text-base" placeholder="my-awesome-site" autoFocus />
+            <div className="text-sm text-zinc-500 mb-6 break-all">Your site will be live at: <span className="text-blue-400 font-mono text-xs">{deployName || 'your-site'}.hatchitsites.dev</span></div>
           </>
-        )}
+        )}}
         <div className="flex gap-3">
           <button onClick={() => setShowDeployModal(false)} className="flex-1 px-4 py-2 text-sm text-zinc-400 hover:text-white transition-colors">Cancel</button>
           <button onClick={() => { setShowDeployModal(false); handleDeploy(isDeployed ? currentProject?.deployedSlug : deployName) }} disabled={!isDeployed && !deployName} className="flex-1 px-4 py-2 text-sm bg-green-600 hover:bg-green-500 disabled:bg-zinc-700 disabled:cursor-not-allowed text-white rounded-xl transition-colors">{isDeployed ? 'Update 🔄' : 'Deploy 🚀'}</button>
@@ -558,43 +558,43 @@ export default function Home() {
   )
 
   const DeployedModal = () => (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
-      <div className="bg-zinc-900 border border-zinc-700 rounded-2xl p-6 max-w-md mx-4 shadow-2xl">
-        <div className="w-12 h-12 rounded-full bg-green-500/20 flex items-center justify-center mb-4 mx-auto">
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4\">
+      <div className="bg-zinc-900 border border-zinc-700 rounded-2xl p-6 w-full max-w-md shadow-2xl\">
+        <div className="w-12 h-12 rounded-full bg-green-500/20 flex items-center justify-center mb-4 mx-auto\">
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg>
         </div>
         <h2 className="text-lg font-semibold text-white mb-2 text-center">{isDeployed ? 'Site Updated! 🔄' : 'Site Deployed! 🚀'}</h2>
         <p className="text-zinc-400 text-sm mb-4 text-center">Your site is now live at:</p>
-        <a href={deployedUrl!} target="_blank" rel="noopener noreferrer" className="block w-full px-4 py-3 bg-zinc-800 border border-zinc-700 rounded-xl text-blue-400 hover:text-blue-300 text-center text-sm break-all transition-colors">{deployedUrl}</a>
-        <div className="flex gap-2 mt-4">
-          <button onClick={() => setDeployedUrl(null)} className="px-3 py-2 text-sm text-zinc-400 hover:text-white transition-colors">Close</button>
-          <a href={deployedUrl!} target="_blank" rel="noopener noreferrer" className="flex-1 px-3 py-2 text-sm bg-zinc-700 hover:bg-zinc-600 text-white rounded-xl transition-colors text-center flex items-center justify-center gap-1.5 whitespace-nowrap">
-            <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-            View Site
+        <a href={deployedUrl!} target="_blank" rel="noopener noreferrer" className="block w-full px-4 py-3 bg-zinc-800 border border-zinc-700 rounded-xl text-blue-400 hover:text-blue-300 text-center text-sm break-all transition-colors mb-4">{deployedUrl}</a>
+        <div className="flex flex-col sm:flex-row gap-2">
+          <button onClick={() => setDeployedUrl(null)} className="px-3 py-2.5 text-sm text-zinc-400 hover:text-white transition-colors border border-zinc-700 rounded-lg\">Close</button>
+          <a href={deployedUrl!} target="_blank" rel="noopener noreferrer" className="flex-1 px-3 py-2.5 text-sm bg-zinc-700 hover:bg-zinc-600 text-white rounded-lg transition-colors text-center flex items-center justify-center gap-1.5 whitespace-nowrap\">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+            View
           </a>
-          <button onClick={() => { navigator.clipboard.writeText(deployedUrl!); setCopied(true); setTimeout(() => setCopied(false), 2000) }} className="flex-1 px-3 py-2 text-sm bg-blue-600 hover:bg-blue-500 text-white rounded-xl transition-colors whitespace-nowrap">{copied ? '✓ Copied!' : 'Copy URL'}</button>
+          <button onClick={() => { navigator.clipboard.writeText(deployedUrl!); setCopied(true); setTimeout(() => setCopied(false), 2000) }} className="flex-1 px-3 py-2.5 text-sm bg-blue-600 hover:bg-blue-500 text-white rounded-lg transition-colors\">{copied ? '✓ Copied!' : 'Copy URL'}</button>
         </div>
       </div>
     </div>
   )
 
   const DomainModal = () => (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
-      <div className="bg-zinc-900 border border-zinc-700 rounded-2xl p-6 max-w-lg mx-4 shadow-2xl">
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className="bg-zinc-900 border border-zinc-700 rounded-2xl p-6 w-full max-w-lg shadow-2xl max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between mb-4">
           <h2 className="text-lg font-semibold text-white">Domain Settings</h2>
-          <button onClick={() => setShowDomainModal(false)} className="p-2 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors">
+          <button onClick={() => setShowDomainModal(false)} className="p-2 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors flex-shrink-0 ml-2">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
           </button>
         </div>
         <div className="mb-4">
           <div className="text-xs text-zinc-500 mb-1">Base Domain</div>
-          <div className="flex items-center gap-2 px-3 py-2 bg-zinc-800 rounded-lg">
+          <div className="flex items-center gap-2 px-3 py-2 bg-zinc-800 rounded-lg overflow-hidden">
             <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg>
-            <a href={`https://${currentProject?.deployedSlug}.hatchitsites.dev`} target="_blank" rel="noopener noreferrer" className="text-sm text-blue-400 hover:text-blue-300 transition-colors">
+            <a href={`https://${currentProject?.deployedSlug}.hatchitsites.dev`} target="_blank" rel="noopener noreferrer" className="text-sm text-blue-400 hover:text-blue-300 transition-colors truncate">
               {currentProject?.deployedSlug}.hatchitsites.dev
             </a>
-            <button onClick={() => { navigator.clipboard.writeText(`https://${currentProject?.deployedSlug}.hatchitsites.dev`); setCopied(true); setTimeout(() => setCopied(false), 2000) }} className="ml-auto text-zinc-400 hover:text-white">
+            <button onClick={() => { navigator.clipboard.writeText(`https://${currentProject?.deployedSlug}.hatchitsites.dev`); setCopied(true); setTimeout(() => setCopied(false), 2000) }} className="ml-auto text-zinc-400 hover:text-white flex-shrink-0 p-1">
               {copied ? <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg> : <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>}
             </button>
           </div>
@@ -604,15 +604,15 @@ export default function Home() {
           {currentProject?.customDomain && domainStatus !== 'idle' && domainStatus !== 'adding' && domainStatus !== 'error' ? (
             <div className="flex items-center gap-2 px-3 py-2 bg-zinc-800 rounded-lg mb-3">
               <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg>
-              <a href={`https://${currentProject.customDomain}`} target="_blank" rel="noopener noreferrer" className="text-sm text-blue-400 hover:text-blue-300 transition-colors">
+              <a href={`https://${currentProject.customDomain}`} target="_blank" rel="noopener noreferrer" className="text-sm text-blue-400 hover:text-blue-300 transition-colors truncate">
                 {currentProject.customDomain}
               </a>
-              <button onClick={() => { setDomainStatus('idle'); setCustomDomain('') }} className="ml-auto text-xs text-zinc-500 hover:text-white">Change</button>
+              <button onClick={() => { setDomainStatus('idle'); setCustomDomain('') }} className="ml-auto text-xs text-zinc-500 hover:text-white whitespace-nowrap">Change</button>
             </div>
           ) : null}
           {domainStatus === 'idle' || domainStatus === 'adding' || domainStatus === 'error' ? (
             <>
-              <input ref={domainInputRef} type="text" value={customDomain} onChange={(e) => setCustomDomain(e.target.value.toLowerCase())} onKeyDown={(e) => e.key === 'Enter' && customDomain && connectDomain()} className="w-full px-4 py-3 bg-zinc-800 border border-zinc-700 rounded-xl text-white placeholder-zinc-500 focus:outline-none focus:border-blue-500 mb-2" placeholder="example.com or www.example.com" autoFocus />
+              <input ref={domainInputRef} type="text" value={customDomain} onChange={(e) => setCustomDomain(e.target.value.toLowerCase())} onKeyDown={(e) => e.key === 'Enter' && customDomain && connectDomain()} className="w-full px-4 py-3 bg-zinc-800 border border-zinc-700 rounded-xl text-white placeholder-zinc-500 focus:outline-none focus:border-blue-500 mb-2 text-base" placeholder="example.com or www.example.com" autoFocus />
               {domainError && <p className="text-red-400 text-sm mb-2">{domainError}</p>}
               <button onClick={connectDomain} disabled={!customDomain || domainStatus === 'adding'} className="w-full px-4 py-3 text-sm bg-blue-600 hover:bg-blue-500 disabled:bg-zinc-700 disabled:cursor-not-allowed text-white rounded-xl transition-colors flex items-center justify-center gap-2">
                 {domainStatus === 'adding' ? (
@@ -626,15 +626,15 @@ export default function Home() {
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
                 <span className="text-amber-400 text-sm">DNS Configuration Required</span>
               </div>
-              <div className="bg-zinc-800 rounded-xl p-4 mb-4 space-y-3">
-                <div><div className="text-xs text-zinc-500 mb-1">Type</div><div className="text-white font-mono text-sm">CNAME</div></div>
-                <div><div className="text-xs text-zinc-500 mb-1">Name / Host</div><div className="text-white font-mono text-sm">{customDomain.startsWith('www.') ? 'www' : '@'}</div></div>
-                <div><div className="text-xs text-zinc-500 mb-1">Value / Target</div><div className="text-white font-mono text-sm flex items-center gap-2">cname.vercel-dns.com<button onClick={() => { navigator.clipboard.writeText('cname.vercel-dns.com'); setCopied(true); setTimeout(() => setCopied(false), 2000) }} className="text-zinc-400 hover:text-white">{copied ? <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg> : <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>}</button></div></div>
+              <div className="bg-zinc-800 rounded-xl p-4 mb-4 space-y-3 text-sm">
+                <div><div className="text-xs text-zinc-500 mb-1">Type</div><div className="text-white font-mono break-all">CNAME</div></div>
+                <div><div className="text-xs text-zinc-500 mb-1">Name / Host</div><div className="text-white font-mono">{customDomain.startsWith('www.') ? 'www' : '@'}</div></div>
+                <div><div className="text-xs text-zinc-500 mb-1">Value / Target</div><div className="text-white font-mono flex items-center gap-2 break-all">cname.vercel-dns.com<button onClick={() => { navigator.clipboard.writeText('cname.vercel-dns.com'); setCopied(true); setTimeout(() => setCopied(false), 2000) }} className="text-zinc-400 hover:text-white flex-shrink-0">{copied ? <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg> : <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>}</button></div></div>
               </div>
               <p className="text-zinc-500 text-xs mb-4">DNS changes can take 5-30 minutes to propagate.</p>
               <div className="flex gap-2">
-                <button onClick={() => setShowDomainModal(false)} className="flex-1 px-4 py-2 text-sm text-zinc-400 hover:text-white transition-colors">Done</button>
-                <a href={`https://${customDomain}`} target="_blank" rel="noopener noreferrer" className="flex-1 px-4 py-2 text-sm bg-zinc-700 hover:bg-zinc-600 text-white rounded-xl transition-colors text-center">Check Domain</a>
+                <button onClick={() => setShowDomainModal(false)} className="flex-1 px-4 py-2.5 text-sm text-zinc-400 hover:text-white transition-colors border border-zinc-700 rounded-lg">Done</button>
+                <a href={`https://${customDomain}`} target="_blank" rel="noopener noreferrer" className="flex-1 px-4 py-2.5 text-sm bg-zinc-700 hover:bg-zinc-600 text-white rounded-lg transition-colors text-center">Check Domain</a>
               </div>
             </>
           ) : null}
@@ -736,18 +736,17 @@ export default function Home() {
         {showDomainModal && <DomainModal />}
         {deployedUrl && <DeployedModal />}
         {showShipModal && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-            <div className="bg-zinc-900 rounded-xl p-8 max-w-md w-full mx-4 border border-zinc-800">
-              <h2 className="text-2xl font-bold mb-2">Ship your site</h2>
-              <p className="text-zinc-400 mb-6">Manage your deployed project</p>
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4\">
+            <div className="bg-zinc-900 rounded-xl p-6 md:p-8 w-full max-w-md border border-zinc-800\">
+              <h2 className="text-2xl font-bold mb-2\">Ship your site</h2>
+              <p className="text-zinc-400 mb-6\">Manage your deployed project</p>
               
-              <div className="space-y-3">
+              <div className="space-y-3\">
                 <button
                   onClick={() => handleDeploy()}
-                  className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white font-semibold py-3 rounded-lg transition-all flex items-center justify-center gap-2"
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3v-6" />
+                  className="w-full bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-500 hover:to-emerald-500 text-white font-semibold py-3 rounded-lg transition-all flex items-center justify-center gap-2 active:scale-95\">
+                  <svg className="w-5 h-5\" fill=\"none\" stroke=\"currentColor\" viewBox=\"0 0 24 24\">
+                    <path strokeLinecap=\"round\" strokeLinejoin=\"round\" strokeWidth={2} d=\"M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3v-6\" />
                   </svg>
                   Push Update
                 </button>
@@ -757,10 +756,9 @@ export default function Home() {
                     setShowShipModal(false)
                     setShowDomainModal(true)
                   }}
-                  className="w-full bg-zinc-800 hover:bg-zinc-700 text-white font-semibold py-3 rounded-lg transition-all flex items-center justify-center gap-2"
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM13 10H7" />
+                  className=\"w-full bg-zinc-800 hover:bg-zinc-700 text-white font-semibold py-3 rounded-lg transition-all flex items-center justify-center gap-2 active:scale-95\">
+                  <svg className=\"w-5 h-5\" fill=\"none\" stroke=\"currentColor\" viewBox=\"0 0 24 24\">
+                    <path strokeLinecap=\"round\" strokeLinejoin=\"round\" strokeWidth={2} d=\"M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM13 10H7\" />
                   </svg>
                   Manage Domain
                 </button>
@@ -770,9 +768,8 @@ export default function Home() {
                     handleDownloadClick()
                     setShowShipModal(false)
                   }}
-                  className="w-full bg-zinc-800 hover:bg-zinc-700 text-white font-semibold py-3 rounded-lg transition-all flex items-center justify-center gap-2"
-                >
-                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  className=\"w-full bg-zinc-800 hover:bg-zinc-700 text-white font-semibold py-3 rounded-lg transition-all flex items-center justify-center gap-2 active:scale-95\">
+                  <svg className=\"w-5 h-5\" fill=\"none\" stroke=\"currentColor\" viewBox=\"0 0 24 24\">\n
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                   </svg>
                   Download ZIP
