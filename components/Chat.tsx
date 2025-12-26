@@ -204,7 +204,29 @@ export default function Chat({ onGenerate, isGenerating, currentCode, isPaid = f
               <span className="text-2xl">{mode === 'chat' ? '💬' : '⚡'}</span>
             </div>
             <p className="text-zinc-300 text-sm font-medium mb-2">{mode === 'chat' ? 'Ask me anything' : 'Describe. Generate. Ship.'}</p>
-            <p className="text-zinc-600 text-xs max-w-[220px]">{mode === 'chat' ? 'I can explain your code, suggest improvements, or help you brainstorm.' : 'Tell us what UI you want. We\'ll generate production React code in real-time. Not a chatbot — instant component generation.'}</p>
+            <p className="text-zinc-600 text-xs max-w-[220px] mb-6">{mode === 'chat' ? 'I can explain your code, suggest improvements, or help you brainstorm.' : 'Tell us what UI you want. We\'ll generate production React code in real-time. Not a chatbot — instant component generation.'}</p>
+            
+            {mode === 'build' && messages.length === 0 && (
+              <div className="w-full space-y-2">
+                <p className="text-xs text-zinc-500 font-medium mb-3">Try these:</p>
+                {[
+                  'A landing page for my photography business with a contact form',
+                  'A coming soon page with email signup',
+                  'A pricing page with three tiers',
+                  'A portfolio showcase with image gallery'
+                ].map((prompt, i) => (
+                  <button
+                    key={i}
+                    onClick={() => {
+                      setInput(prompt)
+                    }}
+                    className="w-full text-left px-3 py-2 text-xs bg-zinc-800/50 hover:bg-zinc-800 text-zinc-300 hover:text-white rounded-lg transition-colors border border-zinc-700/30 hover:border-zinc-700"
+                  >
+                    {prompt}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         ) : (
           <>

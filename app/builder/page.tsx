@@ -135,6 +135,7 @@ export default function Home() {
   const [showUpgradeModal, setShowUpgradeModal] = useState(false)
   const [upgradeReason, setUpgradeReason] = useState<'generation_limit' | 'code_access' | 'deploy' | 'download'>('deploy')
   const [showSuccessModal, setShowSuccessModal] = useState(false)
+  const [showFaqModal, setShowFaqModal] = useState(false)
   const previewContainerRef = useRef<HTMLDivElement>(null)
   const dropdownRef = useRef<HTMLDivElement>(null)
   const domainInputRef = useRef<HTMLInputElement>(null)
@@ -746,6 +747,45 @@ export default function Home() {
     </button>
   )
 
+  const FaqModal = () => (
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className="bg-zinc-900 border border-zinc-700 rounded-2xl p-6 w-full max-w-lg shadow-2xl max-h-[90vh] overflow-y-auto">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-semibold text-white">Help & FAQ</h2>
+          <button onClick={() => setShowFaqModal(false)} className="p-2 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+          </button>
+        </div>
+        <div className="space-y-4">
+          <div>
+            <h3 className="font-medium text-white mb-2 flex items-center gap-2">
+              <span>🎨</span> What can I build?
+            </h3>
+            <p className="text-sm text-zinc-400">Landing pages, portfolios, coming soon pages, pricing pages, showcase pages, and more. Anything you can describe, we can generate as production-ready React code.</p>
+          </div>
+          <div className="border-t border-zinc-800 pt-4">
+            <h3 className="font-medium text-white mb-2 flex items-center gap-2">
+              <span>📝</span> How do forms work?
+            </h3>
+            <p className="text-sm text-zinc-400 mb-2">We use <span className="text-blue-400 font-medium">Formspree.io</span> for form handling. Sign up free at formspree.io, get your form ID, then replace <span className="font-mono text-xs bg-zinc-800 px-1.5 py-0.5 rounded">YOUR_ID</span> in the generated code.</p>
+          </div>
+          <div className="border-t border-zinc-800 pt-4">
+            <h3 className="font-medium text-white mb-2 flex items-center gap-2">
+              <span>⚡</span> Is this real code?
+            </h3>
+            <p className="text-sm text-zinc-400">Yes! Production-ready React 18 + Tailwind CSS. You can deploy it to Vercel, Netlify, or download as a ZIP and host anywhere. It's real, standalone code.</p>
+          </div>
+          <div className="border-t border-zinc-800 pt-4">
+            <h3 className="font-medium text-white mb-2 flex items-center gap-2">
+              <span>🔒</span> Privacy & legal?
+            </h3>
+            <p className="text-sm text-zinc-400">For privacy policies and terms, we recommend <span className="text-blue-400 font-medium">termly.io</span> (free generator) or <span className="text-blue-400 font-medium">iubenda.com</span>. Coming soon: built-in legal page templates.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+
   if (isMobile) {
     return (
       <div className="h-dvh bg-zinc-950 flex flex-col">
@@ -755,8 +795,9 @@ export default function Home() {
         {showHistoryModal && <HistoryModal />}
         {showDomainModal && <DomainModal />}
         {deployedUrl && <DeployedModal />}
+        {showFaqModal && <FaqModal />}
         {showShipModal && (
-          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4\">
+          <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
             <div className="bg-zinc-900 rounded-xl p-6 md:p-8 w-full max-w-md border border-zinc-800">
               <h2 className="text-2xl font-bold mb-2">Ship your site</h2>
               <p className="text-zinc-400 mb-6">Manage your deployed project</p>
@@ -818,6 +859,7 @@ export default function Home() {
             {isPaid && <HatchedBadge />}
           </div>
           <div className="flex items-center gap-1">
+            <button onClick={() => setShowFaqModal(true)} className="p-2 text-zinc-500 hover:text-white hover:bg-zinc-800 rounded-lg transition-all" title="Help & FAQ"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg></button>
             <HistoryButton />
             {canRedo && <button onClick={handleRedo} className="p-2 text-zinc-500 hover:text-white hover:bg-zinc-800 rounded-lg transition-all" title="Redo"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 7v6h-6"/><path d="M3 17a9 9 0 0 1 9-9 9 9 0 0 1 6 2.3l3 2.7"/></svg></button>}
             {canUndo && <button onClick={handleUndo} className="p-2 text-zinc-500 hover:text-white hover:bg-zinc-800 rounded-lg transition-all" title="Undo"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/></svg></button>}
@@ -863,6 +905,7 @@ export default function Home() {
                 {isPaid && <HatchedBadge />}
               </div>
               <div className="flex items-center gap-1">
+                <button onClick={() => setShowFaqModal(true)} className="p-2 text-zinc-500 hover:text-white hover:bg-zinc-800 rounded-lg transition-all" title="Help & FAQ"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg></button>
                 <HistoryButton />
                 {canRedo && <button onClick={handleRedo} className="p-2 text-zinc-500 hover:text-white hover:bg-zinc-800 rounded-lg transition-all" title="Redo"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 7v6h-6"/><path d="M3 17a9 9 0 0 1 9-9 9 9 0 0 1 6 2.3l3 2.7"/></svg></button>}
                 {canUndo && <button onClick={handleUndo} className="p-2 text-zinc-500 hover:text-white hover:bg-zinc-800 rounded-lg transition-all" title="Undo"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 7v6h6"/><path d="M21 17a9 9 0 0 0-9-9 9 9 0 0 0-6 2.3L3 13"/></svg></button>}

@@ -111,6 +111,10 @@ Always include:
 - Loading state (isSubmitting)
 - Success state (submitted)
 - Proper labels and placeholders
+- For form submission, use Formspree.io:
+  * Set form action to: 'https://formspree.io/f/YOUR_FORMSPREE_ID'
+  * Add a code comment explaining: '// Replace YOUR_FORMSPREE_ID with your ID from formspree.io'
+  * Users sign up free at formspree.io to get their ID
 
 ### Interactive Elements
 - Always add hover states
