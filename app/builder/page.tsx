@@ -173,16 +173,11 @@ export default function Home() {
   const [showFaqModal, setShowFaqModal] = useState(false)
   const [showAssetsModal, setShowAssetsModal] = useState(false)
   const [showGithubModal, setShowGithubModal] = useState(false)
+  const [showDesktopMenu, setShowDesktopMenu] = useState(false)
   const [domainSearch, setDomainSearch] = useState('')
   const [domainSearchResult, setDomainSearchResult] = useState<{ domain: string; available: boolean; price?: number } | null>(null)
   const [isSearchingDomain, setIsSearchingDomain] = useState(false)
   const [isBuyingDomain, setIsBuyingDomain] = useState(false)
-  const [showWarningBanner, setShowWarningBanner] = useState(() => {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('hatchit-warning-dismissed') !== 'true'
-    }
-    return true
-  })
   const previewContainerRef = useRef<HTMLDivElement>(null)
   const dropdownRef = useRef<HTMLDivElement>(null)
   const domainInputRef = useRef<HTMLInputElement>(null)
@@ -252,10 +247,11 @@ export default function Home() {
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) setShowProjectDropdown(false)
+      if (showDesktopMenu && !(e.target as Element).closest('.desktop-menu-container')) setShowDesktopMenu(false)
     }
     document.addEventListener('mousedown', handleClickOutside)
     return () => document.removeEventListener('mousedown', handleClickOutside)
-  }, [])
+  }, [showDesktopMenu])
 
   useEffect(() => {
     const checkMobile = () => setIsMobile(window.innerWidth < 768)
@@ -727,13 +723,6 @@ export default function Home() {
       console.error('Domain search failed:', error)
     } finally {
       setIsSearchingDomain(false)
-    }
-  }
-
-  const handleDismissWarning = () => {
-    setShowWarningBanner(false)
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('hatchit-warning-dismissed', 'true')
     }
   }
 
@@ -1653,15 +1642,15 @@ export default function Home() {
   if (isMobile) {
     return (
       <div className="h-dvh bg-zinc-950 flex flex-col overflow-hidden relative">
-        {showWarningBanner && (
-          <div className="absolute top-0 left-0 right-0 bg-amber-500/20 border-b border-amber-400/30 text-amber-100 text-xs flex items-center justify-between px-3 py-2 z-50">
-            <span className="flex items-center gap-2 whitespace-nowrap"><span role="img" aria-label="floppy">💾</span> Deploy to sync devices.</span>
-            <button onClick={handleDismissWarning} className="ml-2 text-amber-200 hover:text-amber-100 p-1 rounded transition-colors flex-shrink-0" aria-label="Dismiss">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
-            </button>
+        {!isDeployed && (
+          <div className="absolute top-0 left-0 right-0 bg-amber-500/20 border-b border-amber-400/30 text-amber-100 text-xs px-3 py-2 z-50">
+            <div className="flex items-center gap-2">
+              <span role="img" aria-label="warning">⚠️</span>
+              <span className="font-medium">Deploy to save your code - or you'll lose it!</span>
+            </div>
           </div>
         )}
-        <div className={`flex-1 flex flex-col min-h-0 ${showWarningBanner ? 'pt-10' : ''}`}>
+        <div className={`flex-1 flex flex-col min-h-0 ${!isDeployed ? 'pt-10' : ''}`}>
         {showRenameModal && <RenameModal />}
         {showDeleteModal && <DeleteModal />}
         {showDeployModal && <DeployConfirmModal />}
@@ -1670,6 +1659,7 @@ export default function Home() {
         {showDomainModal && <DomainModal />}
         {deployedUrl && <DeployedModal />}
         {showFaqModal && <FaqModal />}
+        {showGithubModal && <GithubModal />}
         {isDeploying && <DeployingOverlay />}
         {showShipModal && !isDeploying && (
           <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
@@ -1824,12 +1814,12 @@ export default function Home() {
 
   return (
     <div className="h-dvh bg-zinc-950 p-3 overflow-hidden relative">
-      {showWarningBanner && (
-        <div className="absolute top-3 left-3 right-3 bg-amber-500/20 border-b border-amber-400/30 text-amber-100 text-xs flex items-center justify-between px-4 py-2 rounded-t-2xl z-50">
-          <span className="flex items-center gap-2 whitespace-nowrap"><span role="img" aria-label="floppy">💾</span> Deploy to sync devices.</span>
-          <button onClick={handleDismissWarning} className="ml-2 text-amber-200 hover:text-amber-100 p-1 rounded transition-colors flex-shrink-0" aria-label="Dismiss">
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
-          </button>
+      {!isDeployed && (
+        <div className="absolute top-3 left-3 right-3 bg-amber-500/20 border-b border-amber-400/30 text-amber-100 text-xs px-4 py-2 rounded-t-2xl z-50">
+          <div className="flex items-center gap-2">
+            <span role="img" aria-label="warning">⚠️</span>
+            <span className="font-medium">Deploy to save your code - or you'll lose it!</span>
+          </div>
         </div>
       )}
       {showRenameModal && <RenameModal />}
@@ -1844,7 +1834,7 @@ export default function Home() {
       {showUpgradeModal && <UpgradeModal isOpen={showUpgradeModal} onClose={() => setShowUpgradeModal(false)} reason={upgradeReason} projectSlug={currentProjectSlug} projectName={currentProject?.name || 'My Project'} />}
       {showSuccessModal && <SuccessModal isOpen={showSuccessModal} onClose={() => setShowSuccessModal(false)} />}
       {showGithubModal && <GithubModal />}
-      <div className={`h-full ${showWarningBanner ? 'pt-10' : ''}`}>
+      <div className={`h-full ${!isDeployed ? 'pt-10' : ''}`}>
       <Group orientation="horizontal" className="h-full rounded-2xl overflow-hidden border border-zinc-800 shadow-2xl">
         <Panel id="chat" defaultSize={28} minSize={20}>
           <div className="h-full flex flex-col bg-zinc-900">
@@ -1859,18 +1849,46 @@ export default function Home() {
                   <ProjectSelector />
                 </div>
                 <div className="flex items-center gap-1 flex-shrink-0 ml-2">
-                  <button onClick={() => setShowFaqModal(true)} className="p-2 text-zinc-500 hover:text-white hover:bg-zinc-800 rounded-lg transition-all" title="Help & FAQ"><svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg></button>
-                  <button onClick={() => setShowGithubModal(true)} className="p-2 text-zinc-500 hover:text-white hover:bg-zinc-800 rounded-lg transition-all" title="Import from GitHub">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
-                    </svg>
-                  </button>
-                  <label className="p-2 text-zinc-500 hover:text-white hover:bg-zinc-800 rounded-lg transition-all cursor-pointer" title="Upload Code">
-                    <input type="file" accept=".html,.htm,.txt" onChange={handleCodeUpload} className="hidden" />
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-                  </label>
-                  <AssetsButton />
-                  <HistoryButton />
+                  <div className="relative desktop-menu-container">
+                    <button 
+                      onClick={() => setShowDesktopMenu(!showDesktopMenu)} 
+                      className="p-2 text-zinc-500 hover:text-white hover:bg-zinc-800 rounded-lg transition-all" 
+                      title="Options"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <circle cx="12" cy="12" r="3"/>
+                        <path d="M12 1v6m0 6v6m5.196-15.804l-4.243 4.243m-6.364 6.364L2.346 17.052M23 12h-6m-6 0H1m15.804 5.196l-4.243-4.243m-6.364-6.364L2.346 6.948"/>
+                      </svg>
+                    </button>
+                    {showDesktopMenu && (
+                      <div className="absolute right-0 top-full mt-2 bg-zinc-900 border border-zinc-700 rounded-xl shadow-2xl py-2 min-w-[200px] z-50" onClick={e => e.stopPropagation()}>
+                        <button onClick={() => { setShowGithubModal(true); setShowDesktopMenu(false) }} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-zinc-300 hover:bg-zinc-800 transition-colors">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
+                          </svg>
+                          Import from GitHub
+                        </button>
+                        <label className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-zinc-300 hover:bg-zinc-800 transition-colors cursor-pointer">
+                          <input type="file" accept=".html,.htm,.txt" onChange={(e) => { handleCodeUpload(e); setShowDesktopMenu(false) }} className="hidden" />
+                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                          Upload Code
+                        </label>
+                        <button onClick={() => { setShowAssetsModal(true); setShowDesktopMenu(false) }} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-zinc-300 hover:bg-zinc-800 transition-colors">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
+                          Assets
+                        </button>
+                        <button onClick={() => { isCurrentProjectPaid ? (setShowHistoryModal(true), setShowDesktopMenu(false)) : (setUpgradeReason('deploy'), setShowUpgradeModal(true), setShowDesktopMenu(false)) }} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-zinc-300 hover:bg-zinc-800 transition-colors">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                          History {!isCurrentProjectPaid && <span className="text-xs text-purple-400">PRO</span>}
+                        </button>
+                        <div className="border-t border-zinc-800 my-1" />
+                        <button onClick={() => { setShowFaqModal(true); setShowDesktopMenu(false) }} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-zinc-300 hover:bg-zinc-800 transition-colors">
+                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+                          Help & FAQ
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
               <div className="flex items-center justify-between">
