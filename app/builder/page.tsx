@@ -447,54 +447,127 @@ export default function Home() {
     e.target.value = '' // Reset input
   }
 
-  const handleGithubImport = async (url: string) => {
+  const handleGithubImport = async (url: string, onProgress?: (message: string) => void) => {
     try {
-      // Convert GitHub URL to raw URL if needed
-      let rawUrl = url
-      if (url.includes('github.com') && !url.includes('raw.githubusercontent.com')) {
-        // Convert blob URL to raw URL
-        // Example: github.com/user/repo/blob/main/file.html -> raw.githubusercontent.com/user/repo/main/file.html
-        rawUrl = url.replace('github.com', 'raw.githubusercontent.com').replace('/blob/', '/')
-      }
+      // Check if it's a repo URL (no blob/tree in path)
+      const isRepoUrl = url.match(/github\.com\/([^\/]+)\/([^\/]+)\/?$/)
+      
+      if (isRepoUrl) {
+        // Import entire repo
+        const [, owner, repo] = isRepoUrl
+        onProgress?.('Fetching repository structure...')
+        
+        // Get repo contents via GitHub API
+        const apiUrl = `https://api.github.com/repos/${owner}/${repo}/git/trees/main?recursive=1`
+        const response = await fetch(apiUrl)
+        if (!response.ok) throw new Error('Failed to fetch repository')
+        
+        const data = await response.json()
+        
+        // Filter for relevant files
+        const relevantFiles = data.tree.filter((item: any) => 
+          item.type === 'blob' && 
+          (item.path.endsWith('.html') || 
+           item.path.endsWith('.htm') ||
+           item.path.endsWith('.jsx') ||
+           item.path.endsWith('.tsx') ||
+           item.path.endsWith('.js') ||
+           item.path.endsWith('.ts'))
+        )
+        
+        if (relevantFiles.length === 0) {
+          throw new Error('No importable files found in repository')
+        }
+        
+        onProgress?.(`Found ${relevantFiles.length} files. Importing...`)
+        
+        // Import each file
+        const newProjects: Project[] = []
+        for (let i = 0; i < relevantFiles.length; i++) {
+          const file = relevantFiles[i]
+          onProgress?.(`Importing ${i + 1}/${relevantFiles.length}: ${file.path}`)
+          
+          const rawUrl = `https://raw.githubusercontent.com/${owner}/${repo}/main/${file.path}`
+          const fileResponse = await fetch(rawUrl)
+          if (!fileResponse.ok) continue
+          
+          const content = await fileResponse.text()
+          const fileName = file.path.split('/').pop() || file.path
+          
+          const newProject: Project = {
+            id: generateId(),
+            name: fileName.replace(/\.(html|htm|jsx|tsx|js|ts)$/i, ''),
+            versions: [{
+              id: generateId(),
+              code: content,
+              timestamp: new Date().toISOString(),
+              prompt: `Imported from GitHub: ${repo}/${file.path}`
+            }],
+            currentVersionIndex: 0,
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          }
+          newProjects.push(newProject)
+        }
+        
+        setProjects(prev => [...newProjects, ...prev])
+        setCurrentProjectId(newProjects[0].id)
+        setShowGithubModal(false)
+        
+        // Show success toast
+        const toast = document.createElement('div')
+        toast.className = 'fixed top-4 left-1/2 -translate-x-1/2 z-[9999] bg-green-600 text-white px-6 py-3 rounded-xl shadow-2xl flex items-center gap-2 animate-fade-in'
+        toast.innerHTML = `
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/>
+          </svg>
+          <span>Imported ${newProjects.length} files from ${repo}!</span>
+        `
+        document.body.appendChild(toast)
+        setTimeout(() => toast.remove(), 3000)
+      } else {
+        // Import single file
+        let rawUrl = url
+        if (url.includes('github.com') && !url.includes('raw.githubusercontent.com')) {
+          rawUrl = url.replace('github.com', 'raw.githubusercontent.com').replace('/blob/', '/')
+        }
 
-      const response = await fetch(rawUrl)
-      if (!response.ok) throw new Error('Failed to fetch from GitHub')
-      
-      const content = await response.text()
-      
-      // Extract project name from URL
-      const urlParts = url.split('/')
-      const fileName = urlParts[urlParts.length - 1]
-      const repoName = urlParts[urlParts.length - 3] || 'GitHub Project'
-      
-      const newProject: Project = {
-        id: generateId(),
-        name: repoName,
-        versions: [{
+        const response = await fetch(rawUrl)
+        if (!response.ok) throw new Error('Failed to fetch from GitHub')
+        
+        const content = await response.text()
+        const urlParts = url.split('/')
+        const fileName = urlParts[urlParts.length - 1]
+        const repoName = urlParts[4] || 'GitHub Project'
+        
+        const newProject: Project = {
           id: generateId(),
-          code: content,
-          timestamp: new Date().toISOString(),
-          prompt: `Imported from GitHub: ${fileName}`
-        }],
-        currentVersionIndex: 0,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      }
-      setProjects(prev => [newProject, ...prev])
-      setCurrentProjectId(newProject.id)
-      setShowGithubModal(false)
+          name: fileName.replace(/\.(html|htm|jsx|tsx|js|ts)$/i, ''),
+          versions: [{
+            id: generateId(),
+            code: content,
+            timestamp: new Date().toISOString(),
+            prompt: `Imported from GitHub: ${fileName}`
+          }],
+          currentVersionIndex: 0,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        }
+        setProjects(prev => [newProject, ...prev])
+        setCurrentProjectId(newProject.id)
+        setShowGithubModal(false)
 
-      // Show success toast
-      const toast = document.createElement('div')
-      toast.className = 'fixed top-4 left-1/2 -translate-x-1/2 z-[9999] bg-green-600 text-white px-6 py-3 rounded-xl shadow-2xl flex items-center gap-2 animate-fade-in'
-      toast.innerHTML = `
-        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-          <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/>
-        </svg>
-        <span>Imported from GitHub!</span>
-      `
-      document.body.appendChild(toast)
-      setTimeout(() => toast.remove(), 3000)
+        const toast = document.createElement('div')
+        toast.className = 'fixed top-4 left-1/2 -translate-x-1/2 z-[9999] bg-green-600 text-white px-6 py-3 rounded-xl shadow-2xl flex items-center gap-2 animate-fade-in'
+        toast.innerHTML = `
+          <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+            <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/>
+          </svg>
+          <span>Imported from GitHub!</span>
+        `
+        document.body.appendChild(toast)
+        setTimeout(() => toast.remove(), 3000)
+      }
     } catch (error) {
       console.error('GitHub import error:', error)
       const toast = document.createElement('div')
@@ -1463,13 +1536,16 @@ export default function Home() {
   const GithubModal = () => {
     const [url, setUrl] = useState('')
     const [isLoading, setIsLoading] = useState(false)
+    const [progress, setProgress] = useState('')
 
     const handleSubmit = async (e: React.FormEvent) => {
       e.preventDefault()
       if (!url.trim()) return
       setIsLoading(true)
-      await handleGithubImport(url)
+      setProgress('Starting import...')
+      await handleGithubImport(url, setProgress)
       setIsLoading(false)
+      setProgress('')
     }
 
     return (
@@ -1482,7 +1558,7 @@ export default function Home() {
               </svg>
               Import from GitHub
             </h2>
-            <button onClick={() => setShowGithubModal(false)} className="p-2 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors">
+            <button onClick={() => setShowGithubModal(false)} className="p-2 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors" disabled={isLoading}>
               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
             </button>
           </div>
@@ -1493,16 +1569,23 @@ export default function Home() {
                 type="text"
                 value={url}
                 onChange={(e) => setUrl(e.target.value)}
-                placeholder="https://github.com/user/repo/blob/main/index.html"
+                placeholder="https://github.com/user/repo or .../blob/main/file.html"
                 className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-2.5 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                disabled={isLoading}
               />
-              <p className="text-xs text-zinc-500 mt-2">Paste a link to a file on GitHub (e.g., index.html)</p>
+              <p className="text-xs text-zinc-500 mt-2">Paste a repo URL to import all files, or a specific file URL</p>
             </div>
+            {progress && (
+              <div className="mb-4 p-3 bg-blue-600/10 border border-blue-500/20 rounded-lg">
+                <p className="text-sm text-blue-400">{progress}</p>
+              </div>
+            )}
             <div className="flex gap-3">
               <button
                 type="button"
                 onClick={() => setShowGithubModal(false)}
-                className="flex-1 bg-zinc-800 hover:bg-zinc-700 text-white font-medium py-2.5 rounded-lg transition-colors"
+                disabled={isLoading}
+                className="flex-1 bg-zinc-800 hover:bg-zinc-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium py-2.5 rounded-lg transition-colors"
               >
                 Cancel
               </button>
@@ -1528,13 +1611,7 @@ export default function Home() {
     )
   }
 
-  const GithubModal = () => {
-    const [url, setUrl] = useState('')
-    const [isLoading, setIsLoading] = useState(false)
-
-    const handleSubmit = async (e: React.FormEvent) => {
-      e.preventDefault()
-      if (!url.trim()) return
+  const FaqModal = () => (
       setIsLoading(true)
       await handleGithubImport(url)
       setIsLoading(false)
