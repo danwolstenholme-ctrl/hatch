@@ -66,14 +66,7 @@ interface Asset {
   createdAt: string
 }
 
-// Type for site subscription (from user metadata)
-interface SiteSubscription {
-  projectSlug: string
-  projectName: string
-  stripeSubscriptionId: string
-  status: 'active' | 'canceled' | 'past_due'
-  createdAt: string
-}
+// Type for site subscription (from user metadata) - defined above
 
 // Type for deployed project (from user metadata)
 interface DeployedProject {
@@ -253,6 +246,7 @@ export default function Home() {
   const [domainSearchResult, setDomainSearchResult] = useState<{ domain: string; available: boolean; price?: number } | null>(null)
   const [isSearchingDomain, setIsSearchingDomain] = useState(false)
   const [isBuyingDomain, setIsBuyingDomain] = useState(false)
+  const [showOnboarding, setShowOnboarding] = useState(false)
   const previewContainerRef = useRef<HTMLDivElement>(null)
   const dropdownRef = useRef<HTMLDivElement>(null)
   const domainInputRef = useRef<HTMLInputElement>(null)
@@ -310,6 +304,10 @@ export default function Home() {
       const defaultProject = createNewProject('My First Project')
       setProjects([defaultProject])
       setCurrentProjectId(defaultProject.id)
+      // Show onboarding for new users
+      if (!localStorage.getItem('hatchit-onboarding-seen')) {
+        setShowOnboarding(true)
+      }
     }
     setIsLoadingProjects(false)
   }, [])
@@ -956,6 +954,19 @@ export default function Home() {
       }
     } catch (error) {
       console.error('Generation failed:', error)
+      // Show error toast
+      const toast = document.createElement('div')
+      toast.className = 'fixed top-4 left-1/2 -translate-x-1/2 z-[9999] bg-red-600 text-white px-6 py-3 rounded-xl shadow-2xl flex items-center gap-2 animate-fade-in'
+      toast.innerHTML = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="15" y1="9" x2="9" y2="15"/>
+          <line x1="9" y1="9" x2="15" y2="15"/>
+        </svg>
+        <span>Generation failed. Please try again.</span>
+      `
+      document.body.appendChild(toast)
+      setTimeout(() => toast.remove(), 4000)
     } finally {
       setIsGenerating(false)
     }
@@ -1022,10 +1033,20 @@ export default function Home() {
       })
       const data = await response.json()
       if (data.url) {
-        await new Promise(resolve => setTimeout(resolve, 45000))
+        // Poll for deployment readiness instead of fixed wait
         const startTime = Date.now()
-        while (Date.now() - startTime < 90000) {
-          try { await fetch(data.url, { method: 'HEAD', mode: 'no-cors' }); break } catch { await new Promise(r => setTimeout(r, 3000)) }
+        const maxWait = 120000 // 2 minutes max
+        const pollInterval = 3000 // Check every 3 seconds
+        
+        while (Date.now() - startTime < maxWait) {
+          try {
+            const checkResponse = await fetch(data.url, { method: 'HEAD', mode: 'no-cors' })
+            // If we get here without error, site is likely ready
+            break
+          } catch {
+            // Site not ready yet, wait and retry
+            await new Promise(r => setTimeout(r, pollInterval))
+          }
         }
         setDeployedUrl(data.url)
         updateCurrentProject({ deployedSlug: customName || slugName?.toLowerCase().replace(/[^a-z0-9-]/g, '-') })
@@ -1034,7 +1055,19 @@ export default function Home() {
       }
     } catch (error) {
       console.error('Deploy failed:', error)
-      alert('Deploy failed')
+      // Show error toast instead of alert
+      const toast = document.createElement('div')
+      toast.className = 'fixed top-4 left-1/2 -translate-x-1/2 z-[9999] bg-red-600 text-white px-6 py-3 rounded-xl shadow-2xl flex items-center gap-2 animate-fade-in'
+      toast.innerHTML = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="15" y1="9" x2="9" y2="15"/>
+          <line x1="9" y1="9" x2="15" y2="15"/>
+        </svg>
+        <span>Deploy failed. Please try again.</span>
+      `
+      document.body.appendChild(toast)
+      setTimeout(() => toast.remove(), 4000)
     } finally {
       setIsDeploying(false)
     }
@@ -1521,7 +1554,7 @@ export default function Home() {
                         <span className="ml-2 text-xs text-red-400">✗ Taken</span>
                       )}
                       {domainSearchResult.available && domainSearchResult.price && (
-                        <span className="block text-xs text-zinc-400 mt-1">${Math.ceil(domainSearchResult.price * 1.2)}/year</span>
+                        <span className="block text-xs text-zinc-400 mt-1">${domainSearchResult.price}/year</span>
                       )}
                     </div>
                     {domainSearchResult.available && domainSearchResult.price && (
@@ -1604,7 +1637,11 @@ export default function Home() {
                 <div className="text-xs text-zinc-400">{page.path}</div>
               </button>
               {currentProject.pages!.length > 1 && (
-                <button onClick={() => deletePage(page.id)} className="p-1.5 text-zinc-400 hover:text-red-400 transition-colors">
+                <button onClick={() => {
+                  if (confirm(`Delete "${page.name}" page? This cannot be undone.`)) {
+                    deletePage(page.id)
+                  }
+                }} className="p-1.5 text-zinc-400 hover:text-red-400 transition-colors">
                   <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
                 </button>
               )}
@@ -2069,6 +2106,58 @@ export default function Home() {
     )
   }
 
+  const OnboardingModal = () => (
+    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-[10000] p-4">
+      <div className="bg-zinc-900 border border-zinc-700 rounded-2xl p-6 md:p-8 w-full max-w-md shadow-2xl">
+        <div className="text-center mb-6">
+          <div className="text-5xl mb-4">🐣</div>
+          <h2 className="text-2xl font-bold text-white mb-2">Welcome to HatchIt!</h2>
+          <p className="text-zinc-400">Build real websites by describing what you want.</p>
+        </div>
+        
+        <div className="space-y-4 mb-6">
+          <div className="flex items-start gap-3 p-3 bg-zinc-800/50 rounded-xl">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white font-bold flex-shrink-0">1</div>
+            <div>
+              <h3 className="font-medium text-white">Describe your site</h3>
+              <p className="text-sm text-zinc-400">Type what you want in the chat, like "A landing page for my coffee shop"</p>
+            </div>
+          </div>
+          
+          <div className="flex items-start gap-3 p-3 bg-zinc-800/50 rounded-xl">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold flex-shrink-0">2</div>
+            <div>
+              <h3 className="font-medium text-white">Preview & refine</h3>
+              <p className="text-sm text-zinc-400">See your site instantly. Ask for changes like "Make the header sticky"</p>
+            </div>
+          </div>
+          
+          <div className="flex items-start gap-3 p-3 bg-zinc-800/50 rounded-xl">
+            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center text-white font-bold flex-shrink-0">3</div>
+            <div>
+              <h3 className="font-medium text-white">Ship it!</h3>
+              <p className="text-sm text-zinc-400">Deploy to a live URL with one click when you're ready</p>
+            </div>
+          </div>
+        </div>
+        
+        <button
+          onClick={() => {
+            localStorage.setItem('hatchit-onboarding-seen', 'true')
+            setShowOnboarding(false)
+          }}
+          className="w-full py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-semibold rounded-xl transition-all"
+        >
+          Let's Build! →
+        </button>
+        
+        <p className="text-xs text-zinc-500 text-center mt-4">
+          10 free generations per day • Unlimited with paid plan
+        </p>
+      </div>
+    </div>
+  )
+
   const FaqModal = () => (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <div className="bg-zinc-900 border border-zinc-700 rounded-2xl p-6 w-full max-w-lg shadow-2xl max-h-[90vh] overflow-y-auto">
@@ -2129,6 +2218,7 @@ export default function Home() {
         {deployedUrl && <DeployedModal />}
         {showFaqModal && <FaqModal />}
         {showGithubModal && <GithubModal />}
+        {showOnboarding && <OnboardingModal />}
         {showPagesPanel && <PagesPanel />}
         {showAddPageModal && <AddPageModal />}
         {isDeploying && <DeployingOverlay />}
@@ -2305,6 +2395,7 @@ export default function Home() {
       {showUpgradeModal && <UpgradeModal isOpen={showUpgradeModal} onClose={() => setShowUpgradeModal(false)} reason={upgradeReason} projectSlug={currentProjectSlug} projectName={currentProject?.name || 'My Project'} />}
       {showSuccessModal && <SuccessModal isOpen={showSuccessModal} onClose={() => setShowSuccessModal(false)} />}
       {showGithubModal && <GithubModal />}
+      {showOnboarding && <OnboardingModal />}
       {showPagesPanel && <PagesPanel />}
       {showAddPageModal && <AddPageModal />}
       <div className={`h-full ${!isLoadingProjects && !isDeployed ? 'pt-10' : ''}`}>
