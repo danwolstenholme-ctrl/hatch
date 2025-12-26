@@ -109,7 +109,7 @@ export default function Home() {
       <section className="relative px-8 py-24 bg-zinc-900/30">
         <div className="max-w-7xl mx-auto">
           <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-5xl font-bold mb-6">
+            <h2 className="text-4xl md:text-5xl font-bold mb-6">
               <span className="bg-gradient-to-r from-zinc-200 to-zinc-400 bg-clip-text text-transparent">Not another AI toy.</span>
             </h2>
             <p className="text-xl text-zinc-400 max-w-3xl mx-auto">
