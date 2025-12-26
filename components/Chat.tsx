@@ -189,7 +189,7 @@ export default function Chat({ onGenerate, isGenerating, currentCode, isPaid = f
 
       <div className="flex-1 overflow-y-auto p-4 space-y-3">
         {/* Mode toggle */}
-        <div className="flex items-center gap-1 p-1 bg-zinc-900 rounded-lg sticky top-0 z-50 mb-3">
+        <div className="flex items-center gap-1 p-1 bg-zinc-900 rounded-lg sticky top-0 z-10 mb-3">
           <button
             onClick={() => setMode('build')}
             className={`flex-1 px-3 py-1.5 rounded-md text-sm font-medium transition-all ${
