@@ -501,8 +501,7 @@ export async function POST(request: NextRequest) {
       // Check syntax and auto-fix if needed
       const syntaxCheck = checkSyntax(code)
       if (!syntaxCheck.valid && syntaxCheck.error) {
-        console.log('Syntax error detected, attempting auto-fix...')
-        console.log('Error:', syntaxCheck.error)
+        // Syntax error detected, attempting auto-fix
         
         // Call Claude again to fix
         const fixResponse = await fetch('https://api.anthropic.com/v1/messages', {
@@ -537,7 +536,6 @@ export async function POST(request: NextRequest) {
           
           const recheck = checkSyntax(fixedCode)
           if (recheck.valid) {
-            console.log('Auto-fix successful!')
             return NextResponse.json({ code: fixedCode, message: message + ' (auto-fixed a small syntax issue)' })
           }
         }

@@ -524,7 +524,10 @@ export default function Home() {
               <Link href="/terms" className="hover:text-white transition-colors">Terms</Link>
               <Link href="/privacy" className="hover:text-white transition-colors">Privacy</Link>
             </div>
-            <p className="text-zinc-600 text-sm">© 2025 HatchIt. Built with HatchIt.</p>
+            <div className="flex flex-col items-center md:items-end gap-1">
+              <p className="text-zinc-600 text-sm">© 2025 HatchIt. Built with HatchIt.</p>
+              <p className="text-zinc-700 text-xs">V1.0 • Launched December 2025</p>
+            </div>
           </div>
         </div>
       </motion.footer>

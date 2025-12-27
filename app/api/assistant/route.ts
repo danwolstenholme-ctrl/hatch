@@ -171,8 +171,7 @@ Their current code:
 ${currentCode || 'No code yet - fresh canvas. Ask them what they want to build.'}
 \`\`\``
 
-    console.log(`Assistant: Calling API for user ${userId}`)
-    
+
     const response = await anthropic.messages.create({
       model: 'claude-sonnet-4-20250514',
       max_tokens: 1024,

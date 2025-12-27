@@ -71,11 +71,8 @@ export async function POST(req: NextRequest) {
       s => s.projectSlug === slug && s.status === 'active'
     )
 
-    console.log(`Deploy check for ${slug}: user=${userId}, subscriptions=${JSON.stringify(subscriptions.map(s => ({ slug: s.projectSlug, status: s.status })))}, found=${!!projectSubscription}`)
-
     // If no subscription found, wait and retry once (handles race condition after checkout)
     if (!projectSubscription) {
-      console.log(`Deploy: No subscription found for ${slug}, waiting 2s and retrying...`)
       await new Promise(resolve => setTimeout(resolve, 2000))
       
       // Refetch user data
@@ -84,8 +81,6 @@ export async function POST(req: NextRequest) {
       projectSubscription = subscriptions.find(
         s => s.projectSlug === slug && s.status === 'active'
       )
-      
-      console.log(`Deploy retry for ${slug}: found=${!!projectSubscription}`)
     }
 
     if (!projectSubscription) {
@@ -348,8 +343,6 @@ export default function Home() {
           deployedProjects: updatedProjects,
         },
       })
-
-      console.log(`Stored deployed project ${slug} for user ${userId}`)
     } catch (err) {
       console.error('Failed to store deployed project in metadata:', err)
       // Don't fail the deployment if metadata update fails

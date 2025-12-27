@@ -1085,7 +1085,6 @@ export default function Home() {
     } catch (error) {
       // Don't show error toast if user cancelled
       if (error instanceof Error && error.name === 'AbortError') {
-        console.log('Generation cancelled by user')
         return null
       }
       console.error('Generation failed:', error)
@@ -1491,21 +1490,21 @@ export default function Home() {
   )
 
   const DeployedModal = () => (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4\">
-      <div className="bg-zinc-900 border border-zinc-700 rounded-2xl p-6 w-full max-w-md shadow-2xl\">
-        <div className="w-12 h-12 rounded-full bg-green-500/20 flex items-center justify-center mb-4 mx-auto\">
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className="bg-zinc-900 border border-zinc-700 rounded-2xl p-6 w-full max-w-md shadow-2xl">
+        <div className="w-12 h-12 rounded-full bg-green-500/20 flex items-center justify-center mb-4 mx-auto">
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg>
         </div>
         <h2 className="text-lg font-semibold text-white mb-2 text-center">{isDeployed ? 'Site Updated! 🔄' : 'Site Deployed! 🚀'}</h2>
         <p className="text-zinc-400 text-sm mb-4 text-center">Your site is now live at:</p>
         <a href={deployedUrl!} target="_blank" rel="noopener noreferrer" className="block w-full px-4 py-3 bg-zinc-800 border border-zinc-700 rounded-xl text-blue-400 hover:text-blue-300 text-center text-sm break-all transition-colors mb-4">{deployedUrl}</a>
         <div className="flex flex-col sm:flex-row gap-2">
-          <button onClick={() => setDeployedUrl(null)} className="px-3 py-2.5 text-sm text-zinc-400 hover:text-white transition-colors border border-zinc-700 rounded-lg\">Close</button>
-          <a href={deployedUrl!} target="_blank" rel="noopener noreferrer" className="flex-1 px-3 py-2.5 text-sm bg-zinc-700 hover:bg-zinc-600 text-white rounded-lg transition-colors text-center flex items-center justify-center gap-1.5 whitespace-nowrap\">
+          <button onClick={() => setDeployedUrl(null)} className="px-3 py-2.5 text-sm text-zinc-400 hover:text-white transition-colors border border-zinc-700 rounded-lg">Close</button>
+          <a href={deployedUrl!} target="_blank" rel="noopener noreferrer" className="flex-1 px-3 py-2.5 text-sm bg-zinc-700 hover:bg-zinc-600 text-white rounded-lg transition-colors text-center flex items-center justify-center gap-1.5 whitespace-nowrap">
             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
             View
           </a>
-          <button onClick={() => { navigator.clipboard.writeText(deployedUrl!); setCopied(true); setTimeout(() => setCopied(false), 2000) }} className="flex-1 px-3 py-2.5 text-sm bg-blue-600 hover:bg-blue-500 text-white rounded-lg transition-colors\">{copied ? '✓ Copied!' : 'Copy URL'}</button>
+          <button onClick={() => { navigator.clipboard.writeText(deployedUrl!); setCopied(true); setTimeout(() => setCopied(false), 2000) }} className="flex-1 px-3 py-2.5 text-sm bg-blue-600 hover:bg-blue-500 text-white rounded-lg transition-colors">{copied ? '✓ Copied!' : 'Copy URL'}</button>
         </div>
       </div>
     </div>

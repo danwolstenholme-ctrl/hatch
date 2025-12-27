@@ -481,10 +481,10 @@ const PageComponent${idx} = (() => {
     if (typeof Page === "function") return Page;
     if (typeof Home === "function") return Home;
     if (typeof Main === "function") return Main;
-    return () => <div className="p-8 text-center text-gray-500">No component found</div>;
+    return () => <div className="p-8 text-center text-zinc-500">No component found</div>;
   } catch (e) {
     console.error("Error in page ${page.path}:", e);
-    return () => <div className="p-8 text-red-500">Error: {e.message}</div>;
+    return () => <div className="p-8 text-zinc-500">Error: {e.message}</div>;
   }
 })();
 `).join('\n')
@@ -499,8 +499,6 @@ const PageComponent${idx} = (() => {
 ${pageRegistry}
       };
 
-      console.log('[Preview] Pages registered:', Object.keys(pageRegistry));
-
       const Router = () => {
         const [currentPath, setCurrentPath] = useState(window.location.hash.slice(1) || '${currentPage.path}');
 
@@ -509,15 +507,12 @@ ${pageRegistry}
           window.addEventListener('hashchange', handleHashChange);
           return () => window.removeEventListener('hashchange', handleHashChange);
         }, []);
-
-        console.log('[Preview] Router rendering, path:', currentPath);
         
         // Find the component for this path
         const PageComponent = pageRegistry[currentPath] || pageRegistry['${currentPage.path}'] || pageRegistry['/'];
         
         if (PageComponent) {
           try {
-            console.log('[Preview] Rendering component for:', currentPath);
             return <PageComponent />;
           } catch (err) {
             console.error('[Preview] Render error:', err);
@@ -629,24 +624,16 @@ const SectionHeader = ({ eyebrow, title, description }) => React.createElement('
         '<style>* { margin: 0; padding: 0; box-sizing: border-box; } html, body, #root { min-height: 100%; width: 100%; } body { background: #FAFAFC; font-family: "Raleway", system-ui, sans-serif; } .fallback-container { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2rem; text-align: center; font-family: system-ui, sans-serif; } .fallback-icon { font-size: 4rem; margin-bottom: 1rem; } .fallback-title { color: #fff; font-size: 1.5rem; font-weight: 600; margin-bottom: 0.5rem; } .fallback-text { color: #a1a1aa; max-width: 300px; line-height: 1.6; } .loading { color: #71717a; padding: 2rem; text-align: center; font-family: system-ui; }</style>' +
         '</head><body>' +
         '<div id="root"><div class="loading">Loading preview...</div></div>' +
-        '<script>console.log("[Preview] Starting script loading...");</script>' +
         '<script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>' +
-        '<script>window.React = React; console.log("[Preview] React loaded:", typeof React);</script>' +
+        '<script>window.React = React;</script>' +
         '<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>' +
-        '<script>window.ReactDOM = ReactDOM; console.log("[Preview] ReactDOM loaded");</script>' +
+        '<script>window.ReactDOM = ReactDOM;</script>' +
         '<script src="https://cdn.jsdelivr.net/npm/framer-motion@11/dist/framer-motion.js" crossorigin></script>' +
-        '<script>console.log("[Preview] Framer Motion loaded, Motion:", typeof window.Motion);</script>' +
         '<script src="https://unpkg.com/lucide-react@0.294.0/dist/umd/lucide-react.js" crossorigin></script>' +
-        '<script>console.log("[Preview] Lucide loaded", Object.keys(window.lucideReact || {}).length, "icons");</script>' +
         '<script src="https://unpkg.com/@babel/standalone/babel.min.js" crossorigin></script>' +
-        '<script>console.log("[Preview] Babel loaded");</script>' +
         '<script>' +
-        'console.log("[Preview] Setting up globals...");\n' +
-        'console.log("[Preview] window.Motion:", typeof window.Motion, window.Motion);\n' +
-        'console.log("[Preview] window.React:", typeof window.React);\n' +
         '// Expose motion and lucide icons as globals with robust fallbacks\n' +
         'window.motion = window.Motion?.motion || { div: "div", button: "button", a: "a", span: "span", p: "p", h1: "h1", h2: "h2", h3: "h3", section: "section", main: "main", nav: "nav", ul: "ul", li: "li", img: "img", input: "input", form: "form", label: "label", textarea: "textarea", header: "header", footer: "footer", article: "article", aside: "aside" };\n' +
-        'console.log("[Preview] motion set to:", window.motion);\n' +
         'window.AnimatePresence = window.Motion?.AnimatePresence || function(props) { return props.children; };\n' +
         'window.useAnimation = window.Motion?.useAnimation || function() { return { start: function(){}, stop: function(){} }; };\n' +
         'window.useInView = window.Motion?.useInView || function() { return true; };\n' +
@@ -655,10 +642,8 @@ const SectionHeader = ({ eyebrow, title, description }) => React.createElement('
         'window.useSpring = window.Motion?.useSpring || function(v) { return typeof v === "number" ? v : 0; };\n' +
         'window.useMotionValue = window.Motion?.useMotionValue || function(v) { return { get: function() { return v; }, set: function() {}, onChange: function(){} }; };\n' +
         'window.LucideIcons = window.lucideReact || {};\n' +
-        'console.log("[Preview] LucideIcons:", Object.keys(window.LucideIcons || {}).length, "icons");\n' +
         '// Create stub icons if lucide failed to load\n' +
         'if (!window.LucideIcons || Object.keys(window.LucideIcons).length === 0) {\n' +
-        '  console.log("[Preview] Creating icon stubs...");\n' +
         '  var iconStub = function() { return null; };\n' +
         '  window.LucideIcons = new Proxy({}, { get: function() { return iconStub; } });\n' +
         '}\n' +

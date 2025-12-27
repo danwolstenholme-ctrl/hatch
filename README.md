@@ -1,36 +1,69 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 🐣 HatchIt
+
+> **V1.0 - Launched December 2025**
+
+AI-powered website builder that outputs real code. Describe what you want, watch it build, ship to production.
+
+## Features
+
+- **AI Generation** - Describe your site in plain English, get production-ready React code
+- **Live Preview** - See your changes in real-time as you iterate
+- **Multi-page Sites** - Build complete multi-page websites with routing
+- **Code Export** - Download your full project or view/edit the code directly
+- **One-Click Deploy** - Ship to production with a custom subdomain
+- **Custom Domains** - Connect your own domain (coming soon)
 
 ## Getting Started
 
-First, run the development server:
-
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) to see the app.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Environment Variables
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Create a `.env.local` file with:
 
-## Learn More
+```bash
+# Authentication (Clerk)
+NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=
+CLERK_SECRET_KEY=
+NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
+NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up
+NEXT_PUBLIC_CLERK_AFTER_SIGN_IN_URL=/builder
+NEXT_PUBLIC_CLERK_AFTER_SIGN_UP_URL=/builder
 
-To learn more about Next.js, take a look at the following resources:
+# AI Generation (Anthropic)
+ANTHROPIC_API_KEY=
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+# Payments (Stripe)
+STRIPE_SECRET_KEY=
+STRIPE_WEBHOOK_SECRET=
+STRIPE_PRICE_ID=
+STRIPE_EARLYBIRD_COUPON_ID=  # Optional: V1 Early Bird 50% off coupon
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+# Deployment (Vercel)
+VERCEL_TOKEN=
+VERCEL_TEAM_ID=
 
-## Deploy on Vercel
+# App URL
+NEXT_PUBLIC_APP_URL=https://hatchit.app
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+# Live Chat (Crisp) - Optional
+NEXT_PUBLIC_CRISP_WEBSITE_ID=
+```
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## Tech Stack
+
+- **Framework**: Next.js 15 (App Router)
+- **UI**: React 19, Tailwind CSS, Framer Motion
+- **Auth**: Clerk
+- **Payments**: Stripe
+- **AI**: Anthropic Claude
+- **Deployment**: Vercel
+
+## License
+
+Private - All rights reserved
