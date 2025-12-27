@@ -480,11 +480,11 @@ const SectionHeader = ({ eyebrow, title, description }) => React.createElement('
         '<style>* { margin: 0; padding: 0; box-sizing: border-box; } html, body, #root { min-height: 100%; width: 100%; } body { background: #FAFAFC; font-family: "Raleway", system-ui, sans-serif; } .error { color: #ef4444; padding: 2rem; font-family: monospace; white-space: pre-wrap; background: #18181b; line-height: 1.6; } .error h2 { color: #fecaca; margin-bottom: 1rem; font-size: 1rem; font-weight: bold; } .loading { color: #71717a; padding: 2rem; text-align: center; font-family: system-ui; }</style>' +
         '</head><body>' +
         '<div id="root"><div class="loading">Loading preview...</div></div>' +
-        '<script src="https://unpkg.com/react@18/umd/react.development.js"></script>' +
-        '<script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>' +
-        '<script src="https://unpkg.com/framer-motion@11/dist/framer-motion.js"></script>' +
-        '<script src="https://unpkg.com/lucide-react@0.460.0/dist/umd/lucide-react.min.js"></script>' +
-        '<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>' +
+        '<script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>' +
+        '<script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>' +
+        '<script src="https://cdn.jsdelivr.net/npm/framer-motion/dist/framer-motion.js" crossorigin></script>' +
+        '<script src="https://unpkg.com/lucide-react@0.460.0/dist/umd/lucide-react.min.js" crossorigin></script>' +
+        '<script src="https://unpkg.com/@babel/standalone/babel.min.js" crossorigin></script>' +
         '<script>' +
         '// Expose motion and lucide icons as globals\n' +
         'window.motion = window.Motion?.motion || { div: "div", button: "button", a: "a", span: "span", p: "p", h1: "h1", h2: "h2", h3: "h3", section: "section", main: "main", nav: "nav", ul: "ul", li: "li", img: "img", input: "input", form: "form", label: "label", textarea: "textarea" };\n' +
@@ -602,7 +602,7 @@ const SectionHeader = ({ eyebrow, title, description }) => React.createElement('
       '<div id="root"><div class="loading">Loading preview...</div></div>' +
       '<script src="https://unpkg.com/react@18/umd/react.development.js"></script>' +
       '<script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>' +
-      '<script src="https://unpkg.com/framer-motion@11/dist/framer-motion.js"></script>' +
+      '<script src="https://cdn.jsdelivr.net/npm/framer-motion/dist/framer-motion.js"></script>' +
       '<script src="https://unpkg.com/lucide-react@0.460.0/dist/umd/lucide-react.min.js"></script>' +
       '<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>' +
       '<script>' +
