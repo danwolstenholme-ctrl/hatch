@@ -252,6 +252,7 @@ export default function Home() {
   const [showOnboarding, setShowOnboarding] = useState(false)
   const [inspectorMode, setInspectorMode] = useState(false)
   const [selectedElement, setSelectedElement] = useState<{ tagName: string; className: string; textContent: string; styles: Record<string, string> } | null>(null)
+  const [externalPrompt, setExternalPrompt] = useState<string | null>(null)
   const previewContainerRef = useRef<HTMLDivElement>(null)
   const dropdownRef = useRef<HTMLDivElement>(null)
   const domainInputRef = useRef<HTMLInputElement>(null)
@@ -945,6 +946,19 @@ export default function Home() {
     setCurrentProjectId(newProject.id)
     
     showSuccessToast('Project pulled successfully!')
+  }
+
+  // Preview error action handlers
+  const handleViewCode = () => {
+    setActiveTab('code')
+  }
+
+  const handleRegenerateFromError = () => {
+    setExternalPrompt('Regenerate this page with the same design but simpler, cleaner code')
+  }
+
+  const handleQuickFix = () => {
+    setExternalPrompt('Simplify this page and fix any errors. Keep the same design but use cleaner, simpler code that renders properly.')
   }
 
   const handleGenerate = async (prompt: string, history: Message[], currentCode: string): Promise<string | null> => {
@@ -1736,7 +1750,7 @@ export default function Home() {
           <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
         </button>
       </div>
-      <div className="flex-1 overflow-auto">{type === 'preview' ? <LivePreview code={code} pages={previewPages} currentPageId={currentProject?.currentPageId} isLoading={isGenerating} isPaid={isCurrentProjectPaid} assets={currentProject?.assets} setShowUpgradeModal={setShowUpgradeModal} /> : <CodePreview code={code} isPaid={isCurrentProjectPaid} onCodeChange={handleCodeChange} pagePath={currentPage?.path} />}</div>
+      <div className="flex-1 overflow-auto">{type === 'preview' ? <LivePreview code={code} pages={previewPages} currentPageId={currentProject?.currentPageId} isLoading={isGenerating} isPaid={isCurrentProjectPaid} assets={currentProject?.assets} setShowUpgradeModal={setShowUpgradeModal} onViewCode={() => { onClose(); setActiveTab('code') }} onRegenerate={handleRegenerateFromError} onQuickFix={handleQuickFix} /> : <CodePreview code={code} isPaid={isCurrentProjectPaid} onCodeChange={handleCodeChange} pagePath={currentPage?.path} />}</div>
     </div>
   )
 
@@ -2302,37 +2316,73 @@ export default function Home() {
   }
 
   const OnboardingModal = () => (
-    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-[10000] p-4">
-      <div className="bg-zinc-900 border border-zinc-700 rounded-2xl p-6 md:p-8 w-full max-w-md shadow-2xl">
+    <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-[10000] p-4 overflow-y-auto">
+      <div className="bg-zinc-900 border border-zinc-700 rounded-2xl p-6 md:p-8 w-full max-w-lg shadow-2xl my-8">
         <div className="text-center mb-6">
           <div className="text-5xl mb-4">🐣</div>
           <h2 className="text-2xl font-bold text-white mb-2">Welcome to HatchIt!</h2>
-          <p className="text-zinc-400">Build real websites by describing what you want.</p>
+          <p className="text-zinc-400">AI-powered website builder that outputs real code.</p>
         </div>
         
-        <div className="space-y-4 mb-6">
-          <div className="flex items-start gap-3 p-3 bg-zinc-800/50 rounded-xl">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-purple-500 flex items-center justify-center text-white font-bold flex-shrink-0">1</div>
-            <div>
-              <h3 className="font-medium text-white">Describe your site</h3>
-              <p className="text-sm text-zinc-400">Type what you want in the chat, like "A landing page for my coffee shop"</p>
+        {/* How it works */}
+        <div className="bg-zinc-800/50 rounded-xl p-4 mb-6">
+          <h3 className="text-sm font-semibold text-zinc-300 mb-3 flex items-center gap-2">
+            <span className="text-lg">⚡</span> How it works
+          </h3>
+          <div className="flex items-center gap-2 text-sm text-zinc-400 flex-wrap">
+            <span className="bg-zinc-700 px-2 py-1 rounded">Describe</span>
+            <span className="text-zinc-600">→</span>
+            <span className="bg-zinc-700 px-2 py-1 rounded">AI builds</span>
+            <span className="text-zinc-600">→</span>
+            <span className="bg-zinc-700 px-2 py-1 rounded">See it live</span>
+            <span className="text-zinc-600">→</span>
+            <span className="bg-zinc-700 px-2 py-1 rounded">Iterate</span>
+            <span className="text-zinc-600">→</span>
+            <span className="bg-gradient-to-r from-blue-500 to-purple-500 px-2 py-1 rounded text-white">Deploy</span>
+          </div>
+        </div>
+        
+        {/* Tips */}
+        <div className="mb-6">
+          <h3 className="text-sm font-semibold text-zinc-300 mb-3 flex items-center gap-2">
+            <span className="text-lg">💡</span> Tips for best results
+          </h3>
+          <div className="space-y-2 text-sm">
+            <div className="flex items-start gap-2 text-zinc-400">
+              <span className="text-green-400 mt-0.5">✓</span>
+              <span><strong className="text-zinc-300">Start simple, then iterate:</strong> "Build a landing page for a coffee shop" → "Add a menu section" → "Make it darker"</span>
+            </div>
+            <div className="flex items-start gap-2 text-zinc-400">
+              <span className="text-green-400 mt-0.5">✓</span>
+              <span><strong className="text-zinc-300">Short prompts work better</strong> than long detailed ones</span>
+            </div>
+            <div className="flex items-start gap-2 text-zinc-400">
+              <span className="text-green-400 mt-0.5">✓</span>
+              <span><strong className="text-zinc-300">Use the chat assistant</strong> (💬 tab) if you need help</span>
             </div>
           </div>
-          
-          <div className="flex items-start gap-3 p-3 bg-zinc-800/50 rounded-xl">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold flex-shrink-0">2</div>
-            <div>
-              <h3 className="font-medium text-white">Preview & refine</h3>
-              <p className="text-sm text-zinc-400">See your site instantly. Ask for changes like "Make the header sticky"</p>
-            </div>
+        </div>
+        
+        {/* Great for / Not for */}
+        <div className="grid grid-cols-2 gap-3 mb-6">
+          <div className="bg-green-500/10 border border-green-500/20 rounded-xl p-3">
+            <h4 className="text-xs font-semibold text-green-400 mb-2">Great for</h4>
+            <ul className="text-xs text-zinc-400 space-y-1">
+              <li>• Landing pages</li>
+              <li>• Business sites</li>
+              <li>• Portfolios</li>
+              <li>• Contact forms</li>
+              <li>• Multi-page sites</li>
+            </ul>
           </div>
-          
-          <div className="flex items-start gap-3 p-3 bg-zinc-800/50 rounded-xl">
-            <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-green-500 to-emerald-500 flex items-center justify-center text-white font-bold flex-shrink-0">3</div>
-            <div>
-              <h3 className="font-medium text-white">Ship it!</h3>
-              <p className="text-sm text-zinc-400">Deploy to a live URL with one click when you're ready</p>
-            </div>
+          <div className="bg-orange-500/10 border border-orange-500/20 rounded-xl p-3">
+            <h4 className="text-xs font-semibold text-orange-400 mb-2">Not designed for</h4>
+            <ul className="text-xs text-zinc-400 space-y-1">
+              <li>• Database apps</li>
+              <li>• Auth systems</li>
+              <li>• Real e-commerce</li>
+              <li>• Complex backends</li>
+            </ul>
           </div>
         </div>
         
@@ -2343,7 +2393,7 @@ export default function Home() {
           }}
           className="w-full py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white font-semibold rounded-xl transition-all"
         >
-          Let's Build! →
+          Got it, let's build! 🚀
         </button>
         
         <p className="text-xs text-zinc-500 text-center mt-4">
@@ -2561,7 +2611,7 @@ export default function Home() {
           </div>
         )}
         <div className="flex-1 overflow-hidden">
-          <Chat onGenerate={handleGenerate} isGenerating={isGenerating} currentCode={code} isPaid={isCurrentProjectPaid} onOpenAssets={() => setShowAssetsModal(true)} projectId={currentProjectId || ''} projectSlug={currentProjectSlug} projectName={currentProject?.name || 'My Project'} key={currentProjectId} />
+          <Chat onGenerate={handleGenerate} isGenerating={isGenerating} currentCode={code} isPaid={isCurrentProjectPaid} onOpenAssets={() => setShowAssetsModal(true)} projectId={currentProjectId || ''} projectSlug={currentProjectSlug} projectName={currentProject?.name || 'My Project'} externalPrompt={externalPrompt} onExternalPromptHandled={() => setExternalPrompt(null)} key={currentProjectId} />
         </div>
         {code && (
           <div className="px-4 py-3 border-t border-zinc-800 bg-zinc-900 flex gap-2" style={{ paddingBottom: 'max(12px, env(safe-area-inset-bottom))' }}>
@@ -2703,7 +2753,7 @@ export default function Home() {
               </div>
             )}
             <div className="flex-1 overflow-hidden">
-              <Chat onGenerate={handleGenerate} isGenerating={isGenerating} onStopGeneration={handleStopGeneration} currentCode={code} isPaid={isCurrentProjectPaid} onOpenAssets={() => setShowAssetsModal(true)} projectId={currentProjectId || ''} projectSlug={currentProjectSlug} projectName={currentProject?.name || 'My Project'} key={currentProjectId} />
+              <Chat onGenerate={handleGenerate} isGenerating={isGenerating} onStopGeneration={handleStopGeneration} currentCode={code} isPaid={isCurrentProjectPaid} onOpenAssets={() => setShowAssetsModal(true)} projectId={currentProjectId || ''} projectSlug={currentProjectSlug} projectName={currentProject?.name || 'My Project'} externalPrompt={externalPrompt} onExternalPromptHandled={() => setExternalPrompt(null)} key={currentProjectId} />
             </div>
           </div>
         </Panel>
@@ -2752,7 +2802,7 @@ export default function Home() {
               </div>
             </div>
             <div ref={previewContainerRef} className="flex-1 overflow-auto min-h-0 relative">
-              {activeTab === 'preview' ? <LivePreview code={code} pages={previewPages} currentPageId={currentProject?.currentPageId} isLoading={isGenerating} isPaid={isCurrentProjectPaid} assets={currentProject?.assets} setShowUpgradeModal={setShowUpgradeModal} inspectorMode={inspectorMode} onElementSelect={setSelectedElement} /> : <CodePreview code={code} isPaid={isCurrentProjectPaid} onCodeChange={handleCodeChange} pagePath={currentPage?.path} />}
+              {activeTab === 'preview' ? <LivePreview code={code} pages={previewPages} currentPageId={currentProject?.currentPageId} isLoading={isGenerating} isPaid={isCurrentProjectPaid} assets={currentProject?.assets} setShowUpgradeModal={setShowUpgradeModal} inspectorMode={inspectorMode} onElementSelect={setSelectedElement} onViewCode={handleViewCode} onRegenerate={handleRegenerateFromError} onQuickFix={handleQuickFix} /> : <CodePreview code={code} isPaid={isCurrentProjectPaid} onCodeChange={handleCodeChange} pagePath={currentPage?.path} />}
               
               {/* Element Inspector Popover */}
               {inspectorMode && selectedElement && (

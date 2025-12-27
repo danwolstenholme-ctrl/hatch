@@ -24,6 +24,9 @@ interface LivePreviewProps {
   setShowUpgradeModal?: (show: boolean) => void
   inspectorMode?: boolean
   onElementSelect?: (elementInfo: ElementInfo) => void
+  onViewCode?: () => void
+  onRegenerate?: () => void
+  onQuickFix?: () => void
 }
 
 interface ElementInfo {
@@ -40,24 +43,85 @@ interface ElementInfo {
   }
 }
 
-export default function LivePreview({ code, pages, currentPageId, isLoading = false, isPaid = false, assets = [], setShowUpgradeModal, inspectorMode = false, onElementSelect }: LivePreviewProps) {
+export default function LivePreview({ code, pages, currentPageId, isLoading = false, isPaid = false, assets = [], setShowUpgradeModal, inspectorMode = false, onElementSelect, onViewCode, onRegenerate, onQuickFix }: LivePreviewProps) {
   const [iframeLoaded, setIframeLoaded] = useState(false)
   const [iframeKey, setIframeKey] = useState(0)
   const [isDownloading, setIsDownloading] = useState(false)
+  const [previewError, setPreviewError] = useState<{ type: string; message: string } | null>(null)
   const iframeRef = useRef<HTMLIFrameElement>(null)
+
+  // Truncation detection - check if code was cut off mid-generation
+  const detectTruncation = (codeToCheck: string): { isTruncated: boolean; reason: string } | null => {
+    if (!codeToCheck || codeToCheck.length < 50) return null
+    
+    const trimmed = codeToCheck.trim()
+    
+    // Check for code ending mid-word (letters followed by nothing)
+    if (/[a-zA-Z]$/.test(trimmed) && !/(?:return|const|let|var|function|true|false|null|undefined)$/.test(trimmed)) {
+      // Check if it looks like it was cut mid-identifier
+      const lastLine = trimmed.split('\n').pop() || ''
+      if (!/[;{})\]>]$/.test(lastLine.trim()) && !/^\s*\/\//.test(lastLine)) {
+        return { isTruncated: true, reason: 'Code appears to end mid-word' }
+      }
+    }
+    
+    // Count brackets and braces
+    const openBraces = (trimmed.match(/\{/g) || []).length
+    const closeBraces = (trimmed.match(/\}/g) || []).length
+    const openParens = (trimmed.match(/\(/g) || []).length
+    const closeParens = (trimmed.match(/\)/g) || []).length
+    const openBrackets = (trimmed.match(/\[/g) || []).length
+    const closeBrackets = (trimmed.match(/\]/g) || []).length
+    
+    if (openBraces > closeBraces + 2) {
+      return { isTruncated: true, reason: `Unclosed braces (${openBraces - closeBraces} unclosed)` }
+    }
+    if (openParens > closeParens + 2) {
+      return { isTruncated: true, reason: `Unclosed parentheses (${openParens - closeParens} unclosed)` }
+    }
+    if (openBrackets > closeBrackets + 2) {
+      return { isTruncated: true, reason: `Unclosed brackets (${openBrackets - closeBrackets} unclosed)` }
+    }
+    
+    // Check for unclosed JSX tags (simplified check)
+    const jsxOpenTags = trimmed.match(/<([A-Z][a-zA-Z]*|[a-z]+)[^>]*(?<!\/)\s*>/g) || []
+    const jsxCloseTags = trimmed.match(/<\/[A-Za-z]+>/g) || []
+    const selfClosing = trimmed.match(/<[A-Za-z][^>]*\/>/g) || []
+    
+    // Very rough heuristic - if way more opens than closes
+    if (jsxOpenTags.length > jsxCloseTags.length + selfClosing.length + 5) {
+      return { isTruncated: true, reason: 'Unclosed JSX tags detected' }
+    }
+    
+    // Check if ends with incomplete patterns
+    if (/(?:className|style|onClick|onChange|href|src)=["']?[^"']*$/.test(trimmed)) {
+      return { isTruncated: true, reason: 'Code ends with incomplete attribute' }
+    }
+    
+    if (/(?:return|=>)\s*\(?[\s\n]*$/.test(trimmed)) {
+      return { isTruncated: true, reason: 'Code ends with incomplete return statement' }
+    }
+    
+    return null
+  }
 
   const refreshPreview = () => {
     setIframeLoaded(false)
+    setPreviewError(null)
     setIframeKey(prev => prev + 1)
   }
 
-  // Listen for inspector messages from iframe
+  // Listen for error and inspector messages from iframe
   useEffect(() => {
-    if (!inspectorMode || !onElementSelect) return
-    
     const handleMessage = (event: MessageEvent) => {
-      if (event.data?.type === 'element-selected') {
+      if (event.data?.type === 'element-selected' && inspectorMode && onElementSelect) {
         onElementSelect(event.data.elementInfo)
+      }
+      if (event.data?.type === 'preview-error') {
+        setPreviewError({
+          type: event.data.errorType || 'Runtime Error',
+          message: event.data.message || 'Unknown error occurred'
+        })
       }
     }
     
@@ -347,6 +411,7 @@ export default function RootLayout({
 
   const srcDoc = useMemo(() => {
     setIframeLoaded(false)
+    setPreviewError(null)
     
     // Multi-page mode
     if (pages && pages.length > 0) {
@@ -360,6 +425,19 @@ export default function RootLayout({
           '<div style="font-size: 3rem; margin-bottom: 1rem;">🚀</div>' +
           '<h2 style="color: white; margin-bottom: 0.5rem; font-size: 1.25rem;">Ready to build</h2>' +
           '<p>Switch to <strong style="color: #60a5fa;">Build</strong> mode and describe what you want to create</p>' +
+          '</div></body></html>'
+      }
+      
+      // Check for truncation
+      const truncationCheck = detectTruncation(displayCode)
+      if (truncationCheck?.isTruncated) {
+        return '<!DOCTYPE html><html><body style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 2rem;">' +
+          '<div style="text-align: center; color: #71717a; font-family: system-ui; max-width: 400px;">' +
+          '<div style="font-size: 3rem; margin-bottom: 1rem;">✂️</div>' +
+          '<h2 style="color: white; margin-bottom: 0.5rem; font-size: 1.25rem;">Response was cut off</h2>' +
+          '<p style="color: #a1a1aa; margin-bottom: 0.5rem;">The AI response was truncated before completion.</p>' +
+          '<p style="color: #f97316; font-size: 0.875rem; background: rgba(249, 115, 22, 0.1); padding: 0.5rem 1rem; border-radius: 0.5rem; margin-bottom: 1rem;">' + truncationCheck.reason + '</p>' +
+          '<p style="color: #71717a; font-size: 0.875rem;">Try a shorter prompt or click Regenerate to try again.</p>' +
           '</div></body></html>'
       }
       
@@ -759,6 +837,7 @@ const SectionHeader = ({ eyebrow, title, description }) => React.createElement('
         '  root.render(<Router />);\n' +
         '} catch (err) {\n' +
         '  console.error("Render catch:", err);\n' +
+        '  window.parent.postMessage({ type: "preview-error", errorType: "Render Error", message: err.message }, "*");\n' +
         '  document.getElementById("root").innerHTML = "<div class=\'fallback-container\'><div class=\'fallback-icon\'>⚠️</div><h2 class=\'fallback-title\'>Preview Error</h2><p class=\'fallback-text\'>" + err.message + "</p></div>";\n' +
         '}\n' +
         '</script>' +
@@ -770,6 +849,19 @@ const SectionHeader = ({ eyebrow, title, description }) => React.createElement('
     
     // Legacy single-page mode
     if (!code) return ''
+    
+    // Check for truncation in single-page mode
+    const truncationCheck = detectTruncation(code)
+    if (truncationCheck?.isTruncated) {
+      return '<!DOCTYPE html><html><body style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 2rem;">' +
+        '<div style="text-align: center; color: #71717a; font-family: system-ui; max-width: 400px;">' +
+        '<div style="font-size: 3rem; margin-bottom: 1rem;">✂️</div>' +
+        '<h2 style="color: white; margin-bottom: 0.5rem; font-size: 1.25rem;">Response was cut off</h2>' +
+        '<p style="color: #a1a1aa; margin-bottom: 0.5rem;">The AI response was truncated before completion.</p>' +
+        '<p style="color: #f97316; font-size: 0.875rem; background: rgba(249, 115, 22, 0.1); padding: 0.5rem 1rem; border-radius: 0.5rem; margin-bottom: 1rem;">' + truncationCheck.reason + '</p>' +
+        '<p style="color: #71717a; font-size: 0.875rem;">Try a shorter prompt or click Regenerate to try again.</p>' +
+        '</div></body></html>'
+    }
 
     // Check if code is too large (prevent srcDoc URL length issues)
     if (code.length > 50000) {
@@ -1023,6 +1115,7 @@ const SectionHeader = ({ eyebrow, title, description }) => React.createElement('
       '  }\n' +
       '} catch (err) {\n' +
       '  var msg = err.message || "Unknown error";\n' +
+      '  window.parent.postMessage({ type: "preview-error", errorType: "Render Error", message: msg }, "*");\n' +
       '  document.getElementById("root").innerHTML = ' +
       '    "<div class=\'error\'>" +' +
       '    "<h2>⚠️ Could not render preview</h2>" +' +
@@ -1037,13 +1130,76 @@ const SectionHeader = ({ eyebrow, title, description }) => React.createElement('
       '    "</div>";\n' +
       '}\n' +
       '</script>' +
-      '<script>setTimeout(function() { if (document.querySelector(".loading")) { document.getElementById("root").innerHTML = "<div class=\'error\'><h2>⚠️ Preview Timeout</h2><p>Your code is ready in the <strong>Code</strong> tab</p><p style=\'font-size: 0.9em; color: #a1a1aa; margin-top: 1rem;\'>The component took too long to render. Check for infinite loops.</p></div>"; } }, 8000);</script>' +
+      '<script>setTimeout(function() { if (document.querySelector(".loading")) { window.parent.postMessage({ type: "preview-error", errorType: "Timeout", message: "Component took too long to render" }, "*"); document.getElementById("root").innerHTML = "<div class=\'error\'><h2>⚠️ Preview Timeout</h2><p>Your code is ready in the <strong>Code</strong> tab</p><p style=\'font-size: 0.9em; color: #a1a1aa; margin-top: 1rem;\'>The component took too long to render. Check for infinite loops.</p></div>"; } }, 8000);</script>' +
       '</body></html>'
 
     return html
   }, [code, pages, currentPageId])
 
   const showSpinner = isLoading || ((code || pages) && !iframeLoaded)
+
+  // Error action panel component
+  const ErrorActionPanel = () => {
+    if (!previewError) return null
+    
+    return (
+      <div className="absolute bottom-0 left-0 right-0 bg-zinc-900/95 backdrop-blur-sm border-t border-zinc-700 p-4 z-20">
+        <div className="flex items-start gap-3 mb-3">
+          <div className="text-2xl">⚠️</div>
+          <div className="flex-1 min-w-0">
+            <h3 className="text-sm font-semibold text-white mb-0.5">Couldn't render preview</h3>
+            <p className="text-xs text-zinc-400 truncate">{previewError.type}: {previewError.message}</p>
+          </div>
+          <button 
+            onClick={() => setPreviewError(null)} 
+            className="text-zinc-500 hover:text-white p-1"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M18 6L6 18M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+        <p className="text-xs text-zinc-500 mb-3">This usually happens with complex prompts. Try simplifying.</p>
+        <div className="flex gap-2 flex-wrap">
+          {onViewCode && (
+            <button 
+              onClick={onViewCode}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-xs rounded-lg transition-colors"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <polyline points="16 18 22 12 16 6" />
+                <polyline points="8 6 2 12 8 18" />
+              </svg>
+              View Code
+            </button>
+          )}
+          {onRegenerate && (
+            <button 
+              onClick={onRegenerate}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-xs rounded-lg transition-colors"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M21 12a9 9 0 11-9-9c2.52 0 4.93 1 6.74 2.74L21 8" />
+                <path d="M21 3v5h-5" />
+              </svg>
+              Regenerate
+            </button>
+          )}
+          {onQuickFix && (
+            <button 
+              onClick={onQuickFix}
+              className="flex items-center gap-1.5 px-3 py-1.5 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white text-xs rounded-lg transition-colors"
+            >
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
+              </svg>
+              Quick Fix
+            </button>
+          )}
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="h-full bg-zinc-900 overflow-auto">
@@ -1066,6 +1222,7 @@ const SectionHeader = ({ eyebrow, title, description }) => React.createElement('
             title="Live Preview"
             onLoad={() => setIframeLoaded(true)}
           />
+          <ErrorActionPanel />
         </div>
       ) : (
         <div className="h-full flex items-center justify-center">

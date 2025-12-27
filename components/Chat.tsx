@@ -35,6 +35,8 @@ interface ChatProps {
   projectId?: string
   projectSlug?: string
   projectName?: string
+  externalPrompt?: string | null
+  onExternalPromptHandled?: () => void
 }
 
 const thinkingMessages = [
@@ -67,7 +69,7 @@ function getRandomResponse() {
   return responses[Math.floor(Math.random() * responses.length)]
 }
 
-export default function Chat({ onGenerate, isGenerating, onStopGeneration, currentCode, isPaid = false, onOpenAssets, projectId = '', projectSlug = '', projectName = '' }: ChatProps) {
+export default function Chat({ onGenerate, isGenerating, onStopGeneration, currentCode, isPaid = false, onOpenAssets, projectId = '', projectSlug = '', projectName = '', externalPrompt, onExternalPromptHandled }: ChatProps) {
   const [input, setInput] = useState('')
   const [buildMessages, setBuildMessages] = useState<Message[]>([])
   const [chatMessages, setChatMessages] = useState<Message[]>([])
@@ -117,6 +119,20 @@ export default function Chat({ onGenerate, isGenerating, onStopGeneration, curre
   useEffect(() => {
     setRemaining(getGenerationsRemaining())
   }, [isPaid])
+
+  // Handle external prompts (from Quick Fix, Regenerate actions)
+  useEffect(() => {
+    if (externalPrompt && !isGenerating) {
+      setMode('build') // Switch to build mode
+      setInput(externalPrompt)
+      onExternalPromptHandled?.() // Clear the external prompt
+      // Auto-submit after a short delay to allow state update
+      setTimeout(() => {
+        const form = document.querySelector('form[data-chat-form]') as HTMLFormElement
+        if (form) form.requestSubmit()
+      }, 100)
+    }
+  }, [externalPrompt, isGenerating, onExternalPromptHandled])
 
   const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
@@ -344,7 +360,7 @@ export default function Chat({ onGenerate, isGenerating, onStopGeneration, curre
       </div>
 
       <div className="p-3 pb-safe border-t border-zinc-800/50">
-        <form onSubmit={handleSubmit} className="flex flex-col gap-2">
+        <form onSubmit={handleSubmit} data-chat-form className="flex flex-col gap-2">
           <textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}
