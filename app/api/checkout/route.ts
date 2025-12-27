@@ -29,14 +29,8 @@ export async function POST(req: NextRequest) {
           quantity: 1,
         },
       ],
-      // V1 Early Bird: 50% off first month
-      // Create this coupon in Stripe Dashboard with ID "EARLYBIRD50"
-      // Type: Percentage, 50% off, Duration: Once
-      discounts: process.env.STRIPE_EARLYBIRD_COUPON_ID ? [
-        {
-          coupon: process.env.STRIPE_EARLYBIRD_COUPON_ID,
-        },
-      ] : undefined,
+      // Allow promo codes at checkout (Golden Ticket, Early Bird, etc.)
+      allow_promotion_codes: true,
       success_url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/builder?success=true&project=${encodeURIComponent(projectSlug)}`,
       cancel_url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/builder?canceled=true`,
       metadata: {

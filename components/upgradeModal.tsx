@@ -30,7 +30,7 @@ export default function UpgradeModal({ isOpen, onClose, reason, projectSlug = ''
     proactive: {
       title: "Ready to level up?",
       description: "Go Hatched to unlock unlimited generations, deploy to a live URL, and get full code access.",
-      icon: "�"
+      icon: "🐣"
     },
     code_access: {
       title: "Unlock your code",
