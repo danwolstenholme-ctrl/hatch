@@ -2186,7 +2186,7 @@ export default function Home() {
 
     return (
       <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-        <div className="bg-zinc-900 border border-zinc-700 rounded-2xl p-6 w-full max-w-lg shadow-2xl">
+        <div className="bg-zinc-900 border border-zinc-700 rounded-2xl p-6 w-full max-w-lg shadow-2xl max-h-[90vh] overflow-y-auto">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-lg font-semibold text-white flex items-center gap-2">
               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
@@ -2198,6 +2198,43 @@ export default function Home() {
               <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
             </button>
           </div>
+
+          {/* What can be imported */}
+          <div className="mb-5 p-4 bg-zinc-800/50 rounded-xl border border-zinc-700/50">
+            <h3 className="text-sm font-medium text-white mb-3 flex items-center gap-2">
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-blue-400"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
+              What can be imported
+            </h3>
+            <div className="space-y-2 text-sm">
+              <div className="flex items-start gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-green-400 mt-0.5 flex-shrink-0"><path d="M20 6L9 17l-5-5"/></svg>
+                <span className="text-zinc-300"><strong className="text-white">Static HTML files</strong> (.html, .htm)</span>
+              </div>
+              <div className="flex items-start gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-green-400 mt-0.5 flex-shrink-0"><path d="M20 6L9 17l-5-5"/></svg>
+                <span className="text-zinc-300"><strong className="text-white">React page components</strong> (page.tsx, index.tsx in app/pages folders)</span>
+              </div>
+              <div className="flex items-start gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-green-400 mt-0.5 flex-shrink-0"><path d="M20 6L9 17l-5-5"/></svg>
+                <span className="text-zinc-300"><strong className="text-white">Single file imports</strong> (link directly to a file)</span>
+              </div>
+            </div>
+            <div className="mt-3 pt-3 border-t border-zinc-700/50 space-y-2 text-sm">
+              <div className="flex items-start gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-red-400 mt-0.5 flex-shrink-0"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                <span className="text-zinc-400"><strong className="text-zinc-300">Private repos</strong> — not accessible</span>
+              </div>
+              <div className="flex items-start gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-red-400 mt-0.5 flex-shrink-0"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                <span className="text-zinc-400"><strong className="text-zinc-300">Component libraries</strong> — files in /components, /lib, /hooks etc. are skipped</span>
+              </div>
+              <div className="flex items-start gap-2">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-red-400 mt-0.5 flex-shrink-0"><path d="M18 6L6 18M6 6l12 12"/></svg>
+                <span className="text-zinc-400"><strong className="text-zinc-300">Large repos</strong> — repos over 5MB or with 1000+ files</span>
+              </div>
+            </div>
+          </div>
+
           <form onSubmit={handleSubmit}>
             <div className="mb-4">
               <label className="block text-sm text-zinc-400 mb-2">GitHub URL</label>
@@ -2209,7 +2246,6 @@ export default function Home() {
                 className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-2.5 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 disabled={isLoading}
               />
-              <p className="text-xs text-zinc-500 mt-2">Paste a public repo URL to import all files, or a specific file URL. Private repos are not supported.</p>
             </div>
             {progress && (
               <div className="mb-4 p-3 bg-blue-600/10 border border-blue-500/20 rounded-lg">
