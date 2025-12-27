@@ -500,10 +500,12 @@ const SectionHeader = ({ eyebrow, title, description }) => React.createElement('
         '<script>document.addEventListener("click", function(e) { var link = e.target.closest("a"); if (!link) return; var href = link.getAttribute("href"); if (!href) return; if (href.startsWith("http://") || href.startsWith("https://")) { e.preventDefault(); window.open(href, "_blank", "noopener,noreferrer"); return; } if (href.startsWith("/") && !href.startsWith("//")) { e.preventDefault(); window.location.hash = href; return; } if (href.startsWith("#") && !href.startsWith("#/")) { e.preventDefault(); var target = document.querySelector(href); if (target) target.scrollIntoView({ behavior: "smooth" }); else window.location.hash = "/" + href.slice(1); } if (href.startsWith("#/")) { e.preventDefault(); window.location.hash = href.slice(1); } });</script>' +
         '<script>' +
         'window.onerror = function(msg, url, line, col, error) {' +
+        '  console.error("Preview error:", msg, "at line", line, "col", col, error);' +
         '  document.getElementById("root").innerHTML = ' +
         '    "<div class=\'error\'>" +' +
         '    "<h2>⚠️ Could not render preview</h2>" +' +
-        '    "<p style=\'color: #f87171;\'>The AI generated code that could not be displayed.</p>" +' +
+        '    "<p style=\'color: #f87171; margin-bottom: 1rem;\'>The AI generated code that could not be displayed.</p>" +' +
+        '    "<p style=\'color: #71717a; font-size: 0.8rem; font-family: monospace; background: #27272a; padding: 0.75rem; border-radius: 0.5rem; word-break: break-word;\'>" + msg + " (line " + line + ")</p>" +' +
         '    "</div>";' +
         '  return true;' +
         '};' +
@@ -618,11 +620,13 @@ const SectionHeader = ({ eyebrow, title, description }) => React.createElement('
       '<script>document.addEventListener("click", function(e) { var link = e.target.closest("a"); if (link) { e.preventDefault(); var href = link.getAttribute("href"); if (href && href.startsWith("#")) { var target = document.querySelector(href); if (target) target.scrollIntoView({ behavior: "smooth" }); } } });</script>' +
       '<script>' +
       'window.onerror = function(msg, url, line, col, error) {' +
+      '  console.error("Preview error:", msg, "at line", line, "col", col, error);' +
       '  document.getElementById("root").innerHTML = ' +
       '    "<div class=\'error\'>" +' +
       '    "<h2>⚠️ Could not render preview</h2>" +' +
-      '    "<p style=\'color: #f87171;\'>The AI generated code that could not be displayed.</p>" +' +
-      '    "<p style=\'font-size: 0.9em; color: #d4d4d8; margin-top: 1rem;\'><strong>Tips to fix this:</strong></p>" +' +
+      '    "<p style=\'color: #f87171; margin-bottom: 0.5rem;\'>The AI generated code that could not be displayed.</p>" +' +
+      '    "<p style=\'color: #71717a; font-size: 0.75rem; font-family: monospace; background: #27272a; padding: 0.5rem; border-radius: 0.375rem; word-break: break-word; margin-bottom: 1rem;\'>" + msg + " (line " + line + ")</p>" +' +
+      '    "<p style=\'font-size: 0.9em; color: #d4d4d8;\'><strong>Tips to fix this:</strong></p>" +' +
       '    "<ul style=\'text-align: left; margin-top: 0.5rem; padding-left: 1.5rem; color: #a1a1aa; font-size: 0.85em;\'>" +' +
       '    "<li style=\'margin-bottom: 0.5rem;\'>Try describing a <strong>webpage or UI</strong> instead of images/logos</li>" +' +
       '    "<li style=\'margin-bottom: 0.5rem;\'>For logos, use the <strong>Assets</strong> button to upload your own</li>" +' +
