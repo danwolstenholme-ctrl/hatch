@@ -103,7 +103,7 @@ export default function UpgradeModal({ isOpen, onClose, reason, projectSlug = ''
 
         <div className="bg-gradient-to-br from-zinc-800/50 to-zinc-900 border border-purple-500/30 rounded-xl p-6 mb-6 ring-1 ring-purple-500/20 relative overflow-hidden">
           {/* Early Bird Banner */}
-          <div className="absolute -top-1 -right-12 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-xs font-bold py-1 px-12 rotate-45 shadow-lg">
+          <div className="absolute top-3 -right-8 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-[10px] font-bold py-1 px-10 rotate-45 shadow-lg">
             V1 EARLY BIRD
           </div>
           
