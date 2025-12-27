@@ -400,6 +400,30 @@ If a user request is VERY detailed with many sections/features (e.g., hero + fea
 
 Key principle: A simpler working site is ALWAYS better than a complex broken one.
 
+## KEEP CODE COMPACT - CRITICAL
+
+Your response MUST be efficient and complete. Follow these rules:
+1. **MAX 300 lines of code** - If a page would exceed this, simplify the design
+2. **Use map() for repetitive items** - Never hardcode 10+ similar items manually
+3. **Keep placeholder text short** - Use "Lorem ipsum dolor sit amet" not multiple paragraphs
+4. **3-5 items max for lists** - Features, testimonials, team members, pricing tiers, etc.
+5. **Combine similar sections** - Don't create separate components for every small thing
+
+WRONG (bloated):
+const features = [
+  { icon: <Check />, title: "Feature 1", description: "Very long description that goes on and on with lots of words and details about this amazing feature that nobody will read anyway..." },
+  // 10 more features with long descriptions...
+]
+
+CORRECT (compact):
+const features = [
+  { icon: <Zap />, title: "Fast", desc: "Lightning-quick performance" },
+  { icon: <Shield />, title: "Secure", desc: "Enterprise-grade security" },
+  { icon: <Star />, title: "Reliable", desc: "99.9% uptime guaranteed" },
+]
+
+If you cannot fit everything requested, BUILD A SIMPLER VERSION that works. Tell the user in your message: "Built you a clean starting version! Ask me to add more sections."
+
 ## LOGOS & IMAGES
 
 IMPORTANT: You CANNOT generate actual image logos or graphics. HatchIt.dev creates CODE, not images.
@@ -528,13 +552,22 @@ export async function POST(request: NextRequest) {
       },
       body: JSON.stringify({
         model: 'claude-sonnet-4-20250514',
-        max_tokens: 16384,
+        max_tokens: 32000,
         system: systemPrompt,
         messages
       })
     })
 
     const data = await response.json()
+    
+    // Check if response was truncated due to token limit
+    if (data.stop_reason === 'max_tokens') {
+      console.error('Response truncated due to max_tokens')
+      return NextResponse.json({ 
+        error: 'Response was too long. Please try a simpler prompt or break your request into smaller parts.',
+        truncated: true 
+      }, { status: 400 })
+    }
     
     if (data.content && data.content[0]) {
       let fullResponse = data.content[0].text
@@ -630,7 +663,7 @@ export async function POST(request: NextRequest) {
           },
           body: JSON.stringify({
             model: 'claude-sonnet-4-20250514',
-            max_tokens: 16384,
+            max_tokens: 32000,
             system: systemPrompt,
             messages: [{
               role: 'user',
