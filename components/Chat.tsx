@@ -263,23 +263,23 @@ export default function Chat({ onGenerate, isGenerating, onStopGeneration, curre
 
       <div className="flex-1 overflow-y-auto p-3 space-y-3">
         {/* Mode toggle */}
-        <div className="flex items-center gap-1 p-1 bg-zinc-900 rounded-lg sticky top-0 z-10 mb-2">
+        <div className="flex items-center gap-1 p-1.5 bg-zinc-900/95 backdrop-blur-sm rounded-xl sticky top-0 z-10 mb-2 border border-zinc-800/50 shadow-lg">
           <button
             onClick={() => setMode('build')}
-            className={`flex-1 px-3 py-1.5 rounded-md text-sm font-medium transition-all ${
+            className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
               mode === 'build' 
-                ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white' 
-                : 'text-zinc-400 hover:text-white'
+                ? 'bg-gradient-to-r from-blue-600 to-purple-600 text-white shadow-md' 
+                : 'text-zinc-400 hover:text-white hover:bg-zinc-800/50'
             }`}
           >
             ⚡ Build
           </button>
           <button
             onClick={() => setMode('chat')}
-            className={`flex-1 px-3 py-1.5 rounded-md text-sm font-medium transition-all ${
+            className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
               mode === 'chat' 
-                ? 'bg-gradient-to-r from-green-600 to-emerald-600 text-white' 
-                : 'text-zinc-400 border border-zinc-700 hover:text-white hover:border-zinc-600'
+                ? 'bg-gradient-to-r from-green-600 to-emerald-600 text-white shadow-md' 
+                : 'text-zinc-400 hover:text-white hover:bg-zinc-800/50'
             }`}
           >
             💬 Chat
