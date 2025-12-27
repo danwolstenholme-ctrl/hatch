@@ -674,11 +674,28 @@ export default function Home() {
         }
         
         // Filter for HTML and JSX/TSX files (React components that could work as pages)
-        const relevantFiles = data.tree.filter((item: any) => 
-          item.type === 'blob' && 
-          (item.path.endsWith('.html') || item.path.endsWith('.htm') || 
-           item.path.endsWith('.jsx') || item.path.endsWith('.tsx'))
-        )
+        // Skip common non-page directories like components, ui, lib, hooks, utils, etc.
+        const nonPageDirs = ['components/', 'ui/', 'lib/', 'hooks/', 'utils/', 'helpers/', 'services/', 'types/', 'styles/', 'assets/', 'config/', 'constants/', 'context/', 'providers/', 'store/', 'api/', 'middleware/', 'layouts/', 'shared/', 'common/', '__tests__/', 'test/', 'tests/', 'spec/', 'mocks/', 'fixtures/', 'node_modules/']
+        const relevantFiles = data.tree.filter((item: any) => {
+          if (item.type !== 'blob') return false
+          const hasValidExtension = item.path.endsWith('.html') || item.path.endsWith('.htm') || 
+                                    item.path.endsWith('.jsx') || item.path.endsWith('.tsx')
+          if (!hasValidExtension) return false
+          // Skip files in non-page directories
+          const pathLower = item.path.toLowerCase()
+          const isInNonPageDir = nonPageDirs.some(dir => pathLower.includes(dir.toLowerCase()))
+          if (isInNonPageDir) return false
+          // Skip files that look like components (lowercase or PascalCase single words without "page" in name)
+          const fileName = item.path.split('/').pop() || ''
+          const baseName = fileName.replace(/\.(jsx|tsx|html|htm)$/i, '')
+          // Keep files that are likely pages: index, page, or contain "page" in name
+          const isLikelyPage = baseName.toLowerCase() === 'index' || 
+                              baseName.toLowerCase() === 'page' ||
+                              baseName.toLowerCase().includes('page') ||
+                              item.path.toLowerCase().includes('/pages/') ||
+                              item.path.toLowerCase().includes('/app/')
+          return isLikelyPage
+        })
         
         if (relevantFiles.length > 200) {
           throw new Error('Repository has too many importable files. Limit to 200 for import.')
