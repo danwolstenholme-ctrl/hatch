@@ -65,11 +65,28 @@ export async function POST(req: NextRequest) {
 
     // Verify this specific project has an active subscription
     const client = await clerkClient()
-    const user = await client.users.getUser(userId)
-    const subscriptions = (user.publicMetadata?.subscriptions as SiteSubscription[]) || []
-    const projectSubscription = subscriptions.find(
+    let user = await client.users.getUser(userId)
+    let subscriptions = (user.publicMetadata?.subscriptions as SiteSubscription[]) || []
+    let projectSubscription = subscriptions.find(
       s => s.projectSlug === slug && s.status === 'active'
     )
+
+    console.log(`Deploy check for ${slug}: user=${userId}, subscriptions=${JSON.stringify(subscriptions.map(s => ({ slug: s.projectSlug, status: s.status })))}, found=${!!projectSubscription}`)
+
+    // If no subscription found, wait and retry once (handles race condition after checkout)
+    if (!projectSubscription) {
+      console.log(`Deploy: No subscription found for ${slug}, waiting 2s and retrying...`)
+      await new Promise(resolve => setTimeout(resolve, 2000))
+      
+      // Refetch user data
+      user = await client.users.getUser(userId)
+      subscriptions = (user.publicMetadata?.subscriptions as SiteSubscription[]) || []
+      projectSubscription = subscriptions.find(
+        s => s.projectSlug === slug && s.status === 'active'
+      )
+      
+      console.log(`Deploy retry for ${slug}: found=${!!projectSubscription}`)
+    }
 
     if (!projectSubscription) {
       return NextResponse.json({ 

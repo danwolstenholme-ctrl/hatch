@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState, useEffect } from 'react'
+import { useMemo, useState, useEffect, useRef } from 'react'
 
 interface Page {
   id: string
@@ -22,17 +22,62 @@ interface LivePreviewProps {
   isPaid?: boolean
   assets?: Asset[]
   setShowUpgradeModal?: (show: boolean) => void
+  inspectorMode?: boolean
+  onElementSelect?: (elementInfo: ElementInfo) => void
 }
 
-export default function LivePreview({ code, pages, currentPageId, isLoading = false, isPaid = false, assets = [], setShowUpgradeModal }: LivePreviewProps) {
+interface ElementInfo {
+  tagName: string
+  className: string
+  textContent: string
+  styles: {
+    color?: string
+    backgroundColor?: string
+    fontSize?: string
+    fontWeight?: string
+    padding?: string
+    margin?: string
+  }
+}
+
+export default function LivePreview({ code, pages, currentPageId, isLoading = false, isPaid = false, assets = [], setShowUpgradeModal, inspectorMode = false, onElementSelect }: LivePreviewProps) {
   const [iframeLoaded, setIframeLoaded] = useState(false)
   const [iframeKey, setIframeKey] = useState(0)
   const [isDownloading, setIsDownloading] = useState(false)
+  const iframeRef = useRef<HTMLIFrameElement>(null)
 
   const refreshPreview = () => {
     setIframeLoaded(false)
     setIframeKey(prev => prev + 1)
   }
+
+  // Listen for inspector messages from iframe
+  useEffect(() => {
+    if (!inspectorMode || !onElementSelect) return
+    
+    const handleMessage = (event: MessageEvent) => {
+      if (event.data?.type === 'element-selected') {
+        onElementSelect(event.data.elementInfo)
+      }
+    }
+    
+    window.addEventListener('message', handleMessage)
+    return () => window.removeEventListener('message', handleMessage)
+  }, [inspectorMode, onElementSelect])
+
+  // Inject/remove inspector script when mode changes
+  useEffect(() => {
+    if (!iframeRef.current?.contentWindow) return
+    
+    try {
+      iframeRef.current.contentWindow.postMessage({ 
+        type: 'inspector-mode', 
+        enabled: inspectorMode 
+      }, '*')
+    } catch (e) {
+      // Iframe may not be ready
+    }
+  }, [inspectorMode, iframeLoaded])
 
   useEffect(() => {
     const handleDownloadTrigger = () => {
@@ -585,13 +630,13 @@ const SectionHeader = ({ eyebrow, title, description }) => React.createElement('
         '</head><body>' +
         '<div id="root"><div class="loading">Loading preview...</div></div>' +
         '<script>console.log("[Preview] Starting script loading...");</script>' +
-        '<script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>' +
-        '<script>window.React = React; window.ReactDOM = null; console.log("[Preview] React loaded and set to window");</script>' +
-        '<script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>' +
+        '<script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>' +
+        '<script>window.React = React; console.log("[Preview] React loaded:", typeof React);</script>' +
+        '<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>' +
         '<script>window.ReactDOM = ReactDOM; console.log("[Preview] ReactDOM loaded");</script>' +
         '<script src="https://cdn.jsdelivr.net/npm/framer-motion@11/dist/framer-motion.js" crossorigin></script>' +
         '<script>console.log("[Preview] Framer Motion loaded, Motion:", typeof window.Motion);</script>' +
-        '<script src="https://unpkg.com/lucide-react@0.294.0/dist/umd/lucide-react.min.js" crossorigin></script>' +
+        '<script src="https://unpkg.com/lucide-react@0.294.0/dist/umd/lucide-react.js" crossorigin></script>' +
         '<script>console.log("[Preview] Lucide loaded", Object.keys(window.lucideReact || {}).length, "icons");</script>' +
         '<script src="https://unpkg.com/@babel/standalone/babel.min.js" crossorigin></script>' +
         '<script>console.log("[Preview] Babel loaded");</script>' +
@@ -617,6 +662,83 @@ const SectionHeader = ({ eyebrow, title, description }) => React.createElement('
         '  var iconStub = function() { return null; };\n' +
         '  window.LucideIcons = new Proxy({}, { get: function() { return iconStub; } });\n' +
         '}\n' +
+        '</script>' +
+        // Inspector script - handles element selection when inspector mode is enabled
+        '<script>' +
+        '(function() {\n' +
+        '  var inspectorEnabled = false;\n' +
+        '  var highlightEl = null;\n' +
+        '  var selectedEl = null;\n' +
+        '  \n' +
+        '  function createHighlight() {\n' +
+        '    if (highlightEl) return;\n' +
+        '    highlightEl = document.createElement("div");\n' +
+        '    highlightEl.style.cssText = "position:fixed;pointer-events:none;z-index:99999;border:2px solid #8b5cf6;background:rgba(139,92,246,0.1);transition:all 0.15s ease;display:none;";\n' +
+        '    document.body.appendChild(highlightEl);\n' +
+        '  }\n' +
+        '  \n' +
+        '  function getElementInfo(el) {\n' +
+        '    var computed = window.getComputedStyle(el);\n' +
+        '    return {\n' +
+        '      tagName: el.tagName.toLowerCase(),\n' +
+        '      className: el.className || "",\n' +
+        '      textContent: (el.textContent || "").slice(0, 100),\n' +
+        '      styles: {\n' +
+        '        color: computed.color,\n' +
+        '        backgroundColor: computed.backgroundColor,\n' +
+        '        fontSize: computed.fontSize,\n' +
+        '        fontWeight: computed.fontWeight,\n' +
+        '        padding: computed.padding,\n' +
+        '        margin: computed.margin\n' +
+        '      }\n' +
+        '    };\n' +
+        '  }\n' +
+        '  \n' +
+        '  function handleMouseMove(e) {\n' +
+        '    if (!inspectorEnabled || !highlightEl) return;\n' +
+        '    var el = e.target;\n' +
+        '    if (el === highlightEl || el === document.body || el === document.documentElement) return;\n' +
+        '    var rect = el.getBoundingClientRect();\n' +
+        '    highlightEl.style.display = "block";\n' +
+        '    highlightEl.style.top = rect.top + "px";\n' +
+        '    highlightEl.style.left = rect.left + "px";\n' +
+        '    highlightEl.style.width = rect.width + "px";\n' +
+        '    highlightEl.style.height = rect.height + "px";\n' +
+        '  }\n' +
+        '  \n' +
+        '  function handleClick(e) {\n' +
+        '    if (!inspectorEnabled) return;\n' +
+        '    e.preventDefault();\n' +
+        '    e.stopPropagation();\n' +
+        '    var el = e.target;\n' +
+        '    if (el === highlightEl) return;\n' +
+        '    selectedEl = el;\n' +
+        '    highlightEl.style.borderColor = "#22c55e";\n' +
+        '    highlightEl.style.background = "rgba(34,197,94,0.1)";\n' +
+        '    window.parent.postMessage({ type: "element-selected", elementInfo: getElementInfo(el) }, "*");\n' +
+        '  }\n' +
+        '  \n' +
+        '  function handleMouseLeave() {\n' +
+        '    if (highlightEl) highlightEl.style.display = "none";\n' +
+        '  }\n' +
+        '  \n' +
+        '  window.addEventListener("message", function(e) {\n' +
+        '    if (e.data && e.data.type === "inspector-mode") {\n' +
+        '      inspectorEnabled = e.data.enabled;\n' +
+        '      if (inspectorEnabled) {\n' +
+        '        createHighlight();\n' +
+        '        document.body.style.cursor = "crosshair";\n' +
+        '      } else {\n' +
+        '        if (highlightEl) highlightEl.style.display = "none";\n' +
+        '        document.body.style.cursor = "";\n' +
+        '      }\n' +
+        '    }\n' +
+        '  });\n' +
+        '  \n' +
+        '  document.addEventListener("mousemove", handleMouseMove, true);\n' +
+        '  document.addEventListener("click", handleClick, true);\n' +
+        '  document.addEventListener("mouseleave", handleMouseLeave, true);\n' +
+        '})();\n' +
         '</script>' +
         '<script>document.addEventListener("click", function(e) { var link = e.target.closest("a"); if (!link) return; var href = link.getAttribute("href"); if (!href) return; if (href.startsWith("http://") || href.startsWith("https://")) { e.preventDefault(); window.open(href, "_blank", "noopener,noreferrer"); return; } if (href.startsWith("/") && !href.startsWith("//")) { e.preventDefault(); window.location.hash = href; return; } if (href.startsWith("#") && !href.startsWith("#/")) { e.preventDefault(); var target = document.querySelector(href); if (target) target.scrollIntoView({ behavior: "smooth" }); else window.location.hash = "/" + href.slice(1); } if (href.startsWith("#/")) { e.preventDefault(); window.location.hash = href.slice(1); } });</script>' +
         '<script>' +
@@ -725,12 +847,12 @@ const SectionHeader = ({ eyebrow, title, description }) => React.createElement('
       '<style>* { margin: 0; padding: 0; box-sizing: border-box; } html, body, #root { min-height: 100%; width: 100%; } body { background: #18181b; } .error { color: #ef4444; padding: 2rem; font-family: monospace; white-space: pre-wrap; background: #18181b; line-height: 1.6; } .error h2 { color: #fecaca; margin-bottom: 1rem; font-size: 1rem; font-weight: bold; } .loading { color: #71717a; padding: 2rem; text-align: center; font-family: system-ui; }</style>' +
       '</head><body>' +
       '<div id="root"><div class="loading">Loading preview...</div></div>' +
-      '<script src="https://unpkg.com/react@18/umd/react.development.js"></script>' +
+      '<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>' +
       '<script>window.React = React;</script>' +
-      '<script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>' +
+      '<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>' +
       '<script>window.ReactDOM = ReactDOM;</script>' +
       '<script src="https://cdn.jsdelivr.net/npm/framer-motion@11/dist/framer-motion.js"></script>' +
-      '<script src="https://unpkg.com/lucide-react@0.294.0/dist/umd/lucide-react.min.js"></script>' +
+      '<script src="https://unpkg.com/lucide-react@0.294.0/dist/umd/lucide-react.js"></script>' +
       '<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>' +
       '<script>' +
       '// Expose motion and lucide icons as globals\n' +
@@ -743,6 +865,81 @@ const SectionHeader = ({ eyebrow, title, description }) => React.createElement('
       'window.useSpring = window.Motion?.useSpring || function(v) { return v; };\n' +
       'window.useMotionValue = window.Motion?.useMotionValue || function(v) { return { get: function() { return v; }, set: function() {} }; };\n' +
       'window.LucideIcons = window.lucideReact || {};\n' +
+      '</script>' +
+      // Inspector script - handles element selection when inspector mode is enabled
+      '<script>' +
+      '(function() {\n' +
+      '  var inspectorEnabled = false;\n' +
+      '  var highlightEl = null;\n' +
+      '  \n' +
+      '  function createHighlight() {\n' +
+      '    if (highlightEl) return;\n' +
+      '    highlightEl = document.createElement("div");\n' +
+      '    highlightEl.style.cssText = "position:fixed;pointer-events:none;z-index:99999;border:2px solid #8b5cf6;background:rgba(139,92,246,0.1);transition:all 0.15s ease;display:none;";\n' +
+      '    document.body.appendChild(highlightEl);\n' +
+      '  }\n' +
+      '  \n' +
+      '  function getElementInfo(el) {\n' +
+      '    var computed = window.getComputedStyle(el);\n' +
+      '    return {\n' +
+      '      tagName: el.tagName.toLowerCase(),\n' +
+      '      className: el.className || "",\n' +
+      '      textContent: (el.textContent || "").slice(0, 100),\n' +
+      '      styles: {\n' +
+      '        color: computed.color,\n' +
+      '        backgroundColor: computed.backgroundColor,\n' +
+      '        fontSize: computed.fontSize,\n' +
+      '        fontWeight: computed.fontWeight,\n' +
+      '        padding: computed.padding,\n' +
+      '        margin: computed.margin\n' +
+      '      }\n' +
+      '    };\n' +
+      '  }\n' +
+      '  \n' +
+      '  function handleMouseMove(e) {\n' +
+      '    if (!inspectorEnabled || !highlightEl) return;\n' +
+      '    var el = e.target;\n' +
+      '    if (el === highlightEl || el === document.body || el === document.documentElement) return;\n' +
+      '    var rect = el.getBoundingClientRect();\n' +
+      '    highlightEl.style.display = "block";\n' +
+      '    highlightEl.style.top = rect.top + "px";\n' +
+      '    highlightEl.style.left = rect.left + "px";\n' +
+      '    highlightEl.style.width = rect.width + "px";\n' +
+      '    highlightEl.style.height = rect.height + "px";\n' +
+      '  }\n' +
+      '  \n' +
+      '  function handleClick(e) {\n' +
+      '    if (!inspectorEnabled) return;\n' +
+      '    e.preventDefault();\n' +
+      '    e.stopPropagation();\n' +
+      '    var el = e.target;\n' +
+      '    if (el === highlightEl) return;\n' +
+      '    highlightEl.style.borderColor = "#22c55e";\n' +
+      '    highlightEl.style.background = "rgba(34,197,94,0.1)";\n' +
+      '    window.parent.postMessage({ type: "element-selected", elementInfo: getElementInfo(el) }, "*");\n' +
+      '  }\n' +
+      '  \n' +
+      '  function handleMouseLeave() {\n' +
+      '    if (highlightEl) highlightEl.style.display = "none";\n' +
+      '  }\n' +
+      '  \n' +
+      '  window.addEventListener("message", function(e) {\n' +
+      '    if (e.data && e.data.type === "inspector-mode") {\n' +
+      '      inspectorEnabled = e.data.enabled;\n' +
+      '      if (inspectorEnabled) {\n' +
+      '        createHighlight();\n' +
+      '        document.body.style.cursor = "crosshair";\n' +
+      '      } else {\n' +
+      '        if (highlightEl) highlightEl.style.display = "none";\n' +
+      '        document.body.style.cursor = "";\n' +
+      '      }\n' +
+      '    }\n' +
+      '  });\n' +
+      '  \n' +
+      '  document.addEventListener("mousemove", handleMouseMove, true);\n' +
+      '  document.addEventListener("click", handleClick, true);\n' +
+      '  document.addEventListener("mouseleave", handleMouseLeave, true);\n' +
+      '})();\n' +
       '</script>' +
       '<script>document.addEventListener("click", function(e) { var link = e.target.closest("a"); if (link) { e.preventDefault(); var href = link.getAttribute("href"); if (href && href.startsWith("#")) { var target = document.querySelector(href); if (target) target.scrollIntoView({ behavior: "smooth" }); } } });</script>' +
       '<script>' +
@@ -876,6 +1073,7 @@ const SectionHeader = ({ eyebrow, title, description }) => React.createElement('
             </div>
           )}
           <iframe
+            ref={iframeRef}
             key={iframeKey}
             srcDoc={srcDoc}
             className="w-full h-full border-0"

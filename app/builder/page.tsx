@@ -250,6 +250,8 @@ export default function Home() {
   const [isSearchingDomain, setIsSearchingDomain] = useState(false)
   const [isBuyingDomain, setIsBuyingDomain] = useState(false)
   const [showOnboarding, setShowOnboarding] = useState(false)
+  const [inspectorMode, setInspectorMode] = useState(false)
+  const [selectedElement, setSelectedElement] = useState<{ tagName: string; className: string; textContent: string; styles: Record<string, string> } | null>(null)
   const previewContainerRef = useRef<HTMLDivElement>(null)
   const dropdownRef = useRef<HTMLDivElement>(null)
   const domainInputRef = useRef<HTMLInputElement>(null)
@@ -292,26 +294,43 @@ export default function Home() {
   }, [deployedProjects, projects])
 
   useEffect(() => {
-    const savedProjects = localStorage.getItem('hatchit-projects')
-    const savedCurrentId = localStorage.getItem('hatchit-current-project')
-    if (savedProjects) {
-      const parsed = JSON.parse(savedProjects) as Project[]
-      // First migrate old format, then convert to multi-page
-      const migrated = parsed.map(p => migrateToMultiPage(migrateProject(p)))
-      setProjects(migrated)
-      if (savedCurrentId && migrated.find(p => p.id === savedCurrentId)) {
-        setCurrentProjectId(savedCurrentId)
-      } else if (migrated.length > 0) {
-        setCurrentProjectId(migrated[0].id)
+    try {
+      const savedProjects = localStorage.getItem('hatchit-projects')
+      const savedCurrentId = localStorage.getItem('hatchit-current-project')
+      if (savedProjects) {
+        try {
+          const parsed = JSON.parse(savedProjects) as Project[]
+          // First migrate old format, then convert to multi-page
+          const migrated = parsed.map(p => migrateToMultiPage(migrateProject(p)))
+          setProjects(migrated)
+          if (savedCurrentId && migrated.find(p => p.id === savedCurrentId)) {
+            setCurrentProjectId(savedCurrentId)
+          } else if (migrated.length > 0) {
+            setCurrentProjectId(migrated[0].id)
+          }
+        } catch (parseError) {
+          console.error('Failed to parse saved projects:', parseError)
+          // Clear corrupted data and start fresh
+          localStorage.removeItem('hatchit-projects')
+          const defaultProject = createNewProject('My First Project')
+          setProjects([defaultProject])
+          setCurrentProjectId(defaultProject.id)
+        }
+      } else {
+        const defaultProject = createNewProject('My First Project')
+        setProjects([defaultProject])
+        setCurrentProjectId(defaultProject.id)
+        // Show onboarding for new users
+        if (!localStorage.getItem('hatchit-onboarding-seen')) {
+          setShowOnboarding(true)
+        }
       }
-    } else {
+    } catch (storageError) {
+      // localStorage may be unavailable in private browsing
+      console.error('localStorage unavailable:', storageError)
       const defaultProject = createNewProject('My First Project')
       setProjects([defaultProject])
       setCurrentProjectId(defaultProject.id)
-      // Show onboarding for new users
-      if (!localStorage.getItem('hatchit-onboarding-seen')) {
-        setShowOnboarding(true)
-      }
     }
     setIsLoadingProjects(false)
   }, [])
@@ -2706,6 +2725,21 @@ export default function Home() {
                 </button>
               </div>
               <div className="flex items-center gap-3">
+                {activeTab === 'preview' && (
+                  <button
+                    onClick={() => {
+                      setInspectorMode(!inspectorMode)
+                      if (inspectorMode) setSelectedElement(null)
+                    }}
+                    className={`p-2 rounded-lg transition-colors ${inspectorMode ? 'bg-purple-600 text-white' : 'text-zinc-500 hover:text-white hover:bg-zinc-800'}`}
+                    title={inspectorMode ? 'Exit Inspector Mode' : 'Inspect Elements'}
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <circle cx="11" cy="11" r="8" />
+                      <path d="m21 21-4.3-4.3" />
+                    </svg>
+                  </button>
+                )}
                 {activeTab === 'preview' && previewWidth > 0 && (
                   <div className="flex items-center gap-2 text-xs text-zinc-500">
                     <span className="flex items-center gap-1.5 px-2 py-1 bg-zinc-800/50 rounded-md">
@@ -2718,8 +2752,71 @@ export default function Home() {
                 <ShipButton />
               </div>
             </div>
-            <div ref={previewContainerRef} className="flex-1 overflow-auto min-h-0">
-              {activeTab === 'preview' ? <LivePreview code={code} pages={previewPages} currentPageId={currentProject?.currentPageId} isLoading={isGenerating} isPaid={isCurrentProjectPaid} assets={currentProject?.assets} setShowUpgradeModal={setShowUpgradeModal} /> : <CodePreview code={code} isPaid={isCurrentProjectPaid} onCodeChange={handleCodeChange} />}
+            <div ref={previewContainerRef} className="flex-1 overflow-auto min-h-0 relative">
+              {activeTab === 'preview' ? <LivePreview code={code} pages={previewPages} currentPageId={currentProject?.currentPageId} isLoading={isGenerating} isPaid={isCurrentProjectPaid} assets={currentProject?.assets} setShowUpgradeModal={setShowUpgradeModal} inspectorMode={inspectorMode} onElementSelect={setSelectedElement} /> : <CodePreview code={code} isPaid={isCurrentProjectPaid} onCodeChange={handleCodeChange} />}
+              
+              {/* Element Inspector Popover */}
+              {inspectorMode && selectedElement && (
+                <div className="absolute bottom-4 right-4 w-80 bg-zinc-900 border border-zinc-700 rounded-xl shadow-2xl overflow-hidden z-20">
+                  <div className="flex items-center justify-between p-3 border-b border-zinc-800 bg-zinc-800/50">
+                    <div className="flex items-center gap-2">
+                      <span className="text-purple-400 font-mono text-sm">&lt;{selectedElement.tagName}&gt;</span>
+                    </div>
+                    <button
+                      onClick={() => setSelectedElement(null)}
+                      className="p-1 text-zinc-500 hover:text-white transition-colors"
+                    >
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M18 6L6 18M6 6l12 12" />
+                      </svg>
+                    </button>
+                  </div>
+                  <div className="p-3 space-y-3 text-sm max-h-64 overflow-y-auto">
+                    {selectedElement.className && (
+                      <div>
+                        <span className="text-zinc-500 text-xs uppercase tracking-wide">Class</span>
+                        <p className="text-zinc-300 font-mono text-xs break-all mt-1">{selectedElement.className.slice(0, 150)}</p>
+                      </div>
+                    )}
+                    {selectedElement.textContent && (
+                      <div>
+                        <span className="text-zinc-500 text-xs uppercase tracking-wide">Text</span>
+                        <p className="text-zinc-300 text-xs mt-1 line-clamp-2">{selectedElement.textContent}</p>
+                      </div>
+                    )}
+                    <div>
+                      <span className="text-zinc-500 text-xs uppercase tracking-wide">Styles</span>
+                      <div className="mt-1 grid grid-cols-2 gap-1 text-xs">
+                        {Object.entries(selectedElement.styles).filter(([, v]) => v && v !== 'rgba(0, 0, 0, 0)').slice(0, 6).map(([key, value]) => (
+                          <div key={key} className="flex items-center gap-1">
+                            <span className="text-zinc-500">{key}:</span>
+                            <span className="text-zinc-300 font-mono truncate">{String(value).slice(0, 15)}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="p-3 border-t border-zinc-800 bg-zinc-800/30">
+                    <button
+                      onClick={() => {
+                        const suggestion = `Edit the ${selectedElement.tagName} element${selectedElement.textContent ? ` with text "${selectedElement.textContent.slice(0, 30)}..."` : ''}`
+                        // Could trigger a prompt in the chat, for now just copy
+                        navigator.clipboard.writeText(suggestion)
+                        showSuccessToast('Copied edit suggestion!')
+                        setSelectedElement(null)
+                        setInspectorMode(false)
+                      }}
+                      className="w-full py-2 px-3 bg-purple-600 hover:bg-purple-500 text-white text-sm font-medium rounded-lg transition-colors flex items-center justify-center gap-2"
+                    >
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
+                        <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
+                      </svg>
+                      Copy Edit Prompt
+                    </button>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </Panel>

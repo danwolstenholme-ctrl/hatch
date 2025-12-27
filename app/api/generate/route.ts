@@ -8,12 +8,28 @@ interface Message {
 }
 
 // Server-side rate limiting (userId -> timestamps)
+// Note: In serverless, this resets per cold start which is acceptable for rate limiting
 const rateLimits = new Map<string, number[]>()
 const RATE_LIMIT_PER_MINUTE = 20
 const RATE_LIMIT_WINDOW = 60000 // 1 minute
+const MAX_RATE_LIMIT_ENTRIES = 10000 // Prevent unbounded growth
 
 function checkRateLimit(userId: string): boolean {
   const now = Date.now()
+  
+  // Cleanup old entries periodically to prevent memory leak
+  if (rateLimits.size > MAX_RATE_LIMIT_ENTRIES) {
+    const cutoff = now - RATE_LIMIT_WINDOW
+    for (const [key, timestamps] of rateLimits.entries()) {
+      const recent = timestamps.filter(t => t > cutoff)
+      if (recent.length === 0) {
+        rateLimits.delete(key)
+      } else {
+        rateLimits.set(key, recent)
+      }
+    }
+  }
+  
   const timestamps = rateLimits.get(userId) || []
   const recent = timestamps.filter(t => now - t < RATE_LIMIT_WINDOW)
   
@@ -27,8 +43,10 @@ function checkRateLimit(userId: string): boolean {
 }
 
 // Server-side daily generation tracking
+// Note: In serverless, this resets per cold start - actual limits enforced via DB in production
 const dailyGenerations = new Map<string, { count: number; date: string }>()
 const FREE_DAILY_LIMIT = 10
+const MAX_DAILY_GEN_ENTRIES = 10000 // Prevent unbounded growth
 
 function checkAndRecordGeneration(userId: string, isPaid: boolean): { allowed: boolean; remaining: number } {
   if (isPaid) {
@@ -36,6 +54,16 @@ function checkAndRecordGeneration(userId: string, isPaid: boolean): { allowed: b
   }
   
   const today = new Date().toISOString().split('T')[0]
+  
+  // Cleanup old entries periodically
+  if (dailyGenerations.size > MAX_DAILY_GEN_ENTRIES) {
+    for (const [key, gen] of dailyGenerations.entries()) {
+      if (gen.date !== today) {
+        dailyGenerations.delete(key)
+      }
+    }
+  }
+  
   const userGen = dailyGenerations.get(userId) || { count: 0, date: today }
   
   // Reset if new day
@@ -276,11 +304,21 @@ Include toggle for monthly/annual, feature comparison, highlighted "popular" tie
 6. Professional typography hierarchy
 
 ## MODIFICATIONS
-When modifying existing code:
-- Only change what's requested
-- Preserve overall structure and styling
-- Keep all existing functionality
-- Match the existing theme (light/dark)`
+
+IMPORTANT: When the user asks to "update", "fix", "change", "modify", "tweak", "adjust", "improve", "add to", "make it", or describes changes to something that already exists, you are EDITING THE CURRENT PAGE'S CODE. Do NOT generate a completely new, different component. Instead:
+- Keep the overall structure and design
+- Only change what's specifically requested
+- Preserve all existing functionality
+- Match the existing theme (light/dark)
+- If adding a feature, integrate it into the existing code
+
+Only create a NEW page (using the ---PAGES--- format with action: "create") when the user explicitly says things like:
+- "create a new page"
+- "add a page for..."  
+- "I need a contact page"
+- "make me a new page called..."
+
+When in doubt: MODIFY the current code, don't replace it with something unrelated.`
 
 export async function POST(request: NextRequest) {
   // Authenticate user
