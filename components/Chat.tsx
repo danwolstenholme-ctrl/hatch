@@ -72,6 +72,7 @@ export default function Chat({ onGenerate, isGenerating, onStopGeneration, curre
   const [buildMessages, setBuildMessages] = useState<Message[]>([])
   const [chatMessages, setChatMessages] = useState<Message[]>([])
   const [showUpgradeModal, setShowUpgradeModal] = useState(false)
+  const [upgradeReason, setUpgradeReason] = useState<'generation_limit' | 'proactive' | 'running_low'>('proactive')
   const [remaining, setRemaining] = useState<number | null>(null)
   const [mode, setMode] = useState<'build' | 'chat'>('build')
   const [isChatLoading, setIsChatLoading] = useState(false)
@@ -167,6 +168,7 @@ export default function Chat({ onGenerate, isGenerating, onStopGeneration, curre
       // Build mode - existing generation logic
       // Check generation limit for free users
       if (!isPaid && !canGenerate()) {
+        setUpgradeReason('generation_limit')
         setShowUpgradeModal(true)
         return
       }
@@ -227,7 +229,10 @@ export default function Chat({ onGenerate, isGenerating, onStopGeneration, curre
             </div>
           </div>
           <button 
-            onClick={() => setShowUpgradeModal(true)}
+            onClick={() => {
+              setUpgradeReason(remaining !== null && remaining <= 3 ? 'running_low' : 'proactive')
+              setShowUpgradeModal(true)
+            }}
             className="text-xs text-purple-400 hover:text-purple-300 font-medium transition-colors"
           >
             Upgrade
@@ -412,9 +417,10 @@ export default function Chat({ onGenerate, isGenerating, onStopGeneration, curre
       <UpgradeModal
         isOpen={showUpgradeModal}
         onClose={() => setShowUpgradeModal(false)}
-        reason="generation_limit"
+        reason={upgradeReason}
         projectSlug={projectSlug}
         projectName={projectName}
+        generationsRemaining={remaining ?? undefined}
       />
     </div>
   )

@@ -5,12 +5,13 @@ import { useState } from 'react'
 interface UpgradeModalProps {
   isOpen: boolean
   onClose: () => void
-  reason: 'generation_limit' | 'code_access' | 'deploy' | 'download'
+  reason: 'generation_limit' | 'code_access' | 'deploy' | 'download' | 'proactive' | 'running_low'
   projectSlug?: string
   projectName?: string
+  generationsRemaining?: number
 }
 
-export default function UpgradeModal({ isOpen, onClose, reason, projectSlug = '', projectName = 'this project' }: UpgradeModalProps) {
+export default function UpgradeModal({ isOpen, onClose, reason, projectSlug = '', projectName = 'this project', generationsRemaining }: UpgradeModalProps) {
   const [isLoading, setIsLoading] = useState(false)
 
   if (!isOpen) return null
@@ -20,6 +21,16 @@ export default function UpgradeModal({ isOpen, onClose, reason, projectSlug = ''
       title: "You've hit today's limit",
       description: "Free accounts get 10 generations per day. Go Hatched for unlimited builds.",
       icon: "⚡"
+    },
+    running_low: {
+      title: `${generationsRemaining} generations left today`,
+      description: "Running low! Go Hatched for unlimited generations and deploy your site.",
+      icon: "⏳"
+    },
+    proactive: {
+      title: "Ready to level up?",
+      description: "Go Hatched to unlock unlimited generations, deploy to a live URL, and get full code access.",
+      icon: "🚀"
     },
     code_access: {
       title: "Unlock your code",
@@ -70,7 +81,7 @@ export default function UpgradeModal({ isOpen, onClose, reason, projectSlug = ''
         onClick={onClose}
       />
       
-      <div className="relative bg-zinc-900 border border-zinc-800 rounded-2xl p-6 md:p-8 w-full max-w-md shadow-2xl overflow-y-auto max-h-[90vh]">
+      <div className="relative bg-zinc-900 border border-zinc-800 rounded-2xl p-6 md:p-8 w-full max-w-md shadow-2xl overflow-y-auto max-h-[90vh] select-text">
         <button
           onClick={onClose}
           className="absolute top-3 right-3 p-2 text-zinc-500 hover:text-white transition-colors active:bg-zinc-800 rounded-lg md:p-2"

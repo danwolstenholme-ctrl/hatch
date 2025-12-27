@@ -239,7 +239,7 @@ export default function Home() {
   const { user, isLoaded } = useUser()
   const searchParams = useSearchParams()
   const [showUpgradeModal, setShowUpgradeModal] = useState(false)
-  const [upgradeReason, setUpgradeReason] = useState<'generation_limit' | 'code_access' | 'deploy' | 'download'>('deploy')
+  const [upgradeReason, setUpgradeReason] = useState<'generation_limit' | 'code_access' | 'deploy' | 'download' | 'proactive' | 'running_low'>('deploy')
   const [showSuccessModal, setShowSuccessModal] = useState(false)
   const [showFaqModal, setShowFaqModal] = useState(false)
   const [showAssetsModal, setShowAssetsModal] = useState(false)
