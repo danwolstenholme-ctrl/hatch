@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { ClerkProvider } from "@clerk/nextjs";
-import { Analytics } from "@vercel/analytics/react";
+import { Analytics } from "@vercel/analytics/next";
 import ServiceWorkerRegistration from "@/components/ServiceWorkerRegistration";
 import CrispChat from "@/components/CrispChat";
 import "./globals.css";
