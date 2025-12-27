@@ -337,16 +337,24 @@ export default function Home() {
           </AnimatedSection>
 
           <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
-            {/* Free Tier */}
+            {/* Free Project */}
             <AnimatedSection delay={0.1}>
               <motion.div 
                 className="bg-zinc-900 border border-zinc-800 rounded-2xl p-8 h-full"
                 whileHover={{ y: -5 }}
                 transition={{ duration: 0.2 }}
               >
-                <h3 className="text-2xl font-bold text-white mb-2">Free</h3>
-                <p className="text-zinc-400 mb-6">Build and experiment forever</p>
-                <div className="text-4xl font-black text-white mb-6">$0</div>
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-12 h-12 rounded-xl bg-zinc-800 border border-zinc-700 flex items-center justify-center">
+                    <span className="text-2xl opacity-50">🐣</span>
+                  </div>
+                  <div>
+                    <h3 className="text-2xl font-bold text-white">Free Project</h3>
+                    <p className="text-zinc-500 text-sm">Build and experiment</p>
+                  </div>
+                </div>
+                <div className="text-4xl font-black text-white mb-2">$0</div>
+                <p className="text-zinc-500 text-sm mb-6">forever free to build</p>
                 <ul className="space-y-3 mb-8">
                   {[
                     "Unlimited projects",
@@ -363,7 +371,7 @@ export default function Home() {
                       transition={{ delay: i * 0.05 }}
                       viewport={{ once: true }}
                     >
-                      <span className="text-green-400">✓</span>
+                      <span className="text-zinc-500">✓</span>
                       {feature}
                     </motion.li>
                   ))}
@@ -374,20 +382,28 @@ export default function Home() {
               </motion.div>
             </AnimatedSection>
 
-            {/* Per Site Tier */}
+            {/* Hatched Project */}
             <AnimatedSection delay={0.2}>
               <motion.div 
-                className="bg-gradient-to-br from-zinc-900 to-zinc-800 border border-purple-500/30 rounded-2xl p-8 ring-1 ring-purple-500/20 relative h-full"
+                className="bg-gradient-to-br from-zinc-900 to-zinc-800 border border-amber-500/30 rounded-2xl p-8 ring-1 ring-amber-500/20 relative h-full"
                 whileHover={{ y: -5, scale: 1.02 }}
                 transition={{ duration: 0.2 }}
               >
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-blue-500 to-purple-500 text-white text-xs font-bold px-3 py-1 rounded-full">
-                  PER LIVE SITE
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-gradient-to-r from-amber-500 to-yellow-500 text-black text-xs font-bold px-3 py-1 rounded-full">
+                  PER PROJECT
                 </div>
-                <h3 className="text-2xl font-bold text-white mb-2">Live</h3>
-                <p className="text-zinc-400 mb-6">Ship your site to the world</p>
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-amber-500/20 via-yellow-500/20 to-orange-500/20 border border-amber-500/30 flex items-center justify-center relative overflow-hidden">
+                    <div className="absolute inset-0 bg-gradient-to-r from-amber-400/0 via-amber-400/20 to-amber-400/0 animate-pulse" />
+                    <span className="text-2xl relative z-10">🐣</span>
+                  </div>
+                  <div>
+                    <h3 className="text-2xl font-bold text-white">Hatched Project</h3>
+                    <p className="text-amber-400/80 text-sm">Ship to the world</p>
+                  </div>
+                </div>
                 <div className="text-4xl font-black text-white mb-2">$49<span className="text-lg text-zinc-500 font-normal">/month</span></div>
-                <p className="text-zinc-500 text-sm mb-6">per deployed site</p>
+                <p className="text-zinc-500 text-sm mb-6">per project you want live</p>
                 <ul className="space-y-3 mb-8">
                   {[
                     "Deploy to live URL",
@@ -408,12 +424,12 @@ export default function Home() {
                       transition={{ delay: i * 0.05 }}
                       viewport={{ once: true }}
                     >
-                      <span className="text-purple-400">✓</span>
+                      <span className="text-amber-400">✓</span>
                       {feature}
                     </motion.li>
                   ))}
                 </ul>
-                <Link href="/builder" className="block w-full py-3 text-center bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 rounded-lg font-semibold transition-all">
+                <Link href="/builder" className="block w-full py-3 text-center bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-black rounded-lg font-semibold transition-all">
                   Start Building
                 </Link>
               </motion.div>
@@ -422,7 +438,7 @@ export default function Home() {
 
           <div className="mt-12 text-center">
             <p className="text-zinc-500 text-sm">
-              Have 10+ sites? <a href="mailto:dan@wolstenstudios.com" className="text-purple-400 hover:text-purple-300">Contact us</a> for agency pricing.
+              Have 10+ projects? <a href="mailto:dan@wolstenstudios.com" className="text-amber-400 hover:text-amber-300">Contact us</a> for agency pricing.
             </p>
           </div>
         </div>
@@ -492,8 +508,8 @@ export default function Home() {
                     <span>Build unlimited for free</span>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span>✓</span>
-                    <span>$49/month when you go live</span>
+                    <span className="text-amber-400">🐣</span>
+                    <span>$49/month per project you ship</span>
                   </div>
                 </motion.div>
               </div>
