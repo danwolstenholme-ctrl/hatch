@@ -333,7 +333,8 @@ export default function RootLayout({
       const serializedPages = pages.map((page, idx) => {
         const regex = /(?:function|const|let|var)\s+([A-Z][a-zA-Z0-9]*)(?:\s*[=:(]|\s*:)/g
         const matches = [...page.code.matchAll(regex)]
-        const componentName = matches.length > 0 ? matches[matches.length - 1][1] : `Page${idx}`
+        // Use FIRST match (the main component) not last (which catches inline helpers)
+        const componentName = matches.length > 0 ? matches[0][1] : `Page${idx}`
 
         const cleanedCode = page.code
           // Remove import statements for motion, lucide, and react
@@ -382,7 +383,8 @@ const Footer = () => null;
       const pageComponents = pages.map((page, idx) => {
         const regex = /(?:function|const|let|var)\s+([A-Z][a-zA-Z0-9]*)(?:\s*[=:(]|\s*:)/g
         const matches = [...page.code.matchAll(regex)]
-        const componentName = matches.length > 0 ? matches[matches.length - 1][1] : `Page${idx}`
+        // Use FIRST match (the main component) not last (which catches inline helpers)
+        const componentName = matches.length > 0 ? matches[0][1] : `Page${idx}`
 
         const cleanedCode = page.code
           // Remove import statements for motion, lucide, and react
@@ -681,7 +683,8 @@ const SectionHeader = ({ eyebrow, title, description }) => React.createElement('
 
     const regex = /(?:function|const|let|var)\s+([A-Z][a-zA-Z0-9]*)(?:\s*[=:(]|\s*:)/g
     const matches = [...code.matchAll(regex)]
-    const componentName = matches.length > 0 ? matches[matches.length - 1][1] : 'Component'
+    // Use FIRST match (the main component) not last (which catches inline helpers)
+    const componentName = matches.length > 0 ? matches[0][1] : 'Component'
 
     const cleanedCode = code
       // Remove import statements for motion, lucide, and react
