@@ -163,6 +163,70 @@ function checkSyntax(code: string): { valid: boolean; error?: string } {
   }
 }
 
+// Detect JSX truncation (unclosed tags, brackets, etc)
+function detectJSXTruncation(code: string): { truncated: boolean; reason?: string } {
+  // Check for balanced braces
+  let braceCount = 0;
+  let parenCount = 0;
+  let bracketCount = 0;
+  
+  for (const char of code) {
+    if (char === '{') braceCount++;
+    if (char === '}') braceCount--;
+    if (char === '(') parenCount++;
+    if (char === ')') parenCount--;
+    if (char === '[') bracketCount++;
+    if (char === ']') bracketCount--;
+  }
+  
+  if (braceCount > 2) {
+    return { truncated: true, reason: `${braceCount} unclosed braces` };
+  }
+  if (parenCount > 2) {
+    return { truncated: true, reason: `${parenCount} unclosed parentheses` };
+  }
+  if (bracketCount > 2) {
+    return { truncated: true, reason: `${bracketCount} unclosed brackets` };
+  }
+  
+  // Check for balanced JSX tags (more sophisticated check)
+  const jsxOpenTags = code.match(/<([A-Z][a-zA-Z0-9]*|[a-z]+(?:-[a-z]+)*)\b[^>]*(?<!\/)>/g) || [];
+  const jsxCloseTags = code.match(/<\/([A-Z][a-zA-Z0-9]*|[a-z]+(?:-[a-z]+)*)>/g) || [];
+  const selfClosingTags = code.match(/<[A-Za-z][^>]*\/>/g) || [];
+  
+  // Count actual open tags (non-self-closing)
+  const openCount = jsxOpenTags.length;
+  const closeCount = jsxCloseTags.length;
+  
+  // Allow a small tolerance but flag major imbalances
+  if (openCount - closeCount > 5) {
+    return { truncated: true, reason: `${openCount - closeCount} unclosed JSX tags` };
+  }
+  
+  // Check if code ends abruptly (common truncation patterns)
+  const trimmedCode = code.trim();
+  const badEndings = [
+    /\(\s*$/, // ends with open paren
+    /{\s*$/, // ends with open brace
+    /<[A-Za-z][^>]*$/, // ends mid-tag
+    /className=["'][^"']*$/, // ends mid-attribute
+    /style={{[^}]*$/, // ends mid-style
+  ];
+  
+  for (const pattern of badEndings) {
+    if (pattern.test(trimmedCode)) {
+      return { truncated: true, reason: 'Code ends abruptly' };
+    }
+  }
+  
+  // Check for common incomplete patterns
+  if (trimmedCode.includes('...') && trimmedCode.match(/\.\.\./g)!.length > 3) {
+    return { truncated: true, reason: 'Contains placeholder ellipsis patterns' };
+  }
+  
+  return { truncated: false };
+}
+
 // Aggressive code cleanup - remove all problematic patterns
 function cleanGeneratedCode(code: string): string {
   return code
@@ -640,12 +704,31 @@ export async function POST(request: NextRequest) {
 
       // If multi-page operations, return them
       if (pageOperations && pageOperations.length > 0) {
+        // Check each page operation for truncation
+        for (const op of pageOperations) {
+          if (op.code) {
+            const truncationCheck = detectJSXTruncation(op.code);
+            if (truncationCheck.truncated) {
+              return NextResponse.json({ 
+                error: `Response was cut off - ${truncationCheck.reason}. Please try again with a simpler request.`
+              }, { status: 400 })
+            }
+          }
+        }
         return NextResponse.json({ 
           message, 
           pageOperations,
           // Also include first update operation as 'code' for backwards compatibility
           code: pageOperations.find(op => op.action === 'update')?.code || pageOperations[0].code
         })
+      }
+
+      // Check for JSX truncation BEFORE syntax check
+      const truncationCheck = detectJSXTruncation(code);
+      if (truncationCheck.truncated) {
+        return NextResponse.json({ 
+          error: `Response was cut off - ${truncationCheck.reason}. Please try again with a simpler request.`
+        }, { status: 400 })
       }
 
       // Check syntax and auto-fix if needed
