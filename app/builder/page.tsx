@@ -186,6 +186,7 @@ export default function Home() {
   const [showProjectDropdown, setShowProjectDropdown] = useState(false)
   const [showRenameModal, setShowRenameModal] = useState(false)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
+  const [showDeleteAllModal, setShowDeleteAllModal] = useState(false)
   const [showHistoryModal, setShowHistoryModal] = useState(false)
   const [previewVersionIndex, setPreviewVersionIndex] = useState<number | null>(null)
   const [renameValue, setRenameValue] = useState('')
@@ -452,6 +453,20 @@ export default function Home() {
     setCurrentProjectId(remaining[0]?.id || null)
     setShowDeleteModal(false)
     setDeployedUrl(null)
+  }
+
+  const deleteAllProjects = () => {
+    const freshProject = createNewProject()
+    setProjects([freshProject])
+    setCurrentProjectId(freshProject.id)
+    setShowDeleteAllModal(false)
+    setShowProjectDropdown(false)
+    setDeployedUrl(null)
+    // Clear chat history from localStorage
+    const keysToRemove = Object.keys(localStorage).filter(key => 
+      key.startsWith('chat-build-') || key.startsWith('chat-chat-')
+    )
+    keysToRemove.forEach(key => localStorage.removeItem(key))
   }
 
   const duplicateProject = () => {
@@ -1210,6 +1225,11 @@ export default function Home() {
           <button onClick={() => { setShowDeleteModal(true); setShowProjectDropdown(false) }} className="flex-1 px-3 py-2 text-xs text-red-400 hover:text-red-300 hover:bg-zinc-800 rounded-lg transition-colors">Delete</button>
         </div>
       )}
+      {projects.length > 1 && (
+        <div className="border-t border-zinc-800 p-2">
+          <button onClick={() => { setShowDeleteAllModal(true); setShowProjectDropdown(false) }} className="w-full px-3 py-2 text-xs text-red-400 hover:text-red-300 hover:bg-zinc-800 rounded-lg transition-colors">Delete All Projects</button>
+        </div>
+      )}
     </div>
   )
 
@@ -1240,6 +1260,25 @@ export default function Home() {
         <div className="flex gap-3 justify-end">
           <button onClick={() => setShowDeleteModal(false)} className="px-4 py-2 text-sm text-zinc-400 hover:text-white transition-colors">Cancel</button>
           <button onClick={deleteProject} className="px-4 py-2 text-sm bg-red-600 hover:bg-red-500 text-white rounded-xl transition-colors">Delete</button>
+        </div>
+      </div>
+    </div>
+  )
+
+  const DeleteAllModal = () => (
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
+      <div className="bg-zinc-900 border border-zinc-700 rounded-2xl p-6 max-w-sm mx-4 shadow-2xl">
+        <h2 className="text-lg font-semibold text-white mb-2">Delete All Projects?</h2>
+        <p className="text-zinc-400 text-sm mb-4">This will permanently delete all {projects.length} project{projects.length !== 1 ? 's' : ''} and their history. This action cannot be undone.</p>
+        {projects.some(p => p.deployedSlug) && (
+          <div className="flex items-center gap-2 px-3 py-2 bg-amber-500/10 border border-amber-500/20 rounded-lg mb-4">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" strokeWidth="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+            <span className="text-amber-400 text-xs">Some projects are deployed and will remain live</span>
+          </div>
+        )}
+        <div className="flex gap-3 justify-end">
+          <button onClick={() => setShowDeleteAllModal(false)} className="px-4 py-2 text-sm text-zinc-400 hover:text-white transition-colors">Cancel</button>
+          <button onClick={deleteAllProjects} className="px-4 py-2 text-sm bg-red-600 hover:bg-red-500 text-white rounded-xl transition-colors">Delete All</button>
         </div>
       </div>
     </div>
@@ -2181,6 +2220,7 @@ export default function Home() {
         <div className={`flex-1 flex flex-col min-h-0 ${!isLoadingProjects && !isDeployed ? 'pt-10' : ''}`}>
         {showRenameModal && <RenameModal />}
         {showDeleteModal && <DeleteModal />}
+        {showDeleteAllModal && <DeleteAllModal />}
         {showDeployModal && <DeployConfirmModal />}
         {showHistoryModal && <HistoryModal />}
         {showAssetsModal && <AssetsModal />}
@@ -2355,6 +2395,7 @@ export default function Home() {
       )}
       {showRenameModal && <RenameModal />}
       {showDeleteModal && <DeleteModal />}
+      {showDeleteAllModal && <DeleteAllModal />}
       {showDeployModal && <DeployConfirmModal />}
       {showHistoryModal && <HistoryModal />}
       {showAssetsModal && <AssetsModal />}
