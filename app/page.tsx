@@ -194,7 +194,7 @@ export default function Home() {
               <span className="bg-gradient-to-r from-zinc-200 to-zinc-400 bg-clip-text text-transparent">Not another AI toy.</span>
             </h2>
             <p className="text-xl text-zinc-400 max-w-3xl mx-auto">
-              Other tools give you throwaway code. HatchIt gives you a platform to build real products.
+              Other tools give you throwaway code. HatchIt.dev gives you a platform to build real products.
             </p>
           </AnimatedSection>
 
@@ -208,7 +208,7 @@ export default function Home() {
             </AnimatedSection>
             <AnimatedSection delay={0.2}>
               <div className="bg-gradient-to-br from-zinc-900 to-zinc-800 border border-zinc-700 rounded-2xl p-8 ring-1 ring-purple-500/20 h-full">
-                <div className="text-green-400 text-sm font-semibold mb-4">✓ HatchIt</div>
+                <div className="text-green-400 text-sm font-semibold mb-4">✓ HatchIt.dev</div>
                 <h3 className="text-xl font-bold text-white mb-3">Build & Iterate</h3>
                 <p className="text-zinc-400">Keep context. Undo mistakes. Auto-fix errors. Ship when ready.</p>
               </div>
@@ -526,7 +526,7 @@ export default function Home() {
               <Link href="/privacy" className="hover:text-white transition-colors">Privacy</Link>
             </div>
             <div className="flex flex-col items-center md:items-end gap-1">
-              <p className="text-zinc-600 text-sm">© 2025 HatchIt. Built with HatchIt.</p>
+              <p className="text-zinc-600 text-sm">© 2025 HatchIt.dev. Built with HatchIt.dev.</p>
               <p className="text-zinc-700 text-xs">V1.0 • Launched December 2025</p>
             </div>
           </div>

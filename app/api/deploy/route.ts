@@ -182,7 +182,7 @@ import './globals.css'
 
 export const metadata: Metadata = {
   title: '${projectName || 'My Site'}',
-  description: 'Built with HatchIt',
+  description: 'Built with HatchIt.dev',
 }
 
 export default function RootLayout({

@@ -2357,7 +2357,7 @@ export default function Home() {
       <div className="bg-zinc-900 border border-zinc-700 rounded-2xl p-6 md:p-8 w-full max-w-lg shadow-2xl my-8">
         <div className="text-center mb-6">
           <div className="text-5xl mb-4">🐣</div>
-          <h2 className="text-2xl font-bold text-white mb-2">Welcome to HatchIt!</h2>
+          <h2 className="text-2xl font-bold text-white mb-2">Welcome to HatchIt.dev!</h2>
           <p className="text-zinc-400">AI-powered website builder that outputs real code.</p>
         </div>
         

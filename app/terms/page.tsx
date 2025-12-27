@@ -8,7 +8,7 @@ export default function TermsPage() {
         <div className="space-y-8 text-zinc-300">
           <section>
             <h2 className="text-xl font-semibold text-white mb-3">1. Service Description</h2>
-            <p>HatchIt is an AI-powered website builder that generates React code and deploys websites to hatchitsites.dev subdomains.</p>
+            <p>HatchIt.dev is an AI-powered website builder that generates React code and deploys websites to hatchitsites.dev subdomains.</p>
           </section>
 
           <section>
@@ -33,7 +33,7 @@ export default function TermsPage() {
 
           <section>
             <h2 className="text-xl font-semibold text-white mb-3">4. Code Ownership</h2>
-            <p>All code generated through HatchIt is yours. You own full rights to use, modify, and distribute it for any purpose.</p>
+            <p>All code generated through HatchIt.dev is yours. You own full rights to use, modify, and distribute it for any purpose.</p>
           </section>
 
           <section>
@@ -50,7 +50,7 @@ export default function TermsPage() {
           <section>
             <h2 className="text-xl font-semibold text-white mb-3">6. Acceptable Use</h2>
             <ul className="list-disc list-inside space-y-2">
-              <li>Don't use HatchIt to generate illegal, harmful, or infringing content</li>
+              <li>Don't use HatchIt.dev to generate illegal, harmful, or infringing content</li>
               <li>Don't attempt to abuse, exploit, or overload our systems</li>
               <li>We reserve the right to terminate accounts that violate these terms</li>
             </ul>
@@ -58,7 +58,7 @@ export default function TermsPage() {
 
           <section>
             <h2 className="text-xl font-semibold text-white mb-3">7. Limitation of Liability</h2>
-            <p>HatchIt is provided "as is" without warranties. We're not liable for any damages arising from use of the service.</p>
+            <p>HatchIt.dev is provided "as is" without warranties. We're not liable for any damages arising from use of the service.</p>
           </section>
 
           <section>

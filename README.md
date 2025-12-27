@@ -1,4 +1,4 @@
-# 🐣 HatchIt
+# 🐣 HatchIt.dev
 
 > **V1.0 - Launched December 2025**
 
@@ -49,7 +49,7 @@ VERCEL_TOKEN=
 VERCEL_TEAM_ID=
 
 # App URL
-NEXT_PUBLIC_APP_URL=https://hatchit.app
+NEXT_PUBLIC_APP_URL=https://hatchit.dev
 
 # Live Chat (Crisp) - Optional
 NEXT_PUBLIC_CRISP_WEBSITE_ID=

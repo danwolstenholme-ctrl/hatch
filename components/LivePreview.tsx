@@ -297,9 +297,9 @@ npm-debug.log*
 next-env.d.ts`)
       
       // README
-      zip.file('README.md', `# HatchIt Project
+      zip.file('README.md', `# HatchIt.dev Project
 
-This project was built with [HatchIt](https://hatchit.dev).
+This project was built with [HatchIt.dev](https://hatchit.dev).
 
 ## Getting Started
 
@@ -348,8 +348,8 @@ The easiest way to deploy is with [Vercel](https://vercel.com):
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'HatchIt Project',
-  description: 'Built with HatchIt',
+  title: 'HatchIt.dev Project',
+  description: 'Built with HatchIt.dev',
 }
 
 export default function RootLayout({

@@ -60,7 +60,7 @@ export async function POST(request: NextRequest) {
             currency: 'usd',
             product_data: {
               name: `Domain: ${domain}`,
-              description: '1 year registration via HatchIt',
+              description: '1 year registration via HatchIt.dev',
             },
             unit_amount: priceWithMarkup,
           },

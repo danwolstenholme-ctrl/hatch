@@ -1,6 +1,6 @@
 {
-  "name": "HatchIt - AI Website Builder",
-  "short_name": "HatchIt",
+  "name": "HatchIt.dev - AI Website Builder",
+  "short_name": "HatchIt.dev",
   "description": "Build production-ready React websites with AI. Describe what you want, get real code, deploy in one click.",
   "start_url": "/builder",
   "display": "standalone",

@@ -15,16 +15,16 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://hatchit.dev'),
-  title: 'HatchIt - AI Website Builder',
+  title: 'HatchIt.dev - AI Website Builder',
   description: 'Build production-ready React websites with AI. Describe what you want, get real code, deploy in one click.',
   keywords: ['AI website builder', 'React', 'Tailwind CSS', 'no-code', 'code generator', 'web development'],
-  authors: [{ name: 'HatchIt' }],
-  creator: 'HatchIt',
+  authors: [{ name: 'HatchIt.dev' }],
+  creator: 'HatchIt.dev',
   manifest: '/manifest.json',
   appleWebApp: {
     capable: true,
     statusBarStyle: 'black-translucent',
-    title: 'HatchIt',
+    title: 'HatchIt.dev',
   },
   icons: {
     icon: [
@@ -38,21 +38,21 @@ export const metadata: Metadata = {
     type: 'website',
     locale: 'en_US',
     url: 'https://hatchit.dev',
-    siteName: 'HatchIt',
-    title: 'HatchIt - AI Website Builder',
+    siteName: 'HatchIt.dev',
+    title: 'HatchIt.dev - AI Website Builder',
     description: 'Build production-ready React websites with AI. Describe what you want, get real code, deploy in one click.',
     images: [
       {
         url: '/og-image.png',
         width: 1200,
         height: 630,
-        alt: 'HatchIt - AI Website Builder',
+        alt: 'HatchIt.dev - AI Website Builder',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'HatchIt - AI Website Builder',
+    title: 'HatchIt.dev - AI Website Builder',
     description: 'Build production-ready React websites with AI. Describe what you want, get real code, deploy in one click.',
     images: ['/og-image.png'],
   },

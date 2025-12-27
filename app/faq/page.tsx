@@ -2,11 +2,11 @@ import { Metadata } from 'next'
 import Link from 'next/link'
 
 export const metadata: Metadata = {
-  title: 'FAQ - HatchIt | AI Website Builder Questions Answered',
-  description: 'Frequently asked questions about HatchIt, the AI-powered website builder. Learn about pricing, features, code ownership, deployment, and more.',
+  title: 'FAQ - HatchIt.dev | AI Website Builder Questions Answered',
+  description: 'Frequently asked questions about HatchIt.dev, the AI-powered website builder. Learn about pricing, features, code ownership, deployment, and more.',
   openGraph: {
-    title: 'FAQ - HatchIt | AI Website Builder',
-    description: 'Get answers to common questions about HatchIt - the AI website builder that generates real React code.',
+    title: 'FAQ - HatchIt.dev | AI Website Builder',
+    description: 'Get answers to common questions about HatchIt.dev - the AI website builder that generates real React code.',
   },
 }
 
@@ -15,24 +15,24 @@ const faqs = [
     category: 'Getting Started',
     questions: [
       {
-        q: 'What is HatchIt?',
-        a: 'HatchIt is an AI-powered website builder that generates real, production-ready React code. Simply describe what you want to build in plain English, and HatchIt creates a fully functional website that you can preview, edit, and deploy instantly.',
+        q: 'What is HatchIt.dev?',
+        a: 'HatchIt.dev is an AI-powered website builder that generates real, production-ready React code. Simply describe what you want to build in plain English, and HatchIt.dev creates a fully functional website that you can preview, edit, and deploy instantly.',
       },
       {
-        q: 'How does HatchIt work?',
-        a: 'HatchIt uses advanced AI to understand your description and generate clean React + Tailwind CSS code. The process is simple: 1) Describe your site (e.g., "A landing page for my coffee shop"), 2) Preview your site instantly, 3) Iterate by asking for changes ("Make the header sticky"), 4) Deploy to a live URL when ready.',
+        q: 'How does HatchIt.dev work?',
+        a: 'HatchIt.dev uses advanced AI to understand your description and generate clean React + Tailwind CSS code. The process is simple: 1) Describe your site (e.g., "A landing page for my coffee shop"), 2) Preview your site instantly, 3) Iterate by asking for changes ("Make the header sticky"), 4) Deploy to a live URL when ready.',
       },
       {
-        q: 'Do I need coding experience to use HatchIt?',
-        a: 'No coding experience required! HatchIt is designed for everyone - entrepreneurs, designers, marketers, and developers alike. Just describe what you want in plain English, and HatchIt handles the code. However, if you do know code, you can view and edit the generated React code directly.',
+        q: 'Do I need coding experience to use HatchIt.dev?',
+        a: 'No coding experience required! HatchIt.dev is designed for everyone - entrepreneurs, designers, marketers, and developers alike. Just describe what you want in plain English, and HatchIt.dev handles the code. However, if you do know code, you can view and edit the generated React code directly.',
       },
       {
-        q: 'What can I build with HatchIt?',
-        a: 'HatchIt is perfect for landing pages, business websites, portfolios, coming soon pages, pricing pages, contact forms, multi-page sites, and marketing sites. It\'s great for anything that\'s primarily informational or presentational.',
+        q: 'What can I build with HatchIt.dev?',
+        a: 'HatchIt.dev is perfect for landing pages, business websites, portfolios, coming soon pages, pricing pages, contact forms, multi-page sites, and marketing sites. It\'s great for anything that\'s primarily informational or presentational.',
       },
       {
-        q: 'What is HatchIt NOT designed for?',
-        a: 'HatchIt is not designed for complex web applications with databases, user authentication systems, e-commerce stores with real payment processing, or apps requiring backend logic. It\'s focused on generating beautiful, functional frontend websites.',
+        q: 'What is HatchIt.dev NOT designed for?',
+        a: 'HatchIt.dev is not designed for complex web applications with databases, user authentication systems, e-commerce stores with real payment processing, or apps requiring backend logic. It\'s focused on generating beautiful, functional frontend websites.',
       },
     ],
   },
@@ -41,14 +41,14 @@ const faqs = [
     questions: [
       {
         q: 'Is the generated code real production code?',
-        a: 'Yes! HatchIt generates real React + Tailwind CSS code that follows best practices. The code includes Framer Motion animations, Lucide icons, and responsive design. You can download the full project and run it locally or deploy it anywhere.',
+        a: 'Yes! HatchIt.dev generates real React + Tailwind CSS code that follows best practices. The code includes Framer Motion animations, Lucide icons, and responsive design. You can download the full project and run it locally or deploy it anywhere.',
       },
       {
         q: 'Can I edit the generated code?',
         a: 'Absolutely. Paid users get full access to view, edit, and download the source code. You can make changes directly in the Code tab, or describe changes in the chat and let the AI update it for you.',
       },
       {
-        q: 'Does HatchIt support multi-page websites?',
+        q: 'Does HatchIt.dev support multi-page websites?',
         a: 'Yes! You can create multi-page sites with proper routing. Add pages like /about, /contact, /services, etc. Each page can be generated and edited independently, and navigation between pages works automatically.',
       },
       {
@@ -57,15 +57,15 @@ const faqs = [
       },
       {
         q: 'Do contact forms actually work?',
-        a: 'HatchIt generates forms that work with Formspree.io, a free form handling service. Sign up at formspree.io to get your form ID, then replace the placeholder ID in your generated code. Submissions will be sent to your email.',
+        a: 'HatchIt.dev generates forms that work with Formspree.io, a free form handling service. Sign up at formspree.io to get your form ID, then replace the placeholder ID in your generated code. Submissions will be sent to your email.',
       },
       {
         q: 'What animations are supported?',
-        a: 'HatchIt uses Framer Motion for animations. You can request hover effects, scroll animations, page transitions, and more. Just describe what you want: "Add a fade-in animation to the hero section" or "Make the cards scale up on hover."',
+        a: 'HatchIt.dev uses Framer Motion for animations. You can request hover effects, scroll animations, page transitions, and more. Just describe what you want: "Add a fade-in animation to the hero section" or "Make the cards scale up on hover."',
       },
       {
         q: 'Are the sites mobile-responsive?',
-        a: 'Yes, all generated sites are fully responsive by default. HatchIt uses Tailwind CSS breakpoints to ensure your site looks great on phones, tablets, and desktops. You can preview different device sizes in the builder.',
+        a: 'Yes, all generated sites are fully responsive by default. HatchIt.dev uses Tailwind CSS breakpoints to ensure your site looks great on phones, tablets, and desktops. You can preview different device sizes in the builder.',
       },
     ],
   },
@@ -73,8 +73,8 @@ const faqs = [
     category: 'Pricing & Billing',
     questions: [
       {
-        q: 'How much does HatchIt cost?',
-        a: 'HatchIt is free to use for building and previewing. The "Go Hatched" subscription costs $49/month per live site and unlocks deployment, full code access, downloads, version history, and unlimited generations. V1 Early Bird users get 50% off their first month ($24).',
+        q: 'How much does HatchIt.dev cost?',
+        a: 'HatchIt.dev is free to use for building and previewing. The "Go Hatched" subscription costs $49/month per live site and unlocks deployment, full code access, downloads, version history, and unlimited generations. V1 Early Bird users get 50% off their first month ($24).',
       },
       {
         q: 'Is there a free plan?',
@@ -118,7 +118,7 @@ const faqs = [
         a: 'Yes! Hosting is included in your $49/month subscription. Your site is hosted on fast, reliable infrastructure with SSL certificates included. No additional hosting fees.',
       },
       {
-        q: 'How fast are HatchIt sites?',
+        q: 'How fast are HatchIt.dev sites?',
         a: 'Very fast! Sites are deployed to Vercel\'s edge network, which means they load quickly from anywhere in the world. The React code is optimized and includes only what\'s needed.',
       },
       {
@@ -131,8 +131,8 @@ const faqs = [
     category: 'Code & Ownership',
     questions: [
       {
-        q: 'Do I own the code HatchIt generates?',
-        a: 'Yes, 100%. All code generated through HatchIt belongs to you. You have full rights to use, modify, distribute, and commercialize it however you want. No attribution required.',
+        q: 'Do I own the code HatchIt.dev generates?',
+        a: 'Yes, 100%. All code generated through HatchIt.dev belongs to you. You have full rights to use, modify, distribute, and commercialize it however you want. No attribution required.',
       },
       {
         q: 'Can I download my project?',
@@ -169,7 +169,7 @@ const faqs = [
       },
       {
         q: 'How do I get help while building?',
-        a: 'Switch to the Chat tab (💬) to talk to the HatchIt assistant. It can help you plan your site, suggest prompts, troubleshoot issues, and guide you through the building process.',
+        a: 'Switch to the Chat tab (💬) to talk to the HatchIt.dev assistant. It can help you plan your site, suggest prompts, troubleshoot issues, and guide you through the building process.',
       },
     ],
   },
@@ -178,15 +178,15 @@ const faqs = [
     questions: [
       {
         q: 'How do I get help?',
-        a: 'Use the chat widget in the bottom right corner for live support. You can also use the in-app Chat assistant for building help, or email us at support@hatchit.app.',
+        a: 'Use the chat widget in the bottom right corner for live support. You can also use the in-app Chat assistant for building help, or email us at support@hatchit.dev.',
       },
       {
         q: 'I found a bug. How do I report it?',
-        a: 'Please report bugs through the chat widget or email support@hatchit.app. Include what you were trying to do, what happened, and any error messages you saw. Screenshots help!',
+        a: 'Please report bugs through the chat widget or email support@hatchit.dev. Include what you were trying to do, what happened, and any error messages you saw. Screenshots help!',
       },
       {
         q: 'Can I request new features?',
-        a: 'Yes! We love feedback. Use the chat widget or email us with your feature ideas. We\'re actively developing HatchIt and user feedback shapes our roadmap.',
+        a: 'Yes! We love feedback. Use the chat widget or email us with your feature ideas. We\'re actively developing HatchIt.dev and user feedback shapes our roadmap.',
       },
     ],
   },
@@ -213,7 +213,7 @@ export default function FAQPage() {
         <div className="text-center mb-16">
           <h1 className="text-4xl md:text-5xl font-bold mb-4">Frequently Asked Questions</h1>
           <p className="text-xl text-zinc-400 max-w-2xl mx-auto">
-            Everything you need to know about HatchIt, the AI website builder that generates real code.
+            Everything you need to know about HatchIt.dev, the AI website builder that generates real code.
           </p>
         </div>
 
@@ -279,7 +279,7 @@ export default function FAQPage() {
               Start Building Free
             </Link>
             <a
-              href="mailto:support@hatchit.app"
+              href="mailto:support@hatchit.dev"
               className="px-6 py-3 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 rounded-xl font-semibold transition-all"
             >
               Contact Support
