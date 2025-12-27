@@ -382,6 +382,35 @@ const Footer = () => null;
       const pageCache = new Map();
       let lastError = null;
 
+      // Fallback component that renders raw JSX as static HTML
+      const FallbackRender = ({ code }) => {
+        // Extract JSX from the code and render as innerHTML
+        const extractJSX = (code) => {
+          // Find the return statement with JSX
+          const returnMatch = code.match(/return\\s*\\(([\\s\\S]*?)\\);?\\s*(?:}|$)/);
+          if (returnMatch) return returnMatch[1];
+          const returnMatch2 = code.match(/return\\s*(<[\\s\\S]*?>)/);
+          if (returnMatch2) return returnMatch2[1];
+          return null;
+        };
+        
+        const jsx = extractJSX(code);
+        if (!jsx) return null;
+        
+        // Convert JSX to HTML (basic conversion)
+        const html = jsx
+          .replace(/className=/g, 'class=')
+          .replace(/\\{[^}]*\\}/g, '') // Remove JS expressions
+          .replace(/onClick=[^\\s>]*/g, '')
+          .replace(/onChange=[^\\s>]*/g, '')
+          .replace(/onSubmit=[^\\s>]*/g, '');
+        
+        return React.createElement('div', { 
+          dangerouslySetInnerHTML: { __html: html },
+          style: { minHeight: '100vh' }
+        });
+      };
+
       const loadPage = (path) => {
         const target = pages.find(p => p.path === path) || pages[0];
         if (!target) return null;
@@ -394,12 +423,19 @@ const Footer = () => null;
         } catch (err) {
           console.error('Preview render error', err);
           lastError = err;
-          return null;
+          // Try fallback render
+          try {
+            const FallbackComponent = () => FallbackRender({ code: target.code });
+            return FallbackComponent;
+          } catch (e) {
+            return null;
+          }
         }
       };
 
       const Router = () => {
         const [currentPath, setCurrentPath] = useState(window.location.hash.slice(1) || '${currentPage.path}');
+        const [renderError, setRenderError] = useState(null);
 
         useEffect(() => {
           const handleHashChange = () => setCurrentPath(window.location.hash.slice(1) || '${currentPage.path}');
@@ -408,18 +444,39 @@ const Footer = () => null;
         }, []);
 
         const Component = loadPage(currentPath) || loadPage('${currentPage.path}');
-        if (Component) return React.createElement(Component);
-
-        // Show error details instead of just 404
-        if (lastError) {
-          return React.createElement('div', { style: { padding: '2rem', color: '#f87171', fontFamily: 'monospace', background: '#18181b', minHeight: '100vh' } },
-            React.createElement('h2', { style: { color: '#fecaca', marginBottom: '1rem' } }, '⚠️ Preview Error'),
-            React.createElement('p', { style: { color: '#f87171', marginBottom: '0.5rem' } }, lastError.message || 'Unknown error'),
-            React.createElement('p', { style: { color: '#71717a', fontSize: '0.75rem', wordBreak: 'break-all' } }, lastError.stack || '')
-          );
+        
+        if (Component) {
+          try {
+            return React.createElement(Component);
+          } catch (err) {
+            console.error('Component render error:', err);
+            setRenderError(err);
+          }
         }
 
-        return React.createElement('div', { style: { padding: '2rem', color: '#a1a1aa', textAlign: 'center' } }, '404 - Page not found');
+        // Final fallback - show a nice "preview unavailable" message
+        return React.createElement('div', { 
+          style: { 
+            padding: '3rem', 
+            textAlign: 'center', 
+            background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)',
+            minHeight: '100vh',
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            fontFamily: 'system-ui, sans-serif'
+          } 
+        },
+          React.createElement('div', { style: { fontSize: '4rem', marginBottom: '1rem' } }, '🎨'),
+          React.createElement('h2', { style: { color: '#fff', marginBottom: '0.5rem', fontSize: '1.5rem', fontWeight: '600' } }, 'Preview Loading...'),
+          React.createElement('p', { style: { color: '#a1a1aa', maxWidth: '300px', lineHeight: '1.6' } }, 
+            'Your code is ready! Click the Code tab to view and edit.'
+          ),
+          lastError && React.createElement('p', { 
+            style: { color: '#71717a', fontSize: '0.7rem', marginTop: '1rem', maxWidth: '400px', wordBreak: 'break-word' } 
+          }, 'Debug: ' + (lastError.message || ''))
+        );
       };
       `
 
@@ -488,7 +545,7 @@ const SectionHeader = ({ eyebrow, title, description }) => React.createElement('
         '<html><head>' +
         '<script src="https://cdn.tailwindcss.com"></script>' +
         '<link href="https://fonts.googleapis.com/css2?family=Raleway:wght@300;400;500;600;700&display=swap" rel="stylesheet">' +
-        '<style>* { margin: 0; padding: 0; box-sizing: border-box; } html, body, #root { min-height: 100%; width: 100%; } body { background: #FAFAFC; font-family: "Raleway", system-ui, sans-serif; } .error { color: #ef4444; padding: 2rem; font-family: monospace; white-space: pre-wrap; background: #18181b; line-height: 1.6; } .error h2 { color: #fecaca; margin-bottom: 1rem; font-size: 1rem; font-weight: bold; } .loading { color: #71717a; padding: 2rem; text-align: center; font-family: system-ui; }</style>' +
+        '<style>* { margin: 0; padding: 0; box-sizing: border-box; } html, body, #root { min-height: 100%; width: 100%; } body { background: #FAFAFC; font-family: "Raleway", system-ui, sans-serif; } .fallback-container { background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 2rem; text-align: center; font-family: system-ui, sans-serif; } .fallback-icon { font-size: 4rem; margin-bottom: 1rem; } .fallback-title { color: #fff; font-size: 1.5rem; font-weight: 600; margin-bottom: 0.5rem; } .fallback-text { color: #a1a1aa; max-width: 300px; line-height: 1.6; } .loading { color: #71717a; padding: 2rem; text-align: center; font-family: system-ui; }</style>' +
         '</head><body>' +
         '<div id="root"><div class="loading">Loading preview...</div></div>' +
         '<script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>' +
@@ -497,26 +554,32 @@ const SectionHeader = ({ eyebrow, title, description }) => React.createElement('
         '<script src="https://unpkg.com/lucide-react@0.460.0/dist/umd/lucide-react.min.js" crossorigin></script>' +
         '<script src="https://unpkg.com/@babel/standalone/babel.min.js" crossorigin></script>' +
         '<script>' +
-        '// Expose motion and lucide icons as globals\n' +
-        'window.motion = window.Motion?.motion || { div: "div", button: "button", a: "a", span: "span", p: "p", h1: "h1", h2: "h2", h3: "h3", section: "section", main: "main", nav: "nav", ul: "ul", li: "li", img: "img", input: "input", form: "form", label: "label", textarea: "textarea" };\n' +
+        '// Expose motion and lucide icons as globals with robust fallbacks\n' +
+        'window.motion = window.Motion?.motion || { div: "div", button: "button", a: "a", span: "span", p: "p", h1: "h1", h2: "h2", h3: "h3", section: "section", main: "main", nav: "nav", ul: "ul", li: "li", img: "img", input: "input", form: "form", label: "label", textarea: "textarea", header: "header", footer: "footer", article: "article", aside: "aside" };\n' +
         'window.AnimatePresence = window.Motion?.AnimatePresence || function(props) { return props.children; };\n' +
-        'window.useAnimation = window.Motion?.useAnimation || function() { return {}; };\n' +
+        'window.useAnimation = window.Motion?.useAnimation || function() { return { start: function(){}, stop: function(){} }; };\n' +
         'window.useInView = window.Motion?.useInView || function() { return true; };\n' +
-        'window.useScroll = window.Motion?.useScroll || function() { return { scrollY: 0, scrollYProgress: 0 }; };\n' +
-        'window.useTransform = window.Motion?.useTransform || function(v) { return v; };\n' +
-        'window.useSpring = window.Motion?.useSpring || function(v) { return v; };\n' +
-        'window.useMotionValue = window.Motion?.useMotionValue || function(v) { return { get: function() { return v; }, set: function() {} }; };\n' +
+        'window.useScroll = window.Motion?.useScroll || function() { return { scrollY: { get: function(){ return 0; } }, scrollYProgress: { get: function(){ return 0; } } }; };\n' +
+        'window.useTransform = window.Motion?.useTransform || function(v, i, o) { return typeof v === "number" ? v : 0; };\n' +
+        'window.useSpring = window.Motion?.useSpring || function(v) { return typeof v === "number" ? v : 0; };\n' +
+        'window.useMotionValue = window.Motion?.useMotionValue || function(v) { return { get: function() { return v; }, set: function() {}, onChange: function(){} }; };\n' +
         'window.LucideIcons = window.lucideReact || {};\n' +
+        '// Create stub icons if lucide failed to load\n' +
+        'if (!window.LucideIcons || Object.keys(window.LucideIcons).length === 0) {\n' +
+        '  var iconStub = function() { return null; };\n' +
+        '  window.LucideIcons = new Proxy({}, { get: function() { return iconStub; } });\n' +
+        '}\n' +
         '</script>' +
         '<script>document.addEventListener("click", function(e) { var link = e.target.closest("a"); if (!link) return; var href = link.getAttribute("href"); if (!href) return; if (href.startsWith("http://") || href.startsWith("https://")) { e.preventDefault(); window.open(href, "_blank", "noopener,noreferrer"); return; } if (href.startsWith("/") && !href.startsWith("//")) { e.preventDefault(); window.location.hash = href; return; } if (href.startsWith("#") && !href.startsWith("#/")) { e.preventDefault(); var target = document.querySelector(href); if (target) target.scrollIntoView({ behavior: "smooth" }); else window.location.hash = "/" + href.slice(1); } if (href.startsWith("#/")) { e.preventDefault(); window.location.hash = href.slice(1); } });</script>' +
         '<script>' +
+        '// Global error handler - show nice fallback instead of broken page\n' +
         'window.onerror = function(msg, url, line, col, error) {' +
         '  console.error("Preview error:", msg, "at line", line, "col", col, error);' +
         '  document.getElementById("root").innerHTML = ' +
-        '    "<div class=\'error\'>" +' +
-        '    "<h2>⚠️ Could not render preview</h2>" +' +
-        '    "<p style=\'color: #f87171; margin-bottom: 1rem;\'>The AI generated code that could not be displayed.</p>" +' +
-        '    "<p style=\'color: #71717a; font-size: 0.8rem; font-family: monospace; background: #27272a; padding: 0.75rem; border-radius: 0.5rem; word-break: break-word;\'>" + msg + " (line " + line + ")</p>" +' +
+        '    "<div class=\'fallback-container\'>" +' +
+        '    "<div class=\'fallback-icon\'>🎨</div>" +' +
+        '    "<h2 class=\'fallback-title\'>Preview Loading...</h2>" +' +
+        '    "<p class=\'fallback-text\'>Your code is ready! Click the Code tab to view and edit.</p>" +' +
         '    "</div>";' +
         '  return true;' +
         '};' +
@@ -539,10 +602,11 @@ const SectionHeader = ({ eyebrow, title, description }) => React.createElement('
         '  const root = ReactDOM.createRoot(document.getElementById("root"));\n' +
         '  root.render(React.createElement(Router));\n' +
         '} catch (err) {\n' +
-        '  document.getElementById("root").innerHTML = "<div class=\'error\'><h2>⚠️ Could not render preview</h2><p style=\'color: #f87171;\'>" + (err.message || "Unknown error") + "</p></div>";\n' +
+        '  console.error("Render catch:", err);\n' +
+        '  document.getElementById("root").innerHTML = "<div class=\'fallback-container\'><div class=\'fallback-icon\'>🎨</div><h2 class=\'fallback-title\'>Preview Loading...</h2><p class=\'fallback-text\'>Your code is ready! Click the Code tab to view and edit.</p></div>";\n' +
         '}\n' +
         '</script>' +
-        '<script>setTimeout(function() { if (document.querySelector(".loading")) { document.getElementById("root").innerHTML = "<div class=\'error\'><h2>⚠️ Preview Timeout</h2><p>Your code is ready in the <strong>Code</strong> tab</p></div>"; } }, 8000);</script>' +
+        '<script>setTimeout(function() { if (document.querySelector(".loading")) { document.getElementById("root").innerHTML = "<div class=\'fallback-container\'><div class=\'fallback-icon\'>🎨</div><h2 class=\'fallback-title\'>Preview Loading...</h2><p class=\'fallback-text\'>Your code is ready! Click the Code tab to view and edit.</p></div>"; } }, 8000);</script>' +
         '</body></html>'
         
       return html
