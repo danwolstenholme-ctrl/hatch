@@ -3,6 +3,21 @@ import { useState, FormEvent, useRef, useEffect } from 'react'
 import { canGenerate, recordGeneration, getGenerationsRemaining, getDailyLimit, isPaidUser } from '@/app/lib/generation-limit'
 import UpgradeModal from './upgradeModal'
 
+// Simple markdown renderer for chat messages
+function renderMarkdown(text: string): React.ReactNode {
+  // Split by bold markers (**text** or __text__)
+  const parts = text.split(/(\*\*[^*]+\*\*|__[^_]+__)/g)
+  
+  return parts.map((part, i) => {
+    // Check if this part is bold
+    if ((part.startsWith('**') && part.endsWith('**')) || (part.startsWith('__') && part.endsWith('__'))) {
+      const boldText = part.slice(2, -2)
+      return <strong key={i} className="font-semibold text-white">{boldText}</strong>
+    }
+    return <span key={i}>{part}</span>
+  })
+}
+
 interface Message {
   role: 'user' | 'assistant'
   content: string
@@ -306,7 +321,7 @@ export default function Chat({ onGenerate, isGenerating, currentCode, isPaid = f
                       : 'bg-zinc-800/80 text-zinc-300'
                 }`}
               >
-                {msg.content}
+                {msg.role === 'assistant' && !msg.isThinking ? renderMarkdown(msg.content) : msg.content}
               </div>
             ))}
             {messages.length > 0 && !isGenerating && (
