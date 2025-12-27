@@ -373,7 +373,28 @@ const Footer = () => null;
         return {
           path: page.path,
           componentName,
-          code: `${pageGlobals}\n${cleanedCode}\nreturn typeof ${componentName} === "function" ? ${componentName} : (typeof Component === "function" ? Component : null);`
+          code: `${pageGlobals}\n${cleanedCode}\n
+// Try to return the component
+try {
+  if (typeof ${componentName} === "function") return ${componentName};
+  if (typeof Component === "function") return Component;
+  if (typeof App === "function") return App;
+  if (typeof Page === "function") return Page;
+  if (typeof Home === "function") return Home;
+  if (typeof Main === "function") return Main;
+  // If no named component found, wrap the JSX in a component
+  return function GeneratedComponent() {
+    return (
+      ${cleanedCode.includes('return') ? '' : '<div className="p-8">'}
+      ${cleanedCode.includes('return') ? `(${componentName} || Component || (() => null))()` : 'null'}
+      ${cleanedCode.includes('return') ? '' : '</div>'}
+    );
+  };
+} catch(e) {
+  console.error("Component resolution error:", e);
+  return null;
+}
+`
         }
       })
 
@@ -382,17 +403,28 @@ const Footer = () => null;
       const pageCache = new Map();
       let lastError = null;
 
+      console.log('[Preview] Pages loaded:', pages.length);
+      console.log('[Preview] First page code preview:', pages[0]?.code?.substring(0, 200));
+
       const loadPage = (path) => {
         const target = pages.find(p => p.path === path) || pages[0];
-        if (!target) return null;
+        if (!target) {
+          console.error('[Preview] No target page found for path:', path);
+          return null;
+        }
+        console.log('[Preview] Loading page:', target.path, 'Component:', target.componentName);
         if (pageCache.has(target.path)) return pageCache.get(target.path);
         try {
+          console.log('[Preview] Creating function from code...');
           const factory = new Function('React', 'useState', 'useEffect', 'useMemo', 'useCallback', 'useRef', 'motion', 'AnimatePresence', 'useAnimation', 'useInView', 'useScroll', 'useTransform', 'useSpring', 'useMotionValue', 'LucideIcons', 'colors', 'spacing', 'typography', 'effects', 'springs', 'easings', 'durations', 'fadeInUp', 'fadeInLeft', 'fadeIn', 'scaleIn', 'useRouter', 'GlassCard', 'SectionHeader', target.code);
+          console.log('[Preview] Factory created, executing...');
           const Component = factory(React, useState, useEffect, useMemo, useCallback, useRef, motion, AnimatePresence, useAnimation, useInView, useScroll, useTransform, useSpring, useMotionValue, LucideIcons, colors, spacing, typography, effects, springs, easings, durations, fadeInUp, fadeInLeft, fadeIn, scaleIn, useRouter, GlassCard, SectionHeader);
+          console.log('[Preview] Component result:', Component, typeof Component);
           if (Component) pageCache.set(target.path, Component);
           return Component;
         } catch (err) {
-          console.error('Preview render error', err);
+          console.error('[Preview] Render error:', err.message);
+          console.error('[Preview] Full error:', err);
           lastError = err;
           return null;
         }
