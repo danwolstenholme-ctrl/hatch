@@ -7,6 +7,7 @@ interface CodePreviewProps {
   code: string
   isPaid?: boolean
   onCodeChange?: (newCode: string) => void
+  pagePath?: string // e.g. '/' or '/contact'
 }
 
 // Basic syntax validation for JSX/TSX code
@@ -77,7 +78,7 @@ function validateSyntax(code: string): { valid: boolean; error?: string } {
   return { valid: true }
 }
 
-export default function CodePreview({ code, isPaid = false, onCodeChange }: CodePreviewProps) {
+export default function CodePreview({ code, isPaid = false, onCodeChange, pagePath = '/' }: CodePreviewProps) {
   const [copied, setCopied] = useState(false)
   const [showUpgradeModal, setShowUpgradeModal] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
@@ -100,6 +101,11 @@ export default function CodePreview({ code, isPaid = false, onCodeChange }: Code
   }
 
   const handleEditToggle = useCallback(() => {
+    if (!isPaid) {
+      setShowUpgradeModal(true)
+      return
+    }
+    
     if (isEditing) {
       // Validate before saving
       const validation = validateSyntax(editedCode)
@@ -114,7 +120,7 @@ export default function CodePreview({ code, isPaid = false, onCodeChange }: Code
       setSyntaxError(null)
     }
     setIsEditing(!isEditing)
-  }, [isEditing, editedCode, code, onCodeChange])
+  }, [isEditing, editedCode, code, onCodeChange, isPaid])
 
   const handleCodeEdit = useCallback((newCode: string) => {
     setEditedCode(newCode)
@@ -132,7 +138,7 @@ export default function CodePreview({ code, isPaid = false, onCodeChange }: Code
       <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-800 bg-zinc-900/50">
         <div className="flex items-center gap-2 text-xs font-mono text-zinc-400">
           <span className="text-zinc-600">📁</span>
-          <span>app/</span>
+          <span>app{pagePath === '/' ? '/' : pagePath + '/'}</span>
           <span className="text-purple-400 font-semibold">page.tsx</span>
           {!isPaid && (
             <span className="ml-2 px-2 py-0.5 bg-amber-500/20 text-amber-400 rounded text-xs font-medium">(Preview)</span>

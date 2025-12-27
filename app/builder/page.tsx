@@ -1737,7 +1737,7 @@ export default function Home() {
           <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
         </button>
       </div>
-      <div className="flex-1 overflow-auto">{type === 'preview' ? <LivePreview code={code} pages={previewPages} currentPageId={currentProject?.currentPageId} isLoading={isGenerating} isPaid={isCurrentProjectPaid} assets={currentProject?.assets} setShowUpgradeModal={setShowUpgradeModal} /> : <CodePreview code={code} isPaid={isCurrentProjectPaid} onCodeChange={handleCodeChange} />}</div>
+      <div className="flex-1 overflow-auto">{type === 'preview' ? <LivePreview code={code} pages={previewPages} currentPageId={currentProject?.currentPageId} isLoading={isGenerating} isPaid={isCurrentProjectPaid} assets={currentProject?.assets} setShowUpgradeModal={setShowUpgradeModal} /> : <CodePreview code={code} isPaid={isCurrentProjectPaid} onCodeChange={handleCodeChange} pagePath={currentPage?.path} />}</div>
     </div>
   )
 
@@ -2753,7 +2753,7 @@ export default function Home() {
               </div>
             </div>
             <div ref={previewContainerRef} className="flex-1 overflow-auto min-h-0 relative">
-              {activeTab === 'preview' ? <LivePreview code={code} pages={previewPages} currentPageId={currentProject?.currentPageId} isLoading={isGenerating} isPaid={isCurrentProjectPaid} assets={currentProject?.assets} setShowUpgradeModal={setShowUpgradeModal} inspectorMode={inspectorMode} onElementSelect={setSelectedElement} /> : <CodePreview code={code} isPaid={isCurrentProjectPaid} onCodeChange={handleCodeChange} />}
+              {activeTab === 'preview' ? <LivePreview code={code} pages={previewPages} currentPageId={currentProject?.currentPageId} isLoading={isGenerating} isPaid={isCurrentProjectPaid} assets={currentProject?.assets} setShowUpgradeModal={setShowUpgradeModal} inspectorMode={inspectorMode} onElementSelect={setSelectedElement} /> : <CodePreview code={code} isPaid={isCurrentProjectPaid} onCodeChange={handleCodeChange} pagePath={currentPage?.path} />}
               
               {/* Element Inspector Popover */}
               {inspectorMode && selectedElement && (
