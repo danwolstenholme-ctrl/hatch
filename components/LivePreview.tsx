@@ -306,7 +306,17 @@ export default function RootLayout({
     // Multi-page mode
     if (pages && pages.length > 0) {
       const currentPage = pages.find(p => p.id === currentPageId) || pages[0]
-      const displayCode = currentPage.code
+      const displayCode = currentPage?.code || ''
+      
+      // Handle empty code - show helpful message
+      if (!displayCode || displayCode.trim().length === 0) {
+        return '<!DOCTYPE html><html><body style="background: #18181b; height: 100vh; display: flex; align-items: center; justify-content: center;">' +
+          '<div style="text-align: center; color: #71717a; font-family: system-ui;">' +
+          '<div style="font-size: 3rem; margin-bottom: 1rem;">🚀</div>' +
+          '<h2 style="color: white; margin-bottom: 0.5rem; font-size: 1.25rem;">Ready to build</h2>' +
+          '<p>Switch to <strong style="color: #60a5fa;">Build</strong> mode and describe what you want to create</p>' +
+          '</div></body></html>'
+      }
       
       if (displayCode.length > 50000) {
         return '<!DOCTYPE html><html><body>' +

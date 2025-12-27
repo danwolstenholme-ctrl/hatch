@@ -73,7 +73,8 @@ interface Asset {
 interface DeployedProject {
   slug: string
   name: string
-  code: string
+  code?: string
+  pages?: { name: string; path: string; code: string }[]
   deployedAt: string
 }
 
@@ -828,20 +829,52 @@ export default function Home() {
 
   const pullProject = (deployedProject: DeployedProject) => {
     // Create a new local project with the deployed code
-    const newProject: Project = {
-      id: generateId(),
-      name: deployedProject.name,
-      versions: [{
+    let newProject: Project
+    
+    // Handle multi-page deployed projects
+    if (deployedProject.pages && deployedProject.pages.length > 0) {
+      const pages: Page[] = deployedProject.pages.map((p, index) => ({
         id: generateId(),
-        code: deployedProject.code,
-        timestamp: deployedProject.deployedAt,
-        prompt: 'Pulled from deployed project'
-      }],
-      currentVersionIndex: 0,
-      createdAt: deployedProject.deployedAt,
-      updatedAt: new Date().toISOString(),
-      deployedSlug: deployedProject.slug,
+        name: p.name,
+        path: p.path,
+        versions: [{
+          id: generateId(),
+          code: p.code,
+          timestamp: deployedProject.deployedAt,
+          prompt: 'Pulled from deployed project'
+        }],
+        currentVersionIndex: 0
+      }))
+      
+      newProject = {
+        id: generateId(),
+        name: deployedProject.name,
+        pages,
+        currentPageId: pages[0].id,
+        versions: [],
+        currentVersionIndex: -1,
+        createdAt: deployedProject.deployedAt,
+        updatedAt: new Date().toISOString(),
+        deployedSlug: deployedProject.slug,
+      }
+    } else {
+      // Legacy single-page project
+      newProject = {
+        id: generateId(),
+        name: deployedProject.name,
+        versions: [{
+          id: generateId(),
+          code: deployedProject.code || '',
+          timestamp: deployedProject.deployedAt,
+          prompt: 'Pulled from deployed project'
+        }],
+        currentVersionIndex: 0,
+        createdAt: deployedProject.deployedAt,
+        updatedAt: new Date().toISOString(),
+        deployedSlug: deployedProject.slug,
+      }
     }
+    
     setProjects(prev => [newProject, ...prev])
     setCurrentProjectId(newProject.id)
     

@@ -190,6 +190,22 @@ export default function RootLayout({
         data: `@tailwind base;
 @tailwind components;
 @tailwind utilities;`
+      },
+      {
+        file: 'app/not-found.tsx',
+        data: `export default function NotFound() {
+  return (
+    <div className="min-h-screen bg-zinc-950 flex items-center justify-center">
+      <div className="text-center">
+        <h1 className="text-6xl font-bold text-white mb-4">404</h1>
+        <p className="text-zinc-400 mb-8">Page not found</p>
+        <a href="/" className="px-6 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-lg transition-colors">
+          Go Home
+        </a>
+      </div>
+    </div>
+  )
+}`
       }
     ]
     
@@ -222,6 +238,8 @@ export default function RootLayout({
     // Add page files
     if (pages && pages.length > 0) {
       // Multi-page project - create a file for each page
+      let hasRootPage = false
+      
       pages.forEach((page: PageToDeploy) => {
         // Convert path to Next.js route
         // "/" -> "app/page.tsx"
@@ -231,11 +249,26 @@ export default function RootLayout({
           ? 'app/page.tsx'
           : `app${page.path}/page.tsx`
         
+        if (page.path === '/') hasRootPage = true
+        
         files.push({
           file: filePath,
           data: preparePageCode(page.code)
         })
       })
+      
+      // If no root page, create a redirect to first page
+      if (!hasRootPage && pages.length > 0) {
+        const firstPagePath = pages[0].path
+        files.push({
+          file: 'app/page.tsx',
+          data: `import { redirect } from 'next/navigation'
+
+export default function Home() {
+  redirect('${firstPagePath}')
+}`
+        })
+      }
     } else {
       // Legacy single-page project
       files.push({
