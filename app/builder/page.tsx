@@ -2933,7 +2933,8 @@ export default function Home() {
               initial={{ opacity: 0, y: -10, scale: 0.95 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -10, scale: 0.95 }}
-              className="absolute right-4 top-14 bg-zinc-900 border border-zinc-700 rounded-xl shadow-2xl py-2 min-w-[180px]" onClick={e => e.stopPropagation()}
+              transition={{ duration: 0.15 }}
+              className="absolute right-4 top-14 bg-zinc-900 border border-zinc-700 rounded-xl shadow-2xl py-2 min-w-[200px] z-50" onClick={e => e.stopPropagation()}
             >
               <Link href="/" className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-zinc-300 hover:bg-zinc-800 transition-colors">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
@@ -2999,6 +3000,14 @@ export default function Home() {
               whileTap={{ scale: 0.95 }}
               title="Menu"
             >
+              {/* Animated glow ring - only for paid */}
+              {isCurrentProjectPaid && (
+                <motion.div
+                  className="absolute inset-0 rounded-lg bg-gradient-to-r from-amber-400/0 via-amber-400/30 to-amber-400/0"
+                  animate={{ x: ['-100%', '100%'] }}
+                  transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
+                />
+              )}
               {/* Pulse glow - only for paid */}
               {isCurrentProjectPaid && (
                 <motion.div
@@ -3009,11 +3018,11 @@ export default function Home() {
               )}
               {/* Outer glow - only for paid */}
               {isCurrentProjectPaid && (
-                <div className="absolute -inset-0.5 bg-gradient-to-r from-amber-500/20 via-yellow-400/20 to-orange-500/20 rounded-lg blur-sm opacity-60" />
+                <div className="absolute -inset-1 bg-gradient-to-r from-amber-500/20 via-yellow-400/20 to-orange-500/20 rounded-xl blur-md opacity-60 group-hover:opacity-100 transition-opacity" />
               )}
               {/* Emoji */}
               <motion.span 
-                className="relative text-base z-10"
+                className="relative text-lg z-10"
                 animate={isCurrentProjectPaid ? { y: [0, -1, 0] } : {}}
                 transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
               >
@@ -3054,7 +3063,7 @@ export default function Home() {
                         <polyline points="7 10 12 15 17 10"/>
                         <line x1="12" y1="15" x2="12" y2="3"/>
                       </svg>
-                      Pull
+                      Pull Code
                     </button>
                   </div>
                 ))}

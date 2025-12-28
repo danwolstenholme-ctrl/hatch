@@ -115,10 +115,10 @@ function Chat({ onGenerate, isGenerating, onStopGeneration, currentCode, isPaid 
     }
   }, [projectId])
 
-  // Handle reset (from Start Again) - clear messages and show confirmation
+  // Handle reset (from Start Again) - clear all messages for true blank canvas
   useEffect(() => {
     if (resetKey > 0) {
-      setBuildMessages([{ role: 'assistant', content: '🔄 Code cleared! Ready for a fresh start.' }])
+      setBuildMessages([])
       setChatMessages([])
     }
   }, [resetKey])
@@ -248,6 +248,11 @@ function Chat({ onGenerate, isGenerating, onStopGeneration, currentCode, isPaid 
   }
 
   const limit = getDailyLimit()
+  
+  // Check if we have actual generated code (not just messages)
+  // This ensures blank canvas state shows when generation was stopped before code was created
+  const hasCode = currentCode && currentCode.trim().length > 0
+  const isBlankCanvas = messages.length === 0 || !hasCode
 
   return (
     <div className="flex flex-col h-full">
@@ -309,7 +314,7 @@ function Chat({ onGenerate, isGenerating, onStopGeneration, currentCode, isPaid 
           </button>
         </div>
 
-        {messages.length === 0 ? (
+        {isBlankCanvas ? (
           <div className="h-full flex flex-col items-center justify-center text-center px-4">
             <div className="w-10 h-10 rounded-xl bg-zinc-800 flex items-center justify-center mb-3">
               <span className="text-xl">{mode === 'chat' ? '💬' : '⚡'}</span>
@@ -342,6 +347,28 @@ function Chat({ onGenerate, isGenerating, onStopGeneration, currentCode, isPaid 
                   </button>
                 ))}
                 <p className="text-[10px] text-zinc-600 text-center mt-3">💡 Or describe your own idea above</p>
+                
+                {/* Quick Add Components - also available on blank canvas */}
+                <div className="mt-4 pt-4 border-t border-zinc-800/50">
+                  <p className="text-xs text-zinc-500 font-medium mb-2">Or quick add:</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {componentPresets.map((preset, i) => (
+                      <button
+                        key={i}
+                        onClick={() => {
+                          setInput(preset.prompt)
+                          setTimeout(() => {
+                            const form = document.querySelector('form[data-chat-form]') as HTMLFormElement
+                            if (form) form.requestSubmit()
+                          }, 100)
+                        }}
+                        className="px-2.5 py-1 text-[11px] bg-purple-500/10 hover:bg-purple-500/20 text-purple-300 hover:text-purple-200 rounded-md transition-colors border border-purple-500/20 hover:border-purple-500/40"
+                      >
+                        {preset.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
               </div>
             )}
 
@@ -495,7 +522,7 @@ function Chat({ onGenerate, isGenerating, onStopGeneration, currentCode, isPaid 
               isChatLoading ? "" : 
               mode === 'chat' 
                 ? messages.length === 0 ? "Ask me anything..." : "Ask a follow-up question..." 
-                : messages.length === 0 ? "A landing page with a hero section and pricing table..." : "Modify the design..."
+                : isBlankCanvas ? "A landing page with a hero section and pricing table..." : "Modify the design..."
             }
             className="w-full bg-zinc-900 border border-zinc-800 rounded-xl px-4 py-3 text-sm text-zinc-100 placeholder-zinc-600 focus:outline-none focus:border-zinc-700 focus:ring-1 focus:ring-zinc-700 resize-none transition-all"
             rows={2}
@@ -532,7 +559,7 @@ function Chat({ onGenerate, isGenerating, onStopGeneration, currentCode, isPaid 
                     : 'bg-zinc-700 hover:bg-zinc-600 text-white'
                 }`}
               >
-                {mode === 'chat' ? 'Send' : messages.length === 0 ? 'Build' : 'Update'}
+                {mode === 'chat' ? 'Send' : isBlankCanvas ? 'Build' : 'Update'}
               </button>
             )}
           </div>
