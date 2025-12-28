@@ -205,10 +205,10 @@ export default function Home() {
                 </div>
               </div>
               {/* Interactive CTA */}
-              <div className="bg-zinc-950 aspect-video flex flex-col items-center justify-center p-8">
-                <div className="text-6xl mb-4">🐣</div>
-                <p className="text-xl text-zinc-400 mb-6">See it in action</p>
-                <Link href="/builder" className="px-8 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 rounded-xl text-white font-semibold transition-all">
+              <div className="bg-zinc-950 aspect-video flex flex-col items-center justify-center p-4 sm:p-8">
+                <div className="text-4xl sm:text-6xl mb-3 sm:mb-4">🐣</div>
+                <p className="text-lg sm:text-xl text-zinc-400 mb-4 sm:mb-6">See it in action</p>
+                <Link href="/builder" className="px-6 sm:px-8 py-2.5 sm:py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 rounded-xl text-white font-semibold transition-all text-sm sm:text-base">
                   Try the Builder →
                 </Link>
               </div>

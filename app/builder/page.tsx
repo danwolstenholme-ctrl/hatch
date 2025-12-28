@@ -319,6 +319,7 @@ export default function Home() {
   const [showFaqModal, setShowFaqModal] = useState(false)
   const [showAssetsModal, setShowAssetsModal] = useState(false)
   const [showGithubModal, setShowGithubModal] = useState(false)
+  const [showUploadModal, setShowUploadModal] = useState(false)
   const [showDesktopMenu, setShowDesktopMenu] = useState(false)
   const [domainSearch, setDomainSearch] = useState('')
   const [domainSearchResult, setDomainSearchResult] = useState<{ domain: string; available: boolean; price?: number } | null>(null)
@@ -569,6 +570,22 @@ export default function Home() {
       key.startsWith('chat-build-') || key.startsWith('chat-chat-')
     )
     keysToRemove.forEach(key => localStorage.removeItem(key))
+  }
+
+  const startOver = () => {
+    if (!currentProject || currentProject.deployedSlug) return
+    // Clear versions and reset to empty state (doesn't use a generation)
+    updateCurrentProject({
+      versions: [],
+      currentVersionIndex: -1,
+      pages: undefined,
+      brand: undefined,
+    })
+    // Clear chat history for this project
+    localStorage.removeItem(`chat-build-${currentProjectId}`)
+    localStorage.removeItem(`chat-chat-${currentProjectId}`)
+    setShowProjectDropdown(false)
+    setPreviousCode(null)
   }
 
   const duplicateProject = () => {
@@ -1597,10 +1614,13 @@ export default function Home() {
         ))}
       </div>
       {currentProject && (
-        <div className="border-t border-zinc-800 p-2 flex gap-1">
+        <div className="border-t border-zinc-800 p-2 flex flex-wrap gap-1">
           <button onClick={() => { setRenameValue(currentProject.name); setShowRenameModal(true); setShowProjectDropdown(false) }} className="flex-1 px-3 py-2 text-xs text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors">Rename</button>
           <button onClick={duplicateProject} disabled={!hasAnyPaidSubscription && projects.length >= 1} className={`flex-1 px-3 py-2 text-xs rounded-lg transition-colors ${!hasAnyPaidSubscription && projects.length >= 1 ? 'text-zinc-600 cursor-not-allowed opacity-50' : 'text-zinc-400 hover:text-white hover:bg-zinc-800'}`} title={!hasAnyPaidSubscription && projects.length >= 1 ? 'Upgrade to duplicate projects' : ''}>Duplicate</button>
           <button onClick={() => { setShowDeleteModal(true); setShowProjectDropdown(false) }} className="flex-1 px-3 py-2 text-xs text-red-400 hover:text-red-300 hover:bg-zinc-800 rounded-lg transition-colors">Delete</button>
+          {!currentProject.deployedSlug && (currentProject.versions?.length || 0) > 0 && (
+            <button onClick={startOver} className="w-full mt-1 px-3 py-2 text-xs text-amber-400 hover:text-amber-300 hover:bg-zinc-800 rounded-lg transition-colors">Start Over</button>
+          )}
         </div>
       )}
       {projects.length > 1 && (
@@ -2630,27 +2650,85 @@ export default function Home() {
             <h3 className="font-medium text-white mb-2 flex items-center gap-2">
               <span>🎨</span> What can I build?
             </h3>
-            <p className="text-sm text-zinc-400">Landing pages, portfolios, coming soon pages, pricing pages, showcase pages, and more. Anything you can describe, we can generate as production-ready React code.</p>
+            <p className="text-sm text-zinc-400">Landing pages, portfolios, business sites, pricing pages, and more. Describe what you want and we generate production-ready React code.</p>
+          </div>
+          <div className="border-t border-zinc-800 pt-4">
+            <h3 className="font-medium text-white mb-2 flex items-center gap-2">
+              <span>💡</span> Tips for best results
+            </h3>
+            <p className="text-sm text-zinc-400">Start simple, then iterate. &quot;A landing page for a coffee shop&quot; → &quot;Add a menu section&quot; → &quot;Make it darker&quot;. Short prompts work better than long ones.</p>
           </div>
           <div className="border-t border-zinc-800 pt-4">
             <h3 className="font-medium text-white mb-2 flex items-center gap-2">
               <span>📝</span> How do forms work?
             </h3>
-            <p className="text-sm text-zinc-400 mb-2">We use <span className="text-blue-400 font-medium">Formspree.io</span> for form handling. Sign up free at formspree.io, get your form ID, then replace <span className="font-mono text-xs bg-zinc-800 px-1.5 py-0.5 rounded">YOUR_ID</span> in the generated code.</p>
+            <p className="text-sm text-zinc-400">We use <span className="text-blue-400 font-medium">Formspree.io</span> for form handling. Sign up free, get your form ID, and replace <span className="font-mono text-xs bg-zinc-800 px-1.5 py-0.5 rounded">YOUR_ID</span> in the code.</p>
           </div>
           <div className="border-t border-zinc-800 pt-4">
             <h3 className="font-medium text-white mb-2 flex items-center gap-2">
-              <span>⚡</span> Is this real code?
+              <span>💾</span> Where is my work saved?
             </h3>
-            <p className="text-sm text-zinc-400">Yes! Production-ready React 18 + Tailwind CSS. You can deploy it to Vercel, Netlify, or download as a ZIP and host anywhere. It's real, standalone code.</p>
-          </div>
-          <div className="border-t border-zinc-800 pt-4">
-            <h3 className="font-medium text-white mb-2 flex items-center gap-2">
-              <span>🔒</span> Privacy & legal?
-            </h3>
-            <p className="text-sm text-zinc-400">For privacy policies and terms, we recommend <span className="text-blue-400 font-medium">termly.io</span> (free generator) or <span className="text-blue-400 font-medium">iubenda.com</span>. Coming soon: built-in legal page templates.</p>
+            <p className="text-sm text-zinc-400">Your projects are stored locally in your browser. Deploy to save permanently and access from anywhere.</p>
           </div>
         </div>
+        <div className="mt-6 pt-4 border-t border-zinc-800">
+          <Link href="/faq" onClick={() => setShowFaqModal(false)} className="flex items-center justify-center gap-2 w-full py-2.5 text-sm text-blue-400 hover:text-blue-300 hover:bg-zinc-800 rounded-lg transition-colors">
+            View all FAQs →
+          </Link>
+        </div>
+      </div>
+    </div>
+  )
+
+  const UploadModal = () => (
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+      <div className="bg-zinc-900 border border-zinc-700 rounded-2xl p-6 w-full max-w-md shadow-2xl">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-semibold text-white">Upload Code</h2>
+          <button onClick={() => setShowUploadModal(false)} className="p-2 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+          </button>
+        </div>
+        
+        <div className="space-y-4 mb-6">
+          <div className="flex items-start gap-3">
+            <span className="text-green-400 mt-0.5">✓</span>
+            <div>
+              <p className="text-sm text-white font-medium">Supported formats</p>
+              <p className="text-xs text-zinc-400">.html, .htm, .txt files</p>
+            </div>
+          </div>
+          <div className="flex items-start gap-3">
+            <span className="text-green-400 mt-0.5">✓</span>
+            <div>
+              <p className="text-sm text-white font-medium">What works best</p>
+              <p className="text-xs text-zinc-400">Single-file HTML with inline styles, React/JSX components, or plain HTML</p>
+            </div>
+          </div>
+          <div className="flex items-start gap-3">
+            <span className="text-amber-400 mt-0.5">⚠</span>
+            <div>
+              <p className="text-sm text-white font-medium">Limitations</p>
+              <p className="text-xs text-zinc-400">External CSS/JS files won&apos;t be included. Images need to be re-uploaded via Assets.</p>
+            </div>
+          </div>
+        </div>
+
+        <label className="block">
+          <input 
+            type="file" 
+            accept=".html,.htm,.txt" 
+            onChange={(e) => { handleCodeUpload(e); setShowUploadModal(false) }} 
+            className="hidden" 
+          />
+          <div className="w-full py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white text-center rounded-xl font-semibold cursor-pointer transition-all">
+            Choose File
+          </div>
+        </label>
+        
+        <p className="text-xs text-zinc-500 text-center mt-3">
+          Creates a new project with your uploaded code
+        </p>
       </div>
     </div>
   )
@@ -2677,6 +2755,7 @@ export default function Home() {
         {deployedUrl && <DeployedModal />}
         {showFaqModal && <FaqModal />}
         {showGithubModal && <GithubModal />}
+        {showUploadModal && <UploadModal />}
         {showOnboarding && <OnboardingModal />}
         {showPagesPanel && <PagesPanel />}
         {showAddPageModal && <AddPageModal />}
@@ -2891,11 +2970,10 @@ export default function Home() {
                 </svg>
                 Import from GitHub
               </button>
-              <label className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-zinc-300 hover:bg-zinc-800 transition-colors cursor-pointer">
-                <input type="file" accept=".html,.htm,.txt" onChange={(e) => { handleCodeUpload(e); setShowMobileMenu(false) }} className="hidden" />
+              <button onClick={() => { setShowUploadModal(true); setShowMobileMenu(false) }} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-zinc-300 hover:bg-zinc-800 transition-colors">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
                 Upload Code
-              </label>
+              </button>
               <button onClick={() => { setShowAssetsModal(true); setShowMobileMenu(false) }} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-zinc-300 hover:bg-zinc-800 transition-colors">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
                 Assets
@@ -3038,6 +3116,8 @@ export default function Home() {
       {showUpgradeModal && <UpgradeModal isOpen={showUpgradeModal} onClose={() => setShowUpgradeModal(false)} reason={upgradeReason} projectSlug={currentProjectSlug} projectName={currentProject?.name || 'My Project'} />}
       {showSuccessModal && <SuccessModal isOpen={showSuccessModal} onClose={() => setShowSuccessModal(false)} />}
       {showGithubModal && <GithubModal />}
+      {showUploadModal && <UploadModal />}
+      {showFaqModal && <FaqModal />}
       {showOnboarding && <OnboardingModal />}
       {showPagesPanel && <PagesPanel />}
       {showAddPageModal && <AddPageModal />}
@@ -3106,11 +3186,10 @@ export default function Home() {
                           </svg>
                           Import from GitHub
                         </button>
-                        <label className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-zinc-300 hover:bg-zinc-800 transition-colors cursor-pointer">
-                          <input type="file" accept=".html,.htm,.txt" onChange={(e) => { handleCodeUpload(e); setShowDesktopMenu(false) }} className="hidden" />
+                        <button onClick={() => { setShowUploadModal(true); setShowDesktopMenu(false) }} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-zinc-300 hover:bg-zinc-800 transition-colors">
                           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
                           Upload Code
-                        </label>
+                        </button>
                         <button onClick={() => { setShowAssetsModal(true); setShowDesktopMenu(false) }} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-zinc-300 hover:bg-zinc-800 transition-colors">
                           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
                           Assets
