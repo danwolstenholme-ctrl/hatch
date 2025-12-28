@@ -67,6 +67,18 @@ const responses = [
   "Generated and live",
 ]
 
+// One-click component presets
+const componentPresets = [
+  { label: '🧭 Navbar', prompt: 'Add a modern responsive navbar with logo on the left, navigation links in the center, and a CTA button on the right. Include mobile hamburger menu.' },
+  { label: '🦶 Footer', prompt: 'Add a professional footer with multiple columns: company info, quick links, contact details, and social media icons. Include copyright.' },
+  { label: '📬 Contact Form', prompt: 'Add a contact form section with name, email, subject, and message fields. Include validation styling and a submit button.' },
+  { label: '💰 Pricing Table', prompt: 'Add a pricing section with 3 tiers (Basic, Pro, Enterprise). Each card should have: plan name, price, feature list with checkmarks, and CTA button. Highlight the recommended plan.' },
+  { label: '⭐ Testimonials', prompt: 'Add a testimonials section with 3 customer reviews. Each should have: quote, customer name, role/company, and avatar placeholder.' },
+  { label: '🎯 Hero Section', prompt: 'Add a hero section with a large headline, subheadline, CTA button, and optional background image or gradient.' },
+  { label: '📊 Features Grid', prompt: 'Add a features section with 6 feature cards in a grid. Each card has an icon, title, and short description.' },
+  { label: '❓ FAQ Accordion', prompt: 'Add an FAQ section with 5 expandable questions and answers. Style as an accordion that opens/closes on click.' },
+]
+
 function getRandomThinking() {
   return thinkingMessages[Math.floor(Math.random() * thinkingMessages.length)]
 }
@@ -398,6 +410,34 @@ function Chat({ onGenerate, isGenerating, onStopGeneration, currentCode, isPaid 
                       className="px-3 py-1.5 text-xs bg-zinc-800/60 hover:bg-zinc-700 text-zinc-300 hover:text-white rounded-full transition-colors border border-zinc-700/50 hover:border-zinc-600"
                     >
                       {suggestion}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Quick Add Components */}
+            {messages.length > 0 && !isGenerating && mode === 'build' && (
+              <div className="w-full space-y-2 animate-in fade-in slide-in-from-bottom-2 duration-300">
+                <p className="text-xs text-zinc-500 font-medium">Quick add:</p>
+                <div className="flex flex-wrap gap-1.5">
+                  {componentPresets.map((preset, i) => (
+                    <button
+                      key={i}
+                      onClick={() => {
+                        if (onSuggestionClick) {
+                          onSuggestionClick(preset.prompt)
+                        } else {
+                          setInput(preset.prompt)
+                          setTimeout(() => {
+                            const form = document.querySelector('form[data-chat-form]') as HTMLFormElement
+                            if (form) form.requestSubmit()
+                          }, 100)
+                        }
+                      }}
+                      className="px-2.5 py-1 text-[11px] bg-purple-500/10 hover:bg-purple-500/20 text-purple-300 hover:text-purple-200 rounded-md transition-colors border border-purple-500/20 hover:border-purple-500/40"
+                    >
+                      {preset.label}
                     </button>
                   ))}
                 </div>
