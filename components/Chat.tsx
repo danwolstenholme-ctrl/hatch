@@ -266,18 +266,18 @@ export default function Chat({ onGenerate, isGenerating, onStopGeneration, curre
         <div className="flex items-center gap-1 p-1.5 bg-zinc-900/95 backdrop-blur-sm rounded-xl sticky top-0 z-10 mb-2 border border-zinc-800/50 shadow-lg">
           <button
             onClick={() => setMode('build')}
-            title="Generate or edit your site's code"
+            title="Create and edit your website"
             className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
               mode === 'build' 
                 ? 'bg-zinc-700 text-white shadow-md' 
                 : 'text-zinc-400 hover:text-white hover:bg-zinc-800/50'
             }`}
           >
-            ⚡ Generate
+            ⚡ Build
           </button>
           <button
             onClick={() => setMode('chat')}
-            title="Ask questions about your code"
+            title="Get help without changing code"
             className={`flex-1 px-3 py-2 rounded-lg text-sm font-medium transition-all ${
               mode === 'chat' 
                 ? 'bg-gradient-to-r from-green-600 to-emerald-600 text-white shadow-md' 
@@ -294,7 +294,7 @@ export default function Chat({ onGenerate, isGenerating, onStopGeneration, curre
               <span className="text-xl">{mode === 'chat' ? '💬' : '⚡'}</span>
             </div>
             <p className="text-zinc-300 text-sm font-medium mb-1">{mode === 'chat' ? 'Ask me anything' : 'What would you like to build?'}</p>
-            <p className="text-zinc-600 text-xs max-w-[220px] mb-4">{mode === 'chat' ? 'Get help with your code or brainstorm ideas.' : 'Describe your idea — we\'ll generate real React code in seconds.'}</p>
+            <p className="text-zinc-600 text-xs max-w-[220px] mb-4">{mode === 'chat' ? 'Get advice without changing your code.' : 'Describe your idea — we\'ll build real React code in seconds.'}</p>
             
             {mode === 'build' && (
               <div className="w-full space-y-2">
@@ -483,7 +483,7 @@ export default function Chat({ onGenerate, isGenerating, onStopGeneration, curre
                     : 'bg-zinc-700 hover:bg-zinc-600 text-white'
                 }`}
               >
-                {mode === 'chat' ? 'Send' : messages.length === 0 ? 'Generate' : 'Update'}
+                {mode === 'chat' ? 'Send' : messages.length === 0 ? 'Build' : 'Update'}
               </button>
             )}
           </div>

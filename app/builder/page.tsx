@@ -2586,8 +2586,8 @@ export default function Home() {
           <div className="flex items-start gap-3">
             <span className="text-xl shrink-0">💬</span>
             <div>
-              <p className="text-sm text-white font-medium">Use Ask AI for help</p>
-              <p className="text-xs text-zinc-400">Switch tabs to ask questions about your code</p>
+              <p className="text-sm text-white font-medium">Ask AI for advice</p>
+              <p className="text-xs text-zinc-400">Get help without changing your code</p>
             </div>
           </div>
           <div className="flex items-start gap-3">

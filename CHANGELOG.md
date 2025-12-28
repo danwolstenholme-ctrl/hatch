@@ -12,6 +12,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.1.6] - 2024-12-28
+### Changed
+- Renamed "Generate" to "Build" for consistency
+- Clarified mode descriptions: Build creates/edits, Ask AI advises without changing code
+- Updated tooltips and button labels throughout
+
+---
+
 ## [1.1.5] - 2024-12-28
 ### Added
 - Start Over button for non-deployed projects in builder
