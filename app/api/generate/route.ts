@@ -518,49 +518,59 @@ A working page > a broken ambitious one. Always.
 ✓ Accessible contrast`
 
 export async function POST(request: NextRequest) {
-  // Authenticate user
-  const { userId } = await auth()
-  if (!userId) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
-
-  // Check rate limit
-  if (!checkRateLimit(userId)) {
-    return NextResponse.json(
-      { error: 'Rate limit exceeded. Maximum 20 requests per minute.' },
-      { status: 429 }
-    )
-  }
-
-  // Check if user is paid
-  let isPaid = false
   try {
-    const client = await clerkClient()
-    const user = await client.users.getUser(userId)
-    isPaid = user.publicMetadata?.paid === true
-  } catch {
-    // Continue as free user if lookup fails
-  }
+    // Authenticate user
+    const { userId } = await auth()
+    if (!userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
 
-  // Check daily generation limit for free users
-  const genCheck = checkAndRecordGeneration(userId, isPaid)
-  if (!genCheck.allowed) {
-    return NextResponse.json(
-      { error: 'Daily generation limit reached. Upgrade to continue building.' },
-      { status: 429 }
-    )
-  }
+    // Check rate limit
+    if (!checkRateLimit(userId)) {
+      return NextResponse.json(
+        { error: 'Rate limit exceeded. Maximum 20 requests per minute.' },
+        { status: 429 }
+      )
+    }
 
-  const { prompt, history, currentCode, currentPage, allPages, assets, skipComplexityWarning, brand } = await request.json()
+    // Check if user is paid
+    let isPaid = false
+    try {
+      const client = await clerkClient()
+      const user = await client.users.getUser(userId)
+      isPaid = user.publicMetadata?.paid === true
+    } catch (clerkError) {
+      console.error('Clerk lookup failed:', clerkError)
+      // Continue as free user if lookup fails
+    }
 
-  // Input validation
-  if (!prompt || typeof prompt !== 'string') {
-    return NextResponse.json({ error: 'Invalid prompt' }, { status: 400 })
-  }
+    // Check daily generation limit for free users
+    const genCheck = checkAndRecordGeneration(userId, isPaid)
+    if (!genCheck.allowed) {
+      return NextResponse.json(
+        { error: 'Daily generation limit reached. Upgrade to continue building.' },
+        { status: 429 }
+      )
+    }
 
-  if (prompt.length > 10000) {
-    return NextResponse.json({ error: 'Prompt too long (max 10,000 characters)' }, { status: 400 })
-  }
+    let body
+    try {
+      body = await request.json()
+    } catch (parseError) {
+      console.error('JSON parse error:', parseError)
+      return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
+    }
+
+    const { prompt, history, currentCode, currentPage, allPages, assets, skipComplexityWarning, brand } = body
+
+    // Input validation
+    if (!prompt || typeof prompt !== 'string') {
+      return NextResponse.json({ error: 'Invalid prompt' }, { status: 400 })
+    }
+
+    if (prompt.length > 10000) {
+      return NextResponse.json({ error: 'Prompt too long (max 10,000 characters)' }, { status: 400 })
+    }
 
   // Check prompt complexity and warn user (unless they've acknowledged)
   if (!skipComplexityWarning) {
@@ -947,6 +957,14 @@ Return the COMPLETE fixed component:`
     return NextResponse.json({ 
       error: 'Failed to generate',
       details: error instanceof Error ? error.message : 'Unknown error'
+    }, { status: 500 })
+  }
+  } catch (outerError) {
+    console.error('Outer catch - unexpected error:', outerError)
+    console.error('Stack:', outerError instanceof Error ? outerError.stack : 'No stack')
+    return NextResponse.json({ 
+      error: 'Unexpected server error',
+      details: outerError instanceof Error ? outerError.message : 'Unknown error'
     }, { status: 500 })
   }
 }
