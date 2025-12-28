@@ -1974,55 +1974,65 @@ export default function Home() {
 
   const PagesPanel = () => (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={() => setShowPagesPanel(false)}>
-      <div className="bg-zinc-900 rounded-xl p-6 w-full max-w-md max-h-[80vh] flex flex-col border border-zinc-800" onClick={e => e.stopPropagation()}>
-        <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-white">Pages ({currentProject?.pages?.length || 0})</h2>
-          <button onClick={() => setShowPagesPanel(false)} className="text-zinc-400 hover:text-white">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      <div className="bg-zinc-900 rounded-2xl w-full max-w-sm max-h-[80vh] flex flex-col border border-zinc-800 overflow-hidden" onClick={e => e.stopPropagation()}>
+        {/* Header */}
+        <div className="flex items-center justify-between px-5 py-4 border-b border-zinc-800">
+          <h2 className="text-base font-semibold text-white">Pages</h2>
+          <button onClick={() => setShowPagesPanel(false)} className="text-zinc-500 hover:text-white transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
           </button>
         </div>
         
-        <div className="space-y-2 mb-4 overflow-y-auto flex-1 min-h-0">
+        {/* Page List */}
+        <div className="flex-1 overflow-y-auto p-2">
           {currentProject?.pages?.map(page => (
-            <div key={page.id} className={`flex items-center justify-between p-3 rounded-lg transition-colors ${page.id === currentPage?.id ? 'bg-blue-600/20 border border-blue-500/30' : 'bg-zinc-800 hover:bg-zinc-700'}`}>
-              <button onClick={() => switchPage(page.id)} className="flex-1 text-left">
-                <div className="font-medium text-white">{page.name}</div>
-                <div className="text-xs text-zinc-400">{page.path}</div>
-              </button>
+            <div 
+              key={page.id} 
+              className={`group flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all cursor-pointer ${
+                page.id === currentPage?.id 
+                  ? 'bg-blue-600/15 text-white' 
+                  : 'hover:bg-zinc-800/70 text-zinc-300'
+              }`}
+              onClick={() => { switchPage(page.id); setShowPagesPanel(false) }}
+            >
+              <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-xs font-medium ${
+                page.id === currentPage?.id 
+                  ? 'bg-blue-600/30 text-blue-400' 
+                  : 'bg-zinc-800 text-zinc-500 group-hover:bg-zinc-700'
+              }`}>
+                {page.path === '/' ? '🏠' : page.name.charAt(0).toUpperCase()}
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="font-medium text-sm truncate">{page.name}</div>
+                <div className="text-xs text-zinc-500">{page.path}</div>
+              </div>
+              {page.id === currentPage?.id && (
+                <div className="w-1.5 h-1.5 rounded-full bg-blue-500"></div>
+              )}
               {currentProject.pages!.length > 1 && (
-                <button onClick={() => {
-                  if (confirm(`Delete "${page.name}" page? This cannot be undone.`)) {
-                    deletePage(page.id)
-                  }
-                }} className="p-1.5 text-zinc-400 hover:text-red-400 transition-colors">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+                <button 
+                  onClick={(e) => {
+                    e.stopPropagation()
+                    if (confirm(`Delete "${page.name}"?`)) deletePage(page.id)
+                  }} 
+                  className="p-1.5 text-zinc-600 hover:text-red-400 opacity-0 group-hover:opacity-100 transition-all"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
                 </button>
               )}
             </div>
           ))}
         </div>
         
-        <div className="flex gap-2">
+        {/* Add Page Button */}
+        <div className="p-3 border-t border-zinc-800">
           <button 
             onClick={() => { setShowPagesPanel(false); setShowAddPageModal(true) }} 
-            className="flex-1 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-lg font-medium transition-colors flex items-center justify-center gap-2"
+            className="w-full py-2.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white rounded-lg text-sm font-medium transition-colors flex items-center justify-center gap-2"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
             Add Page
           </button>
-          {currentProject?.pages && currentProject.pages.length > 1 && (
-            <button 
-              onClick={() => {
-                if (confirm(`Delete all pages except the first one (${currentProject.pages![0].name})? This cannot be undone.`)) {
-                  deleteAllPagesExceptFirst()
-                }
-              }} 
-              className="py-2.5 px-4 bg-red-600/20 hover:bg-red-600/40 text-red-400 hover:text-red-300 rounded-lg font-medium transition-colors flex items-center justify-center gap-2 border border-red-600/30"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-              Delete All
-            </button>
-          )}
         </div>
       </div>
     </div>
