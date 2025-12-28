@@ -2623,8 +2623,8 @@ export default function Home() {
     <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-[10000] p-4 overflow-y-auto">
       <div className="bg-zinc-900 border border-zinc-700 rounded-2xl p-6 md:p-8 w-full max-w-lg shadow-2xl my-8">
         <div className="text-center mb-6">
-          <div className="text-5xl mb-4">🎉</div>
-          <h2 className="text-2xl font-bold text-white mb-2">Nice! Your site is ready</h2>
+          <div className="text-5xl mb-4">🐣</div>
+          <h2 className="text-2xl font-bold text-white mb-2">You're building!</h2>
           <p className="text-zinc-400">Here are a few tips to get the most out of HatchIt.</p>
         </div>
         
