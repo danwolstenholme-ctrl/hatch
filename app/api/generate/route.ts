@@ -518,12 +518,15 @@ A working page > a broken ambitious one. Always.
 ✓ Accessible contrast`
 
 export async function POST(request: NextRequest) {
+  console.log('=== GENERATE API START ===')
   try {
     // Authenticate user
+    console.log('Step 1: Auth')
     const { userId } = await auth()
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
+    console.log('Step 2: Auth passed, userId:', userId)
 
     // Check rate limit
     if (!checkRateLimit(userId)) {
@@ -532,6 +535,7 @@ export async function POST(request: NextRequest) {
         { status: 429 }
       )
     }
+    console.log('Step 3: Rate limit passed')
 
     // Check if user is paid
     let isPaid = false
@@ -539,6 +543,7 @@ export async function POST(request: NextRequest) {
       const client = await clerkClient()
       const user = await client.users.getUser(userId)
       isPaid = user.publicMetadata?.paid === true
+      console.log('Step 4: Clerk lookup done, isPaid:', isPaid)
     } catch (clerkError) {
       console.error('Clerk lookup failed:', clerkError)
       // Continue as free user if lookup fails
@@ -552,16 +557,19 @@ export async function POST(request: NextRequest) {
         { status: 429 }
       )
     }
+    console.log('Step 5: Daily limit passed')
 
     let body
     try {
       body = await request.json()
+      console.log('Step 6: Body parsed, prompt length:', body?.prompt?.length || 0)
     } catch (parseError) {
       console.error('JSON parse error:', parseError)
       return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 })
     }
 
     const { prompt, history, currentCode, currentPage, allPages, assets, skipComplexityWarning, brand } = body
+    console.log('Step 7: Destructured body')
 
     // Input validation
     if (!prompt || typeof prompt !== 'string') {
@@ -635,7 +643,9 @@ export async function POST(request: NextRequest) {
   }
   messages.push({ role: 'user', content: userContent })
 
+  console.log('Step 8: About to call Anthropic, messages count:', messages.length)
   try {
+    console.log('Step 9: Calling Anthropic API...')
     const response = await fetch('https://api.anthropic.com/v1/messages', {
       method: 'POST',
       headers: {
