@@ -71,10 +71,9 @@ export default function Home() {
         transition={{ duration: 0.6, ease: [0.21, 0.47, 0.32, 0.98] }}
       >
         <div className="max-w-7xl mx-auto flex justify-between items-center">
-          <h1 className="text-2xl font-black">
-            <span className="bg-gradient-to-r from-white via-zinc-200 to-zinc-500 bg-clip-text text-transparent">Hatch</span>
+          <h1 className="text-2xl font-black flex items-center gap-1">
+            <span className="bg-gradient-to-r from-white via-zinc-200 to-zinc-400 bg-clip-text text-transparent">Hatch</span>
             <span className="bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">It</span>
-            <span className="text-zinc-600">.dev</span>
           </h1>
           <div className="flex items-center gap-6">
             <a href="#features" className="text-zinc-400 hover:text-white transition-colors hidden sm:block">Features</a>
@@ -115,20 +114,45 @@ export default function Home() {
               <span className="text-sm text-zinc-400">Build for free. Pay when you go live.</span>
             </motion.div>
             
-            {/* Hero logo - hidden on mobile since it's in nav */}
-            <motion.h1 
-              className="hidden md:block text-6xl md:text-8xl font-black mb-6 leading-tight"
+            {/* Hero logo with animated chick */}
+            <motion.div 
+              className="hidden md:flex items-center justify-center gap-4 mb-6"
               variants={fadeInUp}
               transition={{ duration: 0.7, delay: 0.1 }}
             >
-              <span className="bg-gradient-to-r from-white via-zinc-200 to-zinc-500 bg-clip-text text-transparent">
-                Hatch
-              </span>
-              <span className="bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
-                It
-              </span>
-              <span className="text-zinc-600">.</span>
-            </motion.h1>
+              <h1 className="text-6xl md:text-8xl font-black leading-tight">
+                <span className="bg-gradient-to-r from-white via-zinc-200 to-zinc-400 bg-clip-text text-transparent">
+                  Hatch
+                </span>
+                <span className="bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">
+                  It
+                </span>
+              </h1>
+              {/* Glowing Chick */}
+              <motion.div 
+                className="relative"
+                animate={{ 
+                  y: [0, -8, 0],
+                }}
+                transition={{ 
+                  duration: 2,
+                  repeat: Infinity,
+                  ease: "easeInOut"
+                }}
+              >
+                {/* Glow effect */}
+                <div className="absolute inset-0 blur-xl bg-gradient-to-r from-amber-400/40 via-yellow-400/40 to-orange-400/40 rounded-full scale-150"></div>
+                <div className="absolute inset-0 blur-md bg-amber-400/30 rounded-full scale-125"></div>
+                {/* Chick */}
+                <motion.span 
+                  className="relative text-6xl md:text-7xl drop-shadow-lg cursor-default select-none"
+                  whileHover={{ scale: 1.2, rotate: [0, -10, 10, -10, 0] }}
+                  transition={{ duration: 0.5 }}
+                >
+                  🐣
+                </motion.span>
+              </motion.div>
+            </motion.div>
             
             <motion.div 
               className="text-4xl md:text-5xl font-bold mb-6 md:mb-8"

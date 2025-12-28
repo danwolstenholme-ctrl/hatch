@@ -226,10 +226,10 @@ export default function RoadmapPage() {
       {/* Header */}
       <nav className="relative z-50 px-8 py-6 border-b border-zinc-800">
         <div className="max-w-4xl mx-auto flex justify-between items-center">
-          <Link href="/" className="text-2xl font-black">
-            <span className="bg-gradient-to-r from-white via-zinc-200 to-zinc-500 bg-clip-text text-transparent">Hatch</span>
+          <Link href="/" className="text-2xl font-black flex items-center gap-1">
+            <span className="bg-gradient-to-r from-white via-zinc-200 to-zinc-400 bg-clip-text text-transparent">Hatch</span>
             <span className="bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">It</span>
-            <span className="text-zinc-600">.dev</span>
+            <span className="text-lg">🐣</span>
           </Link>
           <Link href="/builder" className="px-5 py-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 rounded-lg font-semibold text-sm transition-all">
             Start Building
@@ -342,7 +342,7 @@ export default function RoadmapPage() {
       {/* Footer */}
       <footer className="relative z-10 px-8 py-8 border-t border-zinc-800 mt-16">
         <div className="max-w-4xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
-          <p className="text-zinc-600 text-sm">© 2025 HatchIt.dev</p>
+          <p className="text-zinc-600 text-sm">© 2025 HatchIt</p>
           <div className="flex items-center gap-6 text-zinc-500 text-sm">
             <Link href="/faq" className="hover:text-white transition-colors">FAQ</Link>
             <Link href="/terms" className="hover:text-white transition-colors">Terms</Link>

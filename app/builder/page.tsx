@@ -2421,7 +2421,7 @@ export default function Home() {
         <div className="text-center mb-6">
           <div className="text-5xl mb-4">🐣</div>
           <h2 className="text-2xl font-bold text-white mb-2">You're building!</h2>
-          <p className="text-zinc-400">Here are a few tips to get the most out of HatchIt.dev.</p>
+          <p className="text-zinc-400">Here are a few tips to get the most out of HatchIt.</p>
         </div>
         
         {/* Quick tips - simplified */}
