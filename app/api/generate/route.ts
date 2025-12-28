@@ -654,7 +654,7 @@ export async function POST(request: NextRequest) {
         'anthropic-version': '2023-06-01'
       },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
+        model: 'claude-opus-4-20250514',
         max_tokens: 32000,
         system: systemPrompt,
         messages
@@ -770,7 +770,7 @@ export async function POST(request: NextRequest) {
                   'anthropic-version': '2023-06-01'
                 },
                 body: JSON.stringify({
-                  model: 'claude-sonnet-4-20250514',
+                  model: 'claude-opus-4-20250514',
                   max_tokens: 8000,
                   messages: [{
                     role: 'user',
@@ -818,7 +818,7 @@ export async function POST(request: NextRequest) {
             'anthropic-version': '2023-06-01'
           },
           body: JSON.stringify({
-            model: 'claude-sonnet-4-20250514',
+            model: 'claude-opus-4-20250514',
             max_tokens: 16000,
             messages: [{
               role: 'user',
@@ -876,7 +876,7 @@ Return the COMPLETE fixed component:`
               'anthropic-version': '2023-06-01'
             },
             body: JSON.stringify({
-              model: 'claude-sonnet-4-20250514',
+              model: 'claude-opus-4-20250514',
               max_tokens: 8000,
               system: `You generate VERY COMPACT React components. Max 150 lines. Use map() for lists. 3 items max for any repeated content. Tailwind CSS only. No imports. Return ONLY code, no markdown.`,
               messages: messages
@@ -926,7 +926,7 @@ Return the COMPLETE fixed component:`
             'anthropic-version': '2023-06-01'
           },
           body: JSON.stringify({
-            model: 'claude-sonnet-4-20250514',
+            model: 'claude-opus-4-20250514',
             max_tokens: 32000,
             system: systemPrompt,
             messages: [{

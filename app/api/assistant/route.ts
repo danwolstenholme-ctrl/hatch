@@ -51,7 +51,7 @@ function logAssistantUsage(userId: string, messageLength: number, inputTokens: n
     inputTokens,
     outputTokens,
     totalTokens: inputTokens + outputTokens,
-    model: 'claude-sonnet-4-20250514'
+    model: 'claude-opus-4-20250514'
   }))
 }
 
@@ -206,7 +206,7 @@ export async function POST(request: NextRequest) {
     messages.push({ role: 'user', content: message })
 
     const response = await anthropic.messages.create({
-      model: 'claude-sonnet-4-20250514',
+      model: 'claude-opus-4-20250514',
       max_tokens: 1024,
       system: systemPrompt,
       messages
