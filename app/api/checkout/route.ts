@@ -25,11 +25,17 @@ export async function POST(req: NextRequest) {
       payment_method_types: ['card'],
       line_items: [
         {
+          // $19/month recurring subscription
           price: process.env.STRIPE_PRICE_ID!,
           quantity: 1,
         },
+        {
+          // $30 one-time setup fee (early bird)
+          price: process.env.STRIPE_SETUP_FEE_ID!,
+          quantity: 1,
+        },
       ],
-      // Allow promo codes at checkout (Golden Ticket, Early Bird, etc.)
+      // Allow promo codes at checkout (Golden Ticket, etc.)
       allow_promotion_codes: true,
       success_url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/builder?success=true&project=${encodeURIComponent(projectSlug)}`,
       cancel_url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/builder?canceled=true`,
