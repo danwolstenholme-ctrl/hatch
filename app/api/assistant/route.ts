@@ -2,6 +2,9 @@ import Anthropic from '@anthropic-ai/sdk'
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from "@clerk/nextjs/server"
 
+// Vercel Pro: extend timeout to 60s for Opus 4.5
+export const maxDuration = 60
+
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY!,
 })

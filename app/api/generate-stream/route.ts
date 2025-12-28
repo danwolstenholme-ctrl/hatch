@@ -2,6 +2,9 @@ import { NextRequest } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
 import { clerkClient } from '@clerk/nextjs/server'
 
+// Vercel Pro: extend timeout to 60s for Opus 4.5
+export const maxDuration = 60
+
 interface Message {
   role: 'user' | 'assistant'
   content: string

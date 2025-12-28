@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
 import { clerkClient } from '@clerk/nextjs/server'
 
+// Vercel Pro: extend timeout to 60s for Opus 4.5
+export const maxDuration = 60
+
 interface Message {
   role: 'user' | 'assistant'
   content: string
@@ -938,6 +941,12 @@ Return the COMPLETE fixed component:`
     return NextResponse.json({ error: 'No response' }, { status: 500 })
   } catch (error) {
     console.error('Generation error:', error)
-    return NextResponse.json({ error: 'Failed to generate' }, { status: 500 })
+    console.error('Error stack:', error instanceof Error ? error.stack : 'No stack')
+    console.error('Error name:', error instanceof Error ? error.name : 'Unknown')
+    console.error('Error message:', error instanceof Error ? error.message : String(error))
+    return NextResponse.json({ 
+      error: 'Failed to generate',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    }, { status: 500 })
   }
 }
