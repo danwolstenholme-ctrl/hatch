@@ -318,7 +318,6 @@ export default function Home() {
   const [showSuccessModal, setShowSuccessModal] = useState(false)
   const [showFaqModal, setShowFaqModal] = useState(false)
   const [showAssetsModal, setShowAssetsModal] = useState(false)
-  const [showGithubModal, setShowGithubModal] = useState(false)
   const [showUploadModal, setShowUploadModal] = useState(false)
   const [showDesktopMenu, setShowDesktopMenu] = useState(false)
   const [showNewProjectModal, setShowNewProjectModal] = useState(false)
@@ -811,239 +810,6 @@ export default function Home() {
 
     reader.readAsText(file)
     e.target.value = '' // Reset input
-  }
-
-  const handleGithubImport = async (url: string, onProgress?: (message: string) => void) => {
-    try {
-      const targetProjectId = currentProjectId
-      const fetchWithTimeout = async (requestUrl: string, ms: number) => {
-        const controller = new AbortController()
-        const timer = setTimeout(() => controller.abort(), ms)
-        const response = await fetch(requestUrl, { signal: controller.signal })
-        clearTimeout(timer)
-        return response
-      }
-
-      if (!targetProjectId) {
-        throw new Error('Select a project before importing')
-      }
-
-      // Check if it's a repo URL (no blob/tree in path)
-      const isRepoUrl = url.match(/github\.com\/([^\/]+)\/([^\/]+)\/?$/)
-      
-      if (isRepoUrl) {
-        // Import entire repo
-        const [, owner, repo] = isRepoUrl
-        onProgress?.('Fetching repository structure...')
-        
-        // Try main branch first, then master
-        let apiUrl = `https://api.github.com/repos/${owner}/${repo}/git/trees/main?recursive=1`
-        let response = await fetchWithTimeout(apiUrl, 12000)
-        
-        if (!response.ok) {
-          // Try master branch
-          apiUrl = `https://api.github.com/repos/${owner}/${repo}/git/trees/master?recursive=1`
-          response = await fetchWithTimeout(apiUrl, 12000)
-        }
-        
-        if (!response.ok) {
-          const errorData = await response.json().catch(() => ({}))
-          if (response.status === 404) {
-            throw new Error('Repository not found. Note: Private repositories are not supported.')
-          }
-          throw new Error(errorData.message || 'Repository not found or inaccessible')
-        }
-        
-        const data = await response.json()
-
-        if (data.truncated) {
-          throw new Error('Repository is too large to import (truncated by GitHub)')
-        }
-        
-        // Filter for HTML and JSX/TSX files (React components that could work as pages)
-        // Skip common non-page directories like components, ui, lib, hooks, utils, etc.
-        const nonPageDirs = ['components/', 'ui/', 'lib/', 'hooks/', 'utils/', 'helpers/', 'services/', 'types/', 'styles/', 'assets/', 'config/', 'constants/', 'context/', 'providers/', 'store/', 'api/', 'middleware/', 'layouts/', 'shared/', 'common/', '__tests__/', 'test/', 'tests/', 'spec/', 'mocks/', 'fixtures/', 'node_modules/']
-        const relevantFiles = data.tree.filter((item: any) => {
-          if (item.type !== 'blob') return false
-          const hasValidExtension = item.path.endsWith('.html') || item.path.endsWith('.htm') || 
-                                    item.path.endsWith('.jsx') || item.path.endsWith('.tsx')
-          if (!hasValidExtension) return false
-          // Skip files in non-page directories
-          const pathLower = item.path.toLowerCase()
-          const isInNonPageDir = nonPageDirs.some(dir => pathLower.includes(dir.toLowerCase()))
-          if (isInNonPageDir) return false
-          // Skip files that look like components (lowercase or PascalCase single words without "page" in name)
-          const fileName = item.path.split('/').pop() || ''
-          const baseName = fileName.replace(/\.(jsx|tsx|html|htm)$/i, '')
-          // Keep files that are likely pages: index, page, or contain "page" in name
-          const isLikelyPage = baseName.toLowerCase() === 'index' || 
-                              baseName.toLowerCase() === 'page' ||
-                              baseName.toLowerCase().includes('page') ||
-                              item.path.toLowerCase().includes('/pages/') ||
-                              item.path.toLowerCase().includes('/app/')
-          return isLikelyPage
-        })
-        
-        if (relevantFiles.length > 200) {
-          throw new Error('Repository has too many importable files. Limit to 200 for import.')
-        }
-
-        const totalBytes = relevantFiles.reduce((sum: number, item: any) => sum + (item.size || 0), 0)
-        if (totalBytes > 5_000_000) {
-          throw new Error('Repository HTML content exceeds 5MB. Please trim files and try again.')
-        }
-        
-        if (relevantFiles.length === 0) {
-          throw new Error('No importable files found in repository')
-        }
-        
-        onProgress?.(`Found ${relevantFiles.length} files. Importing...`)
-        
-        // Determine branch (main or master)
-        const branch = apiUrl.includes('/main?') ? 'main' : 'master'
-        
-        // Import each HTML file as a page in the current project
-        if (currentProject && relevantFiles.length > 0) {
-          if (currentProjectId !== targetProjectId) {
-            throw new Error('Project changed during import. Please retry.')
-          }
-          const newPages: Page[] = []
-          
-          for (let i = 0; i < relevantFiles.length; i++) {
-            const file = relevantFiles[i]
-            onProgress?.(`Importing ${i + 1}/${relevantFiles.length}: ${file.path}`)
-            
-            const rawUrl = `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${file.path}`
-            const fileResponse = await fetchWithTimeout(rawUrl, 12000)
-            if (!fileResponse.ok) continue
-            
-            const content = await fileResponse.text()
-            const fileName = file.path.split('/').pop() || file.path
-            const isIndexFile = fileName.toLowerCase() === 'index.html' || fileName.toLowerCase() === 'index.htm' || 
-                               fileName.toLowerCase() === 'index.jsx' || fileName.toLowerCase() === 'index.tsx' ||
-                               fileName.toLowerCase() === 'page.tsx' || fileName.toLowerCase() === 'page.jsx'
-            
-            // Determine page name and URL path
-            let pageName: string
-            let urlPath: string
-            
-            if (isIndexFile) {
-              pageName = 'Home'
-              urlPath = '/'
-            } else {
-              // Remove file extension
-              pageName = fileName.replace(/\.(html|htm|jsx|tsx)$/i, '')
-              // Capitalize first letter
-              pageName = pageName.charAt(0).toUpperCase() + pageName.slice(1).replace(/-/g, ' ')
-              urlPath = '/' + fileName.replace(/\.(html|htm|jsx|tsx)$/i, '').toLowerCase().replace(/[^a-z0-9]+/g, '-')
-            }
-            
-            // Create page
-            const newPage: Page = {
-              id: generateId(),
-              name: pageName,
-              path: urlPath,
-              versions: [{
-                id: generateId(),
-                code: content,
-                timestamp: new Date().toISOString(),
-                prompt: `Imported from GitHub: ${repo}/${file.path}`
-              }],
-              currentVersionIndex: 0
-            }
-            newPages.push(newPage)
-          }
-          
-          // Only proceed if we successfully imported at least one page
-          if (newPages.length === 0) {
-            throw new Error('Failed to import any files from repository')
-          }
-          
-          // Convert current project to multi-page if it isn't already
-          const migratedProject = migrateToMultiPage(currentProject)
-          
-          // Remove the default empty Home page if we're importing a new Home page
-          let existingPages = migratedProject.pages || []
-          const importingHomePage = newPages.some(p => p.path === '/')
-          const currentHomePage = existingPages.find(p => p.path === '/')
-          
-          if (importingHomePage && currentHomePage && currentHomePage.versions[0]?.code === '') {
-            // Remove empty existing Home page since we're importing a new one
-            existingPages = existingPages.filter(p => p.path !== '/')
-          }
-          
-          // Track existing paths for collision handling
-          const existingPaths = new Set(existingPages.map(p => p.path))
-          
-          if (importingHomePage && currentHomePage && currentHomePage.versions[0]?.code !== '') {
-            // Rename existing Home page to avoid collision, ensuring unique path
-            const basePath = '/home-original'
-            let candidate = basePath
-            let counter = 1
-            while (existingPaths.has(candidate)) {
-              counter += 1
-              candidate = `${basePath}-${counter}`
-            }
-            const nameSuffix = counter === 1 ? '' : ` ${counter}`
-            currentHomePage.name = `Home (Original${nameSuffix})`
-            currentHomePage.path = candidate
-            existingPaths.add(candidate)
-          }
-          
-          // Add new pages (avoiding duplicates by path)
-          const uniqueNewPages = newPages.filter(p => !existingPaths.has(p.path))
-          const updatedPages = [...existingPages, ...uniqueNewPages]
-          
-          // Set first imported page as current
-          const firstImportedPage = uniqueNewPages[0] || newPages[0]
-          
-          updateCurrentProject({ 
-            pages: updatedPages,
-            currentPageId: firstImportedPage.id
-          })
-          
-          setShowGithubModal(false)
-          showSuccessToast(`Imported ${newPages.length} pages from ${repo}!`)
-        }
-      } else {
-        // Import single file
-        let rawUrl = url
-        if (url.includes('github.com') && !url.includes('raw.githubusercontent.com')) {
-          rawUrl = url.replace('github.com', 'raw.githubusercontent.com').replace('/blob/', '/')
-        }
-
-        const response = await fetchWithTimeout(rawUrl, 12000)
-        if (!response.ok) throw new Error('Failed to fetch from GitHub')
-        
-        const content = await response.text()
-        const urlParts = url.split('/')
-        const fileName = urlParts[urlParts.length - 1]
-        const repoName = urlParts[4] || 'GitHub Project'
-        
-        const newProject: Project = {
-          id: generateId(),
-          name: fileName.replace(/\.(html|htm|jsx|tsx|js|ts)$/i, ''),
-          versions: [{
-            id: generateId(),
-            code: content,
-            timestamp: new Date().toISOString(),
-            prompt: `Imported from GitHub: ${fileName}`
-          }],
-          currentVersionIndex: 0,
-          createdAt: new Date().toISOString(),
-          updatedAt: new Date().toISOString(),
-        }
-        setProjects(prev => [newProject, ...prev])
-        setCurrentProjectId(newProject.id)
-        setShowGithubModal(false)
-
-        showSuccessToast('Imported from GitHub!')
-      }
-    } catch (error) {
-      console.error('GitHub import error:', error)
-      const errorMessage = error instanceof Error ? error.message : 'Failed to import from GitHub'
-      showErrorToast(errorMessage)
-    }
   }
 
   const pullProject = (deployedProject: DeployedProject) => {
@@ -2505,120 +2271,6 @@ export default function Home() {
     </div>
   )
 
-  const GithubModal = () => {
-    const [url, setUrl] = useState('')
-    const [isLoading, setIsLoading] = useState(false)
-    const [progress, setProgress] = useState('')
-
-    const handleSubmit = async (e: React.FormEvent) => {
-      e.preventDefault()
-      if (!url.trim()) return
-      setIsLoading(true)
-      setProgress('Starting import...')
-      await handleGithubImport(url, setProgress)
-      setIsLoading(false)
-      setProgress('')
-    }
-
-    return (
-      <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-        <div className="bg-zinc-900 border border-zinc-700 rounded-2xl p-6 w-full max-w-lg shadow-2xl max-h-[90vh] overflow-y-auto">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold text-white flex items-center gap-2">
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
-              </svg>
-              Import from GitHub
-            </h2>
-            <button onClick={() => setShowGithubModal(false)} className="p-2 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors" disabled={isLoading}>
-              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
-            </button>
-          </div>
-
-          {/* What can be imported */}
-          <div className="mb-5 p-4 bg-zinc-800/50 rounded-xl border border-zinc-700/50">
-            <h3 className="text-sm font-medium text-white mb-3 flex items-center gap-2">
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-blue-400"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/></svg>
-              What can be imported
-            </h3>
-            <div className="space-y-2 text-sm">
-              <div className="flex items-start gap-2">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-green-400 mt-0.5 flex-shrink-0"><path d="M20 6L9 17l-5-5"/></svg>
-                <span className="text-zinc-300"><strong className="text-white">Static HTML files</strong> (.html, .htm)</span>
-              </div>
-              <div className="flex items-start gap-2">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-green-400 mt-0.5 flex-shrink-0"><path d="M20 6L9 17l-5-5"/></svg>
-                <span className="text-zinc-300"><strong className="text-white">React page components</strong> (page.tsx, index.tsx in app/pages folders)</span>
-              </div>
-              <div className="flex items-start gap-2">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-green-400 mt-0.5 flex-shrink-0"><path d="M20 6L9 17l-5-5"/></svg>
-                <span className="text-zinc-300"><strong className="text-white">Single file imports</strong> (link directly to a file)</span>
-              </div>
-            </div>
-            <div className="mt-3 pt-3 border-t border-zinc-700/50 space-y-2 text-sm">
-              <div className="flex items-start gap-2">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-red-400 mt-0.5 flex-shrink-0"><path d="M18 6L6 18M6 6l12 12"/></svg>
-                <span className="text-zinc-400"><strong className="text-zinc-300">Private repos</strong> — not accessible</span>
-              </div>
-              <div className="flex items-start gap-2">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-red-400 mt-0.5 flex-shrink-0"><path d="M18 6L6 18M6 6l12 12"/></svg>
-                <span className="text-zinc-400"><strong className="text-zinc-300">Component libraries</strong> — files in /components, /lib, /hooks etc. are skipped</span>
-              </div>
-              <div className="flex items-start gap-2">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-red-400 mt-0.5 flex-shrink-0"><path d="M18 6L6 18M6 6l12 12"/></svg>
-                <span className="text-zinc-400"><strong className="text-zinc-300">Large repos</strong> — repos over 5MB or with 1000+ files</span>
-              </div>
-            </div>
-          </div>
-
-          <form onSubmit={handleSubmit}>
-            <div className="mb-4">
-              <label className="block text-sm text-zinc-400 mb-2">GitHub URL</label>
-              <input
-                type="text"
-                value={url}
-                onChange={(e) => setUrl(e.target.value)}
-                placeholder="https://github.com/user/repo or .../blob/main/file.html"
-                className="w-full bg-zinc-800 border border-zinc-700 rounded-lg px-4 py-2.5 text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                disabled={isLoading}
-              />
-            </div>
-            {progress && (
-              <div className="mb-4 p-3 bg-blue-600/10 border border-blue-500/20 rounded-lg">
-                <p className="text-sm text-blue-400">{progress}</p>
-              </div>
-            )}
-            <div className="flex gap-3">
-              <button
-                type="button"
-                onClick={() => setShowGithubModal(false)}
-                disabled={isLoading}
-                className="flex-1 bg-zinc-800 hover:bg-zinc-700 disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium py-2.5 rounded-lg transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                disabled={!url.trim() || isLoading}
-                className="flex-1 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium py-2.5 rounded-lg transition-colors flex items-center justify-center gap-2"
-              >
-                {isLoading ? (
-                  <>
-                    <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                    </svg>
-                    Importing...
-                  </>
-                ) : 'Import'}
-              </button>
-            </div>
-          </form>
-        </div>
-      </div>
-    )
-  }
-
   const OnboardingModal = () => (
     <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-[10000] p-4 overflow-y-auto">
       <div className="bg-zinc-900 border border-zinc-700 rounded-2xl p-6 md:p-8 w-full max-w-lg shadow-2xl my-8">
@@ -2738,7 +2390,7 @@ export default function Home() {
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
       <div className="bg-zinc-900 border border-zinc-700 rounded-2xl p-6 w-full max-w-md shadow-2xl">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-lg font-semibold text-white">Upload Code</h2>
+          <h2 className="text-lg font-semibold text-white">Import HTML</h2>
           <button onClick={() => setShowUploadModal(false)} className="p-2 text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors">
             <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M18 6L6 18M6 6l12 12"/></svg>
           </button>
@@ -2748,22 +2400,15 @@ export default function Home() {
           <div className="flex items-start gap-3">
             <span className="text-green-400 mt-0.5">✓</span>
             <div>
-              <p className="text-sm text-white font-medium">Supported formats</p>
-              <p className="text-xs text-zinc-400">.html, .htm, .txt files</p>
-            </div>
-          </div>
-          <div className="flex items-start gap-3">
-            <span className="text-green-400 mt-0.5">✓</span>
-            <div>
-              <p className="text-sm text-white font-medium">What works best</p>
-              <p className="text-xs text-zinc-400">Single-file HTML with inline styles, React/JSX components, or plain HTML</p>
+              <p className="text-sm text-white font-medium">Works with</p>
+              <p className="text-xs text-zinc-400">Static HTML pages, exported Webflow/Framer sites, HTML templates</p>
             </div>
           </div>
           <div className="flex items-start gap-3">
             <span className="text-amber-400 mt-0.5">⚠</span>
             <div>
-              <p className="text-sm text-white font-medium">Limitations</p>
-              <p className="text-xs text-zinc-400">External CSS/JS files won&apos;t be included. Images need to be re-uploaded via Assets.</p>
+              <p className="text-sm text-white font-medium">Not for React projects</p>
+              <p className="text-xs text-zinc-400">React/Next.js apps with imports won&apos;t work. Just describe what you want and let AI build it!</p>
             </div>
           </div>
         </div>
@@ -2771,17 +2416,17 @@ export default function Home() {
         <label className="block">
           <input 
             type="file" 
-            accept=".html,.htm,.txt" 
+            accept=".html,.htm" 
             onChange={(e) => { handleCodeUpload(e); setShowUploadModal(false) }} 
             className="hidden" 
           />
           <div className="w-full py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white text-center rounded-xl font-semibold cursor-pointer transition-all">
-            Choose File
+            Choose HTML File
           </div>
         </label>
         
         <p className="text-xs text-zinc-500 text-center mt-3">
-          Creates a new project with your uploaded code
+          Tip: Most users get better results just describing what they want
         </p>
       </div>
     </div>
@@ -2920,7 +2565,6 @@ export default function Home() {
         {showDomainModal && <DomainModal />}
         {deployedUrl && <DeployedModal />}
         {showFaqModal && <FaqModal />}
-        {showGithubModal && <GithubModal />}
         {showUploadModal && <UploadModal />}
         {showOnboarding && <OnboardingModal />}
         {showPagesPanel && <PagesPanel />}
@@ -3132,15 +2776,9 @@ export default function Home() {
                 Home
               </Link>
               <div className="border-t border-zinc-800 my-1" />
-              <button onClick={() => { setShowGithubModal(true); setShowMobileMenu(false) }} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-zinc-300 hover:bg-zinc-800 transition-colors">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
-                </svg>
-                Import from GitHub
-              </button>
               <button onClick={() => { setShowUploadModal(true); setShowMobileMenu(false) }} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-zinc-300 hover:bg-zinc-800 transition-colors">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-                Upload Code
+                Import HTML
               </button>
               <button onClick={() => { setShowAssetsModal(true); setShowMobileMenu(false) }} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-zinc-300 hover:bg-zinc-800 transition-colors">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
@@ -3296,7 +2934,6 @@ export default function Home() {
       {isDeploying && <DeployingOverlay />}
       {showUpgradeModal && <UpgradeModal isOpen={showUpgradeModal} onClose={() => setShowUpgradeModal(false)} reason={upgradeReason} projectSlug={currentProjectSlug} projectName={currentProject?.name || 'My Project'} />}
       {showSuccessModal && <SuccessModal isOpen={showSuccessModal} onClose={() => setShowSuccessModal(false)} />}
-      {showGithubModal && <GithubModal />}
       {showUploadModal && <UploadModal />}
       {showFaqModal && <FaqModal />}
       {showOnboarding && <OnboardingModal />}
@@ -3363,15 +3000,9 @@ export default function Home() {
                           Home
                         </Link>
                         <div className="border-t border-zinc-800 my-1" />
-                        <button onClick={() => { setShowGithubModal(true); setShowDesktopMenu(false) }} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-zinc-300 hover:bg-zinc-800 transition-colors">
-                          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M12 0c-6.626 0-12 5.373-12 12 0 5.302 3.438 9.8 8.207 11.387.599.111.793-.261.793-.577v-2.234c-3.338.726-4.033-1.416-4.033-1.416-.546-1.387-1.333-1.756-1.333-1.756-1.089-.745.083-.729.083-.729 1.205.084 1.839 1.237 1.839 1.237 1.07 1.834 2.807 1.304 3.492.997.107-.775.418-1.305.762-1.604-2.665-.305-5.467-1.334-5.467-5.931 0-1.311.469-2.381 1.236-3.221-.124-.303-.535-1.524.117-3.176 0 0 1.008-.322 3.301 1.23.957-.266 1.983-.399 3.003-.404 1.02.005 2.047.138 3.006.404 2.291-1.552 3.297-1.23 3.297-1.23.653 1.653.242 2.874.118 3.176.77.84 1.235 1.911 1.235 3.221 0 4.609-2.807 5.624-5.479 5.921.43.372.823 1.102.823 2.222v3.293c0 .319.192.694.801.576 4.765-1.589 8.199-6.086 8.199-11.386 0-6.627-5.373-12-12-12z"/>
-                          </svg>
-                          Import from GitHub
-                        </button>
                         <button onClick={() => { setShowUploadModal(true); setShowDesktopMenu(false) }} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-zinc-300 hover:bg-zinc-800 transition-colors">
                           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-                          Upload Code
+                          Import HTML
                         </button>
                         <button onClick={() => { setShowAssetsModal(true); setShowDesktopMenu(false) }} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-zinc-300 hover:bg-zinc-800 transition-colors">
                           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
