@@ -42,6 +42,7 @@ interface ChatProps {
   onSuggestionClick?: (suggestion: string) => void
   canRevert?: boolean // Whether revert is available
   onRevert?: () => void // Callback to revert to previous version
+  resetKey?: number // Increments to trigger a full reset (used by Start Again)
 }
 
 const thinkingMessages = [
@@ -74,7 +75,7 @@ function getRandomResponse() {
   return responses[Math.floor(Math.random() * responses.length)]
 }
 
-export default function Chat({ onGenerate, isGenerating, onStopGeneration, currentCode, isPaid = false, onOpenAssets, projectId = '', projectSlug = '', projectName = '', externalPrompt, onExternalPromptHandled, generationProgress, suggestions = [], onSuggestionClick, canRevert = false, onRevert }: ChatProps) {
+export default function Chat({ onGenerate, isGenerating, onStopGeneration, currentCode, isPaid = false, onOpenAssets, projectId = '', projectSlug = '', projectName = '', externalPrompt, onExternalPromptHandled, generationProgress, suggestions = [], onSuggestionClick, canRevert = false, onRevert, resetKey = 0 }: ChatProps) {
   const [input, setInput] = useState('')
   const [buildMessages, setBuildMessages] = useState<Message[]>([])
   const [chatMessages, setChatMessages] = useState<Message[]>([])
@@ -101,6 +102,14 @@ export default function Chat({ onGenerate, isGenerating, onStopGeneration, curre
       console.error('Failed to load chat history:', e)
     }
   }, [projectId])
+
+  // Handle reset (from Start Again) - clear messages and show confirmation
+  useEffect(() => {
+    if (resetKey > 0) {
+      setBuildMessages([{ role: 'assistant', content: '🔄 Code cleared! Ready for a fresh start.' }])
+      setChatMessages([])
+    }
+  }, [resetKey])
 
   // Save chat history to localStorage when messages change
   useEffect(() => {
