@@ -12,6 +12,18 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.2.1] - 2024-12-28
+### Fixed
+- **Contact page generation**: AI now generates working contact forms that render in preview
+- Forms use client-side state with visual feedback instead of form actions that break preview
+- Better TypeScript type stripping (React.FormEvent, ChangeEvent, etc.)
+
+### Changed
+- System prompt updated with explicit contact form pattern that works in preview
+- Code cleaning now handles more event type annotations
+
+---
+
 ## [1.2.0] - 2024-12-28
 ### Added
 - **Required project naming**: New projects must be named (no more random names)

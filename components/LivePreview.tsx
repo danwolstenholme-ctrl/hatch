@@ -486,6 +486,15 @@ export default function RootLayout({
           .replace(/React\.useMemo/g, 'useMemo')
           .replace(/React\.useCallback/g, 'useCallback')
           .replace(/React\.useRef/g, 'useRef')
+          // Remove 'use client' directive
+          .replace(/'use client'\s*;?/g, '')
+          .replace(/"use client"\s*;?/g, '')
+          // Remove React event types (e.g., e: React.FormEvent<HTMLFormElement>)
+          .replace(/:\s*React\.\w+(?:Event|Handler)(?:<[^>]+>)?/g, '')
+          // Remove HTML event types (e.g., e: FormEvent<HTMLFormElement>)
+          .replace(/:\s*(?:Form|Mouse|Keyboard|Change|Focus|Touch|Input|Submit|Click)Event(?:<[^>]+>)?/g, '')
+          // Remove generic Event types
+          .replace(/:\s*(?:Event|SyntheticEvent)(?:<[^>]+>)?/g, '')
 
         // Add globals at the start of each page (Lucide icons, theme, router shim, component stubs)
         const pageGlobals = `
@@ -539,6 +548,12 @@ const Footer = () => null;
           // Remove 'use client' directive
           .replace(/'use client'\s*;?/g, '')
           .replace(/"use client"\s*;?/g, '')
+          // Remove React event types (e.g., e: React.FormEvent<HTMLFormElement>)
+          .replace(/:\s*React\.\w+(?:Event|Handler)(?:<[^>]+>)?/g, '')
+          // Remove HTML event types (e.g., e: FormEvent<HTMLFormElement>)
+          .replace(/:\s*(?:Form|Mouse|Keyboard|Change|Focus|Touch|Input|Submit|Click)Event(?:<[^>]+>)?/g, '')
+          // Remove generic Event types
+          .replace(/:\s*(?:Event|SyntheticEvent)(?:<[^>]+>)?/g, '')
 
         return {
           path: page.path,
@@ -917,6 +932,15 @@ const SectionHeader = ({ eyebrow, title, description }) => React.createElement('
       .replace(/React\.useMemo/g, 'useMemo')
       .replace(/React\.useCallback/g, 'useCallback')
       .replace(/React\.useRef/g, 'useRef')
+      // Remove 'use client' directive
+      .replace(/'use client'\s*;?/g, '')
+      .replace(/"use client"\s*;?/g, '')
+      // Remove React event types (e.g., e: React.FormEvent<HTMLFormElement>)
+      .replace(/:\s*React\.\w+(?:Event|Handler)(?:<[^>]+>)?/g, '')
+      // Remove HTML event types (e.g., e: FormEvent<HTMLFormElement>)
+      .replace(/:\s*(?:Form|Mouse|Keyboard|Change|Focus|Touch|Input|Submit|Click)Event(?:<[^>]+>)?/g, '')
+      // Remove generic Event types
+      .replace(/:\s*(?:Event|SyntheticEvent)(?:<[^>]+>)?/g, '')
 
     const html = '<!DOCTYPE html>' +
       '<html><head>' +

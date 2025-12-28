@@ -287,7 +287,7 @@ Example - User asks "create a contact page and add it to the nav":
 Created a Contact page with a form and added it to your navigation! 📬
 ---PAGES---
 [
-  {"action": "create", "name": "Contact", "path": "/contact", "code": "function Component() { return ( <div className=\\"min-h-screen bg-zinc-950 text-white p-8\\">  <h1>Contact Us</h1> <form>...</form> </div> ); }"},
+  {"action": "create", "name": "Contact", "path": "/contact", "code": "function Component() { const [formData, setFormData] = useState({ name: '', email: '', message: '' }); const [status, setStatus] = useState('idle'); const handleSubmit = (e) => { e.preventDefault(); setStatus('sending'); setTimeout(() => { setStatus('sent'); setFormData({ name: '', email: '', message: '' }); }, 1500); }; return ( <div className=\\"min-h-screen bg-zinc-950 text-white p-8\\"><div className=\\"max-w-xl mx-auto\\"><h1 className=\\"text-4xl font-bold mb-8\\">Contact Us</h1><form onSubmit={handleSubmit} className=\\"space-y-4\\"><input type=\\"text\\" value={formData.name} onChange={(e) => setFormData({...formData, name: e.target.value})} placeholder=\\"Your name\\" className=\\"w-full p-3 bg-zinc-800 rounded\\" /><input type=\\"email\\" value={formData.email} onChange={(e) => setFormData({...formData, email: e.target.value})} placeholder=\\"Email\\" className=\\"w-full p-3 bg-zinc-800 rounded\\" /><textarea value={formData.message} onChange={(e) => setFormData({...formData, message: e.target.value})} placeholder=\\"Message\\" rows={4} className=\\"w-full p-3 bg-zinc-800 rounded\\" /><button type=\\"submit\\" disabled={status === 'sending'} className=\\"w-full py-3 bg-blue-600 hover:bg-blue-500 rounded font-medium\\">{status === 'sending' ? 'Sending...' : 'Send Message'}</button>{status === 'sent' && <p className=\\"text-green-400 text-center\\">Thanks! We will be in touch.</p>}</form></div></div> ); }"},
   {"action": "update", "id": "CURRENT_PAGE_ID", "code": "function Component() { return ( <div>...<a href=\\"#/contact\\">Contact</a>...</div> ); }"}
 ]
 
@@ -338,10 +338,10 @@ function Component() {
 ### Code Rules
 - NO markdown code fences (\`\`\`)
 - NO language tags
-- Language tags
-- Explanations before or after
-- Import statements
-- 'use client' directive
+- NO TypeScript types in function parameters (WRONG: (e: React.FormEvent) => ..., CORRECT: (e) => ...)
+- NO async/await in simple handlers
+- NO 'use client' directive
+- NO import statements
 
 ## ANIMATIONS (Framer Motion)
 
@@ -422,13 +422,48 @@ Include: Navigation (sticky), Hero section, Features (grid), Social proof, CTA, 
 Use max-w-6xl mx-auto for content width
 Add smooth scroll anchors: href="#features" with id="features"
 
-### Forms
-Include:
-- Loading state with useState
-- Success/error states
-- Proper labels and placeholders
-- For submission, use Formspree: action="https://formspree.io/f/YOUR_ID"
-- Add comment: // Replace YOUR_ID with your Formspree ID from formspree.io
+### Forms & Contact Pages
+Forms MUST work in the browser preview. Use this exact pattern:
+
+\`\`\`jsx
+function Component() {
+  const [formData, setFormData] = useState({ name: '', email: '', message: '' })
+  const [status, setStatus] = useState('idle') // 'idle' | 'sending' | 'sent' | 'error'
+
+  const handleSubmit = (e) => {
+    e.preventDefault()
+    setStatus('sending')
+    // Simulate sending - in production, replace with actual API call
+    setTimeout(() => {
+      setStatus('sent')
+      setFormData({ name: '', email: '', message: '' })
+    }, 1500)
+  }
+
+  return (
+    <form onSubmit={handleSubmit}>
+      <input 
+        type="text" 
+        value={formData.name} 
+        onChange={(e) => setFormData({...formData, name: e.target.value})}
+        placeholder="Your name"
+      />
+      {/* More fields... */}
+      <button type="submit" disabled={status === 'sending'}>
+        {status === 'sending' ? 'Sending...' : 'Send Message'}
+      </button>
+      {status === 'sent' && <p>Thanks! We'll be in touch.</p>}
+    </form>
+  )
+}
+\`\`\`
+
+CRITICAL for forms:
+- Use e.preventDefault() in onSubmit handler - NEVER use form action attribute
+- Use useState for form data and status, NOT FormData API
+- Keep handlers simple - no TypeScript types, no async/await
+- Include visual feedback: loading state, success message
+- The form should work in preview (shows success message after "sending")
 
 ### Dashboards
 Include sidebar navigation, header, main content area, cards with stats
