@@ -964,45 +964,49 @@ export default function Home() {
       
       setGenerationProgress('Generating code...')
       
-      // Start streaming request in parallel for live code display
-      const streamingPayload = { prompt, history, currentCode, brand: currentProject?.brand }
-      const streamPromise = fetch('/api/generate-stream', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(streamingPayload),
-        signal: abortControllerRef.current.signal,
-      }).then(async (streamResponse) => {
-        if (!streamResponse.ok) return
-        const reader = streamResponse.body?.getReader()
-        if (!reader) return
-        
-        const decoder = new TextDecoder()
-        let accumulated = ''
-        
-        while (true) {
-          const { done, value } = await reader.read()
-          if (done) break
+      // Start streaming request in parallel for live code display (paid users only)
+      let streamPromise: Promise<void> = Promise.resolve()
+      
+      if (isCurrentProjectPaid) {
+        const streamingPayload = { prompt, history, currentCode, brand: currentProject?.brand }
+        streamPromise = fetch('/api/generate-stream', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(streamingPayload),
+          signal: abortControllerRef.current.signal,
+        }).then(async (streamResponse) => {
+          if (!streamResponse.ok) return
+          const reader = streamResponse.body?.getReader()
+          if (!reader) return
           
-          const chunk = decoder.decode(value, { stream: true })
-          const lines = chunk.split('\n')
+          const decoder = new TextDecoder()
+          let accumulated = ''
           
-          for (const line of lines) {
-            if (line.startsWith('data: ')) {
-              try {
-                const data = JSON.parse(line.slice(6))
-                if (data.text) {
-                  accumulated += data.text
-                  setStreamingCode(accumulated)
+          while (true) {
+            const { done, value } = await reader.read()
+            if (done) break
+            
+            const chunk = decoder.decode(value, { stream: true })
+            const lines = chunk.split('\n')
+            
+            for (const line of lines) {
+              if (line.startsWith('data: ')) {
+                try {
+                  const data = JSON.parse(line.slice(6))
+                  if (data.text) {
+                    accumulated += data.text
+                    setStreamingCode(accumulated)
+                  }
+                } catch {
+                  // Skip invalid JSON
                 }
-              } catch {
-                // Skip invalid JSON
               }
             }
           }
-        }
-      }).catch(() => {
-        // Streaming failed silently - main request will still work
-      })
+        }).catch(() => {
+          // Streaming failed silently - main request will still work
+        })
+      }
       
       // Main robust request (non-streaming, with full parsing)
       const response = await fetch('/api/generate', {
