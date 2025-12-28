@@ -288,6 +288,7 @@ export default function Home() {
   const [showRenameModal, setShowRenameModal] = useState(false)
   const [showDeleteModal, setShowDeleteModal] = useState(false)
   const [showDeleteAllModal, setShowDeleteAllModal] = useState(false)
+  const [showStartOverModal, setShowStartOverModal] = useState(false)
   const [showHistoryModal, setShowHistoryModal] = useState(false)
   const [previewVersionIndex, setPreviewVersionIndex] = useState<number | null>(null)
   const [renameValue, setRenameValue] = useState('')
@@ -654,7 +655,7 @@ export default function Home() {
   }
 
   const startOver = () => {
-    if (!currentProject || currentProject.deployedSlug) return
+    if (!currentProject) return
     // Clear versions and reset to empty state (doesn't use a generation)
     updateCurrentProject({
       versions: [],
@@ -666,7 +667,11 @@ export default function Home() {
     localStorage.removeItem(`chat-build-${currentProjectId}`)
     localStorage.removeItem(`chat-chat-${currentProjectId}`)
     setShowProjectDropdown(false)
+    setShowStartOverModal(false)
+    setShowMobileMenu(false)
+    setShowDesktopMenu(false)
     setPreviousCode(null)
+    showSuccessToast('Project cleared — start fresh!')
   }
 
   const duplicateProject = () => {
@@ -1544,6 +1549,25 @@ export default function Home() {
         <div className="flex gap-3 justify-end">
           <button onClick={() => setShowDeleteAllModal(false)} className="px-4 py-2 text-sm text-zinc-400 hover:text-white transition-colors">Cancel</button>
           <button onClick={deleteAllProjects} className="px-4 py-2 text-sm bg-red-600 hover:bg-red-500 text-white rounded-xl transition-colors">Delete All</button>
+        </div>
+      </div>
+    </div>
+  )
+
+  const StartOverModal = () => (
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50">
+      <div className="bg-zinc-900 border border-zinc-700 rounded-2xl p-6 max-w-sm mx-4 shadow-2xl">
+        <h2 className="text-lg font-semibold text-white mb-2">Start Again?</h2>
+        <p className="text-zinc-400 text-sm mb-4">This will clear all code and history for &quot;{currentProject?.name}&quot;. You&apos;ll have a fresh canvas to build something new.</p>
+        {currentProject?.deployedSlug && (
+          <div className="flex items-center gap-2 px-3 py-2 bg-blue-500/10 border border-blue-500/20 rounded-lg mb-4">
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" strokeWidth="2"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
+            <span className="text-blue-400 text-xs">Your deployed site will remain live until you redeploy</span>
+          </div>
+        )}
+        <div className="flex gap-3 justify-end">
+          <button onClick={() => setShowStartOverModal(false)} className="px-4 py-2 text-sm text-zinc-400 hover:text-white transition-colors">Cancel</button>
+          <button onClick={startOver} className="px-4 py-2 text-sm bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-400 hover:to-amber-400 text-white rounded-xl transition-colors">Start Fresh</button>
         </div>
       </div>
     </div>
@@ -2606,6 +2630,7 @@ export default function Home() {
         {showRenameModal && <RenameModal />}
         {showDeleteModal && <DeleteModal />}
         {showDeleteAllModal && <DeleteAllModal />}
+        {showStartOverModal && <StartOverModal />}
         {showDeployModal && <DeployConfirmModal />}
         {showHistoryModal && <HistoryModal />}
         {showAssetsModal && <AssetsModal />}
@@ -2839,6 +2864,12 @@ export default function Home() {
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
                 History {!isCurrentProjectPaid && <span className="text-xs text-purple-400">PRO</span>}
               </button>
+              {code && (
+                <button onClick={() => { setShowStartOverModal(true); setShowMobileMenu(false) }} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-orange-400 hover:bg-zinc-800 transition-colors">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+                  Start Again
+                </button>
+              )}
               <div className="border-t border-zinc-800 my-1" />
               <button onClick={() => { setShowFaqModal(true); setShowMobileMenu(false) }} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-zinc-300 hover:bg-zinc-800 transition-colors">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
@@ -2972,6 +3003,7 @@ export default function Home() {
       {showRenameModal && <RenameModal />}
       {showDeleteModal && <DeleteModal />}
       {showDeleteAllModal && <DeleteAllModal />}
+      {showStartOverModal && <StartOverModal />}
       {showDeployModal && <DeployConfirmModal />}
       {showHistoryModal && <HistoryModal />}
       {showAssetsModal && <AssetsModal />}
@@ -3063,6 +3095,12 @@ export default function Home() {
                           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
                           History {!isCurrentProjectPaid && <span className="text-xs text-purple-400">PRO</span>}
                         </button>
+                        {code && (
+                          <button onClick={() => { setShowStartOverModal(true); setShowDesktopMenu(false) }} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-orange-400 hover:bg-zinc-800 transition-colors">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+                            Start Again
+                          </button>
+                        )}
                         <div className="border-t border-zinc-800 my-1" />
                         <button onClick={() => { setShowFaqModal(true); setShowDesktopMenu(false) }} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-zinc-300 hover:bg-zinc-800 transition-colors">
                           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 16v-4M12 8h.01"/></svg>
