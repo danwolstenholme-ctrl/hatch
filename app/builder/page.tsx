@@ -1507,23 +1507,28 @@ export default function Home() {
     <div ref={dropdownRef} className="absolute top-full left-0 mt-2 w-64 bg-zinc-900 border border-zinc-700 rounded-xl shadow-2xl z-[9999] overflow-hidden">
       {/* Project list */}
       <div className="max-h-72 overflow-y-auto py-1">
-        {projects.map(project => (
-          <button 
-            key={project.id} 
-            onClick={() => switchProject(project.id)} 
-            className={`w-full px-3 py-2.5 flex items-center gap-2 hover:bg-zinc-800 transition-colors ${project.id === currentProjectId ? 'bg-zinc-800/80' : ''}`}
-          >
-            <div className="flex-1 text-left min-w-0">
-              <div className="text-sm text-white truncate flex items-center gap-2">
-                {project.id === currentProjectId && <span className="text-blue-400">•</span>}
-                {project.name}
-                {subscriptions.some(s => s.projectSlug === project.deployedSlug && s.status === 'active') && <span className="text-[10px]">🐣</span>}
-                {project.deployedSlug && <span className="text-[10px] px-1.5 py-0.5 bg-green-500/20 text-green-400 rounded">LIVE</span>}
+        {projects.map(project => {
+          const isHatched = subscriptions.some(s => s.projectSlug === project.deployedSlug && s.status === 'active')
+          return (
+            <button 
+              key={project.id} 
+              onClick={() => switchProject(project.id)} 
+              className={`w-full px-3 py-2.5 flex items-center gap-2 hover:bg-zinc-800 transition-colors ${project.id === currentProjectId ? 'bg-zinc-800/80' : ''}`}
+            >
+              <div className="flex-1 text-left min-w-0">
+                <div className="text-sm text-white truncate flex items-center gap-2">
+                  {project.id === currentProjectId && <span className="text-blue-400">•</span>}
+                  {project.name}
+                  {isHatched && (
+                    <span className="text-[10px] px-1.5 py-0.5 bg-gradient-to-r from-amber-500/20 to-yellow-500/20 text-amber-400 rounded font-medium border border-amber-500/30">Hatched</span>
+                  )}
+                  {project.deployedSlug && <span className="text-[10px] px-1.5 py-0.5 bg-green-500/20 text-green-400 rounded">LIVE</span>}
+                </div>
+                <div className="text-xs text-zinc-500 ml-3">{project.versions?.length || 0} versions</div>
               </div>
-              <div className="text-xs text-zinc-500 ml-3">{project.versions?.length || 0} versions</div>
-            </div>
-          </button>
-        ))}
+            </button>
+          )
+        })}
       </div>
       
       {/* New project button */}
