@@ -88,6 +88,34 @@ interface DeployedProject {
 
 const generateId = () => Math.random().toString(36).substring(2, 9)
 
+// Client-side truncation detection - prevents saving broken code
+const detectTruncatedCode = (code: string): boolean => {
+  if (!code || code.length < 100) return false
+  
+  const trimmed = code.trim()
+  
+  // Count brackets and braces
+  let braces = 0, parens = 0, brackets = 0
+  for (const char of trimmed) {
+    if (char === '{') braces++
+    if (char === '}') braces--
+    if (char === '(') parens++
+    if (char === ')') parens--
+    if (char === '[') brackets++
+    if (char === ']') brackets--
+  }
+  
+  // Major imbalances indicate truncation
+  if (braces > 3 || parens > 3 || brackets > 3) return true
+  
+  // Check for code ending with incomplete patterns
+  if (/(?:className|style|onClick|onChange|href|src)=["']?[^"']*$/.test(trimmed)) return true
+  if (/(?:return|=>)\s*\(?[\s\n]*$/.test(trimmed)) return true
+  if (/<[A-Za-z][^>]*$/.test(trimmed)) return true // ends mid-tag
+  
+  return false
+}
+
 const projectNameSuggestions = [
   'Fresh Canvas',
   'Quick Build',
@@ -932,6 +960,12 @@ export default function Home() {
       })
       const data = await response.json()
       
+      // Handle API errors (including truncation failures)
+      if (data.error) {
+        showErrorToast(data.error)
+        return null
+      }
+      
       // Handle complexity warning
       if (data.complexityWarning) {
         setIsGenerating(false)
@@ -955,6 +989,13 @@ export default function Home() {
       
       // Handle multi-page operations (creating new pages, updating multiple pages)
       if (data.pageOperations && Array.isArray(data.pageOperations) && data.pageOperations.length > 0) {
+        // Check for truncated code in any page operation
+        const hasTruncatedCode = data.pageOperations.some((op: { code?: string }) => op.code && detectTruncatedCode(op.code))
+        if (hasTruncatedCode) {
+          showErrorToast('Response was cut off. Try a simpler prompt or click Regenerate.')
+          return null
+        }
+        
         if (generationRequestIdRef.current !== requestId || currentProjectId !== targetProjectId) return null
         
         // Ensure project is multi-page
@@ -1014,6 +1055,12 @@ export default function Home() {
       
       // Handle single page update (backwards compatible)
       if (data.code) {
+        // Client-side truncation check - don't save broken code
+        if (detectTruncatedCode(data.code)) {
+          showErrorToast('Response was cut off. Try a simpler prompt or click Regenerate.')
+          return null
+        }
+        
         if (generationRequestIdRef.current !== requestId || currentProjectId !== targetProjectId) return null
         const newVersion: Version = { id: generateId(), code: data.code, timestamp: new Date().toISOString(), prompt }
         
