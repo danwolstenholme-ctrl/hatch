@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback, useEffect, useRef } from 'react'
+import { useState, useCallback, useEffect, useRef, memo } from 'react'
 import HatchModal from './HatchModal'
 
 interface CodePreviewProps {
@@ -80,7 +80,7 @@ function validateSyntax(code: string): { valid: boolean; error?: string } {
   return { valid: true }
 }
 
-export default function CodePreview({ code, isPaid = false, onCodeChange, pagePath = '/', streamingCode = '', isStreaming = false }: CodePreviewProps) {
+function CodePreview({ code, isPaid = false, onCodeChange, pagePath = '/', streamingCode = '', isStreaming = false }: CodePreviewProps) {
   const [copied, setCopied] = useState(false)
   const [showHatchModal, setShowHatchModal] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
@@ -310,3 +310,5 @@ export default function CodePreview({ code, isPaid = false, onCodeChange, pagePa
     </div>
   )
 }
+
+export default memo(CodePreview)

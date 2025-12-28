@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, useState, useEffect, useRef } from 'react'
+import { useMemo, useState, useEffect, useRef, memo } from 'react'
 
 interface Page {
   id: string
@@ -44,7 +44,7 @@ interface ElementInfo {
   }
 }
 
-export default function LivePreview({ code, pages, currentPageId, isLoading = false, loadingProgress, isPaid = false, assets = [], setShowHatchModal, inspectorMode = false, onElementSelect, onViewCode, onRegenerate, onQuickFix }: LivePreviewProps) {
+function LivePreview({ code, pages, currentPageId, isLoading = false, loadingProgress, isPaid = false, assets = [], setShowHatchModal, inspectorMode = false, onElementSelect, onViewCode, onRegenerate, onQuickFix }: LivePreviewProps) {
   const [iframeLoaded, setIframeLoaded] = useState(false)
   const [iframeKey, setIframeKey] = useState(0)
   const [isDownloading, setIsDownloading] = useState(false)
@@ -1307,3 +1307,5 @@ const SectionHeader = ({ eyebrow, title, description }) => React.createElement('
     </div>
   )
 }
+
+export default memo(LivePreview)

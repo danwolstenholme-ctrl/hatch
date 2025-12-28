@@ -1,5 +1,5 @@
 'use client'
-import { useState, FormEvent, useRef, useEffect } from 'react'
+import { useState, FormEvent, useRef, useEffect, memo } from 'react'
 import { canGenerate, recordGeneration, getGenerationsRemaining, getDailyLimit, isPaidUser } from '@/app/lib/generation-limit'
 import HatchModal from './HatchModal'
 
@@ -75,7 +75,7 @@ function getRandomResponse() {
   return responses[Math.floor(Math.random() * responses.length)]
 }
 
-export default function Chat({ onGenerate, isGenerating, onStopGeneration, currentCode, isPaid = false, onOpenAssets, projectId = '', projectSlug = '', projectName = '', externalPrompt, onExternalPromptHandled, generationProgress, suggestions = [], onSuggestionClick, canRevert = false, onRevert, resetKey = 0 }: ChatProps) {
+function Chat({ onGenerate, isGenerating, onStopGeneration, currentCode, isPaid = false, onOpenAssets, projectId = '', projectSlug = '', projectName = '', externalPrompt, onExternalPromptHandled, generationProgress, suggestions = [], onSuggestionClick, canRevert = false, onRevert, resetKey = 0 }: ChatProps) {
   const [input, setInput] = useState('')
   const [buildMessages, setBuildMessages] = useState<Message[]>([])
   const [chatMessages, setChatMessages] = useState<Message[]>([])
@@ -510,3 +510,5 @@ export default function Chat({ onGenerate, isGenerating, onStopGeneration, curre
     </div>
   )
 }
+
+export default memo(Chat)
