@@ -9,7 +9,7 @@ import { track } from '@vercel/analytics'
 import Chat from '@/components/Chat'
 import CodePreview from '@/components/CodePreview'
 import LivePreview from '@/components/LivePreview'
-import UpgradeModal from '@/components/upgradeModal'    
+import HatchModal from '@/components/HatchModal'    
 import SuccessModal from '@/components/SuccessModal'
 import { isPaidUser } from '@/app/lib/generation-limit'
 import { showSuccessToast, showErrorToast } from '@/app/lib/toast'
@@ -342,8 +342,8 @@ export default function Home() {
   const [previousCode, setPreviousCode] = useState<string | null>(null)
   const { user, isLoaded } = useUser()
   const searchParams = useSearchParams()
-  const [showUpgradeModal, setShowUpgradeModal] = useState(false)
-  const [upgradeReason, setUpgradeReason] = useState<'generation_limit' | 'code_access' | 'deploy' | 'download' | 'proactive' | 'running_low'>('deploy')
+  const [showHatchModal, setShowHatchModal] = useState(false)
+  const [hatchReason, setHatchReason] = useState<'generation_limit' | 'code_access' | 'deploy' | 'download' | 'proactive' | 'running_low'>('deploy')
   const [showSuccessModal, setShowSuccessModal] = useState(false)
   const [showFaqModal, setShowFaqModal] = useState(false)
   const [showAssetsModal, setShowAssetsModal] = useState(false)
@@ -589,8 +589,8 @@ export default function Home() {
   const createProject = () => {
     // Free users can only have 1 project (any paid subscription allows multiple)
     if (!hasAnyPaidSubscription && projects.length >= 1) {
-      setUpgradeReason('deploy')
-      setShowUpgradeModal(true)
+      setHatchReason('deploy')
+      setShowHatchModal(true)
       setShowProjectDropdown(false)
       return
     }
@@ -680,8 +680,8 @@ export default function Home() {
   const duplicateProject = () => {
     // Free users can only have 1 project (any paid subscription allows multiple)
     if (!hasAnyPaidSubscription && projects.length >= 1) {
-      setUpgradeReason('deploy')
-      setShowUpgradeModal(true)
+      setHatchReason('deploy')
+      setShowHatchModal(true)
       setShowProjectDropdown(false)
       return
     }
@@ -1410,8 +1410,8 @@ export default function Home() {
 
   const handleShipClick = () => {
     if (!isCurrentProjectPaid) {
-      setUpgradeReason('deploy')
-      setShowUpgradeModal(true)
+      setHatchReason('deploy')
+      setShowHatchModal(true)
       return
     }
     if (isDeployed) {
@@ -1424,8 +1424,8 @@ export default function Home() {
 
   const handleDomainClick = () => {
     if (!isCurrentProjectPaid) {
-      setUpgradeReason('deploy')
-      setShowUpgradeModal(true)
+      setHatchReason('deploy')
+      setShowHatchModal(true)
       return
     }
     setShowDomainModal(true)
@@ -1435,8 +1435,8 @@ export default function Home() {
 
   const handleDownloadClick = async () => {
     if (!isCurrentProjectPaid) {
-      setUpgradeReason('download')
-      setShowUpgradeModal(true)
+      setHatchReason('download')
+      setShowHatchModal(true)
       return
     }
     // Trigger download through a custom event
@@ -1469,7 +1469,7 @@ export default function Home() {
         <div className="flex-1 text-left">
           <span className="text-sm font-medium text-white">New Project</span>
           {!hasAnyPaidSubscription && projects.length >= 1 && (
-            <span className="block text-xs text-purple-400">Upgrade to unlock</span>
+            <span className="block text-xs text-purple-400">Hatch to unlock</span>
           )}
         </div>
       </button>
@@ -1491,7 +1491,7 @@ export default function Home() {
       {currentProject && (
         <div className="border-t border-zinc-800 p-2 flex flex-wrap gap-1">
           <button onClick={() => { setRenameValue(currentProject.name); setShowRenameModal(true); setShowProjectDropdown(false) }} className="flex-1 px-3 py-2 text-xs text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors">Rename</button>
-          <button onClick={duplicateProject} disabled={!hasAnyPaidSubscription && projects.length >= 1} className={`flex-1 px-3 py-2 text-xs rounded-lg transition-colors ${!hasAnyPaidSubscription && projects.length >= 1 ? 'text-zinc-600 cursor-not-allowed opacity-50' : 'text-zinc-400 hover:text-white hover:bg-zinc-800'}`} title={!hasAnyPaidSubscription && projects.length >= 1 ? 'Upgrade to duplicate projects' : ''}>Duplicate</button>
+          <button onClick={duplicateProject} disabled={!hasAnyPaidSubscription && projects.length >= 1} className={`flex-1 px-3 py-2 text-xs rounded-lg transition-colors ${!hasAnyPaidSubscription && projects.length >= 1 ? 'text-zinc-600 cursor-not-allowed opacity-50' : 'text-zinc-400 hover:text-white hover:bg-zinc-800'}`} title={!hasAnyPaidSubscription && projects.length >= 1 ? 'Hatch to duplicate projects' : ''}>Duplicate</button>
           <button onClick={() => { setShowDeleteModal(true); setShowProjectDropdown(false) }} className="flex-1 px-3 py-2 text-xs text-red-400 hover:text-red-300 hover:bg-zinc-800 rounded-lg transition-colors">Delete</button>
           {!currentProject.deployedSlug && (currentProject.versions?.length || 0) > 0 && (
             <button onClick={startOver} className="w-full mt-1 px-3 py-2 text-xs text-amber-400 hover:text-amber-300 hover:bg-zinc-800 rounded-lg transition-colors">Start Over</button>
@@ -1610,7 +1610,7 @@ export default function Home() {
           <div className="flex-1 flex flex-col min-w-0 min-h-0">
             {previewVersionIndex !== null ? (
               <>
-                <div className="flex-1 overflow-auto bg-zinc-950 min-h-0"><LivePreview code={versions[previewVersionIndex]?.code || ''} pages={undefined} currentPageId={undefined} isLoading={false} isPaid={isCurrentProjectPaid} setShowUpgradeModal={setShowUpgradeModal} /></div>
+                <div className="flex-1 overflow-auto bg-zinc-950 min-h-0"><LivePreview code={versions[previewVersionIndex]?.code || ''} pages={undefined} currentPageId={undefined} isLoading={false} isPaid={isCurrentProjectPaid} setShowHatchModal={setShowHatchModal} /></div>
                 <div className="px-4 py-3 border-t border-zinc-800 flex items-center justify-between flex-shrink-0">
                   <span className="text-sm text-zinc-400">Previewing v{previewVersionIndex + 1}</span>
                   {previewVersionIndex !== currentVersionIndex && <button onClick={() => restoreVersion(previewVersionIndex)} className="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-500 text-white rounded-xl transition-colors whitespace-nowrap ml-2">Restore</button>}
@@ -1893,7 +1893,7 @@ export default function Home() {
           <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
         </button>
       </div>
-      <div className="flex-1 overflow-auto">{type === 'preview' ? <LivePreview code={code} pages={previewPages} currentPageId={currentProject?.currentPageId} isLoading={isGenerating} loadingProgress={generationProgress} isPaid={isCurrentProjectPaid} assets={currentProject?.assets} setShowUpgradeModal={setShowUpgradeModal} onViewCode={() => { onClose(); setActiveTab('code') }} onRegenerate={handleRegenerateFromError} onQuickFix={handleQuickFix} /> : <CodePreview code={code} isPaid={isCurrentProjectPaid} onCodeChange={handleCodeChange} pagePath={currentPage?.path} />}</div>
+      <div className="flex-1 overflow-auto">{type === 'preview' ? <LivePreview code={code} pages={previewPages} currentPageId={currentProject?.currentPageId} isLoading={isGenerating} loadingProgress={generationProgress} isPaid={isCurrentProjectPaid} assets={currentProject?.assets} setShowHatchModal={setShowHatchModal} onViewCode={() => { onClose(); setActiveTab('code') }} onRegenerate={handleRegenerateFromError} onQuickFix={handleQuickFix} /> : <CodePreview code={code} isPaid={isCurrentProjectPaid} onCodeChange={handleCodeChange} pagePath={currentPage?.path} />}</div>
     </div>
   )
 
@@ -2035,8 +2035,8 @@ export default function Home() {
       return (
         <button 
           onClick={() => {
-            setUpgradeReason('deploy')
-            setShowUpgradeModal(true)
+            setHatchReason('deploy')
+            setShowHatchModal(true)
           }} 
           className="p-2 text-zinc-500 hover:text-white hover:bg-zinc-800 rounded-lg transition-all" 
           title="Version history (Hatched feature)"
@@ -2835,7 +2835,7 @@ export default function Home() {
             </div>
           </div>
         )}
-        {showUpgradeModal && <UpgradeModal isOpen={showUpgradeModal} onClose={() => setShowUpgradeModal(false)} reason={upgradeReason} projectSlug={currentProjectSlug} projectName={currentProject?.name || 'My Project'} />}
+        {showHatchModal && <HatchModal isOpen={showHatchModal} onClose={() => setShowHatchModal(false)} reason={hatchReason} projectSlug={currentProjectSlug} projectName={currentProject?.name || 'My Project'} />}
         {mobileModal && <MobileModal type={mobileModal} onClose={() => setMobileModal(null)} />}
         {/* Mobile menu overlay */}
         {showMobileMenu && (
@@ -2859,13 +2859,13 @@ export default function Home() {
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
                 Assets
               </button>
-              <button onClick={() => { isCurrentProjectPaid ? setShowBrandPanel(true) : (setUpgradeReason('deploy'), setShowUpgradeModal(true)); setShowMobileMenu(false) }} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-zinc-300 hover:bg-zinc-800 transition-colors">
+              <button onClick={() => { isCurrentProjectPaid ? setShowBrandPanel(true) : (setHatchReason('deploy'), setShowHatchModal(true)); setShowMobileMenu(false) }} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-zinc-300 hover:bg-zinc-800 transition-colors">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="13.5" cy="6.5" r="2.5"/><circle cx="19" cy="17" r="2.5"/><circle cx="6" cy="12" r="2.5"/><path d="M12 2a10 10 0 1 0 10 10"/></svg>
-                Brand {!isCurrentProjectPaid && <span className="text-xs text-purple-400">PRO</span>}
+                Brand {!isCurrentProjectPaid && <span className="text-xs">🐣</span>}
               </button>
-              <button onClick={() => { isCurrentProjectPaid ? setShowHistoryModal(true) : (setUpgradeReason('deploy'), setShowUpgradeModal(true)); setShowMobileMenu(false) }} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-zinc-300 hover:bg-zinc-800 transition-colors">
+              <button onClick={() => { isCurrentProjectPaid ? setShowHistoryModal(true) : (setHatchReason('deploy'), setShowHatchModal(true)); setShowMobileMenu(false) }} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-zinc-300 hover:bg-zinc-800 transition-colors">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                History {!isCurrentProjectPaid && <span className="text-xs text-purple-400">PRO</span>}
+                History {!isCurrentProjectPaid && <span className="text-xs">🐣</span>}
               </button>
               {code && (
                 <button onClick={() => { setShowStartOverModal(true); setShowMobileMenu(false) }} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-orange-400 hover:bg-zinc-800 transition-colors">
@@ -3014,7 +3014,7 @@ export default function Home() {
       {showShipModal && !isDeploying && <ShipModal />}
       {deployedUrl && <DeployedModal />}
       {isDeploying && <DeployingOverlay />}
-      {showUpgradeModal && <UpgradeModal isOpen={showUpgradeModal} onClose={() => setShowUpgradeModal(false)} reason={upgradeReason} projectSlug={currentProjectSlug} projectName={currentProject?.name || 'My Project'} />}
+      {showHatchModal && <HatchModal isOpen={showHatchModal} onClose={() => setShowHatchModal(false)} reason={hatchReason} projectSlug={currentProjectSlug} projectName={currentProject?.name || 'My Project'} />}
       {showSuccessModal && <SuccessModal isOpen={showSuccessModal} onClose={() => setShowSuccessModal(false)} />}
       {showUploadModal && <UploadModal />}
       {showFaqModal && <FaqModal />}
@@ -3090,13 +3090,13 @@ export default function Home() {
                           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
                           Assets
                         </button>
-                        <button onClick={() => { isCurrentProjectPaid ? (setShowBrandPanel(true), setShowDesktopMenu(false)) : (setUpgradeReason('deploy'), setShowUpgradeModal(true), setShowDesktopMenu(false)) }} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-zinc-300 hover:bg-zinc-800 transition-colors">
+                        <button onClick={() => { isCurrentProjectPaid ? (setShowBrandPanel(true), setShowDesktopMenu(false)) : (setHatchReason('deploy'), setShowHatchModal(true), setShowDesktopMenu(false)) }} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-zinc-300 hover:bg-zinc-800 transition-colors">
                           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="13.5" cy="6.5" r="2.5"/><circle cx="19" cy="17" r="2.5"/><circle cx="6" cy="12" r="2.5"/><path d="M12 2a10 10 0 1 0 10 10"/></svg>
-                          Brand {!isCurrentProjectPaid && <span className="text-xs text-purple-400">PRO</span>}
+                          Brand {!isCurrentProjectPaid && <span className="text-xs">🐣</span>}
                         </button>
-                        <button onClick={() => { isCurrentProjectPaid ? (setShowHistoryModal(true), setShowDesktopMenu(false)) : (setUpgradeReason('deploy'), setShowUpgradeModal(true), setShowDesktopMenu(false)) }} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-zinc-300 hover:bg-zinc-800 transition-colors">
+                        <button onClick={() => { isCurrentProjectPaid ? (setShowHistoryModal(true), setShowDesktopMenu(false)) : (setHatchReason('deploy'), setShowHatchModal(true), setShowDesktopMenu(false)) }} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-zinc-300 hover:bg-zinc-800 transition-colors">
                           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                          History {!isCurrentProjectPaid && <span className="text-xs text-purple-400">PRO</span>}
+                          History {!isCurrentProjectPaid && <span className="text-xs">🐣</span>}
                         </button>
                         {code && (
                           <button onClick={() => { setShowStartOverModal(true); setShowDesktopMenu(false) }} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-orange-400 hover:bg-zinc-800 transition-colors">
@@ -3209,7 +3209,7 @@ export default function Home() {
               </div>
             </div>
             <div ref={previewContainerRef} className="flex-1 overflow-auto min-h-0 relative">
-              {activeTab === 'preview' ? <LivePreview code={code} pages={previewPages} currentPageId={currentProject?.currentPageId} isLoading={isGenerating} loadingProgress={generationProgress} isPaid={isCurrentProjectPaid} assets={currentProject?.assets} setShowUpgradeModal={setShowUpgradeModal} inspectorMode={inspectorMode} onElementSelect={setSelectedElement} onViewCode={handleViewCode} onRegenerate={handleRegenerateFromError} onQuickFix={handleQuickFix} /> : <CodePreview code={code} isPaid={isCurrentProjectPaid} onCodeChange={handleCodeChange} pagePath={currentPage?.path} />}
+              {activeTab === 'preview' ? <LivePreview code={code} pages={previewPages} currentPageId={currentProject?.currentPageId} isLoading={isGenerating} loadingProgress={generationProgress} isPaid={isCurrentProjectPaid} assets={currentProject?.assets} setShowHatchModal={setShowHatchModal} inspectorMode={inspectorMode} onElementSelect={setSelectedElement} onViewCode={handleViewCode} onRegenerate={handleRegenerateFromError} onQuickFix={handleQuickFix} /> : <CodePreview code={code} isPaid={isCurrentProjectPaid} onCodeChange={handleCodeChange} pagePath={currentPage?.path} />}
               
               {/* Element Inspector Popover */}
               {inspectorMode && selectedElement && (

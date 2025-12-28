@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, useCallback } from 'react'
-import UpgradeModal from './upgradeModal'
+import HatchModal from './HatchModal'
 
 interface CodePreviewProps {
   code: string
@@ -80,7 +80,7 @@ function validateSyntax(code: string): { valid: boolean; error?: string } {
 
 export default function CodePreview({ code, isPaid = false, onCodeChange, pagePath = '/' }: CodePreviewProps) {
   const [copied, setCopied] = useState(false)
-  const [showUpgradeModal, setShowUpgradeModal] = useState(false)
+  const [showHatchModal, setShowHatchModal] = useState(false)
   const [isEditing, setIsEditing] = useState(false)
   const [editedCode, setEditedCode] = useState(code)
   const [syntaxError, setSyntaxError] = useState<string | null>(null)
@@ -91,7 +91,7 @@ export default function CodePreview({ code, isPaid = false, onCodeChange, pagePa
 
   const handleCopy = async () => {
     if (!isPaid) {
-      setShowUpgradeModal(true)
+      setShowHatchModal(true)
       return
     }
     
@@ -102,7 +102,7 @@ export default function CodePreview({ code, isPaid = false, onCodeChange, pagePa
 
   const handleEditToggle = useCallback(() => {
     if (!isPaid) {
-      setShowUpgradeModal(true)
+      setShowHatchModal(true)
       return
     }
     
@@ -252,13 +252,13 @@ export default function CodePreview({ code, isPaid = false, onCodeChange, pagePa
                       {hiddenCount} more lines
                     </h3>
                     <p className="text-zinc-400 text-sm mb-4">
-                      Upgrade to view and copy your full code
+                      Hatch to view and copy your full code
                     </p>
                     <button
-                      onClick={() => setShowUpgradeModal(true)}
+                      onClick={() => setShowHatchModal(true)}
                       className="w-full py-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white text-sm rounded-lg font-medium transition-all"
                     >
-                      Unlock Code — $24
+                      🐣 Hatch Project — $24
                     </button>
                   </div>
                 </div>
@@ -268,9 +268,9 @@ export default function CodePreview({ code, isPaid = false, onCodeChange, pagePa
         )}
       </div>
 
-      <UpgradeModal
-        isOpen={showUpgradeModal}
-        onClose={() => setShowUpgradeModal(false)}
+      <HatchModal
+        isOpen={showHatchModal}
+        onClose={() => setShowHatchModal(false)}
         reason="code_access"
       />
     </div>

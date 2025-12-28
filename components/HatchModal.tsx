@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react'
 import { track } from '@vercel/analytics'
 
-interface UpgradeModalProps {
+interface HatchModalProps {
   isOpen: boolean
   onClose: () => void
   reason: 'generation_limit' | 'code_access' | 'deploy' | 'download' | 'proactive' | 'running_low'
@@ -12,13 +12,13 @@ interface UpgradeModalProps {
   generationsRemaining?: number
 }
 
-export default function UpgradeModal({ isOpen, onClose, reason, projectSlug = '', projectName = 'this project', generationsRemaining }: UpgradeModalProps) {
+export default function HatchModal({ isOpen, onClose, reason, projectSlug = '', projectName = 'this project', generationsRemaining }: HatchModalProps) {
   const [isLoading, setIsLoading] = useState(false)
 
   // Track when modal is shown
   useEffect(() => {
     if (isOpen) {
-      track('Upgrade Modal Shown', { reason })
+      track('Hatch Modal Shown', { reason })
     }
   }, [isOpen, reason])
 
@@ -27,41 +27,41 @@ export default function UpgradeModal({ isOpen, onClose, reason, projectSlug = ''
   const messages = {
     generation_limit: {
       title: "You've hit today's limit",
-      description: "Free accounts get 10 generations per day. Go Hatched for unlimited builds.",
+      description: "Free accounts get 10 generations per day. Hatch your project for unlimited builds.",
       icon: "⚡"
     },
     running_low: {
       title: `${generationsRemaining} generations left today`,
-      description: "Running low! Go Hatched for unlimited generations and deploy your site.",
+      description: "Running low! Hatch your project for unlimited generations and go live.",
       icon: "⏳"
     },
     proactive: {
-      title: "Ready to level up?",
-      description: "Go Hatched to unlock unlimited generations, deploy to a live URL, and get full code access.",
+      title: "Ready to hatch?",
+      description: "Hatch this project to unlock unlimited generations, deploy to a live URL, and get full code access.",
       icon: "🐣"
     },
     code_access: {
       title: "Unlock your code",
-      description: "Go Hatched to view, copy, and download your full source code.",
+      description: "Hatch this project to view, copy, and download your full source code.",
       icon: "🔓"
     },
     deploy: {
       title: "Ready to go live?",
-      description: `Go Hatched to deploy "${projectName}" with a custom domain.`,
+      description: `Hatch "${projectName}" to deploy with a custom domain.`,
       icon: "🐣"
     },
     download: {
       title: "Download your project",
-      description: `Go Hatched to download "${projectName}" as a clean, production-ready project.`,
+      description: `Hatch "${projectName}" to download as a clean, production-ready project.`,
       icon: "📦"
     }
   }
 
   const { title, description, icon } = messages[reason]
 
-  const handleUpgrade = async () => {
+  const handleHatch = async () => {
     setIsLoading(true)
-    track('Upgrade Started', { reason, projectSlug })
+    track('Hatch Started', { reason, projectSlug })
     try {
       const response = await fetch('/api/checkout', {
         method: 'POST',
@@ -106,9 +106,20 @@ export default function UpgradeModal({ isOpen, onClose, reason, projectSlug = ''
         <h2 className="text-2xl font-bold text-white text-center mb-3">
           {title}
         </h2>
-        <p className="text-zinc-400 text-center mb-8">
+        <p className="text-zinc-400 text-center mb-6">
           {description}
         </p>
+
+        {/* What is HatchIt explanation */}
+        <div className="bg-zinc-800/50 border border-zinc-700 rounded-xl p-4 mb-6">
+          <h3 className="text-sm font-semibold text-white mb-2 flex items-center gap-2">
+            <span>🥚</span>
+            What is hatching?
+          </h3>
+          <p className="text-xs text-zinc-400 leading-relaxed">
+            HatchIt lets you build websites for free. When you&apos;re ready to take your project live, <span className="text-purple-400 font-medium">hatch it</span> to deploy to a real URL, unlock your code, and keep editing forever.
+          </p>
+        </div>
 
         <div className="bg-gradient-to-br from-zinc-800/50 to-zinc-900 border border-purple-500/30 rounded-xl p-6 mb-6 ring-1 ring-purple-500/20 relative overflow-hidden">
           {/* Early Bird Banner */}
@@ -118,7 +129,7 @@ export default function UpgradeModal({ isOpen, onClose, reason, projectSlug = ''
           
           <div className="flex items-center justify-center gap-2 mb-2">
             <span className="text-2xl">🐣</span>
-            <span className="text-xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">Go Hatched</span>
+            <span className="text-xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">Hatch This Project</span>
           </div>
           
           {/* Price */}
@@ -150,20 +161,20 @@ export default function UpgradeModal({ isOpen, onClose, reason, projectSlug = ''
         </div>
 
         <button
-          onClick={handleUpgrade}
+          onClick={handleHatch}
           disabled={isLoading}
           className="w-full py-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 disabled:opacity-50 text-white rounded-xl font-semibold transition-all flex items-center justify-center gap-2"
         >
           {isLoading ? 'Loading...' : (
             <>
               <span>🐣</span>
-              <span>Go Hatched</span>
+              <span>Hatch Project</span>
             </>
           )}
         </button>
 
         <p className="text-zinc-600 text-xs text-center mt-4">
-          Cancel anytime — export your code and self-host.
+          Per-project pricing — hatch only what you need. Cancel anytime.
         </p>
 
         <div className="flex items-center justify-center gap-4 text-zinc-500 text-xs mt-6 pt-4 border-t border-zinc-800">

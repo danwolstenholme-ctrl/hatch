@@ -22,7 +22,7 @@ interface LivePreviewProps {
   loadingProgress?: string  // Real-time generation status
   isPaid?: boolean
   assets?: Asset[]
-  setShowUpgradeModal?: (show: boolean) => void
+  setShowHatchModal?: (show: boolean) => void
   inspectorMode?: boolean
   onElementSelect?: (elementInfo: ElementInfo) => void
   onViewCode?: () => void
@@ -44,7 +44,7 @@ interface ElementInfo {
   }
 }
 
-export default function LivePreview({ code, pages, currentPageId, isLoading = false, loadingProgress, isPaid = false, assets = [], setShowUpgradeModal, inspectorMode = false, onElementSelect, onViewCode, onRegenerate, onQuickFix }: LivePreviewProps) {
+export default function LivePreview({ code, pages, currentPageId, isLoading = false, loadingProgress, isPaid = false, assets = [], setShowHatchModal, inspectorMode = false, onElementSelect, onViewCode, onRegenerate, onQuickFix }: LivePreviewProps) {
   const [iframeLoaded, setIframeLoaded] = useState(false)
   const [iframeKey, setIframeKey] = useState(0)
   const [isDownloading, setIsDownloading] = useState(false)
@@ -155,7 +155,7 @@ export default function LivePreview({ code, pages, currentPageId, isLoading = fa
 
   const downloadZip = async () => {
     if (!isPaid) {
-      setShowUpgradeModal?.(true)
+      setShowHatchModal?.(true)
       return
     }
     if (!code && (!pages || pages.length === 0)) {
