@@ -35,7 +35,7 @@ export const PRICING_TIERS: Record<string, PricingTier> = {
     price: 0,
     generationsPerDay: 5,
     opusRefinementsPerMonth: 0,
-    features: ['5 generations per day', 'Basic templates', 'Community support'],
+    features: ['5 generations per day', 'Live preview', 'Basic templates'],
   },
   pro: {
     name: 'pro',

@@ -75,15 +75,15 @@ export default function FAQPage() {
     questions: [
       {
         q: 'How much does HatchIt.dev cost?',
-        a: 'HatchIt.dev is free to use for building and previewing. "Go Hatched" costs $24 to launch (early bird pricing), then $19/month to keep your site live. This includes deployment, full code access, downloads, version history, and unlimited edits.',
+        a: 'HatchIt.dev is free to use for building and previewing. Pro accounts are $39/month and include unlimited AI generations, deployment for all your projects, code export, and more. Agency accounts are $99/month with unlimited Opus refinements and custom domains.',
       },
       {
         q: 'Is there a free plan?',
-        a: 'Yes! Free users get 10 AI generations per day, unlimited previewing, and full access to the builder. The free plan is perfect for experimenting and building your site. You only need to subscribe when you\'re ready to deploy or need unlimited generations.',
+        a: 'Yes! Free users get 5 AI generations per day, unlimited previewing, and full access to the builder. The free plan is perfect for experimenting and building your site. You only need to upgrade when you\'re ready to deploy or need unlimited generations.',
       },
       {
-        q: 'What does "per live site" mean?',
-        a: 'Each subscription covers one deployed website. If you want to deploy multiple sites, each one requires its own subscription ($24 to launch, then $19/month). This keeps pricing simple and predictable.',
+        q: 'What do I get with a Pro account?',
+        a: 'Pro accounts ($39/month) unlock unlimited AI generations, deployment for all your projects to hatchitsites.dev, code export, version history, and cloud sync across devices. One subscription covers everything.',
       },
       {
         q: 'Can I cancel anytime?',

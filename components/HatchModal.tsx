@@ -28,32 +28,32 @@ export default function HatchModal({ isOpen, onClose, reason, projectSlug = '', 
   const messages = {
     generation_limit: {
       title: "You've hit today's limit",
-      description: "Free accounts get 10 generations per day. Hatch your project for unlimited builds.",
+      description: "Free accounts get 5 generations per day. Upgrade to Pro for unlimited builds.",
       icon: "⚡"
     },
     running_low: {
       title: `${generationsRemaining} generations left today`,
-      description: "Running low! Hatch your project for unlimited generations and go live.",
+      description: "Running low! Upgrade to Pro for unlimited generations.",
       icon: "⏳"
     },
     proactive: {
-      title: "Ready to hatch?",
-      description: "Hatch this project to unlock unlimited generations, deploy to a live URL, and get full code access.",
+      title: "Ready to go Pro?",
+      description: "Unlock unlimited generations, deploy all your projects, and get full code access.",
       icon: "🐣"
     },
     code_access: {
       title: "Unlock your code",
-      description: "Hatch this project to view, copy, and download your full source code.",
+      description: "Upgrade to Pro to view, copy, and download your full source code.",
       icon: "🔓"
     },
     deploy: {
       title: "Ready to go live?",
-      description: `Hatch "${projectName}" to deploy with a custom domain.`,
-      icon: "🐣"
+      description: "Upgrade to Pro to deploy your projects with a custom domain.",
+      icon: "🚀"
     },
     download: {
       title: "Download your project",
-      description: `Hatch "${projectName}" to download as a clean, production-ready project.`,
+      description: "Upgrade to Pro to download your projects as clean, production-ready code.",
       icon: "📦"
     }
   }
@@ -67,7 +67,7 @@ export default function HatchModal({ isOpen, onClose, reason, projectSlug = '', 
       const response = await fetch('/api/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ projectSlug, projectName }),
+        body: JSON.stringify({ tier: 'pro' }),
       })
       const data = await response.json()
       
@@ -123,47 +123,29 @@ export default function HatchModal({ isOpen, onClose, reason, projectSlug = '', 
           {description}
         </p>
 
-        {/* What is HatchIt explanation */}
-        <div className="bg-zinc-800/50 border border-zinc-700 rounded-xl p-4 mb-6">
-          <h3 className="text-sm font-semibold text-white mb-2 flex items-center gap-2">
-            <span>🥚</span>
-            What is hatching?
-          </h3>
-          <p className="text-xs text-zinc-400 leading-relaxed">
-            HatchIt lets you build websites for free. When you&apos;re ready to take your project live, <span className="text-purple-400 font-medium">hatch it</span> to deploy to a real URL, unlock your code, and keep editing forever.
-          </p>
-        </div>
-
+        {/* What's included */}
         <div className="bg-gradient-to-br from-zinc-800/50 to-zinc-900 border border-purple-500/30 rounded-xl p-6 mb-6 ring-1 ring-purple-500/20 relative overflow-hidden">
-          {/* Early Bird Banner */}
-          <div className="absolute top-3 -right-8 bg-gradient-to-r from-amber-500 to-orange-500 text-white text-[10px] font-bold py-1 px-10 rotate-45 shadow-lg">
-            EARLY BIRD
-          </div>
-          
           <div className="flex items-center justify-center gap-2 mb-2">
             <span className="text-2xl">🐣</span>
-            <span className="text-xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">Hatch This Project</span>
+            <span className="text-xl font-bold bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">Pro Account</span>
           </div>
           
           {/* Price */}
           <div className="flex items-baseline justify-center gap-2 mb-1">
-            <span className="text-4xl font-bold text-white">$24</span>
-            <span className="text-zinc-400">to launch</span>
+            <span className="text-4xl font-bold text-white">$39</span>
+            <span className="text-zinc-400">/month</span>
           </div>
-          <p className="text-amber-400 text-xs text-center font-medium mb-1">🎉 Early bird pricing!</p>
-          <p className="text-zinc-400 text-sm text-center">then <span className="text-white font-medium">$19/month</span> to stay live</p>
-          <p className="text-zinc-600 text-xs text-center mb-4">Cancel anytime</p>
+          <p className="text-zinc-400 text-sm text-center mb-4">Unlock everything for all your projects</p>
           
           <div className="space-y-2">
             {[
-              'Deploy to live URL',
-              'Custom domain',
-              'Buy domains in-app',
+              'Unlimited AI generations',
+              'Deploy all projects',
+              'Custom domains',
               'Download clean code',
-              'Unlimited edits & updates',
               'Version history',
-              'SSL included',
-              'Cancel anytime'
+              'Cloud sync',
+              'Priority support',
             ].map((feature, i) => (
               <div key={i} className="flex items-center gap-2 text-sm text-zinc-300">
                 <span className="text-purple-400">✓</span>
@@ -183,13 +165,13 @@ export default function HatchModal({ isOpen, onClose, reason, projectSlug = '', 
           {isLoading ? 'Loading...' : (
             <>
               <span>🐣</span>
-              <span>Hatch Project</span>
+              <span>Get Pro — $39/mo</span>
             </>
           )}
         </motion.button>
 
         <p className="text-zinc-600 text-xs text-center mt-4">
-          Per-project pricing — hatch only what you need. Cancel anytime.
+          Cancel anytime. Your code is always yours.
         </p>
 
         <div className="flex items-center justify-center gap-4 text-zinc-500 text-xs mt-6 pt-4 border-t border-zinc-800">

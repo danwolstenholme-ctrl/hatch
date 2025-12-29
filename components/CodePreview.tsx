@@ -311,7 +311,7 @@ function CodePreview({ code, isPaid = false, onCodeChange, pagePath = '/', strea
                       onClick={() => setShowHatchModal(true)}
                       className="w-full py-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 text-white text-sm rounded-lg font-medium transition-all"
                     >
-                      🐣 Hatch Project — $24
+                      🐣 Get Pro — $39/mo
                     </button>
                   </div>
                 </div>

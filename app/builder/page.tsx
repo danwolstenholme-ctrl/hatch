@@ -2644,7 +2644,7 @@ function LegacyBuilder() {
         </button>
         
         <p className="text-xs text-zinc-500 text-center mt-4">
-          10 free generations per day • Unlimited with paid plan
+          5 free generations per day • Unlimited with paid plan
         </p>
       </div>
     </div>
@@ -2798,7 +2798,7 @@ function LegacyBuilder() {
           {paidProjects.length > 0 && (
             <div className="mb-4">
               <h3 className="text-xs font-semibold text-amber-400 uppercase tracking-wide mb-2 flex items-center gap-2">
-                <span>🐣</span> Go Hatched Projects
+                <span>🐣</span> Your Projects
               </h3>
               <div className="space-y-2">
                 {paidProjects.map((project) => (
@@ -2884,7 +2884,7 @@ function LegacyBuilder() {
           </button>
           
           <div className="text-center text-xs text-zinc-500">
-            <p className="mb-2">✨ <span className="text-white">10 free generations per day</span></p>
+            <p className="mb-2">✨ <span className="text-white">5 free generations per day</span></p>
             <p>Just describe what you want and watch it build!</p>
           </div>
         </div>
