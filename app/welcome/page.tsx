@@ -42,8 +42,8 @@ const tierConfig = {
     description: "You now have unlimited power to create, deploy, and share your websites with the world. Let's make something incredible.",
     ctaText: 'Start Creating',
     ctaUrl: '/builder',
-    gradient: 'from-violet-400 to-purple-400',
-    accentColor: 'violet',
+    gradient: 'from-purple-400 to-pink-400',
+    accentColor: 'purple',
     features: [
       { icon: '∞', text: 'Unlimited AI generations' },
       { icon: '🚀', text: 'Deploy to live URLs' },
@@ -60,8 +60,8 @@ const tierConfig = {
     description: "You're now part of an elite group of creators. Build unlimited sites for clients, access white-label features, and scale your agency.",
     ctaText: 'Enter the Studio',
     ctaUrl: '/builder',
-    gradient: 'from-amber-400 to-yellow-400',
-    accentColor: 'amber',
+    gradient: 'from-orange-400 to-amber-400',
+    accentColor: 'orange',
     features: [
       { icon: '👑', text: 'Everything in Pro, plus...' },
       { icon: '🏢', text: 'Unlimited client sites' },
@@ -83,7 +83,7 @@ function GoldenChicken() {
       className="relative"
     >
       {/* Subtle glow effect */}
-      <div className="absolute inset-0 blur-2xl bg-amber-500/20 rounded-full scale-125" />
+      <div className="absolute inset-0 blur-2xl bg-orange-500/20 rounded-full scale-125" />
       
       {/* Main chicken */}
       <motion.div
@@ -139,7 +139,7 @@ function ProHatchCharacter() {
       className="relative"
     >
       {/* Subtle purple glow */}
-      <div className="absolute inset-0 blur-2xl bg-violet-500/20 rounded-full scale-125" />
+      <div className="absolute inset-0 blur-2xl bg-purple-500/20 rounded-full scale-125" />
       
       <motion.div
         animate={{ y: [0, -10, 0] }}
@@ -240,13 +240,13 @@ function WelcomeContent() {
       {/* Background effects - subtle, matching site aesthetic */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
         <div className={`absolute -top-40 -left-40 w-80 h-80 ${
-          tier === 'agency' ? 'bg-amber-500/10' :
-          tier === 'pro' ? 'bg-violet-500/10' :
+          tier === 'agency' ? 'bg-orange-500/10' :
+          tier === 'pro' ? 'bg-purple-500/10' :
           'bg-zinc-500/5'
         } rounded-full blur-[100px]`} />
         <div className={`absolute top-1/3 -right-40 w-96 h-96 ${
-          tier === 'agency' ? 'bg-yellow-500/10' :
-          tier === 'pro' ? 'bg-purple-500/10' :
+          tier === 'agency' ? 'bg-amber-500/10' :
+          tier === 'pro' ? 'bg-pink-500/10' :
           'bg-zinc-500/5'
         } rounded-full blur-[100px]`} />
       </div>
@@ -305,8 +305,8 @@ function WelcomeContent() {
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.5 }}
           className={`bg-zinc-900/80 backdrop-blur-sm border ${
-            tier === 'agency' ? 'border-amber-500/30' :
-            tier === 'pro' ? 'border-violet-500/30' :
+            tier === 'agency' ? 'border-orange-500/30' :
+            tier === 'pro' ? 'border-purple-500/30' :
             'border-zinc-800'
           } rounded-2xl p-6 mb-10`}
         >
@@ -336,9 +336,9 @@ function WelcomeContent() {
           onClick={() => router.push(config.ctaUrl)}
           className={`px-8 py-4 ${
             tier === 'agency' 
-              ? 'bg-gradient-to-r from-amber-500 to-yellow-500 shadow-amber-500/25' 
+              ? 'bg-gradient-to-r from-orange-500 to-amber-500 shadow-orange-500/25' 
               : tier === 'pro'
-              ? 'bg-gradient-to-r from-violet-600 to-purple-600 shadow-violet-500/25'
+              ? 'bg-gradient-to-r from-purple-600 to-pink-600 shadow-purple-500/25'
               : 'bg-gradient-to-r from-zinc-600 to-zinc-500 shadow-zinc-500/25'
           } text-white font-semibold rounded-xl shadow-lg transition-all text-lg`}
         >
