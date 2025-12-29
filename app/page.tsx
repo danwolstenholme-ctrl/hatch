@@ -100,29 +100,41 @@ function AnimatedCounter({ value, suffix = '' }: { value: number; suffix?: strin
   return <span ref={ref}>{count}{suffix}</span>
 }
 
-// Floating chicks background - DESKTOP ONLY
+// Floating chicks background - DESKTOP ONLY with premium motion
 function FloatingChicks() {
+  const chicks = [
+    { left: '15%', top: '20%', delay: 0, duration: 20 },
+    { left: '75%', top: '15%', delay: 2, duration: 25 },
+    { left: '85%', top: '60%', delay: 4, duration: 22 },
+    { left: '10%', top: '70%', delay: 1, duration: 28 },
+    { left: '50%', top: '80%', delay: 3, duration: 24 },
+  ]
+  
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none hidden lg:block">
-      {[...Array(3)].map((_, i) => (
-        <div
+      {chicks.map((chick, i) => (
+        <motion.div
           key={i}
-          className="absolute text-3xl opacity-10"
-          style={{
-            left: `${20 + i * 30}%`,
-            top: `${20 + i * 20}%`,
-            animation: `float ${20 + i * 5}s ease-in-out infinite`,
+          className="absolute text-2xl"
+          style={{ left: chick.left, top: chick.top }}
+          initial={{ opacity: 0, scale: 0 }}
+          animate={{ 
+            opacity: [0.08, 0.15, 0.08],
+            scale: [0.8, 1, 0.8],
+            y: [0, -30, 0],
+            x: [0, 10, -10, 0],
+            rotate: [0, 5, -5, 0]
+          }}
+          transition={{ 
+            duration: chick.duration,
+            delay: chick.delay,
+            repeat: Infinity,
+            ease: 'easeInOut'
           }}
         >
           🐣
-        </div>
+        </motion.div>
       ))}
-      <style jsx>{`
-        @keyframes float {
-          0%, 100% { transform: translateY(0px); }
-          50% { transform: translateY(-20px); }
-        }
-      `}</style>
     </div>
   )
 }
@@ -216,8 +228,22 @@ export default function Home() {
       <nav className="relative z-50 px-6 py-5">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           <Link href="/" className="flex items-center gap-2 group">
-            <span className="text-2xl">🐣</span>
-            <span className="text-xl font-bold">HatchIt</span>
+            <motion.span 
+              className="text-2xl inline-block"
+              animate={{ 
+                rotate: [0, -10, 10, -5, 5, 0],
+                scale: [1, 1.1, 1, 1.05, 1]
+              }}
+              transition={{ 
+                duration: 2, 
+                repeat: Infinity, 
+                repeatDelay: 3,
+                ease: "easeInOut"
+              }}
+            >
+              🐣
+            </motion.span>
+            <span className="text-xl font-bold bg-gradient-to-r from-white to-zinc-300 bg-clip-text text-transparent group-hover:from-purple-400 group-hover:to-pink-400 transition-all duration-300">HatchIt</span>
           </Link>
           
           <div className="hidden md:flex items-center gap-8">
@@ -249,27 +275,51 @@ export default function Home() {
           {/* Badge */}
           <div className="flex justify-center mb-8">
             <motion.div 
-              className="inline-flex items-center gap-2 px-3 sm:px-4 py-2 bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/20 rounded-full"
+              className="relative inline-flex items-center gap-2 px-3 sm:px-4 py-2 bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/20 rounded-full overflow-hidden"
               {...getAnimation(0, 20)}
             >
+              {/* Shimmer effect */}
+              <motion.div
+                className="absolute inset-0 bg-gradient-to-r from-transparent via-amber-400/20 to-transparent -skew-x-12"
+                animate={{ x: ['-200%', '200%'] }}
+                transition={{ duration: 3, repeat: Infinity, repeatDelay: 2, ease: 'easeInOut' }}
+              />
               <span className="relative flex h-2 w-2 flex-shrink-0">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
               </span>
-              <span className="text-xs sm:text-sm text-amber-200/80 text-center">Built in 3 days. Already changing how people build.</span>
+              <span className="relative text-xs sm:text-sm text-amber-200/80 text-center">Built in 3 days. Already changing how people build.</span>
             </motion.div>
           </div>
 
           {/* Main headline */}
           <div className="text-center mb-6">
-            <motion.h1
-              className="text-4xl sm:text-5xl md:text-6xl lg:text-8xl font-black leading-[1] sm:leading-[0.95] tracking-tight mb-6"
-              {...getAnimation(0.1, 30)}
-            >
-              <span className="block">Describe it.</span>
-              <span className="block bg-gradient-to-r from-purple-400 via-pink-400 to-amber-400 bg-clip-text text-transparent">Watch it build.</span>
-              <span className="block">Ship it.</span>
-            </motion.h1>
+            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-8xl font-black leading-[1] sm:leading-[0.95] tracking-tight mb-6">
+              <motion.span 
+                className="block"
+                initial={reducedMotion ? {} : { opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.1, ease: [0.25, 0.1, 0.25, 1] }}
+              >
+                Describe it.
+              </motion.span>
+              <motion.span 
+                className="block bg-gradient-to-r from-purple-400 via-pink-400 to-amber-400 bg-clip-text text-transparent"
+                initial={reducedMotion ? {} : { opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
+              >
+                Watch it build.
+              </motion.span>
+              <motion.span 
+                className="block"
+                initial={reducedMotion ? {} : { opacity: 0, y: 30 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6, delay: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
+              >
+                Ship it.
+              </motion.span>
+            </h1>
           </div>
 
           {/* Subheadline */}
@@ -285,13 +335,35 @@ export default function Home() {
             className="flex flex-col sm:flex-row justify-center gap-4 mb-12"
             {...getAnimation(0.3, 20)}
           >
-            <Link href="/builder" className="group px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 rounded-xl font-bold text-lg transition-all hover:scale-105 hover:shadow-xl hover:shadow-purple-500/25 flex items-center justify-center gap-2">
-              Start Building Free
-              <span className="group-hover:translate-x-1 transition-transform">→</span>
-            </Link>
-            <Link href="/how-it-works" className="px-8 py-4 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 hover:border-zinc-700 rounded-xl font-semibold text-lg transition-all flex items-center justify-center gap-2">
-              See How It Works
-            </Link>
+            <motion.div
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.98 }}
+              transition={{ type: 'spring', stiffness: 400, damping: 17 }}
+            >
+              <Link href="/builder" className="group relative px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 rounded-xl font-bold text-lg flex items-center justify-center gap-2 overflow-hidden">
+                {/* Glow effect */}
+                <motion.div
+                  className="absolute inset-0 bg-gradient-to-r from-purple-400 to-pink-400 opacity-0 group-hover:opacity-30 blur-xl transition-opacity duration-500"
+                />
+                <span className="relative">Start Building Free</span>
+                <motion.span 
+                  className="relative"
+                  animate={{ x: [0, 5, 0] }}
+                  transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
+                >
+                  →
+                </motion.span>
+              </Link>
+            </motion.div>
+            <motion.div
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.98 }}
+              transition={{ type: 'spring', stiffness: 400, damping: 17 }}
+            >
+              <Link href="/how-it-works" className="px-8 py-4 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 hover:border-purple-500/30 rounded-xl font-semibold text-lg transition-all flex items-center justify-center gap-2">
+                See How It Works
+              </Link>
+            </motion.div>
           </motion.div>
 
           {/* Trust badges */}
@@ -417,19 +489,39 @@ export default function Home() {
               { icon: '⚡', title: 'Live Code Streaming', description: 'Watch your site being written in real-time. See the code appear as the AI thinks. Pure magic.', gradient: 'from-amber-500 to-orange-600', badge: 'Hatched' },
               { icon: '🚀', title: 'Ship in One Click', description: 'Deploy to our global CDN instantly. Get a live URL in seconds. Connect your own domain.', gradient: 'from-emerald-500 to-teal-600' },
             ].map((feature, i) => (
-              <div key={i} className="group relative p-6 bg-zinc-900/50 border border-zinc-800 rounded-2xl hover:border-zinc-700 transition-all duration-300 hover:-translate-y-1">
-                <div className={`absolute inset-0 bg-gradient-to-br ${feature.gradient} opacity-0 group-hover:opacity-5 rounded-2xl transition-opacity`} />
+              <motion.div 
+                key={i} 
+                className="group relative p-6 bg-zinc-900/50 border border-zinc-800 rounded-2xl hover:border-zinc-700 transition-colors duration-300"
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.5, delay: i * 0.1, ease: [0.25, 0.1, 0.25, 1] }}
+                whileHover={{ y: -8, transition: { type: 'spring', stiffness: 400, damping: 17 } }}
+              >
+                <div className={`absolute inset-0 bg-gradient-to-br ${feature.gradient} opacity-0 group-hover:opacity-10 rounded-2xl transition-opacity duration-500`} />
                 <div className="relative">
                   <div className="flex items-start justify-between mb-4">
-                    <span className="text-4xl">{feature.icon}</span>
+                    <motion.span 
+                      className="text-4xl block"
+                      whileHover={{ scale: 1.2, rotate: [0, -10, 10, 0] }}
+                      transition={{ type: 'spring', stiffness: 400, damping: 10 }}
+                    >
+                      {feature.icon}
+                    </motion.span>
                     {feature.badge && (
-                      <span className="flex items-center gap-1 px-2 py-1 bg-amber-500/10 border border-amber-500/20 rounded-full text-[10px] text-amber-400">🐣 {feature.badge}</span>
+                      <motion.span 
+                        className="flex items-center gap-1 px-2 py-1 bg-amber-500/10 border border-amber-500/20 rounded-full text-[10px] text-amber-400"
+                        animate={{ scale: [1, 1.05, 1] }}
+                        transition={{ duration: 2, repeat: Infinity }}
+                      >
+                        🐣 {feature.badge}
+                      </motion.span>
                     )}
                   </div>
-                  <h3 className="text-xl font-bold mb-2">{feature.title}</h3>
+                  <h3 className="text-xl font-bold mb-2 group-hover:text-purple-300 transition-colors">{feature.title}</h3>
                   <p className="text-zinc-400">{feature.description}</p>
                 </div>
-              </div>
+              </motion.div>
             ))}
           </div>
 
@@ -454,15 +546,35 @@ export default function Home() {
               { step: '03', title: 'Ship', description: 'One click. Live URL. Your site is on the internet. Connect your domain if you want.', icon: '🚀' },
             ].map((item, i) => (
               <div key={i} className="relative">
-                {i < 2 && <div className="hidden md:block absolute top-12 left-full w-full h-px bg-gradient-to-r from-zinc-700 to-transparent z-0" />}
-                <div className="relative z-10 text-center md:text-left">
-                  <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-purple-500/10 border border-purple-500/20 mb-4">
-                    <span className="text-3xl">{item.icon}</span>
+                {i < 2 && (
+                  <div className="hidden md:block absolute top-12 left-full w-full h-[2px] z-0 overflow-hidden">
+                    <motion.div 
+                      className="h-full bg-gradient-to-r from-purple-500 via-pink-500 to-transparent"
+                      initial={{ x: '-100%' }}
+                      whileInView={{ x: '0%' }}
+                      viewport={{ once: true }}
+                      transition={{ duration: 1, delay: 0.5 + i * 0.3, ease: [0.25, 0.1, 0.25, 1] }}
+                    />
                   </div>
-                  <div className="text-xs font-mono text-zinc-600 mb-2">STEP {item.step}</div>
+                )}
+                <motion.div 
+                  className="relative z-10 text-center md:text-left"
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.5, delay: i * 0.15, ease: [0.25, 0.1, 0.25, 1] }}
+                >
+                  <motion.div 
+                    className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-purple-500/10 border border-purple-500/20 mb-4"
+                    whileHover={{ scale: 1.1, borderColor: 'rgba(168, 85, 247, 0.5)' }}
+                    transition={{ type: 'spring', stiffness: 400, damping: 10 }}
+                  >
+                    <span className="text-3xl">{item.icon}</span>
+                  </motion.div>
+                  <div className="text-xs font-mono text-purple-400/60 mb-2">STEP {item.step}</div>
                   <h3 className="text-2xl font-bold mb-2">{item.title}</h3>
                   <p className="text-zinc-400">{item.description}</p>
-                </div>
+                </motion.div>
               </div>
             ))}
           </div>
@@ -492,11 +604,25 @@ export default function Home() {
               { name: 'Fast', icon: '⚡', desc: 'Performance' },
               { name: 'Yours', icon: '💝', desc: '100% ownership' },
             ].map((tech, i) => (
-              <div key={i} className="p-4 bg-zinc-900/50 border border-zinc-800 rounded-xl text-center hover:border-zinc-700 transition-all hover:scale-[1.02]">
-                <span className="text-2xl block mb-2">{tech.icon}</span>
+              <motion.div 
+                key={i} 
+                className="p-4 bg-zinc-900/50 border border-zinc-800 rounded-xl text-center hover:border-purple-500/30 transition-colors"
+                initial={{ opacity: 0, scale: 0.8 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.4, delay: i * 0.05, ease: [0.25, 0.1, 0.25, 1] }}
+                whileHover={{ scale: 1.05, y: -4 }}
+              >
+                <motion.span 
+                  className="text-2xl block mb-2"
+                  whileHover={{ scale: 1.2, rotate: [0, -10, 10, 0] }}
+                  transition={{ type: 'spring', stiffness: 400, damping: 10 }}
+                >
+                  {tech.icon}
+                </motion.span>
                 <div className="font-medium text-sm">{tech.name}</div>
                 <div className="text-xs text-zinc-600">{tech.desc}</div>
-              </div>
+              </motion.div>
             ))}
           </div>
         </div>
