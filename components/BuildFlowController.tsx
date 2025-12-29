@@ -1,23 +1,167 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useUser } from '@clerk/nextjs'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
-import TemplateSelector, { BuildComplete } from './TemplateSelector'
+import TemplateSelector from './TemplateSelector'
 import BrandingStep, { BrandConfig } from './BrandingStep'
 import SectionProgress from './SectionProgress'
 import SectionBuilder from './SectionBuilder'
 import HatchModal from './HatchModal'
 import { Template, Section, getTemplateById, createInitialBuildState, BuildState } from '@/lib/templates'
 import { DbProject, DbSection } from '@/lib/supabase'
+import { AccountSubscription } from '@/types/subscriptions'
+
+// =============================================================================
+// FULL SITE PREVIEW FRAME
+// Renders all assembled sections in an iframe
+// =============================================================================
+
+function FullSitePreviewFrame({ code, deviceView }: { code: string; deviceView: 'mobile' | 'tablet' | 'desktop' }) {
+  const srcDoc = useMemo(() => {
+    if (!code) return ''
+
+    const hooksDestructure = `const { useState, useEffect, useMemo, useCallback, useRef, Fragment } = React;`
+
+    let cleanedCode = code
+      .replace(/export\s+default\s+/g, '')
+      .replace(/export\s+/g, '')
+      .replace(/import\s+.*?from\s+['"].*?['"]\s*;?/g, '')
+      .replace(/React\.useState/g, 'useState')
+      .replace(/React\.useEffect/g, 'useEffect')
+      .replace(/React\.useMemo/g, 'useMemo')
+      .replace(/React\.useCallback/g, 'useCallback')
+      .replace(/React\.useRef/g, 'useRef')
+      .replace(/React\.Fragment/g, 'Fragment')
+
+    // Wrap all sections in a single component
+    cleanedCode = `function GeneratedPage() {
+  return (
+    <main className="min-h-screen bg-zinc-950 text-white">
+      ${cleanedCode}
+    </main>
+  )
+}`
+
+    return `<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            zinc: {
+              950: '#09090b',
+              900: '#18181b',
+              800: '#27272a',
+              700: '#3f3f46',
+              600: '#52525b',
+              500: '#71717a',
+              400: '#a1a1aa',
+              300: '#d4d4d8',
+              200: '#e4e4e7',
+              100: '#f4f4f5',
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    html, body, #root { min-height: 100%; width: 100%; }
+    body { background: #09090b; color: #ffffff; }
+    .error-display { color: #f87171; padding: 2rem; font-family: ui-monospace, monospace; font-size: 0.75rem; white-space: pre-wrap; background: #18181b; border-radius: 0.5rem; margin: 1rem; }
+  </style>
+</head>
+<body class="dark">
+  <div id="root"></div>
+  
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/framer-motion@11/dist/framer-motion.js"></script>
+  <script src="https://unpkg.com/lucide-react@0.294.0/dist/umd/lucide-react.js"></script>
+  
+  <script>
+    window.motion = window.Motion?.motion || { div: 'div', span: 'span', button: 'button', a: 'a', p: 'p', h1: 'h1', h2: 'h2', h3: 'h3', section: 'section', nav: 'nav', ul: 'ul', li: 'li', img: 'img', form: 'form', input: 'input' };
+    window.AnimatePresence = window.Motion?.AnimatePresence || function(p) { return p.children; };
+    window.useInView = window.Motion?.useInView || function() { return true; };
+    window.useScroll = window.Motion?.useScroll || function() { return { scrollY: 0, scrollYProgress: 0 }; };
+    window.useTransform = window.Motion?.useTransform || function(v) { return v; };
+    window.useMotionValue = window.Motion?.useMotionValue || function(v) { return { get: () => v, set: () => {} }; };
+    window.useSpring = window.Motion?.useSpring || function(v) { return v; };
+    window.useAnimation = window.Motion?.useAnimation || function() { return { start: () => {}, stop: () => {} }; };
+    
+    window.LucideIcons = window.lucideReact || {};
+    if (!window.LucideIcons || Object.keys(window.LucideIcons).length === 0) {
+      window.LucideIcons = new Proxy({}, { get: () => () => null });
+    }
+  </script>
+  
+  <script type="text/babel" data-presets="react,typescript">
+    ${hooksDestructure}
+    
+    const motion = window.motion;
+    const AnimatePresence = window.AnimatePresence;
+    const useInView = window.useInView;
+    const useScroll = window.useScroll;
+    const useTransform = window.useTransform;
+    const useMotionValue = window.useMotionValue;
+    const useSpring = window.useSpring;
+    const useAnimation = window.useAnimation;
+    
+    const { Menu, X, ChevronRight, ChevronLeft, ChevronDown, ChevronUp, ArrowRight, ArrowLeft, Check, CheckCircle, CheckCircle2, Star, Heart, Mail, Phone, MapPin, Github, Twitter, Linkedin, Instagram, Facebook, Youtube, ExternalLink, Search, User, Users, Settings, Home, Plus, Minus, Edit, Trash, Copy, Download, Upload, Share, Send, Bell, Calendar, Clock, Globe, Lock, Unlock, Eye, EyeOff, Filter, Grid, List, MoreHorizontal, MoreVertical, RefreshCw, RotateCcw, Save, Zap, Award, Target, TrendingUp, BarChart, PieChart, Activity, Layers, Box, Package, Cpu, Database, Server, Cloud, Code, Terminal, FileText, Folder, Image, Video, Music, Headphones, Mic, Camera, Bookmark, Tag, AlertCircle, Info, HelpCircle, Loader, Link, MessageCircle, Building, Briefcase, Shield } = window.LucideIcons || {};
+    
+    ${cleanedCode}
+    
+    try {
+      const root = ReactDOM.createRoot(document.getElementById('root'));
+      root.render(<GeneratedPage />);
+    } catch (err) {
+      document.getElementById('root').innerHTML = '<div class="error-display">Render Error: ' + err.message + '</div>';
+    }
+  </script>
+</body>
+</html>`
+  }, [code])
+
+  if (!code) {
+    return (
+      <div className="w-full h-full flex items-center justify-center bg-zinc-950">
+        <div className="text-center">
+          <div className="text-6xl mb-4">🐣</div>
+          <h3 className="text-lg font-semibold text-zinc-400 mb-2">No sections completed</h3>
+          <p className="text-sm text-zinc-500">Complete some sections to see your site preview</p>
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <iframe
+      srcDoc={srcDoc}
+      className="w-full border-0"
+      style={{ height: deviceView === 'desktop' ? '100%' : 'calc(100% - 24px)' }}
+      sandbox="allow-scripts"
+      title="Full Site Preview"
+    />
+  )
+}
 
 // =============================================================================
 // BUILD FLOW CONTROLLER
 // Orchestrates the entire V3.0 build experience
 // =============================================================================
 
-type BuildPhase = 'select' | 'branding' | 'building' | 'complete'
+type BuildPhase = 'select' | 'branding' | 'building' | 'review'
 
 interface BuildFlowControllerProps {
   existingProjectId?: string
@@ -42,10 +186,23 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
   const [error, setError] = useState<string | null>(null)
   const [isAuditRunning, setIsAuditRunning] = useState(false)
   const [showHatchModal, setShowHatchModal] = useState(false)
+  const [isDeploying, setIsDeploying] = useState(false)
+  const [deployedUrl, setDeployedUrl] = useState<string | null>(null)
+  const [reviewDeviceView, setReviewDeviceView] = useState<'mobile' | 'tablet' | 'desktop'>('desktop')
+  const [editingSectionIndex, setEditingSectionIndex] = useState<number | null>(null)
 
-  // Check if project is paid (hatched) - for now, always false in BuildFlowController
-  // Users must deploy/hatch to get code access
-  const isPaid = false
+  // Get account subscription from user metadata
+  const accountSubscription = useMemo(() => {
+    return user?.publicMetadata?.accountSubscription as AccountSubscription | null
+  }, [user?.publicMetadata?.accountSubscription])
+
+  // Check if user has an active account subscription (Pro or Agency)
+  const isPaidUser = useMemo(() => {
+    return accountSubscription?.status === 'active'
+  }, [accountSubscription])
+
+  // Check if project is paid (hatched) - now based on account subscription
+  const isPaid = isPaidUser
 
   // Check for existing project on mount (from URL or localStorage)
   useEffect(() => {
@@ -93,7 +250,7 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
       setBuildState(state)
       
       const allDone = sections.every((s: DbSection) => s.status === 'complete' || s.status === 'skipped')
-      setPhase(allDone ? 'complete' : 'building')
+      setPhase(allDone ? 'review' : 'building')
       
     } catch (err) {
       console.error('Error loading project:', err)
@@ -242,7 +399,8 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
     setBuildState(newState)
 
     if (newState.currentSectionIndex >= selectedTemplate.sections.length) {
-      setPhase('complete')
+      setPhase('review')
+      localStorage.removeItem('hatch_current_project')
       if (!demoMode) {
         await fetch(`/api/project/${project.id}/build`, { method: 'POST' }).catch(console.error)
       }
@@ -277,7 +435,8 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
     setBuildState(newState)
 
     if (newState.currentSectionIndex >= selectedTemplate.sections.length) {
-      setPhase('complete')
+      setPhase('review')
+      localStorage.removeItem('hatch_current_project')
       if (!demoMode) {
         await fetch(`/api/project/${project.id}/build`, { method: 'POST' }).catch(console.error)
       }
@@ -306,8 +465,8 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
     const nextIndex = buildState.currentSectionIndex + 1
     
     if (nextIndex >= selectedTemplate.sections.length) {
-      // All sections done - go to complete phase
-      setPhase('complete')
+      // All sections done - go to review phase
+      setPhase('review')
       // Clear localStorage since project is complete
       localStorage.removeItem('hatch_current_project')
       if (!demoMode && project) {
@@ -318,9 +477,73 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
     }
   }
 
+  // Assemble all section code into a full page for preview
+  const assembledCode = useMemo(() => {
+    if (!buildState || !selectedTemplate) return ''
+    
+    const completedSections = selectedTemplate.sections
+      .filter(s => buildState.completedSections.includes(s.id))
+      .map(s => buildState.sectionCode[s.id])
+      .filter(Boolean)
+    
+    if (completedSections.length === 0) return ''
+    
+    return completedSections.join('\n\n')
+  }, [buildState, selectedTemplate])
+
   const handleDeploy = async () => {
-    if (!project) return
-    window.location.href = `/builder?mode=legacy&deploy=${project.id}`
+    if (!project || !assembledCode || isDeploying) return
+    
+    // Check if user has subscription
+    if (!isPaidUser) {
+      setShowHatchModal(true)
+      return
+    }
+    
+    setIsDeploying(true)
+    setError(null)
+    
+    try {
+      const response = await fetch('/api/deploy', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          code: `'use client'\n\nimport { motion } from 'framer-motion'\n\nexport default function GeneratedPage() {\n  return (\n    <main className="min-h-screen bg-zinc-950 text-white">\n${assembledCode}\n    </main>\n  )\n}`,
+          projectName: project.name,
+        }),
+      })
+      
+      const data = await response.json()
+      
+      if (data.url) {
+        // Poll for deployment readiness
+        const startTime = Date.now()
+        const maxWait = 120000
+        const pollInterval = 4000
+        
+        await new Promise(r => setTimeout(r, 8000))
+        
+        while (Date.now() - startTime < maxWait) {
+          try {
+            const checkResponse = await fetch(`/api/deploy?check=${encodeURIComponent(data.url)}`)
+            const checkData = await checkResponse.json()
+            if (checkData.ready) break
+          } catch {
+            // Continue polling
+          }
+          await new Promise(r => setTimeout(r, pollInterval))
+        }
+        
+        setDeployedUrl(data.url)
+      } else {
+        setError(data.error || 'Deploy failed')
+      }
+    } catch (err) {
+      console.error('Deploy failed:', err)
+      setError('Deploy failed. Please try again.')
+    } finally {
+      setIsDeploying(false)
+    }
   }
 
   const handleRunAudit = async () => {
@@ -479,32 +702,260 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
           </motion.div>
         )}
 
-        {phase === 'complete' && buildState && (
+        {phase === 'review' && buildState && selectedTemplate && (
           <motion.div
-            key="complete"
+            key="review"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="min-h-screen flex items-center justify-center p-4"
+            className="flex flex-col h-screen overflow-hidden"
           >
-            <div className="w-full max-w-md">
-              <BuildComplete
-                onDeploy={handleDeploy}
-                onRunAudit={handleRunAudit}
-                isAuditRunning={isAuditRunning}
-                auditComplete={buildState.finalAuditComplete}
-                auditChanges={buildState.finalAuditChanges}
-              />
+            {/* Review Header */}
+            <div className="flex-shrink-0 border-b border-zinc-800 bg-zinc-900/50">
+              <div className="px-6 py-4 flex items-center justify-between">
+                <div className="flex items-center gap-4">
+                  <button
+                    onClick={handleGoHome}
+                    className="text-zinc-500 hover:text-white transition-colors"
+                  >
+                    ← Home
+                  </button>
+                  <div className="h-6 w-px bg-zinc-700" />
+                  <div className="flex items-center gap-2">
+                    <span className="text-2xl">🐣</span>
+                    <h1 className="text-lg font-semibold text-white">{project?.name || 'Your Site'}</h1>
+                  </div>
+                  <span className="px-2 py-1 text-xs font-medium bg-emerald-500/20 text-emerald-400 rounded-full">
+                    ✓ All sections complete
+                  </span>
+                </div>
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={handleStartFresh}
+                    className="px-3 py-2 text-sm text-zinc-400 hover:text-white transition-colors"
+                  >
+                    Start New Project
+                  </button>
+                  {deployedUrl ? (
+                    <a
+                      href={deployedUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="px-4 py-2 text-sm bg-emerald-500/20 text-emerald-400 rounded-xl hover:bg-emerald-500/30 transition-colors flex items-center gap-2"
+                    >
+                      <span>🌐</span> View Live Site
+                    </a>
+                  ) : (
+                    <button
+                      onClick={handleDeploy}
+                      disabled={isDeploying || !assembledCode}
+                      className="px-4 py-2 text-sm bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-semibold rounded-xl hover:shadow-lg hover:shadow-emerald-500/20 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                    >
+                      {isDeploying ? (
+                        <>
+                          <motion.span
+                            animate={{ rotate: 360 }}
+                            transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                            className="inline-block"
+                          >⚡</motion.span>
+                          Deploying...
+                        </>
+                      ) : (
+                        <>
+                          <span>🚀</span>
+                          {isPaidUser ? 'Deploy Now' : 'Hatch & Deploy'}
+                        </>
+                      )}
+                    </button>
+                  )}
+                </div>
+              </div>
+              {error && (
+                <div className="px-6 pb-3">
+                  <div className="text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg px-4 py-2">
+                    {error}
+                  </div>
+                </div>
+              )}
             </div>
+
+            {/* Main Content - Split Panel */}
+            <div className="flex-1 flex min-h-0 overflow-hidden">
+              {/* Left Panel - Section List */}
+              <div className="w-80 border-r border-zinc-800 flex flex-col bg-zinc-900/30 overflow-hidden">
+                <div className="p-4 border-b border-zinc-800">
+                  <h2 className="text-sm font-medium text-zinc-400 uppercase tracking-wider">Sections</h2>
+                </div>
+                <div className="flex-1 overflow-auto p-2">
+                  {selectedTemplate.sections.map((section, index) => {
+                    const isCompleted = buildState.completedSections.includes(section.id)
+                    const isSkipped = buildState.skippedSections.includes(section.id)
+                    const sectionCode = buildState.sectionCode[section.id]
+                    
+                    return (
+                      <button
+                        key={section.id}
+                        onClick={() => {
+                          if (isCompleted) {
+                            setEditingSectionIndex(index)
+                          }
+                        }}
+                        className={`w-full text-left p-3 rounded-xl mb-2 transition-all ${
+                          editingSectionIndex === index
+                            ? 'bg-emerald-500/20 border border-emerald-500/30'
+                            : isCompleted
+                            ? 'bg-zinc-800/50 hover:bg-zinc-800 border border-transparent'
+                            : 'bg-zinc-800/30 border border-transparent opacity-50'
+                        }`}
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-sm ${
+                            isCompleted 
+                              ? 'bg-emerald-500/20 text-emerald-400' 
+                              : isSkipped
+                              ? 'bg-zinc-700 text-zinc-500'
+                              : 'bg-zinc-700 text-zinc-500'
+                          }`}>
+                            {isCompleted ? '✓' : isSkipped ? '—' : index + 1}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <h3 className="text-sm font-medium text-white truncate">{section.name}</h3>
+                            <p className="text-xs text-zinc-500">
+                              {isCompleted ? 'Click to edit' : isSkipped ? 'Skipped' : 'Pending'}
+                            </p>
+                          </div>
+                        </div>
+                      </button>
+                    )
+                  })}
+                </div>
+                
+                {/* Run Audit Button */}
+                <div className="p-4 border-t border-zinc-800">
+                  <button
+                    onClick={handleRunAudit}
+                    disabled={isAuditRunning}
+                    className="w-full py-2.5 text-sm bg-violet-500/20 text-violet-300 rounded-xl hover:bg-violet-500/30 transition-colors flex items-center justify-center gap-2 disabled:opacity-50"
+                  >
+                    {isAuditRunning ? (
+                      <>
+                        <motion.span
+                          animate={{ rotate: 360 }}
+                          transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                        >🔍</motion.span>
+                        Running Audit...
+                      </>
+                    ) : (
+                      <>
+                        <span>🔍</span>
+                        Run Site Audit
+                      </>
+                    )}
+                  </button>
+                  {buildState.finalAuditComplete && (
+                    <p className="text-xs text-emerald-400 text-center mt-2">
+                      ✓ Audit complete - {buildState.finalAuditChanges?.length || 0} improvements made
+                    </p>
+                  )}
+                </div>
+              </div>
+
+              {/* Right Panel - Full Site Preview */}
+              <div className="flex-1 flex flex-col bg-zinc-900/30 min-h-0">
+                {/* Preview Header with Device Toggle */}
+                <div className="p-4 border-b border-zinc-800 flex items-center justify-between">
+                  <h3 className="text-sm font-medium text-zinc-400">Full Site Preview</h3>
+                  <div className="flex items-center gap-1 bg-zinc-800 rounded-lg p-1">
+                    {(['mobile', 'tablet', 'desktop'] as const).map((device) => (
+                      <button
+                        key={device}
+                        onClick={() => setReviewDeviceView(device)}
+                        className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
+                          reviewDeviceView === device
+                            ? 'bg-zinc-700 text-white'
+                            : 'text-zinc-500 hover:text-zinc-300'
+                        }`}
+                      >
+                        {device === 'mobile' ? '📱' : device === 'tablet' ? '📱' : '🖥️'} {device.charAt(0).toUpperCase() + device.slice(1)}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Preview Container */}
+                <div className="flex-1 flex items-start justify-center overflow-auto bg-zinc-950 p-4">
+                  <motion.div
+                    initial={false}
+                    animate={{ 
+                      width: reviewDeviceView === 'mobile' ? '375px' : reviewDeviceView === 'tablet' ? '768px' : '100%' 
+                    }}
+                    transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+                    className="h-full bg-zinc-900 rounded-lg overflow-hidden shadow-2xl"
+                    style={{ maxWidth: '100%', minHeight: '100%' }}
+                  >
+                    {reviewDeviceView !== 'desktop' && (
+                      <div className="h-6 bg-zinc-800 flex items-center justify-center gap-1 border-b border-zinc-700">
+                        <div className="w-16 h-1 bg-zinc-600 rounded-full" />
+                      </div>
+                    )}
+                    <FullSitePreviewFrame 
+                      code={assembledCode} 
+                      deviceView={reviewDeviceView}
+                    />
+                  </motion.div>
+                </div>
+              </div>
+            </div>
+
+            {/* Success Modal after Deploy */}
+            <AnimatePresence>
+              {deployedUrl && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+                  onClick={() => setDeployedUrl(null)}
+                >
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                    animate={{ opacity: 1, scale: 1, y: 0 }}
+                    exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                    className="bg-zinc-900 border border-zinc-700 rounded-2xl p-8 max-w-md w-full text-center"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <motion.div
+                      initial={{ scale: 0 }}
+                      animate={{ scale: 1 }}
+                      transition={{ type: 'spring', bounce: 0.5, delay: 0.2 }}
+                      className="text-6xl mb-4"
+                    >
+                      🎉
+                    </motion.div>
+                    <h2 className="text-2xl font-bold text-white mb-2">Your site is live!</h2>
+                    <p className="text-zinc-400 mb-6">Congratulations! Your website has been deployed.</p>
+                    <a
+                      href={deployedUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-semibold rounded-xl hover:shadow-lg hover:shadow-emerald-500/20 transition-all"
+                    >
+                      🌐 Visit Your Site
+                    </a>
+                    <p className="text-sm text-zinc-500 mt-4 break-all">{deployedUrl}</p>
+                  </motion.div>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Hatch Modal - paywall for code access */}
+      {/* Hatch Modal - paywall for deploy */}
       <HatchModal
         isOpen={showHatchModal}
         onClose={() => setShowHatchModal(false)}
-        reason="code_access"
+        reason="deploy"
       />
     </div>
   )
