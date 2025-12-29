@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
 import { clerkClient } from '@clerk/nextjs/server'
+import { checkAndIncrementGeneration } from '@/lib/db'
 
 // Vercel Pro: extend timeout to 300s (5 min) for AI generation
 export const maxDuration = 300
@@ -45,12 +46,16 @@ function checkRateLimit(userId: string): boolean {
   return true
 }
 
-// Server-side daily generation tracking
-// Note: In serverless, this resets per cold start - actual limits enforced via DB in production
+// =============================================================================
+// LEGACY: In-memory generation tracking (backup only)
+// Primary tracking is now DB-backed via checkAndIncrementGeneration() in lib/db
+// This is kept as a secondary defense but should not be primary
+// =============================================================================
 const dailyGenerations = new Map<string, { count: number; date: string }>()
 const FREE_DAILY_LIMIT = 5  // Matches pricing page: 5 free generations per day
 const MAX_DAILY_GEN_ENTRIES = 10000 // Prevent unbounded growth
 
+// DEPRECATED: Use checkAndIncrementGeneration from lib/db instead
 function checkAndRecordGeneration(userId: string, isPaid: boolean): { allowed: boolean; remaining: number } {
   if (isPaid) {
     return { allowed: true, remaining: -1 } // Unlimited for paid users
@@ -421,15 +426,15 @@ export async function POST(request: NextRequest) {
       // Continue as free user if lookup fails
     }
 
-    // Check daily generation limit for free users
-    const genCheck = checkAndRecordGeneration(userId, isPaid)
+    // Check daily generation limit for free users (DB-backed for reliability)
+    const genCheck = await checkAndIncrementGeneration(userId, isPaid)
     if (!genCheck.allowed) {
       return NextResponse.json(
-        { error: 'Daily generation limit reached. Upgrade to continue building.' },
+        { error: 'Daily generation limit reached. Upgrade to continue building.', remaining: 0 },
         { status: 429 }
       )
     }
-    console.log('Step 5: Daily limit passed')
+    console.log('Step 5: Daily limit passed, remaining:', genCheck.remaining)
 
     let body
     try {

@@ -7,6 +7,8 @@ export {
   getOrCreateUser,
   getUserByClerkId,
   getUserById,
+  checkAndIncrementGeneration,
+  getGenerationCount,
 } from './users'
 
 // Projects

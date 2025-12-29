@@ -1,20 +1,18 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth, clerkClient } from '@clerk/nextjs/server'
 import Anthropic from '@anthropic-ai/sdk'
+import { PRO_OPUS_MONTHLY_LIMIT, AccountSubscription } from '@/types/subscriptions'
 
 // =============================================================================
 // OPUS 4.5 - THE REFINER
 // Auto-polishes code after Sonnet builds
 // Fixes issues WITHOUT adding features
-// Pro tier: 30 refinements/month, Agency tier: unlimited
+// Pro tier: 30 refinements/month (configurable), Agency tier: unlimited
 // =============================================================================
 
 const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
 })
-
-// Monthly Opus limit for Pro tier (Agency is unlimited)
-const PRO_OPUS_MONTHLY_LIMIT = 30
 
 const REFINER_SYSTEM_PROMPT = `You are a surgical code refiner. Your ONLY job is to polish React + Tailwind code.
 

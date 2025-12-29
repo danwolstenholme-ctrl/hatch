@@ -61,6 +61,14 @@ export async function POST(req: NextRequest) {
         projectName: projectName || projectSlug || '',
         type: 'account_subscription',
       },
+      // Also store userId in subscription metadata for webhook events
+      subscription_data: {
+        metadata: {
+          userId,
+          tier,
+          type: 'account_subscription',
+        },
+      },
     })
 
     return NextResponse.json({ url: session.url })

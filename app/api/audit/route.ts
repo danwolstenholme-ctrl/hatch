@@ -13,7 +13,14 @@ import {
 // Catches what Claude misses
 // =============================================================================
 
-const genai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY || '' })
+// Validate Gemini API key at module level
+const geminiApiKey = process.env.GEMINI_API_KEY
+if (!geminiApiKey) {
+  console.warn('GEMINI_API_KEY is not configured - audit feature will be unavailable')
+}
+
+// Initialize Gemini client (may be null if API key not set)
+const genai = geminiApiKey ? new GoogleGenAI({ apiKey: geminiApiKey }) : null
 
 const AUDITOR_SYSTEM_PROMPT = `You are a senior frontend engineer performing a FINAL AUDIT on a React + Tailwind page.
 
@@ -100,6 +107,14 @@ export async function POST(request: NextRequest) {
     const { userId } = await auth()
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    // Check if Gemini is configured
+    if (!genai) {
+      return NextResponse.json(
+        { error: 'Audit feature is currently unavailable. Please try again later.' },
+        { status: 503 }
+      )
     }
 
     const body = await request.json()

@@ -3,6 +3,8 @@ import { NextResponse } from 'next/server'
 import Stripe from 'stripe'
 import { clerkClient } from '@clerk/nextjs/server'
 import { track } from '@vercel/analytics/server'
+import type { User } from '@clerk/nextjs/server'
+import { AccountSubscription, SiteSubscription } from '@/types/subscriptions'
 
 // Lazy initialization to prevent build-time errors when env vars are missing
 const getStripe = () => {
@@ -14,23 +16,29 @@ const getStripe = () => {
   })
 }
 
-// Account subscription (Pro or Agency)
-interface AccountSubscription {
-  tier: 'pro' | 'agency'
-  stripeSubscriptionId: string
-  stripeCustomerId: string
-  status: 'active' | 'canceled' | 'past_due'
-  currentPeriodEnd: string
-  createdAt: string
-}
-
-// Legacy site subscription (for existing users - keep for backwards compat)
-interface SiteSubscription {
-  projectSlug: string
-  projectName: string
-  stripeSubscriptionId: string
-  status: 'active' | 'canceled' | 'past_due'
-  createdAt: string
+/**
+ * Find a Clerk user by userId (direct) or stripeCustomerId (fallback search)
+ * Prefers direct lookup when userId is available from subscription metadata
+ */
+async function findUserByStripeInfo(
+  userId: string | undefined,
+  customerId: string
+): Promise<User | null> {
+  const client = await clerkClient()
+  
+  // Prefer direct lookup if we have userId (for new subscriptions with metadata)
+  if (userId) {
+    try {
+      return await client.users.getUser(userId)
+    } catch {
+      console.warn(`Direct user lookup failed for ${userId}, falling back to search`)
+    }
+  }
+  
+  // Fallback: search by stripeCustomerId (for legacy subscriptions)
+  // Note: This is O(n) and will break at scale. New subscriptions should always have userId in metadata.
+  const allUsers = await client.users.getUserList({ limit: 100 })
+  return allUsers.data.find(u => u.publicMetadata?.stripeCustomerId === customerId) || null
 }
 
 export async function POST(req: Request) {
@@ -216,17 +224,13 @@ export async function POST(req: Request) {
     const subscription = event.data.object as Stripe.Subscription
     const subscriptionId = subscription.id
     const customerId = subscription.customer as string
+    const userId = subscription.metadata?.userId
     
-    console.log(`Subscription ${subscriptionId} canceled for customer: ${customerId}`)
+    console.log(`Subscription ${subscriptionId} canceled for customer: ${customerId}, userId: ${userId || 'unknown'}`)
 
     try {
       const client = await clerkClient()
-      
-      // Find user by stripeCustomerId
-      const allUsers = await client.users.getUserList({ limit: 100 })
-      const user = allUsers.data.find(
-        u => u.publicMetadata?.stripeCustomerId === customerId
-      )
+      const user = await findUserByStripeInfo(userId, customerId)
 
       if (user) {
         const accountSub = user.publicMetadata?.accountSubscription as AccountSubscription | undefined
@@ -305,12 +309,19 @@ export async function POST(req: Request) {
 
     if (subscriptionId && customerId) {
       try {
+        const stripe = getStripe()
         const client = await clerkClient()
         
-        const allUsers = await client.users.getUserList({ limit: 100 })
-        const user = allUsers.data.find(
-          u => u.publicMetadata?.stripeCustomerId === customerId
-        )
+        // Try to get userId from subscription metadata
+        let userId: string | undefined
+        try {
+          const sub = await stripe.subscriptions.retrieve(subscriptionId)
+          userId = sub.metadata?.userId
+        } catch {
+          // Subscription might be deleted
+        }
+        
+        const user = await findUserByStripeInfo(userId, customerId)
 
         if (user) {
           const accountSub = user.publicMetadata?.accountSubscription as AccountSubscription | undefined
@@ -362,10 +373,16 @@ export async function POST(req: Request) {
         const stripe = getStripe()
         const client = await clerkClient()
         
-        const allUsers = await client.users.getUserList({ limit: 100 })
-        const user = allUsers.data.find(
-          u => u.publicMetadata?.stripeCustomerId === customerId
-        )
+        // Try to get userId from subscription metadata
+        let userId: string | undefined
+        try {
+          const sub = await stripe.subscriptions.retrieve(subscriptionId)
+          userId = sub.metadata?.userId
+        } catch {
+          // Subscription might be deleted
+        }
+        
+        const user = await findUserByStripeInfo(userId, customerId)
 
         if (user) {
           const accountSub = user.publicMetadata?.accountSubscription as AccountSubscription | undefined
