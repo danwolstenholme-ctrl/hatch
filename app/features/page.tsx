@@ -36,49 +36,46 @@ export default function FeaturesPage() {
     {
       id: 'ai-generation',
       icon: '🧠',
-      title: 'AI-Powered Generation',
-      subtitle: 'Claude Opus 4.5 Intelligence',
-      description: 'Describe your vision in plain English and watch as our AI creates production-ready React code in seconds. No templates, no limitations—just pure, custom code tailored to your exact requirements.',
+      title: 'Three-Model AI Pipeline',
+      subtitle: 'Sonnet + Opus + Gemini',
+      description: 'Not just one AI doing everything. Sonnet builds your sections. Opus polishes for accessibility and quality. Gemini audits the final result. Each model does what it\'s best at.',
       details: [
-        'Powered by Anthropic\'s Claude Opus 4.5 - the most capable AI model',
-        'Understands context, design principles, and modern best practices',
-        'Generates clean, semantic, accessible code',
-        'Learns from your feedback to improve results',
+        'Claude Sonnet 4 generates the initial code fast',
+        'Claude Opus 4 refines for accessibility and polish',
+        'Gemini 2.5 Pro audits for best practices',
+        'Section-by-section building for better results',
       ],
       gradient: 'from-purple-500 to-indigo-600',
     },
     {
-      id: 'live-streaming',
-      icon: '⚡',
-      title: 'Live Code Streaming',
-      subtitle: 'Watch Your Site Build in Real-Time',
-      description: 'Experience the magic of AI development with our live streaming feature. See your code appear character by character as our AI writes it, giving you instant insight into what\'s being created.',
+      id: 'hatch-helper',
+      icon: '🥚',
+      title: 'Meet Hatch',
+      subtitle: 'Your Friendly Prompt Helper',
+      description: 'Stuck on what to say? Hatch is your friendly egg companion who writes prompts for you. She\'s genuinely excited about your business and knows exactly what to ask for.',
       details: [
-        'Real-time code streaming as it\'s generated',
-        'Instant preview updates alongside code',
-        'See exactly what the AI is thinking',
-        'No waiting for large responses to complete',
+        'Powered by Claude Haiku for instant responses',
+        'Understands your brand and business context',
+        'Cute animated character with personality',
+        'Always available with the floating button',
       ],
       gradient: 'from-amber-500 to-orange-600',
-      badge: 'Hatched',
+      badge: 'NEW',
     },
     {
-      id: 'one-click-components',
-      icon: '🎯',
-      title: 'One-Click Components',
-      subtitle: '8 Essential Building Blocks',
-      description: 'Jump-start your project with pre-configured component prompts. Add a navbar, footer, contact form, pricing table, testimonials, hero section, features grid, or FAQ accordion with a single click.',
+      id: 'section-building',
+      icon: '🏗️',
+      title: 'Section-by-Section',
+      subtitle: 'Build Piece by Piece',
+      description: 'Build your website one section at a time. Header, hero, features, pricing — each piece is crafted and refined before moving to the next. Better context, better results.',
       details: [
-        'Navbar with mobile responsiveness built-in',
-        'Footer with multi-column layouts',
-        'Contact forms with validation',
-        'Pricing tables with tier comparisons',
-        'Testimonial sections with avatars',
-        'Hero sections with CTAs',
-        'Feature grids with icons',
-        'FAQ accordions with animations',
+        'Templates with predefined section flow',
+        'AI suggestions after each section',
+        'Skip sections you don\'t need',
+        'Progress tracking with interactive menu',
       ],
       gradient: 'from-emerald-500 to-teal-600',
+      badge: 'NEW',
     },
     {
       id: 'multi-page',
@@ -494,9 +491,9 @@ export default function FeaturesPage() {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="overflow-hidden rounded-2xl border border-zinc-800"
+            className="overflow-x-auto rounded-2xl border border-zinc-800"
           >
-            <table className="w-full">
+            <table className="w-full min-w-[500px]">
               <thead>
                 <tr className="bg-zinc-900">
                   <th className="text-left p-4 font-medium text-zinc-400">Feature</th>

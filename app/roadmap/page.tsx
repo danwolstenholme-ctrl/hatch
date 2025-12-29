@@ -20,7 +20,67 @@ interface RoadmapSection {
 
 const roadmap: RoadmapSection[] = [
   {
-    title: 'Recently Shipped',
+    title: 'V3.0 - Just Shipped! 🥚',
+    timeline: 'January 2026',
+    items: [
+      { 
+        title: 'Three-Model AI Pipeline', 
+        description: 'Sonnet builds. Opus polishes. Gemini audits.', 
+        status: 'done', 
+        date: 'Jan 2026',
+        technicalDetails: `Replaced single-model approach with specialized pipeline. Claude Sonnet 4 (claude-sonnet-4-20250514) generates initial code fast. Claude Opus 4 (claude-opus-4-20250514) refines for accessibility, semantic HTML, and quality. Gemini 2.5 Pro (gemini-2.5-pro-preview-06-05) audits final output for best practices.
+
+Each model has a specific role and system prompt optimized for its task. The pipeline runs sequentially: Sonnet → Opus → (optional) Gemini audit.`
+      },
+      { 
+        title: 'Meet Hatch 🥚', 
+        description: 'Your friendly egg companion who writes prompts for you', 
+        status: 'done', 
+        date: 'Jan 2026',
+        technicalDetails: `Created HatchCharacter.tsx component with 5 animated states: idle, thinking, excited, watching, sleeping. Powered by Claude Haiku (claude-3-5-haiku-20241022) for instant responses.
+
+Floating button in SectionBuilder opens popup where Hatch writes prompts based on your branding and current section. Visual design: cute egg with soft ◠ ◠ eyes, pink blush, sparkles when excited, crack animation.`
+      },
+      { 
+        title: 'Section-by-Section Building', 
+        description: 'Build your site one section at a time with templates', 
+        status: 'done', 
+        date: 'Jan 2026',
+        technicalDetails: `New BuildFlowController orchestrates the flow: Template Selection → Branding Step → Section Building. Templates define section order (e.g., Website: header, hero, features, how-it-works, testimonials, pricing, cta, faq, footer).
+
+SectionProgress component shows progress with clickable dots. Each section is built and refined before moving to the next, with skip option available.`
+      },
+      { 
+        title: 'Branding Step', 
+        description: 'Set colors, fonts, and business details before building', 
+        status: 'done', 
+        date: 'Jan 2026',
+        technicalDetails: `BrandingStep.tsx collects: businessName, tagline, primaryColor, accentColor, style (modern/minimal/bold/playful). Visual color picker with preset palettes.
+
+Brand config is passed to every AI prompt, ensuring consistent styling across all sections. Stored in project object and persisted to Supabase.`
+      },
+      { 
+        title: 'AI Suggestions Popup', 
+        description: 'Opus suggests improvements after each section', 
+        status: 'done', 
+        date: 'Jan 2026',
+        technicalDetails: `After Sonnet generates a section, Opus analyzes and returns suggestions via suggest-improvements API. Displayed in friendly popup with Hatch: "I have some ideas! ✨"
+
+Suggestions are contextual to the section type. Click to apply, or dismiss and continue to next section.`
+      },
+      { 
+        title: 'Website Template', 
+        description: 'New 9-section template for complete business sites', 
+        status: 'done', 
+        date: 'Jan 2026',
+        technicalDetails: `Added as first template option. Sections: header, hero, features, how-it-works, testimonials, pricing, cta, faq, footer.
+
+Optimized prompts for each section type. Removed Blog template, repositioned Portfolio and SaaS templates.`
+      },
+    ]
+  },
+  {
+    title: 'V2.0 - Previously Shipped',
     timeline: 'December 2025',
     items: [
       { 
@@ -30,113 +90,50 @@ const roadmap: RoadmapSection[] = [
         date: 'Dec 28',
         technicalDetails: `Created a new /api/generate-stream endpoint using Anthropic's streaming API with Server-Sent Events (SSE). The streaming request runs in parallel with our robust non-streaming endpoint — streaming is purely visual while the actual code parsing uses the original endpoint for stability.
 
-Visual effects include: purple glow border around the Code tab, "Generating..." badge with pulsing indicator, code text in purple tint during streaming, animated cursor (▌) at the end that follows new lines, and auto-scroll to keep the latest code visible. A pulsing dot appears on the Code tab when streaming if you're viewing the Preview tab.
-
-Technical stack: Anthropic claude-opus-4-5-20250514 with stream: true, TextEncoder for chunked responses, accumulated state management with setStreamingCode(), and useRef for auto-scroll behavior.`
+Visual effects include: purple glow border around the Code tab, "Generating..." badge with pulsing indicator, code text in purple tint during streaming, animated cursor (▌) at the end that follows new lines, and auto-scroll to keep the latest code visible. A pulsing dot appears on the Code tab when streaming if you're viewing the Preview tab.`
       },
       { 
         title: 'Hatch Project Rebrand', 
         description: 'Renamed "Upgrade" to "Hatch Project" with improved messaging', 
         status: 'done', 
         date: 'Dec 28',
-        technicalDetails: `Renamed the upgradeModal.tsx component to HatchModal.tsx and updated all imports across the codebase. Changed the messaging to better reflect the product metaphor — your project "hatches" when it's ready to go live.
-
-Updated pricing display: $24 one-time setup + $19/month subscription clearly explained. Added tier comparison between Free (preview mode, unlimited generations) and Hatched (full code access, custom domain, hosting).`
+        technicalDetails: `Renamed the upgradeModal.tsx component to HatchModal.tsx and updated all imports across the codebase. Changed the messaging to better reflect the product metaphor — your project "hatches" when it's ready to go live.`
       },
       { 
         title: 'Cross-Device Sync', 
         description: 'Access your deployed projects from any device', 
         status: 'done', 
         date: 'Dec 27',
-        technicalDetails: `Projects are stored in Clerk user metadata for persistence. When a project is "hatched" (paid), we store the project ID and Stripe subscription in Clerk, which syncs across all devices where the user is logged in.
-
-LocalStorage still handles the primary project data for speed, but deployed projects are fetched from Clerk metadata on page load, ensuring paid features persist across devices.`
+        technicalDetails: `Projects are stored in Clerk user metadata for persistence. When a project is "hatched" (paid), we store the project ID and Stripe subscription in Clerk, which syncs across all devices where the user is logged in.`
       },
       { 
         title: 'Start Again Feature', 
         description: 'Clear code and start fresh without deleting projects', 
         status: 'done', 
         date: 'Dec 28',
-        technicalDetails: `Added a "Start Again" button in the project menu that resets the code to the default starter template while preserving project name, ID, and payment status. Chat history is also cleared.
-
-Uses a confirmation modal to prevent accidental resets. The previousCode state is also cleared so revert doesn't bring back old code.`
-      },
-      { 
-        title: 'Truncation Protection', 
-        description: 'Prevent saving broken/cut-off code', 
-        status: 'done', 
-        date: 'Dec 28',
-        technicalDetails: `Added validation in the API response handling to detect truncated code. Checks for: unbalanced braces/brackets, missing export default, incomplete JSX tags, and responses that end mid-statement.
-
-If truncation is detected, we show an error message and keep the previous working code rather than saving broken code that would crash the preview.`
-      },
-      { 
-        title: 'Import HTML', 
-        description: 'Upload existing HTML files to convert and edit', 
-        status: 'done', 
-        date: 'Dec 28',
-        technicalDetails: `File upload accepts .html files, reads content with FileReader API, then sends to the AI with a specialized prompt to convert to React/Tailwind.
-
-The AI preserves the structure and styling while converting to our JSX format. Handles inline styles, external CSS references, and common HTML patterns.`
-      },
-      { 
-        title: 'Brand Panel', 
-        description: 'Save and apply brand colors & fonts (PRO)', 
-        status: 'done', 
-        date: 'Dec 20',
-        technicalDetails: `Brand settings stored in project object: { brand: { primaryColor, secondaryColor, accentColor, font } }. Color pickers use native HTML input[type="color"] with hex value storage.
-
-Brand context is passed to the AI in every generation request, with instructions to use the brand colors for primary CTAs, headings, and accent elements. Font is applied via Tailwind's font-family utilities.`
-      },
-      { 
-        title: 'AI Suggestions', 
-        description: '"What\'s next?" prompts after generation', 
-        status: 'done', 
-        date: 'Dec 18',
-        technicalDetails: `The AI returns suggestions in a SUGGESTIONS: block after generating code. We parse this with regex and display as clickable chips below the chat.
-
-Suggestions are context-aware based on current code — if you just built a landing page, it might suggest "Add a pricing section" or "Create a contact form". Clicking a suggestion auto-fills and sends it as a prompt.`
-      },
-      { 
-        title: 'Revert Button', 
-        description: 'One-click undo to previous version', 
-        status: 'done', 
-        date: 'Dec 18',
-        technicalDetails: `Before each generation, we store the current code in previousCode state. The Revert button (↶) appears after generation and swaps currentCode with previousCode.
-
-Only stores one level of history to keep it simple. The button disappears after reverting or starting a new generation.`
+        technicalDetails: `Added a "Start Again" button in the project menu that resets the code to the default starter template while preserving project name, ID, and payment status.`
       },
     ]
   },
   {
-    title: 'January 2026',
-    timeline: 'Jan 1 - Jan 31',
+    title: 'Coming Soon',
+    timeline: 'Q1 2026',
     items: [
-      { title: 'Template Gallery', description: 'Start from pre-built templates (Landing, Portfolio, etc.)', status: 'planned' },
-      { title: 'One-Click Components', description: 'Quick-add navbar, footer, contact form, pricing table', status: 'planned' },
+      { title: 'Visual Editor', description: 'Click-to-edit elements directly in the preview', status: 'in-progress' },
       { title: 'Generation Timeline', description: 'Visual history of all prompts and versions', status: 'planned' },
       { title: 'SEO Optimizer', description: 'AI scans and fixes meta tags, headings, alt text', status: 'planned' },
-    ]
-  },
-  {
-    title: 'Q1 2026',
-    timeline: 'Feb - Mar',
-    items: [
       { title: 'Form Backend', description: 'Built-in form submissions with email notifications', status: 'planned' },
       { title: 'Export to Framework', description: 'Download as Next.js or Vite project structure', status: 'planned' },
-      { title: 'Analytics Dashboard', description: 'Page views and visitor stats for deployed sites', status: 'planned' },
-      { title: 'Screenshot-to-Code', description: 'Upload a design image, get matching code', status: 'planned' },
-      { title: 'Accessibility Checker', description: 'Scan for a11y issues with auto-fix suggestions', status: 'planned' },
     ]
   },
   {
     title: 'Future',
     timeline: 'Q2 2026+',
     items: [
+      { title: 'Screenshot-to-Code', description: 'Upload a design image, get matching code', status: 'planned' },
       { title: 'Voice-to-Website', description: 'Speak your description, generate on command', status: 'planned' },
       { title: 'Component Marketplace', description: 'Browse and add community-built components', status: 'planned' },
       { title: 'Multiplayer Editing', description: 'Real-time collaboration with team members', status: 'planned' },
-      { title: 'Agency White-Label', description: 'Custom-branded builder for agencies', status: 'planned' },
       { title: 'Figma Import', description: 'Paste a Figma link, convert to code', status: 'planned' },
     ]
   }

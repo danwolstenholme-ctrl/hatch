@@ -331,7 +331,7 @@ export default function Home() {
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
               </span>
-              <span className="relative text-xs sm:text-sm text-amber-200/80 text-center">Built in 3 days. Perfected in 7.</span>
+              <span className="relative text-xs sm:text-sm text-amber-200/80 text-center">V3.0 — Section-by-section building is here 🥚</span>
             </motion.div>
           </div>
 
@@ -373,7 +373,7 @@ export default function Home() {
             className="text-center text-lg sm:text-xl md:text-2xl text-zinc-400 max-w-3xl mx-auto mb-8 leading-relaxed"
             {...getAnimation(0.2, 20)}
           >
-            The AI website builder that writes <span className="text-white font-medium">real, maintainable</span> React code. Not drag-and-drop garbage. Actual code you own.
+            The AI website builder that writes <span className="text-white font-medium">real, maintainable</span> React code. Section by section. With Hatch, your friendly helper 🥚
           </motion.p>
 
           {/* CTAs */}
@@ -510,7 +510,7 @@ export default function Home() {
           <div className="relative">
             <div className="absolute -left-4 top-0 text-6xl text-purple-500/20">{"\""}</div>
             <blockquote className="text-xl sm:text-2xl md:text-3xl text-center font-medium text-zinc-200 leading-relaxed pl-8">
-              I built this entire product in 7 days with Claude Opus 4.5. <span className="text-purple-400">The AI writes the code, I make the decisions.</span> This is the future of building.
+              I rebuilt HatchIt with a three-model AI pipeline. <span className="text-purple-400">Sonnet builds, Opus polishes, Gemini audits.</span> Section by section, with Hatch guiding you through.
             </blockquote>
             <div className="mt-6 text-center">
               <div className="text-zinc-400 font-medium">Dan</div>
@@ -524,20 +524,20 @@ export default function Home() {
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-6">
-              The AI builder that
-              <span className="block bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">actually works.</span>
+              V3.0 is here.
+              <span className="block bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent">Build smarter, not harder.</span>
             </h2>
             <p className="text-xl text-zinc-400 max-w-2xl mx-auto">
-              Other AI tools give you bloated, unmaintainable code. HatchIt generates clean React + Tailwind that developers actually want to work with.
+              A three-model AI pipeline. Section-by-section building. And Hatch — your friendly prompt helper who's genuinely excited about your business.
             </p>
           </div>
 
           {/* Feature cards */}
           <div className="grid md:grid-cols-3 gap-6">
             {[
-              { icon: '🧠', title: 'AI That Gets It', description: 'Powered by Claude Opus 4.5. Understands design, code patterns, and your intent. Not just another GPT wrapper.', gradient: 'from-purple-500 to-indigo-600' },
-              { icon: '⚡', title: 'Live Code Streaming', description: 'Watch your site being written in real-time. See the code appear as the AI thinks. Pure magic.', gradient: 'from-amber-500 to-orange-600', badge: 'Hatched' },
-              { icon: '🚀', title: 'Ship in One Click', description: 'Deploy to our global CDN instantly. Get a live URL in seconds. Connect your own domain.', gradient: 'from-emerald-500 to-teal-600' },
+              { icon: '🧠', title: 'Three-Model Pipeline', description: 'Sonnet builds. Opus polishes. Gemini audits. Each AI does what it\'s best at. Not just one model doing everything.', gradient: 'from-purple-500 to-indigo-600' },
+              { icon: '🥚', title: 'Meet Hatch', description: 'Your friendly egg helper. Stuck on a prompt? Hatch writes it for you. She\'s cute, helpful, and genuinely excited about your project.', gradient: 'from-amber-500 to-orange-600', badge: 'NEW' },
+              { icon: '🏗️', title: 'Section-by-Section', description: 'Build your site one section at a time. Header, hero, features, pricing — each piece crafted and refined before moving on.', gradient: 'from-emerald-500 to-teal-600' },
             ].map((feature, i) => (
               <motion.div 
                 key={i} 
@@ -595,8 +595,8 @@ export default function Home() {
 
           <div className="grid md:grid-cols-3 gap-8">
             {[
-              { step: '01', title: 'Describe', description: 'Tell the AI what you want in plain English. A dark SaaS landing page with pricing works perfectly.', icon: '💭' },
-              { step: '02', title: 'Build', description: 'Watch real React code stream in live. Refine with follow-up prompts. Iterate until perfect.', icon: '⚡' },
+              { step: '01', title: 'Describe', description: 'Pick a template, set your brand colors, then describe each section. Stuck? Hatch writes your prompts for you.', icon: '💭' },
+              { step: '02', title: 'Build', description: 'Watch Sonnet generate code live. Opus auto-polishes for accessibility. Get AI suggestions to make it even better.', icon: '⚡' },
               { step: '03', title: 'Ship', description: 'One click. Live URL. Your site is on the internet. Connect your domain if you want.', icon: '🚀' },
             ].map((item, i) => (
               <div key={i} className="relative">

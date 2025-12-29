@@ -84,20 +84,17 @@ export default function AboutPage() {
                 There was one problem: I didn't know React.
               </p>
               <p>
-                So I did something different. Instead of spending months learning a framework, I opened Claude Opus 4.5 
-                and started describing what I wanted to build. Three days later, V1 was live. Four more days of iteration, 
-                and V2 was polished.
+                So I did something different. Instead of spending months learning a framework, I opened Claude 
+                and started describing what I wanted to build. Three days later, V1 was live.
               </p>
               <p>
-                <span className="text-white font-medium">Built in 3 days. Perfected in 7.</span>
+                <span className="text-white font-medium">Now we're on V3.0.</span> A three-model AI pipeline where Claude Sonnet 4 builds your sections, 
+                Claude Opus 4 polishes for accessibility, and Gemini 2.5 Pro audits the final result. Plus Hatch 🥚 — your friendly 
+                egg companion who helps you write prompts when you're stuck.
               </p>
               <p>
-                The secret wasn't any single AI. It was the combination. Claude builds fast—it can scaffold 
-                an entire feature in minutes. But it has blind spots. Gemini 2.5 Pro catches what Claude misses: 
-                performance issues, accessibility gaps, architectural anti-patterns.
-              </p>
-              <p>
-                Different models, different strengths. The combination is better than either alone.
+                The secret isn't any single AI. It's the combination. Different models, different strengths. 
+                Section-by-section building with branding that flows through everything.
               </p>
               <p className="text-zinc-400 italic">
                 I built this product using this product. If that's not proof it works, I don't know what is.
@@ -178,7 +175,9 @@ export default function AboutPage() {
               'React 19',
               'TypeScript',
               'Tailwind CSS 4',
-              'Claude Opus 4.5',
+              'Claude Sonnet 4',
+              'Claude Opus 4',
+              'Claude Haiku',
               'Gemini 2.5 Pro',
             ].map((tech, i) => (
               <motion.span

@@ -20,11 +20,15 @@ const faqs = [
       },
       {
         q: 'How does HatchIt.dev work?',
-        a: 'HatchIt.dev uses advanced AI to understand your description and generate clean React + Tailwind CSS code. The process is simple: 1) Describe your site (e.g., "A landing page for my coffee shop"), 2) Preview your site instantly, 3) Iterate by asking for changes ("Make the header sticky"), 4) Deploy to a live URL when ready.',
+        a: 'HatchIt.dev uses a three-model AI pipeline. 1) Pick a template (Website, Portfolio, SaaS), 2) Set your branding (colors, fonts, business name), 3) Build section by section with AI help. Claude Sonnet generates your code, Claude Opus polishes it, and Gemini audits the result. Stuck on prompts? Hatch 🥚 writes them for you!',
       },
       {
         q: 'Do I need coding experience to use HatchIt.dev?',
-        a: 'No coding experience required! HatchIt.dev is designed for everyone - entrepreneurs, designers, marketers, and developers alike. Just describe what you want in plain English, and HatchIt.dev handles the code. However, if you do know code, you can view and edit the generated React code directly.',
+        a: 'No coding experience required! HatchIt.dev is designed for everyone. Just describe what you want, or let Hatch 🥚 write your prompts for you. However, if you do know code, you can view and edit the generated React code directly.',
+      },
+      {
+        q: 'Who is Hatch?',
+        a: 'Hatch is your friendly egg companion! 🥚 She\'s an AI helper powered by Claude Haiku who writes prompts for you when you\'re stuck. Click the floating egg button while building, tell her about your section, and she\'ll craft the perfect prompt. She\'s cute, helpful, and genuinely excited about your business.',
       },
       {
         q: 'What can I build with HatchIt.dev?',
@@ -41,7 +45,7 @@ const faqs = [
     questions: [
       {
         q: 'Is the generated code real production code?',
-        a: 'Yes! HatchIt.dev generates real React + Tailwind CSS code that follows best practices. The code includes Framer Motion animations, Lucide icons, and responsive design. You can download the full project and run it locally or deploy it anywhere.',
+        a: 'Yes! HatchIt.dev uses a three-model AI pipeline. Claude Sonnet 4 generates fast, clean React + Tailwind CSS code. Claude Opus 4 then refines it for accessibility, semantic HTML, and best practices. Finally, Gemini 2.5 Pro audits the result. You get production-ready code that follows best practices.',
       },
       {
         q: 'Can I edit the generated code?',

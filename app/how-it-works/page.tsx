@@ -68,24 +68,24 @@ export default function HowItWorksPage() {
         <div className="max-w-6xl mx-auto">
           <div className="grid md:grid-cols-3 gap-8 md:gap-12 items-start">
             <Step 
-              icon="💭"
+              icon="🎨"
               step="01"
-              title="Describe Your Vision"
-              description="Start with a simple prompt. Describe the component, page, or full site you want to build. Be as descriptive as you like. Mention colors, layout, and content."
+              title="Choose & Brand"
+              description="Pick a template (Website, Portfolio, or SaaS). Set your brand colors, fonts, and business details. Hatch uses this for every section."
               delay={0}
             />
             <Step 
-              icon="⚡"
+              icon="🏗️"
               step="02"
-              title="Watch the AI Build"
-              description="Hit 'Build' and watch the code stream in real-time. HatchIt generates clean, production-quality React code using Tailwind CSS for styling."
+              title="Build Section by Section"
+              description="Work through each section one at a time. Stuck on what to say? Hatch 🥚 writes your prompts. Sonnet builds it, Opus polishes it."
               delay={0.1}
             />
             <Step 
-              icon="🔄"
+              icon="🚀"
               step="03"
-              title="Iterate and Refine"
-              description="The first draft is just the beginning. Use follow-up prompts to tweak styles, add sections, change logic, or fix bugs. The AI understands context."
+              title="Ship It"
+              description="One click deploys your site. Get a live URL instantly. Connect your own domain if you want. You own the code."
               delay={0.2}
             />
           </div>
@@ -103,24 +103,24 @@ export default function HowItWorksPage() {
             viewport={{ once: true }}
             transition={transition(0.1)}
           >
-            <h2 className="text-3xl font-bold text-center mb-12">A Developer-First Workflow</h2>
+            <h2 className="text-3xl font-bold text-center mb-12">The V3.0 Experience</h2>
             <div className="space-y-8">
+              <div className="p-8 bg-zinc-900/50 border border-zinc-800 rounded-2xl">
+                <h3 className="text-xl font-bold mb-2">Three-Model Pipeline</h3>
+                <p className="text-zinc-400">
+                  We don't use one AI for everything. Claude Sonnet 4 builds fast. Claude Opus 4 polishes for accessibility and quality. Gemini 2.5 Pro audits the final result. Each model does what it's best at.
+                </p>
+              </div>
+              <div className="p-8 bg-zinc-900/50 border border-zinc-800 rounded-2xl">
+                <h3 className="text-xl font-bold mb-2">Meet Hatch 🥚</h3>
+                <p className="text-zinc-400">
+                  Your friendly prompt helper. Stuck on what to say? Click the floating egg button and Hatch writes your prompts for you. She's powered by Claude Haiku and genuinely excited about your business.
+                </p>
+              </div>
               <div className="p-8 bg-zinc-900/50 border border-zinc-800 rounded-2xl">
                 <h3 className="text-xl font-bold mb-2">Real Code, Not Lock-in</h3>
                 <p className="text-zinc-400">
-                  We generate standard React and Tailwind CSS code. You can export it at any time as a ZIP file, giving you full ownership and control. No proprietary formats, no platform lock-in.
-                </p>
-              </div>
-              <div className="p-8 bg-zinc-900/50 border border-zinc-800 rounded-2xl">
-                <h3 className="text-xl font-bold mb-2">Live Previews, Instantly</h3>
-                <p className="text-zinc-400">
-                  As the AI generates code, you see a live, interactive preview of your component. This instant feedback loop makes iteration incredibly fast and intuitive.
-                </p>
-              </div>
-              <div className="p-8 bg-zinc-900/50 border border-zinc-800 rounded-2xl">
-                <h3 className="text-xl font-bold mb-2">One-Click Deployment</h3>
-                <p className="text-zinc-400">
-                  When you're ready, deploy your project to a live URL with a single click. Connect a custom domain for a professional finish. (Coming soon!)
+                  We generate standard React and Tailwind CSS code. Export at any time as a ZIP file. Full ownership, no proprietary formats, no platform lock-in.
                 </p>
               </div>
             </div>
