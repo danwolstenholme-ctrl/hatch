@@ -1,9 +1,19 @@
 'use client'
 
-import { useEffect, useState, useRef } from 'react'
+import { useEffect, useState, useRef, useSyncExternalStore } from 'react'
 import Link from 'next/link'
 import { SignInButton, SignedIn, SignedOut, UserButton } from '@clerk/nextjs'
 import { motion, useInView } from 'framer-motion'
+
+// Client-side check to prevent hydration mismatch - uses useSyncExternalStore for proper SSR handling
+const emptySubscribe = () => () => {}
+function useIsClient() {
+  return useSyncExternalStore(
+    emptySubscribe,
+    () => true,
+    () => false
+  )
+}
 
 // Only respect user's accessibility preference - NOT device type
 function useReducedMotion() {
@@ -106,6 +116,7 @@ function AnimatedCounter({ value, suffix = '' }: { value: number; suffix?: strin
 
 // Floating chicks background - DESKTOP ONLY with premium motion
 function FloatingChicks() {
+  const isClient = useIsClient()
   const chicks = [
     { left: '15%', top: '20%', delay: 0, duration: 20 },
     { left: '75%', top: '15%', delay: 2, duration: 25 },
@@ -114,14 +125,22 @@ function FloatingChicks() {
     { left: '50%', top: '80%', delay: 3, duration: 24 },
   ]
   
+  // Don't render until client to prevent hydration flash
+  if (!isClient) return null
+  
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none hidden lg:block">
       {chicks.map((chick, i) => (
         <motion.div
           key={i}
           className="absolute text-2xl"
-          style={{ left: chick.left, top: chick.top }}
-          initial={{ opacity: 0, scale: 0 }}
+          style={{ 
+            left: chick.left, 
+            top: chick.top,
+            willChange: 'transform, opacity',
+            backfaceVisibility: 'hidden'
+          }}
+          initial={{ opacity: 0, scale: 0.8 }}
           animate={{ 
             opacity: [0.08, 0.15, 0.08],
             scale: [0.8, 1, 0.8],
@@ -149,20 +168,31 @@ function Section({ children, className = '', id = '' }: { children: React.ReactN
   const isInView = useInView(ref, { once: true, margin: "-50px" })
   const reducedMotion = useReducedMotion()
   const isMobile = useIsMobile()
+  const isClient = useIsClient()
   
   // Mobile: lighter animation (less distance, faster)
   // Desktop: full effect
   const yOffset = isMobile ? 15 : 30
   const duration = isMobile ? 0.35 : 0.5
   
+  // On server or before hydration, render without animation to prevent flash
+  if (!isClient) {
+    return (
+      <section id={id} className={className} style={{ opacity: 0 }}>
+        {children}
+      </section>
+    )
+  }
+  
   return (
     <motion.section
       ref={ref}
       id={id}
-      initial={reducedMotion ? false : { opacity: 0, y: yOffset }}
+      initial={reducedMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: yOffset }}
       animate={isInView ? { opacity: 1, y: 0 } : (reducedMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: yOffset })}
       transition={{ duration, ease: [0.25, 0.1, 0.25, 1] }}
       className={className}
+      style={{ willChange: 'transform, opacity', backfaceVisibility: 'hidden' }}
     >
       {children}
     </motion.section>
@@ -226,6 +256,20 @@ export default function Home() {
           animation: fade-in 0.35s ease-out forwards;
           will-change: opacity, transform;
         }
+        /* GPU acceleration for animated elements */
+        .gpu-accelerate {
+          transform: translateZ(0);
+          backface-visibility: hidden;
+          -webkit-backface-visibility: hidden;
+          perspective: 1000px;
+        }
+        /* Prevent shimmer flicker */
+        .shimmer-smooth {
+          -webkit-transform: translateZ(0);
+          transform: translateZ(0);
+          backface-visibility: hidden;
+          -webkit-backface-visibility: hidden;
+        }
       `}</style>
 
       {/* Navigation */}
@@ -234,6 +278,8 @@ export default function Home() {
           <Link href="/" className="flex items-center gap-2 group">
             <motion.span 
               className="text-2xl inline-block"
+              style={{ willChange: 'transform', backfaceVisibility: 'hidden' }}
+              initial={{ rotate: 0, scale: 1 }}
               animate={{ 
                 rotate: [0, -10, 10, -5, 5, 0],
                 scale: [1, 1.1, 1, 1.05, 1]
@@ -279,14 +325,17 @@ export default function Home() {
           {/* Badge */}
           <div className="flex justify-center mb-8">
             <motion.div 
-              className="relative inline-flex items-center gap-2 px-3 sm:px-4 py-2 bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/20 rounded-full overflow-hidden"
+              className="relative inline-flex items-center gap-2 px-3 sm:px-4 py-2 bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/20 rounded-full overflow-hidden gpu-accelerate"
               {...getAnimation(0, 20)}
+              style={{ willChange: 'transform, opacity' }}
             >
               {/* Shimmer effect */}
               <motion.div
-                className="absolute inset-0 bg-gradient-to-r from-transparent via-amber-400/20 to-transparent -skew-x-12"
-                animate={{ x: ['-200%', '200%'] }}
+                className="absolute inset-0 bg-gradient-to-r from-transparent via-amber-400/20 to-transparent -skew-x-12 shimmer-smooth"
+                initial={{ x: '-200%' }}
+                animate={{ x: '200%' }}
                 transition={{ duration: 3, repeat: Infinity, repeatDelay: 2, ease: 'easeInOut' }}
+                style={{ willChange: 'transform' }}
               />
               <span className="relative flex h-2 w-2 flex-shrink-0">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
@@ -301,7 +350,8 @@ export default function Home() {
             <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-8xl font-black leading-[1] sm:leading-[0.95] tracking-tight mb-6">
               <motion.span 
                 className="block"
-                initial={reducedMotion ? {} : { opacity: 0, y: 30 }}
+                style={{ willChange: 'transform, opacity' }}
+                initial={reducedMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.1, ease: [0.25, 0.1, 0.25, 1] }}
               >
@@ -309,7 +359,8 @@ export default function Home() {
               </motion.span>
               <motion.span 
                 className="block bg-gradient-to-r from-purple-400 via-pink-400 to-amber-400 bg-clip-text text-transparent"
-                initial={reducedMotion ? {} : { opacity: 0, y: 30 }}
+                style={{ willChange: 'transform, opacity' }}
+                initial={reducedMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
               >
@@ -317,7 +368,8 @@ export default function Home() {
               </motion.span>
               <motion.span 
                 className="block"
-                initial={reducedMotion ? {} : { opacity: 0, y: 30 }}
+                style={{ willChange: 'transform, opacity' }}
+                initial={reducedMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6, delay: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
               >
@@ -338,20 +390,23 @@ export default function Home() {
           <motion.div 
             className="flex flex-col sm:flex-row justify-center gap-4 mb-12"
             {...getAnimation(0.3, 20)}
+            style={{ willChange: 'transform, opacity' }}
           >
             <motion.div
+              style={{ willChange: 'transform' }}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.98 }}
               transition={{ type: 'spring', stiffness: 400, damping: 17 }}
             >
-              <Link href="/builder" className="group relative px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 rounded-xl font-bold text-lg flex items-center justify-center gap-2 overflow-hidden">
+              <Link href="/builder" className="group relative px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 rounded-xl font-bold text-lg flex items-center justify-center gap-2 overflow-hidden gpu-accelerate">
                 {/* Glow effect */}
-                <motion.div
+                <div
                   className="absolute inset-0 bg-gradient-to-r from-purple-400 to-pink-400 opacity-0 group-hover:opacity-30 blur-xl transition-opacity duration-500"
                 />
                 <span className="relative">Start Building Free</span>
                 <motion.span 
                   className="relative"
+                  style={{ willChange: 'transform' }}
                   animate={{ x: [0, 5, 0] }}
                   transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
                 >
@@ -360,11 +415,12 @@ export default function Home() {
               </Link>
             </motion.div>
             <motion.div
+              style={{ willChange: 'transform' }}
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.98 }}
               transition={{ type: 'spring', stiffness: 400, damping: 17 }}
             >
-              <Link href="/how-it-works" className="px-8 py-4 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 hover:border-purple-500/30 rounded-xl font-semibold text-lg transition-all flex items-center justify-center gap-2">
+              <Link href="/how-it-works" className="px-8 py-4 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 hover:border-purple-500/30 rounded-xl font-semibold text-lg transition-all flex items-center justify-center gap-2 gpu-accelerate">
                 See How It Works
               </Link>
             </motion.div>
@@ -495,7 +551,8 @@ export default function Home() {
             ].map((feature, i) => (
               <motion.div 
                 key={i} 
-                className="group relative p-6 bg-zinc-900/50 border border-zinc-800 rounded-2xl hover:border-zinc-700 transition-colors duration-300"
+                className="group relative p-6 bg-zinc-900/50 border border-zinc-800 rounded-2xl hover:border-zinc-700 transition-colors duration-300 gpu-accelerate"
+                style={{ willChange: 'transform, opacity' }}
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
@@ -507,6 +564,7 @@ export default function Home() {
                   <div className="flex items-start justify-between mb-4">
                     <motion.span 
                       className="text-4xl block"
+                      style={{ willChange: 'transform' }}
                       whileHover={{ scale: 1.2, rotate: [0, -10, 10, 0] }}
                       transition={{ type: 'spring', stiffness: 400, damping: 10 }}
                     >
@@ -515,6 +573,8 @@ export default function Home() {
                     {feature.badge && (
                       <motion.span 
                         className="flex items-center gap-1 px-2 py-1 bg-amber-500/10 border border-amber-500/20 rounded-full text-[10px] text-amber-400"
+                        style={{ willChange: 'transform' }}
+                        initial={{ scale: 1 }}
                         animate={{ scale: [1, 1.05, 1] }}
                         transition={{ duration: 2, repeat: Infinity }}
                       >
@@ -553,7 +613,8 @@ export default function Home() {
                 {i < 2 && (
                   <div className="hidden md:block absolute top-12 left-full w-full h-[2px] z-0 overflow-hidden">
                     <motion.div 
-                      className="h-full bg-gradient-to-r from-purple-500 via-pink-500 to-transparent"
+                      className="h-full bg-gradient-to-r from-purple-500 via-pink-500 to-transparent shimmer-smooth"
+                      style={{ willChange: 'transform' }}
                       initial={{ x: '-100%' }}
                       whileInView={{ x: '0%' }}
                       viewport={{ once: true }}
@@ -563,13 +624,15 @@ export default function Home() {
                 )}
                 <motion.div 
                   className="relative z-10 text-center md:text-left"
+                  style={{ willChange: 'transform, opacity' }}
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ duration: 0.5, delay: i * 0.15, ease: [0.25, 0.1, 0.25, 1] }}
                 >
                   <motion.div 
-                    className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-purple-500/10 border border-purple-500/20 mb-4"
+                    className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-purple-500/10 border border-purple-500/20 mb-4 gpu-accelerate"
+                    style={{ willChange: 'transform' }}
                     whileHover={{ scale: 1.1, borderColor: 'rgba(168, 85, 247, 0.5)' }}
                     transition={{ type: 'spring', stiffness: 400, damping: 10 }}
                   >
@@ -610,7 +673,8 @@ export default function Home() {
             ].map((tech, i) => (
               <motion.div 
                 key={i} 
-                className="p-4 bg-zinc-900/50 border border-zinc-800 rounded-xl text-center hover:border-purple-500/30 transition-colors"
+                className="p-4 bg-zinc-900/50 border border-zinc-800 rounded-xl text-center hover:border-purple-500/30 transition-colors gpu-accelerate"
+                style={{ willChange: 'transform, opacity' }}
                 initial={{ opacity: 0, scale: 0.8 }}
                 whileInView={{ opacity: 1, scale: 1 }}
                 viewport={{ once: true }}
@@ -619,6 +683,7 @@ export default function Home() {
               >
                 <motion.span 
                   className="text-2xl block mb-2"
+                  style={{ willChange: 'transform' }}
                   whileHover={{ scale: 1.2, rotate: [0, -10, 10, 0] }}
                   transition={{ type: 'spring', stiffness: 400, damping: 10 }}
                 >

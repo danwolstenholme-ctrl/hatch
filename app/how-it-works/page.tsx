@@ -127,6 +127,7 @@ export default function HowItWorksPage() {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
+            style={{ willChange: 'transform, opacity', backfaceVisibility: 'hidden' }}
             className="text-center"
           >
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 text-sm mb-6">
@@ -158,6 +159,7 @@ export default function HowItWorksPage() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: i * 0.1 }}
+              style={{ willChange: 'transform, opacity', backfaceVisibility: 'hidden' }}
               className="relative mb-16 last:mb-0"
             >
               {/* Connection line */}

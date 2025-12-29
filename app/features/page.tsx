@@ -1,7 +1,17 @@
 'use client'
 import Link from 'next/link'
 import { motion, useReducedMotion as useFramerReducedMotion } from 'framer-motion'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useSyncExternalStore } from 'react'
+
+// Client-side check to prevent hydration mismatch
+const emptySubscribe = () => () => {}
+function useIsClient() {
+  return useSyncExternalStore(
+    emptySubscribe,
+    () => true,
+    () => false
+  )
+}
 
 // Custom hook to detect mobile or reduced motion preference
 function useReducedMotion() {
@@ -196,6 +206,13 @@ export default function FeaturesPage() {
         .animate-fade-in { animation: fade-in 0.5s ease-out forwards; }
         .animate-fade-in-delay-1 { animation: fade-in 0.5s ease-out 0.1s forwards; opacity: 0; }
         .animate-fade-in-delay-2 { animation: fade-in 0.5s ease-out 0.2s forwards; opacity: 0; }
+        /* GPU acceleration */
+        .gpu-accelerate {
+          transform: translateZ(0);
+          backface-visibility: hidden;
+          -webkit-backface-visibility: hidden;
+          will-change: transform, opacity;
+        }
       `}</style>
       
       {/* Hero Section */}
@@ -287,6 +304,7 @@ export default function FeaturesPage() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.1 }}
+                style={{ willChange: 'transform, opacity', backfaceVisibility: 'hidden' }}
                 className={`relative bg-zinc-900/50 border border-zinc-800 rounded-2xl overflow-hidden cursor-pointer transition-all duration-300 ${
                   expandedFeature === feature.id ? 'ring-2 ring-purple-500/50' : 'hover:border-zinc-700'
                 }`}

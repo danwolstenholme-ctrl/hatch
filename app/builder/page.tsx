@@ -24,6 +24,7 @@ const ProBadge = ({ size = 'sm' }: { size?: 'sm' | 'md' | 'lg' }) => {
   return (
     <motion.span 
       className={`relative inline-flex items-center justify-center ${sizeClasses[size]}`}
+      style={{ willChange: 'transform', backfaceVisibility: 'hidden' }}
       animate={{ y: [0, -2, 0] }}
       transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
     >
@@ -3176,6 +3177,7 @@ export default function Home() {
                   <motion.button
                     onClick={() => setShowDesktopMenu(!showDesktopMenu)}
                     className={`relative flex items-center justify-center w-9 h-9 rounded-lg border transition-all overflow-hidden group ${isCurrentProjectPaid ? 'bg-gradient-to-br from-amber-500/20 via-yellow-500/20 to-orange-500/20 border-amber-500/30' : 'bg-zinc-800 border-zinc-700'}`}
+                    style={{ willChange: 'transform', backfaceVisibility: 'hidden' }}
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     title="Menu"
@@ -3184,7 +3186,9 @@ export default function Home() {
                     {isCurrentProjectPaid && (
                       <motion.div
                         className="absolute inset-0 rounded-lg bg-gradient-to-r from-amber-400/0 via-amber-400/30 to-amber-400/0"
-                        animate={{ x: ['-100%', '100%'] }}
+                        style={{ willChange: 'transform', backfaceVisibility: 'hidden' }}
+                        initial={{ x: '-100%' }}
+                        animate={{ x: '100%' }}
                         transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
                       />
                     )}
@@ -3192,6 +3196,8 @@ export default function Home() {
                     {isCurrentProjectPaid && (
                       <motion.div
                         className="absolute inset-0 rounded-lg bg-amber-400/20"
+                        style={{ willChange: 'opacity' }}
+                        initial={{ opacity: 0.2 }}
                         animate={{ opacity: [0.2, 0.4, 0.2] }}
                         transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
                       />
