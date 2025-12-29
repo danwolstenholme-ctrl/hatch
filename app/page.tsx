@@ -427,11 +427,11 @@ export default function Home() {
             </div>
             <div className="flex items-center gap-2">
               <svg className="w-4 h-4 text-green-400" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/></svg>
-              <span>10 free generations/day</span>
+              <span>5 free generations/day</span>
             </div>
             <div className="flex items-center gap-2">
               <svg className="w-4 h-4 text-green-400" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/></svg>
-              <span>Export your code anytime</span>
+              <span>Real React code you own</span>
             </div>
           </motion.div>
 
@@ -710,48 +710,95 @@ export default function Home() {
 
       {/* PRICING */}
       <Section id="pricing" className="px-6 py-24">
-        <div className="max-w-4xl mx-auto">
+        <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-4xl sm:text-5xl font-bold mb-4">Simple pricing.</h2>
-            <p className="text-xl text-zinc-400">Start free. Pay when you ship.</p>
+            <p className="text-xl text-zinc-400">Start free. Upgrade when you're ready to ship.</p>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto">
+          <div className="grid md:grid-cols-3 gap-6">
             {/* Free */}
             <div className="p-8 bg-zinc-900/50 border border-zinc-800 rounded-2xl">
-              <div className="text-sm text-zinc-500 mb-2">For trying it out</div>
+              <div className="text-sm text-zinc-500 mb-2">For exploring</div>
               <h3 className="text-2xl font-bold mb-1">Free</h3>
-              <div className="text-4xl font-bold mb-6">$0</div>
+              <div className="text-4xl font-bold mb-2">$0</div>
+              <div className="text-zinc-500 text-sm mb-6">forever</div>
               <ul className="space-y-3 mb-8">
-                {['10 generations per day', 'Full code editor', 'Live preview', 'Export as ZIP', 'Unlimited projects locally'].map((item, i) => (
-                  <li key={i} className="flex items-center gap-2 text-sm text-zinc-400">
-                    <svg className="w-4 h-4 text-green-400" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/></svg>
-                    {item}
+                {[
+                  { text: '5 generations per day', included: true },
+                  { text: 'Sonnet builds', included: true },
+                  { text: 'Live preview', included: true },
+                  { text: 'Opus refinements', included: false },
+                  { text: 'Deploy to web', included: false },
+                  { text: 'Code export', included: false },
+                ].map((item, i) => (
+                  <li key={i} className={`flex items-center gap-2 text-sm ${item.included ? 'text-zinc-400' : 'text-zinc-600'}`}>
+                    {item.included ? (
+                      <svg className="w-4 h-4 text-green-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/></svg>
+                    ) : (
+                      <svg className="w-4 h-4 text-zinc-600 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd"/></svg>
+                    )}
+                    {item.text}
                   </li>
                 ))}
               </ul>
               <Link href="/builder" className="block w-full py-3 text-center bg-zinc-800 hover:bg-zinc-700 rounded-xl font-semibold transition-colors">Start Free</Link>
             </div>
 
-            {/* Hatched */}
+            {/* Pro */}
             <div className="relative p-8 bg-gradient-to-br from-purple-900/30 to-pink-900/20 border border-purple-500/30 rounded-2xl overflow-hidden">
               <div className="absolute top-0 right-0 px-3 py-1 bg-gradient-to-r from-purple-600 to-pink-600 text-xs font-semibold rounded-bl-xl">RECOMMENDED</div>
               <div className="flex items-center gap-2 text-sm text-purple-300 mb-2"><span>🐣</span><span>For shipping projects</span></div>
-              <h3 className="text-2xl font-bold mb-1">Hatch Project</h3>
+              <h3 className="text-2xl font-bold mb-1">Pro</h3>
               <div className="flex items-baseline gap-2 mb-2">
-                <span className="text-4xl font-bold">$24</span>
-                <span className="text-zinc-500">one-time setup</span>
+                <span className="text-4xl font-bold">$39</span>
+                <span className="text-zinc-500">/month</span>
               </div>
-              <div className="text-zinc-400 mb-6">+ $19/mo per project</div>
+              <div className="text-zinc-400 text-sm mb-6">per account</div>
               <ul className="space-y-3 mb-8">
-                {['Everything in Free', 'Live code streaming', 'Unlimited generations', 'Custom domains', 'Brand customization', 'Version history', 'Cloud sync', 'Priority support'].map((item, i) => (
+                {[
+                  'Unlimited Sonnet builds',
+                  '30 Opus refinements/mo',
+                  'Deploy to hatchitsites.dev',
+                  'Code export (ZIP)',
+                  'Version history',
+                  'Cloud sync',
+                ].map((item, i) => (
                   <li key={i} className="flex items-center gap-2 text-sm text-zinc-300">
-                    <svg className="w-4 h-4 text-purple-400" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/></svg>
+                    <svg className="w-4 h-4 text-purple-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/></svg>
                     {item}
                   </li>
                 ))}
               </ul>
-              <Link href="/builder" className="block w-full py-3 text-center bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 rounded-xl font-semibold transition-all">Hatch a Project</Link>
+              <Link href="/builder?upgrade=pro" className="block w-full py-3 text-center bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 rounded-xl font-semibold transition-all">Get Pro</Link>
+            </div>
+
+            {/* Agency */}
+            <div className="relative p-8 bg-gradient-to-br from-amber-900/20 to-orange-900/10 border border-amber-500/30 rounded-2xl overflow-hidden">
+              <div className="absolute top-0 right-0 px-3 py-1 bg-gradient-to-r from-amber-500 to-orange-500 text-xs font-semibold text-zinc-900 rounded-bl-xl">UNLIMITED</div>
+              <div className="flex items-center gap-2 text-sm text-amber-300 mb-2"><span>⚡</span><span>For power users</span></div>
+              <h3 className="text-2xl font-bold mb-1">Agency</h3>
+              <div className="flex items-baseline gap-2 mb-2">
+                <span className="text-4xl font-bold">$99</span>
+                <span className="text-zinc-500">/month</span>
+              </div>
+              <div className="text-zinc-400 text-sm mb-6">per account</div>
+              <ul className="space-y-3 mb-8">
+                {[
+                  'Everything in Pro',
+                  'Unlimited Opus refinements',
+                  'Custom domains',
+                  'Priority support',
+                  'Early access to features',
+                  'Dedicated onboarding',
+                ].map((item, i) => (
+                  <li key={i} className="flex items-center gap-2 text-sm text-zinc-300">
+                    <svg className="w-4 h-4 text-amber-400 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/></svg>
+                    {item}
+                  </li>
+                ))}
+              </ul>
+              <Link href="/builder?upgrade=agency" className="block w-full py-3 text-center bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-zinc-900 rounded-xl font-semibold transition-all">Get Agency</Link>
             </div>
           </div>
           <p className="text-center text-sm text-zinc-600 mt-8">Cancel anytime. Your code is always yours to export.</p>

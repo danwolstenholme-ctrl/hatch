@@ -1,0 +1,57 @@
+<svg width="120" height="120" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Glow layers -->
+  <circle cx="60" cy="60" r="50" fill="url(#glow1)" opacity="0.6"/>
+  <circle cx="60" cy="60" r="40" fill="url(#glow2)" opacity="0.8"/>
+  <circle cx="60" cy="60" r="30" fill="url(#glow3)"/>
+  
+  <!-- Egg shell bottom -->
+  <ellipse cx="60" cy="72" rx="28" ry="22" fill="#FEF3C7"/>
+  <ellipse cx="60" cy="72" rx="28" ry="22" fill="url(#eggShade)" opacity="0.3"/>
+  
+  <!-- Crack pattern -->
+  <path d="M32 65 L38 58 L42 65 L48 55 L54 63 L60 52 L66 62 L72 54 L78 63 L82 56 L88 65" 
+        stroke="#F59E0B" stroke-width="2" fill="none" stroke-linecap="round"/>
+  
+  <!-- Chick body peeking out -->
+  <ellipse cx="60" cy="48" rx="22" ry="20" fill="#FCD34D"/>
+  <ellipse cx="60" cy="48" rx="22" ry="20" fill="url(#chickShade)" opacity="0.2"/>
+  
+  <!-- Chick face -->
+  <circle cx="52" cy="44" r="3" fill="#1F2937"/> <!-- Left eye -->
+  <circle cx="68" cy="44" r="3" fill="#1F2937"/> <!-- Right eye -->
+  <circle cx="53" cy="43" r="1" fill="white"/> <!-- Eye shine -->
+  <circle cx="69" cy="43" r="1" fill="white"/> <!-- Eye shine -->
+  
+  <!-- Beak -->
+  <path d="M56 50 L60 56 L64 50 Z" fill="#F97316"/>
+  
+  <!-- Blush -->
+  <ellipse cx="46" cy="50" rx="4" ry="2" fill="#FBBF24" opacity="0.6"/>
+  <ellipse cx="74" cy="50" rx="4" ry="2" fill="#FBBF24" opacity="0.6"/>
+  
+  <!-- Little tuft on head -->
+  <path d="M58 30 Q60 24 62 30" stroke="#FCD34D" stroke-width="4" fill="none" stroke-linecap="round"/>
+  
+  <defs>
+    <radialGradient id="glow1" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0%" stop-color="#A855F7"/>
+      <stop offset="100%" stop-color="#A855F7" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="glow2" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0%" stop-color="#EC4899"/>
+      <stop offset="100%" stop-color="#EC4899" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="glow3" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0%" stop-color="#F59E0B" stop-opacity="0.4"/>
+      <stop offset="100%" stop-color="#F59E0B" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="eggShade" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#92400E"/>
+      <stop offset="100%" stop-color="#FEF3C7"/>
+    </linearGradient>
+    <linearGradient id="chickShade" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#FCD34D"/>
+      <stop offset="100%" stop-color="#B45309"/>
+    </linearGradient>
+  </defs>
+</svg>

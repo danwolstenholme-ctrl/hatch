@@ -12,6 +12,14 @@ const getStripe = () => {
   })
 }
 
+// Price IDs for each tier
+const PRICE_IDS = {
+  pro: process.env.STRIPE_PRO_PRICE_ID,      // $39/mo
+  agency: process.env.STRIPE_AGENCY_PRICE_ID, // $99/mo
+} as const
+
+type PriceTier = keyof typeof PRICE_IDS
+
 export async function POST(req: NextRequest) {
   try {
     const stripe = getStripe()
@@ -21,10 +29,16 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { projectSlug, projectName } = await req.json()
+    const { tier, projectSlug, projectName } = await req.json()
 
-    if (!projectSlug) {
-      return NextResponse.json({ error: 'Project slug required' }, { status: 400 })
+    // Validate tier
+    if (!tier || !['pro', 'agency'].includes(tier)) {
+      return NextResponse.json({ error: 'Invalid tier. Must be "pro" or "agency"' }, { status: 400 })
+    }
+
+    const priceId = PRICE_IDS[tier as PriceTier]
+    if (!priceId) {
+      return NextResponse.json({ error: `Price ID not configured for ${tier} tier` }, { status: 500 })
     }
 
     const session = await stripe.checkout.sessions.create({
@@ -32,25 +46,20 @@ export async function POST(req: NextRequest) {
       payment_method_types: ['card'],
       line_items: [
         {
-          // $19/month recurring subscription
-          price: process.env.STRIPE_PRICE_ID!,
-          quantity: 1,
-        },
-        {
-          // $5 one-time setup fee (early bird)
-          price: process.env.STRIPE_SETUP_FEE_ID!,
+          price: priceId,
           quantity: 1,
         },
       ],
-      // Allow promo codes at checkout (Golden Ticket, etc.)
+      // Allow promo codes at checkout
       allow_promotion_codes: true,
-      success_url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/builder?success=true&project=${encodeURIComponent(projectSlug)}`,
+      success_url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/builder?success=true&tier=${tier}${projectSlug ? `&project=${encodeURIComponent(projectSlug)}` : ''}`,
       cancel_url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/builder?canceled=true`,
       metadata: {
         userId,
-        projectSlug,
-        projectName: projectName || projectSlug,
-        type: 'site_subscription',
+        tier,
+        projectSlug: projectSlug || '',
+        projectName: projectName || projectSlug || '',
+        type: 'account_subscription',
       },
     })
 

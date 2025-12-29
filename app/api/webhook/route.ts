@@ -14,7 +14,17 @@ const getStripe = () => {
   })
 }
 
-// Type for site subscription
+// Account subscription (Pro or Agency)
+interface AccountSubscription {
+  tier: 'pro' | 'agency'
+  stripeSubscriptionId: string
+  stripeCustomerId: string
+  status: 'active' | 'canceled' | 'past_due'
+  currentPeriodEnd: string
+  createdAt: string
+}
+
+// Legacy site subscription (for existing users - keep for backwards compat)
 interface SiteSubscription {
   projectSlug: string
   projectName: string
@@ -46,12 +56,17 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: 'Invalid signature' }, { status: 400 })
   }
 
+  // ==========================================================================
+  // CHECKOUT COMPLETED
+  // ==========================================================================
   if (event.type === 'checkout.session.completed') {
     const session = event.data.object as Stripe.Checkout.Session
     const userId = session.metadata?.userId
     const metadataType = session.metadata?.type
 
-    // Handle domain purchase (one-time payment)
+    // ------------------------------------------------------------------------
+    // DOMAIN PURCHASE (one-time payment)
+    // ------------------------------------------------------------------------
     if (metadataType === 'domain_purchase') {
       const domain = session.metadata?.domain
       const projectSlug = session.metadata?.projectSlug
@@ -96,7 +111,58 @@ export async function POST(req: Request) {
       return NextResponse.json({ received: true })
     }
 
-    // Handle site subscription purchase
+    // ------------------------------------------------------------------------
+    // ACCOUNT SUBSCRIPTION (Pro or Agency) - NEW!
+    // ------------------------------------------------------------------------
+    if (metadataType === 'account_subscription' && userId) {
+      const tier = session.metadata?.tier as 'pro' | 'agency'
+      const subscriptionId = session.subscription as string
+      const customerId = session.customer as string
+
+      if (tier && subscriptionId) {
+        try {
+          const stripe = getStripe()
+          const client = await clerkClient()
+          const user = await client.users.getUser(userId)
+          
+          // Get subscription details for period end
+          const subscriptionResponse = await stripe.subscriptions.retrieve(subscriptionId)
+          const periodEnd = (subscriptionResponse as unknown as { current_period_end: number }).current_period_end
+          
+          const accountSubscription: AccountSubscription = {
+            tier,
+            stripeSubscriptionId: subscriptionId,
+            stripeCustomerId: customerId,
+            status: 'active',
+            currentPeriodEnd: new Date(periodEnd * 1000).toISOString(),
+            createdAt: new Date().toISOString(),
+          }
+
+          await client.users.updateUser(userId, {
+            publicMetadata: {
+              ...user.publicMetadata,
+              stripeCustomerId: customerId,
+              accountSubscription,
+              // Reset refinement count on new subscription
+              opusRefinementsUsed: 0,
+              opusRefinementsResetDate: new Date(periodEnd * 1000).toISOString(),
+            },
+          })
+
+          console.log(`✅ Account subscription created: ${tier} for user ${userId}`)
+          
+          // Track subscription event
+          await track('Account Subscription Created', { tier })
+        } catch (err) {
+          console.error('Failed to create account subscription:', err)
+        }
+      }
+      return NextResponse.json({ received: true })
+    }
+
+    // ------------------------------------------------------------------------
+    // LEGACY: Site subscription (for backwards compatibility)
+    // ------------------------------------------------------------------------
     if (metadataType === 'site_subscription' && userId) {
       const projectSlug = session.metadata?.projectSlug
       const projectName = session.metadata?.projectName || projectSlug
@@ -107,10 +173,7 @@ export async function POST(req: Request) {
           const client = await clerkClient()
           const user = await client.users.getUser(userId)
           
-          // Get existing subscriptions array or create new one
           const existingSubscriptions = (user.publicMetadata?.subscriptions as SiteSubscription[]) || []
-          
-          // Check if this project already has a subscription
           const existingIndex = existingSubscriptions.findIndex(s => s.projectSlug === projectSlug)
           
           const newSubscription: SiteSubscription = {
@@ -123,11 +186,9 @@ export async function POST(req: Request) {
 
           let updatedSubscriptions: SiteSubscription[]
           if (existingIndex >= 0) {
-            // Update existing subscription
             updatedSubscriptions = [...existingSubscriptions]
             updatedSubscriptions[existingIndex] = newSubscription
           } else {
-            // Add new subscription
             updatedSubscriptions = [...existingSubscriptions, newSubscription]
           }
 
@@ -139,9 +200,7 @@ export async function POST(req: Request) {
             },
           })
 
-          console.log(`Added subscription for project ${projectSlug} for user ${userId}`)
-          
-          // Track subscription event
+          console.log(`Added legacy site subscription for project ${projectSlug} for user ${userId}`)
           await track('Subscription Created', { projectSlug })
         } catch (err) {
           console.error('Failed to update user subscriptions:', err)
@@ -150,6 +209,9 @@ export async function POST(req: Request) {
     }
   }
 
+  // ==========================================================================
+  // SUBSCRIPTION DELETED (Canceled)
+  // ==========================================================================
   if (event.type === 'customer.subscription.deleted') {
     const subscription = event.data.object as Stripe.Subscription
     const subscriptionId = subscription.id
@@ -167,48 +229,59 @@ export async function POST(req: Request) {
       )
 
       if (user) {
+        const accountSub = user.publicMetadata?.accountSubscription as AccountSubscription | undefined
         const existingSubscriptions = (user.publicMetadata?.subscriptions as SiteSubscription[]) || []
         
-        // Find the subscription being canceled
-        const canceledSub = existingSubscriptions.find(s => s.stripeSubscriptionId === subscriptionId)
-        
-        if (canceledSub) {
-          // Remove from subscriptions array
-          const updatedSubscriptions = existingSubscriptions.filter(
-            s => s.stripeSubscriptionId !== subscriptionId
-          )
-
-          // Update user metadata
+        // Check if this is the account subscription
+        if (accountSub?.stripeSubscriptionId === subscriptionId) {
+          // Remove account subscription
           await client.users.updateUser(user.id, {
             publicMetadata: {
               ...user.publicMetadata,
-              subscriptions: updatedSubscriptions,
+              accountSubscription: null,
             },
           })
+          console.log(`✅ Removed account subscription (${accountSub.tier}) for user ${user.id}`)
+        } else {
+          // Legacy: Check site subscriptions
+          const canceledSub = existingSubscriptions.find(s => s.stripeSubscriptionId === subscriptionId)
+          
+          if (canceledSub) {
+            const updatedSubscriptions = existingSubscriptions.filter(
+              s => s.stripeSubscriptionId !== subscriptionId
+            )
 
-          console.log(`Removed subscription for project ${canceledSub.projectSlug} from user ${user.id}`)
+            await client.users.updateUser(user.id, {
+              publicMetadata: {
+                ...user.publicMetadata,
+                subscriptions: updatedSubscriptions,
+              },
+            })
 
-          // Delete the deployed project from Vercel
-          const vercelToken = process.env.VERCEL_TOKEN
-          if (vercelToken && canceledSub.projectSlug) {
-            try {
-              const deleteResponse = await fetch(
-                `https://api.vercel.com/v9/projects/${canceledSub.projectSlug}`,
-                {
-                  method: 'DELETE',
-                  headers: {
-                    'Authorization': `Bearer ${vercelToken}`,
-                  },
+            console.log(`Removed legacy site subscription for project ${canceledSub.projectSlug} from user ${user.id}`)
+
+            // Delete the deployed project from Vercel
+            const vercelToken = process.env.VERCEL_TOKEN
+            if (vercelToken && canceledSub.projectSlug) {
+              try {
+                const deleteResponse = await fetch(
+                  `https://api.vercel.com/v9/projects/${canceledSub.projectSlug}`,
+                  {
+                    method: 'DELETE',
+                    headers: {
+                      'Authorization': `Bearer ${vercelToken}`,
+                    },
+                  }
+                )
+
+                if (deleteResponse.ok) {
+                  console.log(`Deleted Vercel project: ${canceledSub.projectSlug}`)
+                } else {
+                  console.error(`Failed to delete Vercel project ${canceledSub.projectSlug}:`, deleteResponse.status)
                 }
-              )
-
-              if (deleteResponse.ok) {
-                console.log(`Deleted Vercel project: ${canceledSub.projectSlug}`)
-              } else {
-                console.error(`Failed to delete Vercel project ${canceledSub.projectSlug}:`, deleteResponse.status)
+              } catch (err) {
+                console.error(`Error deleting Vercel project:`, err)
               }
-            } catch (err) {
-              console.error(`Error deleting Vercel project:`, err)
             }
           }
         }
@@ -220,7 +293,9 @@ export async function POST(req: Request) {
     }
   }
 
-  // Handle failed payment - mark subscription as past_due
+  // ==========================================================================
+  // PAYMENT FAILED - Mark as past_due
+  // ==========================================================================
   if (event.type === 'invoice.payment_failed') {
     const invoice = event.data.object as Stripe.Invoice
     const subscriptionId = (invoice as { subscription?: string }).subscription
@@ -232,31 +307,41 @@ export async function POST(req: Request) {
       try {
         const client = await clerkClient()
         
-        // Find user by stripeCustomerId
         const allUsers = await client.users.getUserList({ limit: 100 })
         const user = allUsers.data.find(
           u => u.publicMetadata?.stripeCustomerId === customerId
         )
 
         if (user) {
+          const accountSub = user.publicMetadata?.accountSubscription as AccountSubscription | undefined
           const existingSubscriptions = (user.publicMetadata?.subscriptions as SiteSubscription[]) || []
           
-          // Find and update the subscription status to past_due
-          const updatedSubscriptions = existingSubscriptions.map(s => 
-            s.stripeSubscriptionId === subscriptionId 
-              ? { ...s, status: 'past_due' as const }
-              : s
-          )
+          // Check if this is the account subscription
+          if (accountSub?.stripeSubscriptionId === subscriptionId) {
+            await client.users.updateUser(user.id, {
+              publicMetadata: {
+                ...user.publicMetadata,
+                accountSubscription: { ...accountSub, status: 'past_due' },
+              },
+            })
+            console.log(`Marked account subscription as past_due for user ${user.id}`)
+          } else {
+            // Legacy: site subscriptions
+            const updatedSubscriptions = existingSubscriptions.map(s => 
+              s.stripeSubscriptionId === subscriptionId 
+                ? { ...s, status: 'past_due' as const }
+                : s
+            )
 
-          // Update user metadata
-          await client.users.updateUser(user.id, {
-            publicMetadata: {
-              ...user.publicMetadata,
-              subscriptions: updatedSubscriptions,
-            },
-          })
+            await client.users.updateUser(user.id, {
+              publicMetadata: {
+                ...user.publicMetadata,
+                subscriptions: updatedSubscriptions,
+              },
+            })
 
-          console.log(`Marked subscription ${subscriptionId} as past_due for user ${user.id}`)
+            console.log(`Marked legacy subscription ${subscriptionId} as past_due for user ${user.id}`)
+          }
         }
       } catch (err) {
         console.error('Failed to process payment failure:', err)
@@ -264,15 +349,17 @@ export async function POST(req: Request) {
     }
   }
 
-  // Handle successful payment after past_due - restore to active
+  // ==========================================================================
+  // PAYMENT SUCCEEDED - Restore to active & reset refinement count
+  // ==========================================================================
   if (event.type === 'invoice.payment_succeeded') {
     const invoice = event.data.object as Stripe.Invoice
     const subscriptionId = (invoice as { subscription?: string }).subscription
     const customerId = invoice.customer as string
     
-    // Only process if this is for a subscription (not one-time payments)
     if (subscriptionId && customerId) {
       try {
+        const stripe = getStripe()
         const client = await clerkClient()
         
         const allUsers = await client.users.getUserList({ limit: 100 })
@@ -281,28 +368,50 @@ export async function POST(req: Request) {
         )
 
         if (user) {
+          const accountSub = user.publicMetadata?.accountSubscription as AccountSubscription | undefined
           const existingSubscriptions = (user.publicMetadata?.subscriptions as SiteSubscription[]) || []
           
-          // Find and update the subscription status to active (in case it was past_due)
-          const updatedSubscriptions = existingSubscriptions.map(s => 
-            s.stripeSubscriptionId === subscriptionId && s.status === 'past_due'
-              ? { ...s, status: 'active' as const }
-              : s
-          )
-
-          // Only update if something changed
-          const hasChange = existingSubscriptions.some(s => 
-            s.stripeSubscriptionId === subscriptionId && s.status === 'past_due'
-          )
-
-          if (hasChange) {
+          // Check if this is the account subscription
+          if (accountSub?.stripeSubscriptionId === subscriptionId) {
+            // Get new period end
+            const subscriptionResponse = await stripe.subscriptions.retrieve(subscriptionId)
+            const periodEnd = (subscriptionResponse as unknown as { current_period_end: number }).current_period_end
+            
             await client.users.updateUser(user.id, {
               publicMetadata: {
                 ...user.publicMetadata,
-                subscriptions: updatedSubscriptions,
+                accountSubscription: { 
+                  ...accountSub, 
+                  status: 'active',
+                  currentPeriodEnd: new Date(periodEnd * 1000).toISOString(),
+                },
+                // Reset Opus refinement count for new billing period
+                opusRefinementsUsed: 0,
+                opusRefinementsResetDate: new Date(periodEnd * 1000).toISOString(),
               },
             })
-            console.log(`Restored subscription ${subscriptionId} to active for user ${user.id}`)
+            console.log(`✅ Renewed account subscription for user ${user.id}, reset refinement count`)
+          } else {
+            // Legacy: site subscriptions
+            const hasChange = existingSubscriptions.some(s => 
+              s.stripeSubscriptionId === subscriptionId && s.status === 'past_due'
+            )
+
+            if (hasChange) {
+              const updatedSubscriptions = existingSubscriptions.map(s => 
+                s.stripeSubscriptionId === subscriptionId && s.status === 'past_due'
+                  ? { ...s, status: 'active' as const }
+                  : s
+              )
+
+              await client.users.updateUser(user.id, {
+                publicMetadata: {
+                  ...user.publicMetadata,
+                  subscriptions: updatedSubscriptions,
+                },
+              })
+              console.log(`Restored legacy subscription ${subscriptionId} to active for user ${user.id}`)
+            }
           }
         }
       } catch (err) {
