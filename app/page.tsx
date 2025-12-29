@@ -5,10 +5,13 @@ import Link from 'next/link'
 import { SignInButton, SignedIn, SignedOut, UserButton } from '@clerk/nextjs'
 import { motion, useInView } from 'framer-motion'
 
-// Check if user prefers reduced motion or is on mobile
+// Check if user prefers reduced motion - always use motion components, just skip animations
 function useReducedMotion() {
-  const [reduced, setReduced] = useState(true) // Default to reduced for SSR
+  const [reduced, setReduced] = useState(false)
+  const [isClient, setIsClient] = useState(false)
+  
   useEffect(() => {
+    setIsClient(true)
     const mq = window.matchMedia('(prefers-reduced-motion: reduce)')
     const isMobile = window.innerWidth < 768
     setReduced(mq.matches || isMobile)
@@ -20,7 +23,9 @@ function useReducedMotion() {
       window.removeEventListener('resize', handler)
     }
   }, [])
-  return reduced
+  
+  // Always return false on server and first render for consistent hydration
+  return isClient ? reduced : false
 }
 
 // Typewriter effect for code demo
@@ -112,26 +117,18 @@ function FloatingChicks() {
   )
 }
 
-// Section wrapper - simplified for mobile
+// Section wrapper - always uses motion, just skips animation when reduced
 function Section({ children, className = '', id = '' }: { children: React.ReactNode; className?: string; id?: string }) {
   const ref = useRef(null)
   const isInView = useInView(ref, { once: true, margin: "-50px" })
   const reducedMotion = useReducedMotion()
   
-  if (reducedMotion) {
-    return (
-      <section ref={ref} id={id} className={`${className} ${isInView ? 'opacity-100' : 'opacity-0'} transition-opacity duration-500`}>
-        {children}
-      </section>
-    )
-  }
-  
   return (
     <motion.section
       ref={ref}
       id={id}
-      initial={{ opacity: 0, y: 30 }}
-      animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
+      initial={reducedMotion ? false : { opacity: 0, y: 30 }}
+      animate={isInView ? { opacity: 1, y: 0 } : (reducedMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 })}
       transition={{ duration: 0.5, ease: 'easeOut' }}
       className={className}
     >
@@ -230,151 +227,89 @@ export default function Home() {
       <section className="relative px-4 sm:px-6 pt-6 pb-16 md:pt-16 md:pb-32">
         <div className="max-w-6xl mx-auto">
           {/* Badge */}
-          <div className={`flex justify-center mb-8 ${reducedMotion ? 'animate-fade-in' : ''}`}>
-            {reducedMotion ? (
-              <div className="inline-flex items-center gap-2 px-3 sm:px-4 py-2 bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/20 rounded-full">
-                <span className="relative flex h-2 w-2 flex-shrink-0">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
-                </span>
-                <span className="text-xs sm:text-sm text-amber-200/80 text-center">Built in 3 days. Already changing how people build.</span>
-              </div>
-            ) : (
-              <motion.div 
-                className="inline-flex items-center gap-2 px-3 sm:px-4 py-2 bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/20 rounded-full"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5 }}
-              >
-                <span className="relative flex h-2 w-2 flex-shrink-0">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
-                </span>
-                <span className="text-xs sm:text-sm text-amber-200/80 text-center">Built in 3 days. Already changing how people build.</span>
-              </motion.div>
-            )}
+          <div className="flex justify-center mb-8">
+            <motion.div 
+              className="inline-flex items-center gap-2 px-3 sm:px-4 py-2 bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/20 rounded-full"
+              initial={reducedMotion ? false : { opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+            >
+              <span className="relative flex h-2 w-2 flex-shrink-0">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
+              </span>
+              <span className="text-xs sm:text-sm text-amber-200/80 text-center">Built in 3 days. Already changing how people build.</span>
+            </motion.div>
           </div>
 
           {/* Main headline */}
-          <div className={`text-center mb-6 ${reducedMotion ? 'animate-fade-in animate-fade-in-delay-1' : ''}`}>
-            {reducedMotion ? (
-              <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-8xl font-black leading-[1] sm:leading-[0.95] tracking-tight mb-6">
-                <span className="block">Describe it.</span>
-                <span className="block bg-gradient-to-r from-purple-400 via-pink-400 to-amber-400 bg-clip-text text-transparent">Watch it build.</span>
-                <span className="block">Ship it.</span>
-              </h1>
-            ) : (
-              <motion.h1
-                className="text-4xl sm:text-5xl md:text-6xl lg:text-8xl font-black leading-[1] sm:leading-[0.95] tracking-tight mb-6"
-                initial={{ opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.1 }}
-              >
-                <span className="block">Describe it.</span>
-                <span className="block bg-gradient-to-r from-purple-400 via-pink-400 to-amber-400 bg-clip-text text-transparent">Watch it build.</span>
-                <span className="block">Ship it.</span>
-              </motion.h1>
-            )}
+          <div className="text-center mb-6">
+            <motion.h1
+              className="text-4xl sm:text-5xl md:text-6xl lg:text-8xl font-black leading-[1] sm:leading-[0.95] tracking-tight mb-6"
+              initial={reducedMotion ? false : { opacity: 0, y: 30 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.1 }}
+            >
+              <span className="block">Describe it.</span>
+              <span className="block bg-gradient-to-r from-purple-400 via-pink-400 to-amber-400 bg-clip-text text-transparent">Watch it build.</span>
+              <span className="block">Ship it.</span>
+            </motion.h1>
           </div>
 
           {/* Subheadline */}
-          <div className={`${reducedMotion ? 'animate-fade-in animate-fade-in-delay-2' : ''}`}>
-            {reducedMotion ? (
-              <p className="text-center text-lg sm:text-xl md:text-2xl text-zinc-400 max-w-3xl mx-auto mb-8 leading-relaxed">
-                The AI website builder that writes <span className="text-white font-medium">real, maintainable</span> React code. Not drag-and-drop garbage. Actual code you own.
-              </p>
-            ) : (
-              <motion.p 
-                className="text-center text-lg sm:text-xl md:text-2xl text-zinc-400 max-w-3xl mx-auto mb-8 leading-relaxed"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.2 }}
-              >
-                The AI website builder that writes <span className="text-white font-medium">real, maintainable</span> React code. Not drag-and-drop garbage. Actual code you own.
-              </motion.p>
-            )}
-          </div>
+          <motion.p 
+            className="text-center text-lg sm:text-xl md:text-2xl text-zinc-400 max-w-3xl mx-auto mb-8 leading-relaxed"
+            initial={reducedMotion ? false : { opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+          >
+            The AI website builder that writes <span className="text-white font-medium">real, maintainable</span> React code. Not drag-and-drop garbage. Actual code you own.
+          </motion.p>
 
           {/* CTAs */}
-          <div className={`flex flex-col sm:flex-row justify-center gap-4 mb-12 ${reducedMotion ? 'animate-fade-in animate-fade-in-delay-3' : ''}`}>
-            {reducedMotion ? (
-              <>
-                <Link href="/builder" className="group px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 rounded-xl font-bold text-lg transition-all active:scale-95 flex items-center justify-center gap-2">
-                  Start Building Free
-                  <span className="group-hover:translate-x-1 transition-transform">→</span>
-                </Link>
-                <Link href="/how-it-works" className="px-8 py-4 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 hover:border-zinc-700 rounded-xl font-semibold text-lg transition-all flex items-center justify-center gap-2">
-                  See How It Works
-                </Link>
-              </>
-            ) : (
-              <motion.div 
-                className="flex flex-col sm:flex-row justify-center gap-4"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.3 }}
-              >
-                <Link href="/builder" className="group px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 rounded-xl font-bold text-lg transition-all hover:scale-105 hover:shadow-xl hover:shadow-purple-500/25 flex items-center justify-center gap-2">
-                  Start Building Free
-                  <span className="group-hover:translate-x-1 transition-transform">→</span>
-                </Link>
-                <Link href="/how-it-works" className="px-8 py-4 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 hover:border-zinc-700 rounded-xl font-semibold text-lg transition-all flex items-center justify-center gap-2">
-                  See How It Works
-                </Link>
-              </motion.div>
-            )}
-          </div>
+          <motion.div 
+            className="flex flex-col sm:flex-row justify-center gap-4 mb-12"
+            initial={reducedMotion ? false : { opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.3 }}
+          >
+            <Link href="/builder" className="group px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 rounded-xl font-bold text-lg transition-all hover:scale-105 hover:shadow-xl hover:shadow-purple-500/25 flex items-center justify-center gap-2">
+              Start Building Free
+              <span className="group-hover:translate-x-1 transition-transform">→</span>
+            </Link>
+            <Link href="/how-it-works" className="px-8 py-4 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 hover:border-zinc-700 rounded-xl font-semibold text-lg transition-all flex items-center justify-center gap-2">
+              See How It Works
+            </Link>
+          </motion.div>
 
           {/* Trust badges */}
-          <div className={`flex flex-wrap justify-center gap-6 text-sm text-zinc-500 mb-16 ${reducedMotion ? 'animate-fade-in animate-fade-in-delay-3' : ''}`}>
-            {reducedMotion ? (
-              <>
-                <div className="flex items-center gap-2">
-                  <svg className="w-4 h-4 text-green-400" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/></svg>
-                  <span>No credit card required</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <svg className="w-4 h-4 text-green-400" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/></svg>
-                  <span>10 free generations/day</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <svg className="w-4 h-4 text-green-400" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/></svg>
-                  <span>Export your code anytime</span>
-                </div>
-              </>
-            ) : (
-              <motion.div
-                className="flex flex-wrap justify-center gap-6"
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.5, delay: 0.4 }}
-              >
-                <div className="flex items-center gap-2">
-                  <svg className="w-4 h-4 text-green-400" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/></svg>
-                  <span>No credit card required</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <svg className="w-4 h-4 text-green-400" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/></svg>
-                  <span>10 free generations/day</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <svg className="w-4 h-4 text-green-400" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/></svg>
-                  <span>Export your code anytime</span>
-                </div>
-              </motion.div>
-            )}
-          </div>
+          <motion.div
+            className="flex flex-wrap justify-center gap-6 text-sm text-zinc-500 mb-16"
+            initial={reducedMotion ? false : { opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5, delay: 0.4 }}
+          >
+            <div className="flex items-center gap-2">
+              <svg className="w-4 h-4 text-green-400" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/></svg>
+              <span>No credit card required</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <svg className="w-4 h-4 text-green-400" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/></svg>
+              <span>10 free generations/day</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <svg className="w-4 h-4 text-green-400" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/></svg>
+              <span>Export your code anytime</span>
+            </div>
+          </motion.div>
 
           {/* LIVE CODE DEMO - The showstopper */}
-          <div className={`relative max-w-5xl mx-auto ${reducedMotion ? 'animate-fade-in animate-fade-in-delay-3' : ''}`}>
-            {!reducedMotion && (
-              <motion.div
-                initial={{ opacity: 0, y: 40 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: 0.5 }}
-                className="absolute inset-0 pointer-events-none"
-              />
-            )}
+          <motion.div 
+            className="relative max-w-5xl mx-auto"
+            initial={reducedMotion ? false : { opacity: 0, y: 40 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.8, delay: 0.5 }}
+          >
             <div className="absolute -inset-4 bg-gradient-to-r from-purple-500/20 via-pink-500/20 to-amber-500/20 rounded-3xl blur-xl" />
             <div className="relative bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden shadow-2xl">
               {/* Browser chrome */}
@@ -433,7 +368,7 @@ export default function Home() {
             
             {/* Caption */}
             <p className="text-center text-sm text-zinc-500 mt-6">↑ This is real. Type a prompt, watch your site get written line by line.</p>
-          </div>
+          </motion.div>
         </div>
       </section>
 
@@ -631,7 +566,7 @@ export default function Home() {
       {/* FINAL CTA */}
       <Section className="px-6 py-24">
         <div className="max-w-4xl mx-auto text-center">
-          <div className={`relative p-12 md:p-16 bg-gradient-to-br from-purple-900/40 via-pink-900/30 to-amber-900/40 border border-purple-500/20 rounded-3xl overflow-hidden ${reducedMotion ? 'animate-fade-in' : ''}`}>
+          <div className="relative p-12 md:p-16 bg-gradient-to-br from-purple-900/40 via-pink-900/30 to-amber-900/40 border border-purple-500/20 rounded-3xl overflow-hidden">
             <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-10" />
             <div className="absolute top-4 left-4 text-4xl opacity-30">🐣</div>
             <div className="absolute bottom-4 right-4 text-4xl opacity-30">🐣</div>
