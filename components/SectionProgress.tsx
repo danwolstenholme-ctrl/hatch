@@ -33,10 +33,10 @@ const HatchingChick = ({ progress, onGoHome, onStartOver, onViewBrand, brandConf
   }, [])
   
   return (
-    <div className="relative z-50" ref={menuRef}>
+    <div className="relative" ref={menuRef}>
       <motion.button 
         onClick={() => setIsOpen(!isOpen)}
-        className="relative w-10 h-10 flex items-center justify-center rounded-full hover:bg-zinc-800 transition-colors cursor-pointer"
+        className="relative w-10 h-10 flex items-center justify-center rounded-full hover:bg-zinc-800 transition-colors cursor-pointer z-10"
         animate={{ 
           y: [0, -2, 0],
           rotate: [-3, 3, -3]
@@ -73,15 +73,20 @@ const HatchingChick = ({ progress, onGoHome, onStartOver, onViewBrand, brandConf
       {/* Dropdown Menu */}
       <AnimatePresence>
         {isOpen && (
-          <motion.div
-            initial={{ opacity: 0, y: -10, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: -10, scale: 0.95 }}
-            transition={{ duration: 0.15 }}
-            className="absolute top-full left-0 mt-2 w-56 border border-zinc-700 rounded-xl shadow-2xl overflow-hidden z-[100]"
-            style={{ backgroundColor: '#18181b' }}
-            onClick={(e) => e.stopPropagation()}
-          >
+          <>
+            {/* Backdrop to catch clicks */}
+            <div 
+              className="fixed inset-0 z-[998]" 
+              onClick={() => setIsOpen(false)}
+            />
+            <motion.div
+              initial={{ opacity: 0, y: -10, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -10, scale: 0.95 }}
+              transition={{ duration: 0.15 }}
+              className="absolute top-full left-0 mt-2 w-56 border border-zinc-700 rounded-xl shadow-2xl overflow-hidden z-[999]"
+              style={{ backgroundColor: '#18181b' }}
+            >
             {/* Brand Preview (if configured) */}
             {brandConfig && (
               <div className="px-4 py-3 border-b border-zinc-800" style={{ backgroundColor: '#27272a' }}>
@@ -186,6 +191,7 @@ const HatchingChick = ({ progress, onGoHome, onStartOver, onViewBrand, brandConf
               </p>
             </div>
           </motion.div>
+          </>
         )}
       </AnimatePresence>
     </div>
@@ -223,7 +229,7 @@ export default function SectionProgress({
   const progressPercent = Math.round((doneCount / totalSections) * 100)
 
   return (
-    <div className="w-full bg-zinc-900/80 backdrop-blur-sm border-b border-zinc-800">
+    <div className="w-full bg-zinc-900/80 backdrop-blur-sm border-b border-zinc-800 relative z-50">
       {/* Progress Bar */}
       <div className="h-1 bg-zinc-800">
         <motion.div
@@ -235,7 +241,7 @@ export default function SectionProgress({
       </div>
 
       {/* Section Navigation */}
-      <div className="px-4 py-3 flex items-center justify-between">
+      <div className="px-4 py-3 flex items-center justify-between overflow-visible">
         {/* Left: Hatching Chick + Template Info */}
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
