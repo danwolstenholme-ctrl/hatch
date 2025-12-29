@@ -20,7 +20,49 @@ interface RoadmapSection {
 
 const roadmap: RoadmapSection[] = [
   {
-    title: 'V3.0 - Just Shipped! 🥚',
+    title: 'V3.1 - Just Shipped! 💭',
+    timeline: 'December 2025',
+    items: [
+      { 
+        title: 'AI Reasoning Display', 
+        description: 'See WHY the AI made each design decision', 
+        status: 'done', 
+        date: 'Dec 2025',
+        technicalDetails: `Added "Design Reasoning" display to SectionBuilder. The AI now explains its choices: "Used split layout with testimonial on left to build trust before the CTA" or "Three feature cards because odd numbers feel more dynamic."
+
+Updated build-section API prompt to return JSON with both code and reasoning fields. Purple-tinted card with 💭 icon shows the reasoning after generation completes.`
+      },
+      { 
+        title: 'AI Thinking Caption', 
+        description: 'Homepage shows rotating AI thoughts as code generates', 
+        status: 'done', 
+        date: 'Dec 2025',
+        technicalDetails: `Replaced static caption under hero demo with rotating AIThinkingCaption component. Shows design reasoning like "Choosing gradient direction to guide eye flow toward CTA" and "Purple CTA on dark = high contrast, draws immediate focus."
+
+Cycles through 6 thoughts every 4 seconds with fade animation. Makes AI feel thoughtful and opinionated, not mechanical.`
+      },
+      { 
+        title: 'DB-Backed Generation Limits', 
+        description: 'Proper free tier enforcement that persists across deploys', 
+        status: 'done', 
+        date: 'Dec 2025',
+        technicalDetails: `Moved generation tracking from in-memory Map to Supabase. Added generation_count and generation_date columns to users table with atomic increment function.
+
+Free tier now properly enforces 5/day limit. Previously, serverless cold starts would reset the counter, allowing unlimited generations.`
+      },
+      { 
+        title: 'Security Hardening', 
+        description: 'Improved webhook handling and API key validation', 
+        status: 'done', 
+        date: 'Dec 2025',
+        technicalDetails: `Added findUserByStripeInfo helper for webhook user lookup with subscription metadata fallback. Proper Gemini API key validation with user-friendly errors.
+
+Created shared subscription types in types/subscriptions.ts for consistent tier handling across checkout, webhooks, and API routes.`
+      },
+    ]
+  },
+  {
+    title: 'V3.0 - The Big Update 🥚',
     timeline: 'January 2026',
     items: [
       { 
