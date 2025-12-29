@@ -28,6 +28,34 @@ function useReducedMotion() {
   return prefersReducedMotion || isMobile
 }
 
+// Animated card that prevents hydration flash
+function AnimatedCard({ children, delay = 0, className = '', onClick }: { children: React.ReactNode; delay?: number; className?: string; onClick?: () => void }) {
+  const [mounted, setMounted] = useState(false)
+  
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+  
+  // Don't animate until mounted
+  if (!mounted) {
+    return <div className={className} onClick={onClick}>{children}</div>
+  }
+  
+  return (
+    <motion.div 
+      className={className}
+      onClick={onClick}
+      style={{ willChange: 'transform, opacity', backfaceVisibility: 'hidden' }}
+      initial={{ opacity: 0, y: 20 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ delay }}
+    >
+      {children}
+    </motion.div>
+  )
+}
+
 export default function FeaturesPage() {
   const reducedMotion = useReducedMotion()
   const [expandedFeature, setExpandedFeature] = useState<string | null>(null)
@@ -194,6 +222,13 @@ export default function FeaturesPage() {
 
   return (
     <div className="min-h-screen bg-zinc-950 text-white">
+      {/* Gradient orbs */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-40 -left-40 w-80 h-80 bg-purple-500/20 rounded-full blur-[100px]" />
+        <div className="absolute top-1/3 -right-40 w-96 h-96 bg-blue-500/15 rounded-full blur-[100px]" />
+        <div className="absolute -bottom-40 left-1/3 w-80 h-80 bg-pink-500/10 rounded-full blur-[100px]" />
+      </div>
+
       {/* CSS Animations for mobile */}
       <style jsx global>{`
         @keyframes fade-in {
@@ -213,18 +248,12 @@ export default function FeaturesPage() {
       `}</style>
       
       {/* Hero Section */}
-      <section className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-purple-900/20 via-transparent to-transparent" />
-        <div className="absolute inset-0">
-          <div className="absolute top-20 left-1/4 w-72 h-72 bg-purple-500/10 rounded-full blur-3xl" />
-          <div className="absolute top-40 right-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl" />
-        </div>
-        
-        <div className="relative max-w-6xl mx-auto px-6 pt-32 pb-20">
-          <div className={`text-center ${reducedMotion ? 'animate-fade-in' : ''}`}>
+      <section className="relative px-6 pt-20 pb-24 text-center">
+        <div className="max-w-3xl mx-auto">
+          <div className={reducedMotion ? 'animate-fade-in' : ''}>
             {reducedMotion ? (
               <>
-                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-300 text-sm mb-6">
+                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-300 text-sm mb-8">
                   <span className="text-lg">✨</span>
                   <span>The Future of Web Development</span>
                 </div>
@@ -242,7 +271,7 @@ export default function FeaturesPage() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
               >
-                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-300 text-sm mb-6">
+                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-300 text-sm mb-8">
                   <span className="text-lg">✨</span>
                   <span>The Future of Web Development</span>
                 </div>
@@ -257,7 +286,7 @@ export default function FeaturesPage() {
               </motion.div>
             )}
             
-            <p className="text-xl text-zinc-400 max-w-3xl mx-auto mb-10">
+            <p className="text-xl text-zinc-400 max-w-2xl mx-auto mb-10">
               HatchIt combines the most advanced AI with intuitive design to create the ultimate website building experience. 
               Describe what you want, and watch it come to life.
             </p>
@@ -295,13 +324,9 @@ export default function FeaturesPage() {
 
           <div className="grid md:grid-cols-2 gap-6">
             {coreFeatures.map((feature, i) => (
-              <motion.div
+              <AnimatedCard
                 key={feature.id}
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.1 }}
-                style={{ willChange: 'transform, opacity', backfaceVisibility: 'hidden' }}
+                delay={i * 0.1}
                 className={`relative bg-zinc-900/50 border border-zinc-800 rounded-2xl overflow-hidden cursor-pointer transition-all duration-300 ${
                   expandedFeature === feature.id ? 'ring-2 ring-purple-500/50' : 'hover:border-zinc-700'
                 }`}
@@ -354,7 +379,7 @@ export default function FeaturesPage() {
                     </motion.span>
                   </div>
                 </div>
-              </motion.div>
+              </AnimatedCard>
             ))}
           </div>
         </div>

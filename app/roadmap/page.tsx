@@ -3,6 +3,8 @@
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useState } from 'react'
+import HatchCharacter from '@/components/HatchCharacter'
+import { SignInButton, SignedIn, SignedOut, UserButton } from '@clerk/nextjs'
 
 interface RoadmapItem {
   title: string
@@ -63,13 +65,13 @@ Created shared subscription types in types/subscriptions.ts for consistent tier 
   },
   {
     title: 'V3.0 - The Big Update 🥚',
-    timeline: 'January 2026',
+    timeline: 'December 2025',
     items: [
       { 
         title: 'Three-Model AI Pipeline', 
         description: 'Sonnet builds. Opus polishes. Gemini audits.', 
         status: 'done', 
-        date: 'Jan 2026',
+        date: 'Dec 2025',
         technicalDetails: `Replaced single-model approach with specialized pipeline. Claude Sonnet 4 (claude-sonnet-4-20250514) generates initial code fast. Claude Opus 4 (claude-opus-4-20250514) refines for accessibility, semantic HTML, and quality. Gemini 2.5 Pro (gemini-2.5-pro-preview-06-05) audits final output for best practices.
 
 Each model has a specific role and system prompt optimized for its task. The pipeline runs sequentially: Sonnet → Opus → (optional) Gemini audit.`
@@ -78,7 +80,7 @@ Each model has a specific role and system prompt optimized for its task. The pip
         title: 'Meet Hatch 🥚', 
         description: 'Your friendly egg companion who writes prompts for you', 
         status: 'done', 
-        date: 'Jan 2026',
+        date: 'Dec 2025',
         technicalDetails: `Created HatchCharacter.tsx component with 5 animated states: idle, thinking, excited, watching, sleeping. Powered by Claude Haiku (claude-3-5-haiku-20241022) for instant responses.
 
 Floating button in SectionBuilder opens popup where Hatch writes prompts based on your branding and current section. Visual design: cute egg with soft ◠ ◠ eyes, pink blush, sparkles when excited, crack animation.`
@@ -87,7 +89,7 @@ Floating button in SectionBuilder opens popup where Hatch writes prompts based o
         title: 'Section-by-Section Building', 
         description: 'Build your site one section at a time with templates', 
         status: 'done', 
-        date: 'Jan 2026',
+        date: 'Dec 2025',
         technicalDetails: `New BuildFlowController orchestrates the flow: Template Selection → Branding Step → Section Building. Templates define section order (e.g., Website: header, hero, features, how-it-works, testimonials, pricing, cta, faq, footer).
 
 SectionProgress component shows progress with clickable dots. Each section is built and refined before moving to the next, with skip option available.`
@@ -96,7 +98,7 @@ SectionProgress component shows progress with clickable dots. Each section is bu
         title: 'Branding Step', 
         description: 'Set colors, fonts, and business details before building', 
         status: 'done', 
-        date: 'Jan 2026',
+        date: 'Dec 2025',
         technicalDetails: `BrandingStep.tsx collects: businessName, tagline, primaryColor, accentColor, style (modern/minimal/bold/playful). Visual color picker with preset palettes.
 
 Brand config is passed to every AI prompt, ensuring consistent styling across all sections. Stored in project object and persisted to Supabase.`
@@ -105,7 +107,7 @@ Brand config is passed to every AI prompt, ensuring consistent styling across al
         title: 'AI Suggestions Popup', 
         description: 'Opus suggests improvements after each section', 
         status: 'done', 
-        date: 'Jan 2026',
+        date: 'Dec 2025',
         technicalDetails: `After Sonnet generates a section, Opus analyzes and returns suggestions via suggest-improvements API. Displayed in friendly popup with Hatch: "I have some ideas! ✨"
 
 Suggestions are contextual to the section type. Click to apply, or dismiss and continue to next section.`
@@ -114,7 +116,7 @@ Suggestions are contextual to the section type. Click to apply, or dismiss and c
         title: 'Website Template', 
         description: 'New 9-section template for complete business sites', 
         status: 'done', 
-        date: 'Jan 2026',
+        date: 'Dec 2025',
         technicalDetails: `Added as first template option. Sections: header, hero, features, how-it-works, testimonials, pricing, cta, faq, footer.
 
 Optimized prompts for each section type. Removed Blog template, repositioned Portfolio and SaaS templates.`
@@ -255,54 +257,66 @@ function RoadmapCard({ item, sectionIndex, itemIndex }: { item: RoadmapItem; sec
 
 export default function RoadmapPage() {
   return (
-    <div className="min-h-screen bg-zinc-950 text-white">
-      {/* Background */}
+    <div className="min-h-screen bg-zinc-950 text-white relative">
+      {/* Gradient orbs */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-20 left-10 w-72 h-72 bg-blue-500/10 rounded-full blur-3xl"></div>
-        <div className="absolute bottom-20 right-10 w-96 h-96 bg-purple-500/10 rounded-full blur-3xl"></div>
+        <div className="absolute -top-40 -left-40 w-80 h-80 bg-purple-500/20 rounded-full blur-2xl md:blur-[100px]" />
+        <div className="absolute top-1/3 -right-40 w-96 h-96 bg-blue-500/15 rounded-full blur-2xl md:blur-[100px]" />
+        <div className="absolute -bottom-40 left-1/3 w-80 h-80 bg-pink-500/10 rounded-full blur-2xl md:blur-[100px]" />
       </div>
 
-      {/* Header */}
-      <nav className="relative z-50 px-8 py-6 border-b border-zinc-800">
-        <div className="max-w-4xl mx-auto flex justify-between items-center">
-          <Link href="/" className="text-2xl font-black flex items-center gap-1">
-            <span className="bg-gradient-to-r from-white via-zinc-200 to-zinc-400 bg-clip-text text-transparent">Hatch</span>
-            <span className="bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">It</span>
-            <span className="text-lg">🐣</span>
-          </Link>
-          <Link href="/builder" className="px-5 py-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 rounded-lg font-semibold text-sm transition-all">
-            Start Building
-          </Link>
-        </div>
-      </nav>
-
       {/* Content */}
-      <main className="relative z-10 px-8 py-16">
-        <div className="max-w-4xl mx-auto">
+      <main className="relative z-10 px-6 pt-20 pb-16">
+        <div className="max-w-5xl mx-auto">
           {/* Hero */}
           <motion.div 
-            className="text-center mb-16"
+            className="text-center mb-24"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <h1 className="text-4xl md:text-5xl font-black mb-4">
-              <span className="bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">Roadmap</span>
-            </h1>
-            <p className="text-zinc-400 text-lg max-w-2xl mx-auto">
-              See what we&apos;ve shipped and what&apos;s coming next. We build in public and ship fast.
-            </p>
-            <div className="flex items-center justify-center gap-6 mt-8 text-sm">
+            {/* Badge */}
+            <motion.div 
+              className="inline-flex items-center gap-2 px-4 py-2 bg-purple-500/10 border border-purple-500/20 rounded-full text-purple-300 text-sm mb-8"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ delay: 0.1 }}
+            >
+              <span className="text-lg">🗓️</span>
+              <span>What We&apos;ve Built & What&apos;s Next</span>
+            </motion.div>
+            
+            <motion.h1 
+              className="text-5xl md:text-7xl font-bold mb-6 leading-tight"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+            >
+              <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-amber-400 bg-clip-text text-transparent">
+                Product Roadmap
+              </span>
+            </motion.h1>
+            
+            <motion.p 
+              className="text-xl text-zinc-400 max-w-2xl mx-auto mb-10"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.3 }}
+            >
+              We build in public and ship fast. See what we&apos;ve shipped, what we&apos;re working on, and what&apos;s coming next.
+            </motion.p>
+            
+            <div className="flex items-center justify-center gap-6 flex-wrap text-sm">
               <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-green-500"></div>
+                <div className="w-2.5 h-2.5 rounded-full bg-green-500"></div>
                 <span className="text-zinc-400">Shipped</span>
               </div>
               <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-blue-500 animate-pulse"></div>
+                <div className="w-2.5 h-2.5 rounded-full bg-blue-500 animate-pulse"></div>
                 <span className="text-zinc-400">In Progress</span>
               </div>
               <div className="flex items-center gap-2">
-                <div className="w-2 h-2 rounded-full bg-zinc-500"></div>
+                <div className="w-2.5 h-2.5 rounded-full bg-zinc-600"></div>
                 <span className="text-zinc-400">Planned</span>
               </div>
             </div>
@@ -329,7 +343,16 @@ export default function RoadmapPage() {
                     </div>
                   </div>
                   <div>
-                    <h2 className="text-xl font-bold text-white">{section.title}</h2>
+                    <h2 className="text-xl font-bold text-white flex items-center gap-2">
+                      {section.title.includes('🥚') ? (
+                        <>
+                          {section.title.replace(' 🥚', '')}
+                          <span className="inline-block"><HatchCharacter state="excited" size="sm" /></span>
+                        </>
+                      ) : (
+                        section.title
+                      )}
+                    </h2>
                     <p className="text-zinc-500 text-sm">{section.timeline}</p>
                   </div>
                 </div>

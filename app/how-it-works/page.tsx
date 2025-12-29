@@ -35,28 +35,47 @@ const Step = ({ icon, step, title, description, delay = 0 }: { icon: string, ste
 export default function HowItWorksPage() {
   return (
     <div className="bg-zinc-950 text-white">
+      {/* Gradient orbs */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-40 -left-40 w-80 h-80 bg-purple-500/20 rounded-full blur-[100px]" />
+        <div className="absolute top-1/3 -right-40 w-96 h-96 bg-blue-500/15 rounded-full blur-[100px]" />
+        <div className="absolute -bottom-40 left-1/3 w-80 h-80 bg-pink-500/10 rounded-full blur-[100px]" />
+      </div>
+
       {/* Hero */}
-      <div className="relative px-6 pt-16 pb-24 text-center">
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute -top-40 -left-40 w-80 h-80 bg-purple-500/20 rounded-full blur-[100px]" />
-          <div className="absolute top-1/3 -right-40 w-96 h-96 bg-blue-500/15 rounded-full blur-[100px]" />
-        </div>
+      <div className="relative px-6 pt-20 pb-24 text-center">
         <div className="max-w-3xl mx-auto">
-          <motion.h1 
-            className="text-4xl sm:text-5xl md:text-6xl font-bold mb-4"
+          <motion.div
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-300 text-sm mb-8"
             variants={sectionVariants}
             initial="hidden"
             animate="visible"
             transition={transition()}
           >
-            From Idea to Live Site in Minutes
-          </motion.h1>
-          <motion.p 
-            className="text-lg sm:text-xl text-zinc-400"
+            <span className="text-lg">🏗️</span>
+            <span>The Process</span>
+          </motion.div>
+          
+          <motion.h1 
+            className="text-5xl md:text-7xl font-bold mb-6 leading-tight"
             variants={sectionVariants}
             initial="hidden"
             animate="visible"
             transition={transition(0.1)}
+          >
+            From Idea to Live Site
+            <br />
+            <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-amber-400 bg-clip-text text-transparent">
+              in Minutes
+            </span>
+          </motion.h1>
+          
+          <motion.p 
+            className="text-xl text-zinc-400 max-w-2xl mx-auto"
+            variants={sectionVariants}
+            initial="hidden"
+            animate="visible"
+            transition={transition(0.2)}
           >
             HatchIt streamlines the development process by turning your natural language prompts into high-quality, production-ready code. Here's how it works.
           </motion.p>

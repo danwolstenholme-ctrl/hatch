@@ -334,6 +334,34 @@ function Section({ children, className = '', id = '' }: { children: React.ReactN
   )
 }
 
+// Animated card that prevents hydration flash
+function AnimatedCard({ children, delay = 0, className = '' }: { children: React.ReactNode; delay?: number; className?: string }) {
+  const [mounted, setMounted] = useState(false)
+  
+  useEffect(() => {
+    setMounted(true)
+  }, [])
+  
+  // Don't animate until mounted
+  if (!mounted) {
+    return <div className={className}>{children}</div>
+  }
+  
+  return (
+    <motion.div 
+      className={className}
+      style={{ willChange: 'transform, opacity' }}
+      initial={{ opacity: 0, y: 30 }}
+      whileInView={{ opacity: 1, y: 0 }}
+      viewport={{ once: true }}
+      transition={{ duration: 0.5, delay, ease: [0.25, 0.1, 0.25, 1] }}
+      whileHover={{ y: -8, transition: { type: 'spring', stiffness: 400, damping: 17 } }}
+    >
+      {children}
+    </motion.div>
+  )
+}
+
 const demoCode = `export default function Hero() {
   return (
     <section className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
@@ -406,53 +434,6 @@ export default function Home() {
           -webkit-backface-visibility: hidden;
         }
       `}</style>
-
-      {/* Navigation */}
-      <nav className="relative z-50 px-6 py-5">
-        <div className="max-w-7xl mx-auto flex justify-between items-center">
-          <Link href="/" className="flex items-center gap-2 group">
-            <motion.span 
-              className="text-2xl inline-block"
-              style={{ willChange: 'transform', backfaceVisibility: 'hidden' }}
-              initial={{ rotate: 0, scale: 1 }}
-              animate={{ 
-                rotate: [0, -10, 10, -5, 5, 0],
-                scale: [1, 1.1, 1, 1.05, 1]
-              }}
-              transition={{ 
-                duration: 2, 
-                repeat: Infinity, 
-                repeatDelay: 3,
-                ease: "easeInOut"
-              }}
-            >
-              🐣
-            </motion.span>
-            <span className="text-xl font-bold bg-gradient-to-r from-white to-zinc-300 bg-clip-text text-transparent group-hover:from-purple-400 group-hover:to-pink-400 transition-all duration-300">HatchIt</span>
-          </Link>
-          
-          <div className="hidden md:flex items-center gap-8">
-            <Link href="/features" className="text-zinc-400 hover:text-white transition-colors text-sm">Features</Link>
-            <Link href="/how-it-works" className="text-zinc-400 hover:text-white transition-colors text-sm">How It Works</Link>
-            <Link href="/about" className="text-zinc-400 hover:text-white transition-colors text-sm">About</Link>
-            <a href="#pricing" className="text-zinc-400 hover:text-white transition-colors text-sm">Pricing</a>
-          </div>
-          
-          <div className="flex items-center gap-4">
-            <SignedOut>
-              <SignInButton mode="modal">
-                <button className="text-zinc-400 hover:text-white transition-colors text-sm hidden sm:block">Sign In</button>
-              </SignInButton>
-            </SignedOut>
-            <SignedIn>
-              <UserButton afterSignOutUrl="/" />
-            </SignedIn>
-            <Link href="/builder" className="px-5 py-2.5 bg-white text-zinc-900 hover:bg-zinc-100 rounded-lg font-semibold text-sm transition-all">
-              Start Building
-            </Link>
-          </div>
-        </div>
-      </nav>
 
       {/* HERO - The main event */}
       <section className="relative px-4 sm:px-6 pt-6 pb-16 md:pt-16 md:pb-32">
@@ -681,14 +662,9 @@ export default function Home() {
           {/* Feature cards */}
           <div className="grid md:grid-cols-3 gap-6">
             {/* Three-Model Pipeline Card */}
-            <motion.div 
+            <AnimatedCard 
+              delay={0}
               className="group relative p-6 bg-zinc-900/50 border border-zinc-800 rounded-2xl hover:border-zinc-700 transition-colors duration-300 gpu-accelerate"
-              style={{ willChange: 'transform, opacity' }}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: 0, ease: [0.25, 0.1, 0.25, 1] }}
-              whileHover={{ y: -8, transition: { type: 'spring', stiffness: 400, damping: 17 } }}
             >
               <div className="absolute inset-0 bg-gradient-to-br from-purple-500 to-indigo-600 opacity-0 group-hover:opacity-10 rounded-2xl transition-opacity duration-500" />
               <div className="relative">
@@ -703,17 +679,12 @@ export default function Home() {
                 <h3 className="text-xl font-bold mb-2 group-hover:text-purple-300 transition-colors">Three-Model Pipeline</h3>
                 <p className="text-zinc-400">Sonnet builds. Opus polishes. Gemini audits. Each AI does what it&apos;s best at. Not just one model doing everything.</p>
               </div>
-            </motion.div>
+            </AnimatedCard>
 
             {/* MEET HATCH - The star of the show! */}
-            <motion.div 
+            <AnimatedCard 
+              delay={0.1}
               className="group relative p-6 bg-gradient-to-br from-amber-500/5 to-orange-500/5 border border-amber-500/20 rounded-2xl hover:border-amber-500/40 transition-colors duration-300 gpu-accelerate"
-              style={{ willChange: 'transform, opacity' }}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: 0.1, ease: [0.25, 0.1, 0.25, 1] }}
-              whileHover={{ y: -8, transition: { type: 'spring', stiffness: 400, damping: 17 } }}
             >
               <div className="absolute inset-0 bg-gradient-to-br from-amber-500 to-orange-600 opacity-0 group-hover:opacity-10 rounded-2xl transition-opacity duration-500" />
               <div className="relative">
@@ -737,17 +708,12 @@ export default function Home() {
                 <h3 className="text-xl font-bold mb-2 text-amber-200 group-hover:text-amber-100 transition-colors">Meet Hatch</h3>
                 <p className="text-zinc-400">Your friendly prompt helper. Stuck on what to write? Hatch writes it for you. She&apos;s cute, helpful, and genuinely excited about your project.</p>
               </div>
-            </motion.div>
+            </AnimatedCard>
 
             {/* Section-by-Section Card */}
-            <motion.div 
+            <AnimatedCard 
+              delay={0.2}
               className="group relative p-6 bg-zinc-900/50 border border-zinc-800 rounded-2xl hover:border-zinc-700 transition-colors duration-300 gpu-accelerate"
-              style={{ willChange: 'transform, opacity' }}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.5, delay: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
-              whileHover={{ y: -8, transition: { type: 'spring', stiffness: 400, damping: 17 } }}
             >
               <div className="absolute inset-0 bg-gradient-to-br from-emerald-500 to-teal-600 opacity-0 group-hover:opacity-10 rounded-2xl transition-opacity duration-500" />
               <div className="relative">
@@ -762,7 +728,7 @@ export default function Home() {
                 <h3 className="text-xl font-bold mb-2 group-hover:text-purple-300 transition-colors">Section-by-Section</h3>
                 <p className="text-zinc-400">Build your site one section at a time. Header, hero, features, pricing — each piece crafted and refined before moving on.</p>
               </div>
-            </motion.div>
+            </AnimatedCard>
           </div>
 
           <div className="text-center mt-12">

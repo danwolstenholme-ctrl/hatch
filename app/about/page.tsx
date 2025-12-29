@@ -21,25 +21,29 @@ export default function AboutPage() {
 
   return (
     <div className="bg-zinc-950 text-white">
-      {/* Hero - Mission */}
-      <div className="relative px-6 pt-24 pb-16">
-        <div className="absolute inset-0 overflow-hidden pointer-events-none">
-          <div className="absolute -top-40 -left-40 w-80 h-80 bg-purple-500/20 rounded-full blur-[100px]" />
-          <div className="absolute top-1/3 -right-40 w-96 h-96 bg-blue-500/15 rounded-full blur-[100px]" />
-        </div>
-        <div className="max-w-3xl mx-auto text-center relative">
+      {/* Gradient orbs */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-40 -left-40 w-80 h-80 bg-purple-500/20 rounded-full blur-[100px]" />
+        <div className="absolute top-1/3 -right-40 w-96 h-96 bg-blue-500/15 rounded-full blur-[100px]" />
+        <div className="absolute -bottom-40 left-1/3 w-80 h-80 bg-pink-500/10 rounded-full blur-[100px]" />
+      </div>
+
+      {/* Hero */}
+      <div className="relative px-6 pt-20 pb-24 text-center">
+        <div className="max-w-3xl mx-auto">
           <motion.div
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-300 text-sm mb-6"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-300 text-sm mb-8"
             variants={fadeIn}
             initial="hidden"
             animate="visible"
             transition={transition()}
           >
-            <span>🐣</span>
+            <span className="text-lg">🐣</span>
             <span>The Story</span>
           </motion.div>
+          
           <motion.h1 
-            className="text-4xl sm:text-5xl md:text-6xl font-bold mb-6"
+            className="text-5xl md:text-7xl font-bold mb-6 leading-tight"
             variants={fadeIn}
             initial="hidden"
             animate="visible"
@@ -51,8 +55,9 @@ export default function AboutPage() {
               I learned to conduct.
             </span>
           </motion.h1>
+          
           <motion.p 
-            className="text-lg sm:text-xl text-zinc-400 max-w-2xl mx-auto"
+            className="text-xl text-zinc-400 max-w-2xl mx-auto"
             variants={fadeIn}
             initial="hidden"
             animate="visible"
