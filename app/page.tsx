@@ -480,7 +480,7 @@ export default function Home() {
                     <div className="w-2 h-2 rounded-full bg-purple-400 animate-pulse"></div>
                     <span>Live generating...</span>
                   </div>
-                  <div className="text-green-400/90">
+                  <div className="text-purple-400/90">
                     <TypewriterCode code={demoCode} speed={25} />
                   </div>
                 </div>
@@ -490,7 +490,7 @@ export default function Home() {
                   <div className="text-3xl sm:text-4xl font-bold text-white mb-3 sm:mb-4">Build Something Amazing</div>
                   <p className="text-sm sm:text-lg text-slate-300 mb-4 sm:mb-6">Your vision, brought to life with AI.</p>
                   <div>
-                    <button className="px-4 sm:px-6 py-2 sm:py-3 bg-purple-600 text-white rounded-lg sm:rounded-xl font-semibold text-sm sm:text-base">Get Started</button>
+                    <Link href="/builder" className="inline-block px-4 sm:px-6 py-2 sm:py-3 bg-purple-600 hover:bg-purple-500 text-white rounded-lg sm:rounded-xl font-semibold text-sm sm:text-base transition-colors">Get Started</Link>
                   </div>
                 </div>
               </div>
