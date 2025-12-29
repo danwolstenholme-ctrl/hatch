@@ -4,7 +4,16 @@ import Stripe from 'stripe'
 import { clerkClient } from '@clerk/nextjs/server'
 import { track } from '@vercel/analytics/server'
 import type { User } from '@clerk/nextjs/server'
-import { AccountSubscription, SiteSubscription } from '@/types/subscriptions'
+import { AccountSubscription } from '@/types/subscriptions'
+
+// Legacy site subscription type (for backwards compatibility with existing users)
+interface SiteSubscription {
+  projectSlug: string
+  projectName: string
+  stripeSubscriptionId: string
+  status: 'active' | 'canceled' | 'past_due'
+  createdAt: string
+}
 
 // Lazy initialization to prevent build-time errors when env vars are missing
 const getStripe = () => {
@@ -166,54 +175,6 @@ export async function POST(req: Request) {
         }
       }
       return NextResponse.json({ received: true })
-    }
-
-    // ------------------------------------------------------------------------
-    // LEGACY: Site subscription (for backwards compatibility)
-    // ------------------------------------------------------------------------
-    if (metadataType === 'site_subscription' && userId) {
-      const projectSlug = session.metadata?.projectSlug
-      const projectName = session.metadata?.projectName || projectSlug
-      const subscriptionId = session.subscription as string
-
-      if (projectSlug && subscriptionId) {
-        try {
-          const client = await clerkClient()
-          const user = await client.users.getUser(userId)
-          
-          const existingSubscriptions = (user.publicMetadata?.subscriptions as SiteSubscription[]) || []
-          const existingIndex = existingSubscriptions.findIndex(s => s.projectSlug === projectSlug)
-          
-          const newSubscription: SiteSubscription = {
-            projectSlug,
-            projectName: projectName || projectSlug,
-            stripeSubscriptionId: subscriptionId,
-            status: 'active',
-            createdAt: new Date().toISOString(),
-          }
-
-          let updatedSubscriptions: SiteSubscription[]
-          if (existingIndex >= 0) {
-            updatedSubscriptions = [...existingSubscriptions]
-            updatedSubscriptions[existingIndex] = newSubscription
-          } else {
-            updatedSubscriptions = [...existingSubscriptions, newSubscription]
-          }
-
-          await client.users.updateUser(userId, {
-            publicMetadata: {
-              ...user.publicMetadata,
-              stripeCustomerId: session.customer,
-              subscriptions: updatedSubscriptions,
-            },
-          })
-
-          console.log(`Added legacy site subscription for project ${projectSlug} for user ${userId}`)
-          await track('Subscription Created', { projectSlug })
-        } catch (err) {
-          console.error('Failed to update user subscriptions:', err)
-        }
-      }
     }
   }
 

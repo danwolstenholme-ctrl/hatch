@@ -16,19 +16,6 @@ export interface AccountSubscription {
 }
 
 /**
- * Legacy per-site subscription (for backwards compatibility)
- * Stored in Clerk publicMetadata.subscriptions[]
- * @deprecated Use AccountSubscription instead for new subscriptions
- */
-export interface SiteSubscription {
-  projectSlug: string
-  projectName: string
-  stripeSubscriptionId: string
-  status: 'active' | 'canceled' | 'past_due'
-  createdAt: string
-}
-
-/**
  * Pricing tier configuration
  */
 export interface PricingTier {

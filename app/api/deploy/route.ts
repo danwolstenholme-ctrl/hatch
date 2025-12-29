@@ -45,14 +45,8 @@ export async function GET(req: NextRequest) {
   }
 }
 
-// Type for site subscription
-interface SiteSubscription {
-  projectSlug: string
-  projectName: string
-  stripeSubscriptionId: string
-  status: 'active' | 'canceled' | 'past_due'
-  createdAt: string
-}
+// Type for account subscription
+import { AccountSubscription } from '@/types/subscriptions'
 
 // Type for deployed project
 interface DeployedProject {
@@ -113,29 +107,23 @@ export async function POST(req: NextRequest) {
     // This prevents double-suffix issue when updating a deployed project
     const slug = baseSlug.endsWith(`-${userSuffix}`) ? baseSlug : `${baseSlug}-${userSuffix}`
 
-    // Verify this specific project has an active subscription
+    // Verify user has an active account subscription
     const client = await clerkClient()
     let user = await client.users.getUser(userId)
-    let subscriptions = (user.publicMetadata?.subscriptions as SiteSubscription[]) || []
-    let projectSubscription = subscriptions.find(
-      s => s.projectSlug === slug && s.status === 'active'
-    )
+    let accountSubscription = user.publicMetadata?.accountSubscription as AccountSubscription | undefined
 
     // If no subscription found, wait and retry once (handles race condition after checkout)
-    if (!projectSubscription) {
+    if (!accountSubscription || accountSubscription.status !== 'active') {
       await new Promise(resolve => setTimeout(resolve, 2000))
       
       // Refetch user data
       user = await client.users.getUser(userId)
-      subscriptions = (user.publicMetadata?.subscriptions as SiteSubscription[]) || []
-      projectSubscription = subscriptions.find(
-        s => s.projectSlug === slug && s.status === 'active'
-      )
+      accountSubscription = user.publicMetadata?.accountSubscription as AccountSubscription | undefined
     }
 
-    if (!projectSubscription) {
+    if (!accountSubscription || accountSubscription.status !== 'active') {
       return NextResponse.json({ 
-        error: 'Subscription required for this project',
+        error: 'Pro subscription required to deploy',
         requiresUpgrade: true,
         projectSlug: slug
       }, { status: 403 })

@@ -12,7 +12,6 @@ import LivePreview from '@/components/LivePreview'
 import HatchModal from '@/components/HatchModal'    
 import SuccessModal from '@/components/SuccessModal'
 import BuildFlowController from '@/components/BuildFlowController'
-import { isPaidUser } from '@/app/lib/generation-limit'
 import { showSuccessToast, showErrorToast } from '@/app/lib/toast'
 
 // Glowing Chick component for pro feature indicators
@@ -35,12 +34,13 @@ const ProBadge = ({ size = 'sm' }: { size?: 'sm' | 'md' | 'lg' }) => {
   )
 }
 
-// Type for site subscriptions in user metadata
-interface SiteSubscription {
-  projectSlug: string
-  projectName: string
+// Type for account subscription in user metadata
+interface AccountSubscription {
+  tier: 'pro' | 'agency'
   stripeSubscriptionId: string
+  stripeCustomerId: string
   status: 'active' | 'canceled' | 'past_due'
+  currentPeriodEnd: string
   createdAt: string
 }
 
@@ -437,10 +437,10 @@ function LegacyBuilder() {
   const generationRequestIdRef = useRef(0)
   const abortControllerRef = useRef<AbortController | null>(null)
 
-  // Get subscriptions from user metadata
-  const subscriptions = useMemo(() => {
-    return (user?.publicMetadata?.subscriptions as SiteSubscription[]) || []
-  }, [user?.publicMetadata?.subscriptions])
+  // Get account subscription from user metadata (Pro or Agency tier)
+  const accountSubscription = useMemo(() => {
+    return user?.publicMetadata?.accountSubscription as AccountSubscription | null
+  }, [user?.publicMetadata?.accountSubscription])
 
   // Get the project slug for the current project (what it would be when deployed)
   // Includes user suffix for uniqueness across all users
@@ -454,16 +454,10 @@ function LegacyBuilder() {
     return `${baseSlug}-${userSuffix}`
   }, [currentProject, user?.id])
 
-  // Check if CURRENT PROJECT has an active subscription
-  const isCurrentProjectPaid = useMemo(() => {
-    if (!currentProjectSlug) return false
-    return subscriptions.some(s => s.projectSlug === currentProjectSlug && s.status === 'active')
-  }, [subscriptions, currentProjectSlug])
-
-  // Legacy: check if user has ANY paid subscription (for things like unlimited generations)
-  const hasAnyPaidSubscription = useMemo(() => {
-    return subscriptions.some(s => s.status === 'active')
-  }, [subscriptions])
+  // Check if user has an active account subscription (Pro or Agency)
+  const isPaidUser = useMemo(() => {
+    return accountSubscription?.status === 'active'
+  }, [accountSubscription])
 
   // Get deployed projects from Clerk metadata
   const deployedProjects = useMemo(() => {
@@ -540,15 +534,14 @@ function LegacyBuilder() {
     }
   }, [isLoadingProjects, isLoaded, projects, deployedProjects, isFirstTimeUser])
 
-  // Pull all Go Hatched (paid) projects from cloud
+  // Pull all deployed projects from cloud (paid users have access to all their projects)
   const pullAllPaidProjects = () => {
-    const paidProjects = deployedProjects.filter(dp => 
-      subscriptions.some(s => s.projectSlug === dp.slug && s.status === 'active')
-    )
-    
-    paidProjects.forEach(project => {
-      pullProject(project)
-    })
+    // With account subscription, all deployed projects are accessible
+    if (isPaidUser) {
+      deployedProjects.forEach(project => {
+        pullProject(project)
+      })
+    }
     
     localStorage.setItem('hatchit-seen-welcome', 'true')
     setShowWelcomeBackModal(false)
@@ -676,11 +669,8 @@ function LegacyBuilder() {
       return expectedSlug === pendingDeploy || p.deployedSlug === pendingDeploy
     })
     
-    // Check if this project has an active subscription
-    const hasSubscription = subscriptions.some(s => s.projectSlug === pendingDeploy && s.status === 'active')
-    
-    if (projectToAutoDeploy && hasSubscription && !projectToAutoDeploy.deployedSlug) {
-      // Has code to deploy and subscription is active - auto deploy!
+    if (projectToAutoDeploy && isPaidUser && !projectToAutoDeploy.deployedSlug) {
+      // Has code to deploy and user is paid - auto deploy!
       const hasCode = (projectToAutoDeploy.versions?.length ?? 0) > 0 || 
                       projectToAutoDeploy.pages?.some(page => (page.versions?.length ?? 0) > 0)
       
@@ -699,14 +689,14 @@ function LegacyBuilder() {
         // No code yet, clear the pending flag
         localStorage.removeItem('hatchit-pending-deploy')
       }
-    } else if (!hasSubscription) {
+    } else if (!isPaidUser) {
       // Subscription not yet synced, wait for next render
       // (Clerk webhook may still be processing)
     } else {
       // Already deployed or project not found
       localStorage.removeItem('hatchit-pending-deploy')
     }
-  }, [isLoadingProjects, isLoaded, projects, subscriptions, isDeploying, user?.id])
+  }, [isLoadingProjects, isLoaded, projects, isPaidUser, isDeploying, user?.id])
 
   // Keyboard shortcuts
   useEffect(() => {
@@ -748,8 +738,8 @@ function LegacyBuilder() {
   }
 
   const createProject = () => {
-    // Free users can only have 1 project (any paid subscription allows multiple)
-    if (!hasAnyPaidSubscription && projects.length >= 1) {
+    // Free users can only have 1 project (paid subscription allows multiple)
+    if (!isPaidUser && projects.length >= 1) {
       setHatchReason('deploy')
       setShowHatchModal(true)
       setShowProjectDropdown(false)
@@ -771,7 +761,7 @@ function LegacyBuilder() {
     setShowNewProjectModal(false)
     if (projectNameInputRef.current) projectNameInputRef.current.value = ''
     setDeployedUrl(null)
-    track('Project Created', { isPaid: hasAnyPaidSubscription })
+    track('Project Created', { isPaid: isPaidUser })
   }
 
   const switchProject = (id: string) => {
@@ -839,8 +829,8 @@ function LegacyBuilder() {
   }
 
   const duplicateProject = () => {
-    // Free users can only have 1 project (any paid subscription allows multiple)
-    if (!hasAnyPaidSubscription && projects.length >= 1) {
+    // Free users can only have 1 project (paid subscription allows multiple)
+    if (!isPaidUser && projects.length >= 1) {
       setHatchReason('deploy')
       setShowHatchModal(true)
       setShowProjectDropdown(false)
@@ -1127,7 +1117,7 @@ function LegacyBuilder() {
       // Start streaming request in parallel for live code display (paid users only)
       let streamPromise: Promise<void> = Promise.resolve()
       
-      if (isCurrentProjectPaid) {
+      if (isPaidUser) {
         const streamingPayload = { prompt, history, currentCode, brand: currentProject?.brand }
         streamPromise = fetch('/api/generate-stream', {
           method: 'POST',
@@ -1635,7 +1625,7 @@ function LegacyBuilder() {
   }
 
   const handleShipClick = () => {
-    if (!isCurrentProjectPaid) {
+    if (!isPaidUser) {
       setHatchReason('deploy')
       setShowHatchModal(true)
       return
@@ -1649,7 +1639,7 @@ function LegacyBuilder() {
   }
 
   const handleDomainClick = () => {
-    if (!isCurrentProjectPaid) {
+    if (!isPaidUser) {
       setHatchReason('deploy')
       setShowHatchModal(true)
       return
@@ -1660,7 +1650,7 @@ function LegacyBuilder() {
   }
 
   const handleDownloadClick = async () => {
-    if (!isCurrentProjectPaid) {
+    if (!isPaidUser) {
       setHatchReason('download')
       setShowHatchModal(true)
       return
@@ -1681,7 +1671,8 @@ function LegacyBuilder() {
       {/* Project list */}
       <div className="max-h-72 overflow-y-auto py-1">
         {projects.map(project => {
-          const isHatched = subscriptions.some(s => s.projectSlug === project.deployedSlug && s.status === 'active')
+          // With account subscription, all user's projects are "hatched" if they're paid
+          const isHatched = isPaidUser && project.deployedSlug
           return (
             <button 
               key={project.id} 
@@ -1708,11 +1699,11 @@ function LegacyBuilder() {
       <div className="border-t border-zinc-800 p-2">
         <button 
           onClick={createProject} 
-          className={`w-full px-3 py-2 flex items-center gap-2 rounded-lg transition-colors ${!hasAnyPaidSubscription && projects.length >= 1 ? 'opacity-50 hover:bg-zinc-800/50' : 'hover:bg-zinc-800'}`}
+          className={`w-full px-3 py-2 flex items-center gap-2 rounded-lg transition-colors ${!isPaidUser && projects.length >= 1 ? 'opacity-50 hover:bg-zinc-800/50' : 'hover:bg-zinc-800'}`}
         >
           <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-zinc-400"><path d="M12 5v14M5 12h14"/></svg>
           <span className="text-sm text-zinc-300">New Project</span>
-          {!hasAnyPaidSubscription && projects.length >= 1 && (
+          {!isPaidUser && projects.length >= 1 && (
             <span className="ml-auto text-[10px] text-purple-400">🐣</span>
           )}
         </button>
@@ -1722,7 +1713,7 @@ function LegacyBuilder() {
       {currentProject && (
         <div className="border-t border-zinc-800 p-2 flex flex-wrap gap-1">
           <button onClick={() => { setRenameValue(currentProject.name); setShowRenameModal(true); setShowProjectDropdown(false) }} className="flex-1 px-3 py-2 text-xs text-zinc-400 hover:text-white hover:bg-zinc-800 rounded-lg transition-colors">Rename</button>
-          <button onClick={duplicateProject} disabled={!hasAnyPaidSubscription && projects.length >= 1} className={`flex-1 px-3 py-2 text-xs rounded-lg transition-colors ${!hasAnyPaidSubscription && projects.length >= 1 ? 'text-zinc-600 cursor-not-allowed opacity-50' : 'text-zinc-400 hover:text-white hover:bg-zinc-800'}`} title={!hasAnyPaidSubscription && projects.length >= 1 ? 'Hatch to duplicate projects' : ''}>Duplicate</button>
+          <button onClick={duplicateProject} disabled={!isPaidUser && projects.length >= 1} className={`flex-1 px-3 py-2 text-xs rounded-lg transition-colors ${!isPaidUser && projects.length >= 1 ? 'text-zinc-600 cursor-not-allowed opacity-50' : 'text-zinc-400 hover:text-white hover:bg-zinc-800'}`} title={!isPaidUser && projects.length >= 1 ? 'Hatch to duplicate projects' : ''}>Duplicate</button>
           <button onClick={() => { setShowDeleteModal(true); setShowProjectDropdown(false) }} className="flex-1 px-3 py-2 text-xs text-red-400 hover:text-red-300 hover:bg-zinc-800 rounded-lg transition-colors">Delete</button>
           {!currentProject.deployedSlug && (currentProject.versions?.length || 0) > 0 && (
             <button onClick={startOver} className="w-full mt-1 px-3 py-2 text-xs text-amber-400 hover:text-amber-300 hover:bg-zinc-800 rounded-lg transition-colors">Start Over</button>
@@ -1843,7 +1834,7 @@ function LegacyBuilder() {
           <div className="flex-1 flex flex-col min-w-0 min-h-0">
             {previewVersionIndex !== null ? (
               <>
-                <div className="flex-1 overflow-auto bg-zinc-950 min-h-0"><LivePreview code={versions[previewVersionIndex]?.code || ''} pages={undefined} currentPageId={undefined} isLoading={false} isPaid={isCurrentProjectPaid} setShowHatchModal={setShowHatchModal} /></div>
+                <div className="flex-1 overflow-auto bg-zinc-950 min-h-0"><LivePreview code={versions[previewVersionIndex]?.code || ''} pages={undefined} currentPageId={undefined} isLoading={false} isPaid={isPaidUser} setShowHatchModal={setShowHatchModal} /></div>
                 <div className="px-4 py-3 border-t border-zinc-800 flex items-center justify-between flex-shrink-0">
                   <span className="text-sm text-zinc-400">Previewing v{previewVersionIndex + 1}</span>
                   {previewVersionIndex !== currentVersionIndex && <button onClick={() => restoreVersion(previewVersionIndex)} className="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-500 text-white rounded-xl transition-colors whitespace-nowrap ml-2">Restore</button>}
@@ -2126,7 +2117,7 @@ function LegacyBuilder() {
           <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
         </button>
       </div>
-      <div className="flex-1 overflow-auto">{type === 'preview' ? <LivePreview code={code} pages={previewPages} currentPageId={currentProject?.currentPageId} isLoading={isGenerating} loadingProgress={generationProgress} isPaid={isCurrentProjectPaid} assets={currentProject?.assets} setShowHatchModal={setShowHatchModal} onViewCode={() => { onClose(); setActiveTab('code') }} onRegenerate={handleRegenerateFromError} onQuickFix={handleQuickFix} /> : <CodePreview code={code} isPaid={isCurrentProjectPaid} onCodeChange={handleCodeChange} pagePath={currentPage?.path} streamingCode={streamingCode} isStreaming={isGenerating && streamingCode.length > 0} />}</div>
+      <div className="flex-1 overflow-auto">{type === 'preview' ? <LivePreview code={code} pages={previewPages} currentPageId={currentProject?.currentPageId} isLoading={isGenerating} loadingProgress={generationProgress} isPaid={isPaidUser} assets={currentProject?.assets} setShowHatchModal={setShowHatchModal} onViewCode={() => { onClose(); setActiveTab('code') }} onRegenerate={handleRegenerateFromError} onQuickFix={handleQuickFix} /> : <CodePreview code={code} isPaid={isPaidUser} onCodeChange={handleCodeChange} pagePath={currentPage?.path} streamingCode={streamingCode} isStreaming={isGenerating && streamingCode.length > 0} />}</div>
     </div>
   )
 
@@ -2274,7 +2265,7 @@ function LegacyBuilder() {
   )
 
   const HistoryButton = () => {
-    if (!isCurrentProjectPaid) {
+    if (!isPaidUser) {
       return (
         <button 
           onClick={() => {
@@ -2791,12 +2782,9 @@ function LegacyBuilder() {
 
   // Welcome Back Modal (cross-device sync)
   const WelcomeBackModal = () => {
-    const paidProjects = deployedProjects.filter(dp => 
-      subscriptions.some(s => s.projectSlug === dp.slug && s.status === 'active')
-    )
-    const freeProjects = deployedProjects.filter(dp => 
-      !subscriptions.some(s => s.projectSlug === dp.slug && s.status === 'active')
-    )
+    // With account subscription, all deployed projects are accessible if user is paid
+    const paidProjects = isPaidUser ? deployedProjects : []
+    const freeProjects = isPaidUser ? [] : deployedProjects
     
     return (
       <div className="fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center z-[10000] p-4">
@@ -3143,13 +3131,13 @@ function LegacyBuilder() {
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
                 Assets
               </button>
-              <button onClick={() => { isCurrentProjectPaid ? setShowBrandPanel(true) : (setHatchReason('deploy'), setShowHatchModal(true)); setShowMobileMenu(false) }} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-zinc-300 hover:bg-zinc-800 transition-colors">
+              <button onClick={() => { isPaidUser ? setShowBrandPanel(true) : (setHatchReason('deploy'), setShowHatchModal(true)); setShowMobileMenu(false) }} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-zinc-300 hover:bg-zinc-800 transition-colors">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="13.5" cy="6.5" r="2.5"/><circle cx="19" cy="17" r="2.5"/><circle cx="6" cy="12" r="2.5"/><path d="M12 2a10 10 0 1 0 10 10"/></svg>
-                Brand {!isCurrentProjectPaid && <ProBadge size="sm" />}
+                Brand {!isPaidUser && <ProBadge size="sm" />}
               </button>
-              <button onClick={() => { isCurrentProjectPaid ? setShowHistoryModal(true) : (setHatchReason('deploy'), setShowHatchModal(true)); setShowMobileMenu(false) }} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-zinc-300 hover:bg-zinc-800 transition-colors">
+              <button onClick={() => { isPaidUser ? setShowHistoryModal(true) : (setHatchReason('deploy'), setShowHatchModal(true)); setShowMobileMenu(false) }} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-zinc-300 hover:bg-zinc-800 transition-colors">
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                History {!isCurrentProjectPaid && <ProBadge size="sm" />}
+                History {!isPaidUser && <ProBadge size="sm" />}
               </button>
               {code && (
                 <button onClick={() => { setShowStartOverModal(true); setShowMobileMenu(false) }} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-orange-400 hover:bg-zinc-800 transition-colors">
@@ -3189,7 +3177,7 @@ function LegacyBuilder() {
             {/* Mobile Menu Button */}
             <button
               onClick={() => setShowMobileMenu(!showMobileMenu)}
-              className={`relative flex items-center justify-center w-8 h-8 rounded-lg border transition-transform active:scale-95 overflow-hidden flex-shrink-0 ${isCurrentProjectPaid ? 'bg-gradient-to-br from-amber-500/20 via-yellow-500/20 to-orange-500/20 border-amber-500/30 shadow-[0_0_12px_rgba(251,191,36,0.2)]' : 'bg-zinc-800 border-zinc-700'}`}
+              className={`relative flex items-center justify-center w-8 h-8 rounded-lg border transition-transform active:scale-95 overflow-hidden flex-shrink-0 ${isPaidUser ? 'bg-gradient-to-br from-amber-500/20 via-yellow-500/20 to-orange-500/20 border-amber-500/30 shadow-[0_0_12px_rgba(251,191,36,0.2)]' : 'bg-zinc-800 border-zinc-700'}`}
               title="Menu"
             >
               <span className="text-lg">🐣</span>
@@ -3237,7 +3225,7 @@ function LegacyBuilder() {
           </div>
         )}
         <div className="flex-1 overflow-hidden">
-          <Chat onGenerate={handleGenerate} isGenerating={isGenerating} onStopGeneration={handleStopGeneration} currentCode={code} isPaid={isCurrentProjectPaid} onOpenAssets={() => setShowAssetsModal(true)} projectId={currentProjectId || ''} projectSlug={currentProjectSlug} projectName={currentProject?.name || 'My Project'} pages={currentProject?.pages || []} brand={currentProject?.brand} externalPrompt={externalPrompt} onExternalPromptHandled={() => setExternalPrompt(null)} generationProgress={generationProgress} suggestions={suggestions} onSuggestionClick={(s) => setExternalPrompt(s)} canRevert={!!previousCode && currentVersionIndex > 0} onRevert={handleRevert} resetKey={chatResetKey} key={currentProjectId} />
+          <Chat onGenerate={handleGenerate} isGenerating={isGenerating} onStopGeneration={handleStopGeneration} currentCode={code} isPaid={isPaidUser} onOpenAssets={() => setShowAssetsModal(true)} projectId={currentProjectId || ''} projectSlug={currentProjectSlug} projectName={currentProject?.name || 'My Project'} pages={currentProject?.pages || []} brand={currentProject?.brand} externalPrompt={externalPrompt} onExternalPromptHandled={() => setExternalPrompt(null)} generationProgress={generationProgress} suggestions={suggestions} onSuggestionClick={(s) => setExternalPrompt(s)} canRevert={!!previousCode && currentVersionIndex > 0} onRevert={handleRevert} resetKey={chatResetKey} key={currentProjectId} />
         </div>
         {code && (
           <div className="px-4 py-3 border-t border-zinc-800 bg-zinc-900 flex gap-2" style={{ paddingBottom: 'max(12px, env(safe-area-inset-bottom))' }}>
@@ -3310,14 +3298,14 @@ function LegacyBuilder() {
                 <div className="relative desktop-menu-container">
                   <motion.button
                     onClick={() => setShowDesktopMenu(!showDesktopMenu)}
-                    className={`relative flex items-center justify-center w-9 h-9 rounded-lg border transition-all overflow-hidden group ${isCurrentProjectPaid ? 'bg-gradient-to-br from-amber-500/20 via-yellow-500/20 to-orange-500/20 border-amber-500/30' : 'bg-zinc-800 border-zinc-700'}`}
+                    className={`relative flex items-center justify-center w-9 h-9 rounded-lg border transition-all overflow-hidden group ${isPaidUser ? 'bg-gradient-to-br from-amber-500/20 via-yellow-500/20 to-orange-500/20 border-amber-500/30' : 'bg-zinc-800 border-zinc-700'}`}
                     style={{ willChange: 'transform', backfaceVisibility: 'hidden' }}
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     title="Menu"
                   >
                     {/* Animated glow ring - only for paid */}
-                    {isCurrentProjectPaid && (
+                    {isPaidUser && (
                       <motion.div
                         className="absolute inset-0 rounded-lg bg-gradient-to-r from-amber-400/0 via-amber-400/30 to-amber-400/0"
                         style={{ willChange: 'transform', backfaceVisibility: 'hidden' }}
@@ -3327,7 +3315,7 @@ function LegacyBuilder() {
                       />
                     )}
                     {/* Pulse glow - only for paid */}
-                    {isCurrentProjectPaid && (
+                    {isPaidUser && (
                       <motion.div
                         className="absolute inset-0 rounded-lg bg-amber-400/20"
                         style={{ willChange: 'opacity' }}
@@ -3337,13 +3325,13 @@ function LegacyBuilder() {
                       />
                     )}
                     {/* Outer glow - only for paid */}
-                    {isCurrentProjectPaid && (
+                    {isPaidUser && (
                       <div className="absolute -inset-1 bg-gradient-to-r from-amber-500/20 via-yellow-400/20 to-orange-500/20 rounded-xl blur-md opacity-60 group-hover:opacity-100 transition-opacity" />
                     )}
                     {/* Emoji */}
                     <motion.span 
                       className="relative text-lg z-10"
-                      animate={isCurrentProjectPaid ? { y: [0, -1, 0] } : {}}
+                      animate={isPaidUser ? { y: [0, -1, 0] } : {}}
                       transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
                     >
                       🐣
@@ -3372,13 +3360,13 @@ function LegacyBuilder() {
                           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
                           Assets
                         </button>
-                        <button onClick={() => { isCurrentProjectPaid ? (setShowBrandPanel(true), setShowDesktopMenu(false)) : (setHatchReason('deploy'), setShowHatchModal(true), setShowDesktopMenu(false)) }} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-zinc-300 hover:bg-zinc-800 transition-colors">
+                        <button onClick={() => { isPaidUser ? (setShowBrandPanel(true), setShowDesktopMenu(false)) : (setHatchReason('deploy'), setShowHatchModal(true), setShowDesktopMenu(false)) }} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-zinc-300 hover:bg-zinc-800 transition-colors">
                           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="13.5" cy="6.5" r="2.5"/><circle cx="19" cy="17" r="2.5"/><circle cx="6" cy="12" r="2.5"/><path d="M12 2a10 10 0 1 0 10 10"/></svg>
-                          Brand {!isCurrentProjectPaid && <ProBadge size="sm" />}
+                          Brand {!isPaidUser && <ProBadge size="sm" />}
                         </button>
-                        <button onClick={() => { isCurrentProjectPaid ? (setShowHistoryModal(true), setShowDesktopMenu(false)) : (setHatchReason('deploy'), setShowHatchModal(true), setShowDesktopMenu(false)) }} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-zinc-300 hover:bg-zinc-800 transition-colors">
+                        <button onClick={() => { isPaidUser ? (setShowHistoryModal(true), setShowDesktopMenu(false)) : (setHatchReason('deploy'), setShowHatchModal(true), setShowDesktopMenu(false)) }} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-zinc-300 hover:bg-zinc-800 transition-colors">
                           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                          History {!isCurrentProjectPaid && <ProBadge size="sm" />}
+                          History {!isPaidUser && <ProBadge size="sm" />}
                         </button>
                         {code && (
                           <button onClick={() => { setShowStartOverModal(true); setShowDesktopMenu(false) }} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-orange-400 hover:bg-zinc-800 transition-colors">
@@ -3457,7 +3445,7 @@ function LegacyBuilder() {
               </div>
             )}
             <div className="flex-1 overflow-hidden">
-              <Chat onGenerate={handleGenerate} isGenerating={isGenerating} onStopGeneration={handleStopGeneration} currentCode={code} isPaid={isCurrentProjectPaid} onOpenAssets={() => setShowAssetsModal(true)} projectId={currentProjectId || ''} projectSlug={currentProjectSlug} projectName={currentProject?.name || 'My Project'} pages={currentProject?.pages || []} brand={currentProject?.brand} externalPrompt={externalPrompt} onExternalPromptHandled={() => setExternalPrompt(null)} generationProgress={generationProgress} suggestions={suggestions} onSuggestionClick={(s) => setExternalPrompt(s)} canRevert={!!previousCode && currentVersionIndex > 0} onRevert={handleRevert} resetKey={chatResetKey} key={currentProjectId} />
+              <Chat onGenerate={handleGenerate} isGenerating={isGenerating} onStopGeneration={handleStopGeneration} currentCode={code} isPaid={isPaidUser} onOpenAssets={() => setShowAssetsModal(true)} projectId={currentProjectId || ''} projectSlug={currentProjectSlug} projectName={currentProject?.name || 'My Project'} pages={currentProject?.pages || []} brand={currentProject?.brand} externalPrompt={externalPrompt} onExternalPromptHandled={() => setExternalPrompt(null)} generationProgress={generationProgress} suggestions={suggestions} onSuggestionClick={(s) => setExternalPrompt(s)} canRevert={!!previousCode && currentVersionIndex > 0} onRevert={handleRevert} resetKey={chatResetKey} key={currentProjectId} />
             </div>
           </div>
         </Panel>
@@ -3494,7 +3482,7 @@ function LegacyBuilder() {
               </div>
             </div>
             <div ref={previewContainerRef} className="flex-1 overflow-auto min-h-0 relative">
-              {activeTab === 'preview' ? <LivePreview code={code} pages={previewPages} currentPageId={currentProject?.currentPageId} isLoading={isGenerating} loadingProgress={generationProgress} isPaid={isCurrentProjectPaid} assets={currentProject?.assets} setShowHatchModal={setShowHatchModal} inspectorMode={inspectorMode} onElementSelect={setSelectedElement} onViewCode={handleViewCode} onRegenerate={handleRegenerateFromError} onQuickFix={handleQuickFix} /> : <CodePreview code={code} isPaid={isCurrentProjectPaid} onCodeChange={handleCodeChange} pagePath={currentPage?.path} streamingCode={streamingCode} isStreaming={isGenerating && streamingCode.length > 0} />}
+              {activeTab === 'preview' ? <LivePreview code={code} pages={previewPages} currentPageId={currentProject?.currentPageId} isLoading={isGenerating} loadingProgress={generationProgress} isPaid={isPaidUser} assets={currentProject?.assets} setShowHatchModal={setShowHatchModal} inspectorMode={inspectorMode} onElementSelect={setSelectedElement} onViewCode={handleViewCode} onRegenerate={handleRegenerateFromError} onQuickFix={handleQuickFix} /> : <CodePreview code={code} isPaid={isPaidUser} onCodeChange={handleCodeChange} pagePath={currentPage?.path} streamingCode={streamingCode} isStreaming={isGenerating && streamingCode.length > 0} />}
               
               {/* Element Inspector Popover */}
               {inspectorMode && selectedElement && (

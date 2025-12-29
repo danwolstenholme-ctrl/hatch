@@ -1,6 +1,6 @@
 'use client'
 import { useState, FormEvent, useRef, useEffect, memo } from 'react'
-import { canGenerate, recordGeneration, getGenerationsRemaining, getDailyLimit, isPaidUser } from '@/app/lib/generation-limit'
+import { canGenerate, recordGeneration, getGenerationsRemaining, getDailyLimit } from '@/app/lib/generation-limit'
 import HatchModal from './HatchModal'
 
 // Simple markdown renderer for chat messages

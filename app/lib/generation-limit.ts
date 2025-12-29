@@ -79,18 +79,3 @@ export function recordGeneration(): { success: boolean; remaining: number } {
 export function getDailyLimit(): number {
   return DAILY_LIMIT
 }
-
-// Legacy localStorage check (fallback)
-export function isPaidUser(): boolean {
-  if (typeof window === 'undefined') return false
-  return localStorage.getItem('hatchit_paid') === 'true'
-}
-
-export function setPaidStatus(paid: boolean): void {
-  if (typeof window === 'undefined') return
-  if (paid) {
-    localStorage.setItem('hatchit_paid', 'true')
-  } else {
-    localStorage.removeItem('hatchit_paid')
-  }
-}

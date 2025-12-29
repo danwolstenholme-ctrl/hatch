@@ -2,7 +2,8 @@
 
 import { useState, useEffect, useMemo, useCallback } from 'react'
 import { useUser } from '@clerk/nextjs'
-import { Project, Page, Version, SiteSubscription, DeployedProject } from '@/types/builder'
+import { Project, Page, Version, DeployedProject } from '@/types/builder'
+import { AccountSubscription } from '@/types/subscriptions'
 import { 
   generateId, 
   createNewProject, 
@@ -29,10 +30,9 @@ interface UseProjectsReturn {
   previewPages: { id: string; name: string; path: string; code: string }[] | undefined
   
   // Subscription state
-  subscriptions: SiteSubscription[]
+  accountSubscription: AccountSubscription | null
   currentProjectSlug: string
-  isCurrentProjectPaid: boolean
-  hasAnyPaidSubscription: boolean
+  isPaidUser: boolean
   
   // Deployed projects
   deployedProjects: DeployedProject[]
@@ -143,10 +143,10 @@ export function useProjects(): UseProjectsReturn {
   const canUndo = currentVersionIndex > 0
   const canRedo = currentVersionIndex < versions.length - 1
   
-  // Subscriptions from user metadata
-  const subscriptions = useMemo(() => {
-    return (user?.publicMetadata?.subscriptions as SiteSubscription[]) || []
-  }, [user?.publicMetadata?.subscriptions])
+  // Account subscription from user metadata (Pro or Agency tier)
+  const accountSubscription = useMemo(() => {
+    return (user?.publicMetadata?.accountSubscription as AccountSubscription) || null
+  }, [user?.publicMetadata?.accountSubscription])
   
   // Current project slug
   // eslint-disable-next-line react-hooks/preserve-manual-memoization
@@ -158,14 +158,10 @@ export function useProjects(): UseProjectsReturn {
     return `${baseSlug}-${userSuffix}`
   }, [currentProject, user?.id])
   
-  const isCurrentProjectPaid = useMemo(() => {
-    if (!currentProjectSlug) return false
-    return subscriptions.some(s => s.projectSlug === currentProjectSlug && s.status === 'active')
-  }, [subscriptions, currentProjectSlug])
-  
-  const hasAnyPaidSubscription = useMemo(() => {
-    return subscriptions.some(s => s.status === 'active')
-  }, [subscriptions])
+  // Check if user has an active account subscription
+  const isPaidUser = useMemo(() => {
+    return accountSubscription?.status === 'active'
+  }, [accountSubscription])
   
   // Deployed projects from Clerk metadata
   const deployedProjects = useMemo(() => {
@@ -189,14 +185,14 @@ export function useProjects(): UseProjectsReturn {
   }, [currentProjectId])
   
   const createProjectAction = useCallback(() => {
-    if (!hasAnyPaidSubscription && projects.length >= 1) {
+    if (!isPaidUser && projects.length >= 1) {
       return false // Blocked by paywall
     }
     const newProject = createNewProject()
     setProjects(prev => [newProject, ...prev])
     setCurrentProjectId(newProject.id)
     return true
-  }, [hasAnyPaidSubscription, projects.length])
+  }, [isPaidUser, projects.length])
   
   const switchProject = useCallback((id: string) => {
     if (id === currentProjectId) return
@@ -228,7 +224,7 @@ export function useProjects(): UseProjectsReturn {
   }, [])
   
   const duplicateProjectAction = useCallback(() => {
-    if (!hasAnyPaidSubscription && projects.length >= 1) {
+    if (!isPaidUser && projects.length >= 1) {
       return false
     }
     if (!currentProject) return false
@@ -243,7 +239,7 @@ export function useProjects(): UseProjectsReturn {
     setProjects(prev => [duplicate, ...prev])
     setCurrentProjectId(duplicate.id)
     return true
-  }, [hasAnyPaidSubscription, projects.length, currentProject])
+  }, [isPaidUser, projects.length, currentProject])
   
   // Page actions
   const addPage = useCallback((name: string, pathInput?: string) => {
@@ -468,10 +464,9 @@ export function useProjects(): UseProjectsReturn {
     currentVersionIndex,
     code,
     previewPages,
-    subscriptions,
+    accountSubscription,
     currentProjectSlug,
-    isCurrentProjectPaid,
-    hasAnyPaidSubscription,
+    isPaidUser,
     deployedProjects,
     projectsToPull,
     isDeployed,

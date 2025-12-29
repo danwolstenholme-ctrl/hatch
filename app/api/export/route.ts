@@ -1,15 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
 import { clerkClient } from '@clerk/nextjs/server'
-
-// Type for site subscription
-interface SiteSubscription {
-  projectSlug: string
-  projectName: string
-  stripeSubscriptionId: string
-  status: 'active' | 'canceled' | 'past_due'
-  createdAt: string
-}
+import { AccountSubscription } from '@/types/subscriptions'
 
 interface Asset {
   name: string
@@ -71,18 +63,15 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  // Check if this specific project has an active subscription
+  // Check if user has an active account subscription
   try {
     const client = await clerkClient()
     const user = await client.users.getUser(userId)
-    const subscriptions = (user.publicMetadata?.subscriptions as SiteSubscription[]) || []
-    const projectSubscription = subscriptions.find(
-      s => s.projectSlug === projectSlug && s.status === 'active'
-    )
+    const accountSubscription = user.publicMetadata?.accountSubscription as AccountSubscription | undefined
     
-    if (!projectSubscription) {
+    if (!accountSubscription || accountSubscription.status !== 'active') {
       return NextResponse.json({ 
-        error: 'Subscription required for this project to download',
+        error: 'Pro subscription required to download projects',
         requiresUpgrade: true 
       }, { status: 403 })
     }

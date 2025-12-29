@@ -1,23 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
 import { clerkClient } from '@clerk/nextjs/server'
+import { AccountSubscription } from '@/types/subscriptions'
 
-// Type for site subscription
-interface SiteSubscription {
-  projectSlug: string
-  projectName: string
-  stripeSubscriptionId: string
-  status: 'active' | 'canceled' | 'past_due'
-  createdAt: string
-}
-
-// Helper to check if project has active subscription
-async function isProjectPaid(userId: string, projectSlug: string): Promise<boolean> {
+// Helper to check if user has active account subscription
+async function isPaidUser(userId: string): Promise<boolean> {
   try {
     const client = await clerkClient()
     const user = await client.users.getUser(userId)
-    const subscriptions = (user.publicMetadata?.subscriptions as SiteSubscription[]) || []
-    return subscriptions.some(s => s.projectSlug === projectSlug && s.status === 'active')
+    const accountSubscription = user.publicMetadata?.accountSubscription as AccountSubscription | undefined
+    return accountSubscription?.status === 'active'
   } catch {
     return false
   }
@@ -37,11 +29,11 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: 'Missing domain or project' }, { status: 400 })
     }
 
-    // Check if this specific project has an active subscription
-    if (!await isProjectPaid(userId, projectSlug)) {
+    // Check if user has an active subscription
+    if (!await isPaidUser(userId)) {
       return NextResponse.json({ 
         success: false, 
-        error: 'Subscription required for custom domains',
+        error: 'Pro subscription required for custom domains',
         requiresUpgrade: true 
       }, { status: 403 })
     }

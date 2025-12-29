@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
 import { clerkClient } from '@clerk/nextjs/server'
 import Stripe from 'stripe'
+import { AccountSubscription } from '@/types/subscriptions'
 
 // Lazy initialization to prevent build-time errors when env vars are missing
 const getStripe = () => {
@@ -15,15 +16,6 @@ const getStripe = () => {
 
 // Markup percentage (e.g., 0.20 = 20% markup)
 const MARKUP = 0.20
-
-// Type for site subscription
-interface SiteSubscription {
-  projectSlug: string
-  projectName: string
-  stripeSubscriptionId: string
-  status: 'active' | 'canceled' | 'past_due'
-  createdAt: string
-}
 
 export async function POST(request: NextRequest) {
   try {
@@ -39,17 +31,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
     }
 
-    // Check if this specific project has an active subscription
+    // Check if user has an active account subscription
     const client = await clerkClient()
     const user = await client.users.getUser(userId)
-    const subscriptions = (user.publicMetadata?.subscriptions as SiteSubscription[]) || []
-    const projectSubscription = subscriptions.find(
-      s => s.projectSlug === projectSlug && s.status === 'active'
-    )
+    const accountSubscription = user.publicMetadata?.accountSubscription as AccountSubscription | undefined
 
-    if (!projectSubscription) {
+    if (!accountSubscription || accountSubscription.status !== 'active') {
       return NextResponse.json({ 
-        error: 'Project subscription required to buy domains',
+        error: 'Pro subscription required to buy domains',
         requiresUpgrade: true 
       }, { status: 403 })
     }

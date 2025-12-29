@@ -52,14 +52,6 @@ export interface Project {
   brand?: Brand
 }
 
-export interface SiteSubscription {
-  projectSlug: string
-  projectName: string
-  stripeSubscriptionId: string
-  status: 'active' | 'canceled' | 'past_due'
-  createdAt: string
-}
-
 export interface DeployedProject {
   slug: string
   name: string
