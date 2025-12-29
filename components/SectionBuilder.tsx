@@ -205,6 +205,21 @@ export default function SectionBuilder({
     setHatchState('idle')
   }, [dbSection.id])
 
+  // Auto-resize textarea to fit content
+  useEffect(() => {
+    const textarea = textareaRef.current
+    if (!textarea) return
+    
+    // Reset height to recalculate
+    textarea.style.height = 'auto'
+    // Set to scroll height but cap at max for very long content
+    const maxHeight = 400
+    const newHeight = Math.min(textarea.scrollHeight, maxHeight)
+    textarea.style.height = `${Math.max(newHeight, 200)}px`
+    // Show scrollbar if content exceeds max
+    textarea.style.overflowY = textarea.scrollHeight > maxHeight ? 'auto' : 'hidden'
+  }, [prompt])
+
   // Initialize prompt helper with first message from Hatch
   const initializePromptHelper = async () => {
     setShowPromptHelper(true)
@@ -620,7 +635,7 @@ export default function SectionBuilder({
             onChange={(e) => setPrompt(e.target.value)}
             disabled={stage !== 'input'}
             placeholder="Describe what you want for this section..."
-            className="flex-1 min-h-[200px] bg-zinc-900/50 border border-zinc-800 rounded-xl p-4 text-white placeholder-zinc-600 resize-none focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 disabled:opacity-50"
+            className="min-h-[200px] max-h-[400px] bg-zinc-900/50 border border-zinc-800 rounded-xl p-4 text-white placeholder-zinc-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 disabled:opacity-50 no-swipe-navigation"
           />
 
           {/* Hatch - Your friendly prompt helper */}

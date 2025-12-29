@@ -9,6 +9,8 @@ html, body {
   height: 100%;
   width: 100%;
   margin: 0;
+  /* Prevent browser swipe-back/forward gestures on horizontal swipe */
+  overscroll-behavior-x: none;
 }
 
 /* Reduce animations on mobile for better performance */
@@ -33,6 +35,12 @@ html, body {
 input, textarea, select {
   font-size: 16px;
   touch-action: manipulation;
+}
+
+/* Prevent swipe navigation in builder - class for extra safety on specific elements */
+.no-swipe-navigation {
+  overscroll-behavior: contain;
+  touch-action: pan-y pinch-zoom;
 }
 
 /* Safe area padding for mobile devices */

@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 
 // Color presets with curated palettes
@@ -132,6 +132,47 @@ export default function BrandingStep({ onComplete, onBack, templateName, templat
   const [selectedVibe, setSelectedVibe] = useState('minimal')
   const [logoPreview, setLogoPreview] = useState<string | null>(null)
 
+  const STORAGE_KEY = 'hatch_branding_draft'
+
+  // Restore saved branding on mount
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY)
+      if (saved) {
+        const data = JSON.parse(saved)
+        if (data.brandName) setBrandName(data.brandName)
+        if (data.tagline) setTagline(data.tagline)
+        if (data.selectedColorPreset) setSelectedColorPreset(data.selectedColorPreset)
+        if (data.customColors) setCustomColors(data.customColors)
+        if (data.useCustomColors !== undefined) setUseCustomColors(data.useCustomColors)
+        if (data.selectedFont) setSelectedFont(data.selectedFont)
+        if (data.selectedVibe) setSelectedVibe(data.selectedVibe)
+        if (data.logoPreview) setLogoPreview(data.logoPreview)
+      }
+    } catch (e) {
+      console.warn('Failed to restore branding draft:', e)
+    }
+  }, [])
+
+  // Auto-save branding to localStorage on any change
+  useEffect(() => {
+    const data = {
+      brandName,
+      tagline,
+      selectedColorPreset,
+      customColors,
+      useCustomColors,
+      selectedFont,
+      selectedVibe,
+      logoPreview,
+    }
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
+    } catch (e) {
+      console.warn('Failed to save branding draft:', e)
+    }
+  }, [brandName, tagline, selectedColorPreset, customColors, useCustomColors, selectedFont, selectedVibe, logoPreview])
+
   const handleLogoUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
     if (file) {
@@ -150,6 +191,9 @@ export default function BrandingStep({ onComplete, onBack, templateName, templat
       secondary: selectedPreset?.secondary || '#1E293B',
       accent: selectedPreset?.accent || '#10B981',
     }
+
+    // Clear the draft since we're successfully completing
+    localStorage.removeItem(STORAGE_KEY)
 
     onComplete({
       brandName: brandName || 'My Brand',
