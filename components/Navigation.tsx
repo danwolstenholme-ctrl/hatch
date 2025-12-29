@@ -20,6 +20,7 @@ export default function Navigation() {
     { href: '/features', label: 'Features' },
     { href: '/how-it-works', label: 'How It Works' },
     { href: '/roadmap', label: 'Roadmap' },
+    { href: '/vision', label: 'Vision' },
     { href: '/about', label: 'About' },
   ]
 

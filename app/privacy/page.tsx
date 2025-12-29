@@ -1,24 +1,55 @@
+'use client'
+
 import type { Metadata } from 'next'
 import Link from 'next/link'
-
-export const metadata: Metadata = {
-  title: 'Privacy Policy | HatchIt.dev',
-  description: 'HatchIt.dev privacy policy - how we collect, use, and protect your data.',
-}
+import { motion } from 'framer-motion'
 
 export default function PrivacyPage() {
   return (
-    <div className="min-h-screen bg-zinc-950 text-white py-12 sm:py-16 px-4">
-      <div className="max-w-3xl mx-auto">
-        <Link href="/" className="inline-flex items-center gap-2 text-zinc-400 hover:text-white transition mb-8 text-sm">
-          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-          </svg>
-          Back to Home
-        </Link>
-        
-        <h1 className="text-3xl sm:text-4xl font-bold mb-4">Privacy Policy</h1>
-        <p className="text-zinc-400 mb-8">Last updated: December 29, 2025</p>
+    <div className="min-h-screen bg-zinc-950 text-white">
+      {/* Gradient orbs */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-40 -left-40 w-80 h-80 bg-purple-500/20 rounded-full blur-[100px]" />
+        <div className="absolute top-1/3 -right-40 w-96 h-96 bg-blue-500/15 rounded-full blur-[100px]" />
+      </div>
+
+      {/* Hero */}
+      <section className="relative px-6 pt-20 pb-16 text-center">
+        <div className="max-w-3xl mx-auto">
+          <motion.div
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-300 text-sm mb-8"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+          >
+            <span className="text-lg">🔒</span>
+            <span>Your Privacy Matters</span>
+          </motion.div>
+          
+          <motion.h1 
+            className="text-5xl md:text-7xl font-bold mb-6 leading-tight"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+          >
+            <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-amber-400 bg-clip-text text-transparent">
+              Privacy Policy
+            </span>
+          </motion.h1>
+          
+          <motion.p 
+            className="text-sm text-zinc-500"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+          >
+            Last updated: December 30, 2025
+          </motion.p>
+        </div>
+      </section>
+
+      {/* Content */}
+      <div className="max-w-3xl mx-auto px-6 pb-16">
         
         <div className="space-y-8 text-zinc-300">
           <section>

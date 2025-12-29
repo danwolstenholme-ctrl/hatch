@@ -1,16 +1,13 @@
-import { Metadata } from 'next'
+'use client'
+
+import { motion } from 'framer-motion'
+import { useState } from 'react'
 import Link from 'next/link'
 
-export const metadata: Metadata = {
-  title: 'FAQ - HatchIt.dev | AI Website Builder Questions Answered',
-  description: 'Frequently asked questions about HatchIt.dev, the AI-powered website builder. Learn about pricing, features, code ownership, deployment, and more.',
-  openGraph: {
-    title: 'FAQ - HatchIt.dev | AI Website Builder',
-    description: 'Get answers to common questions about HatchIt.dev - the AI website builder that generates real React code.',
-  },
-}
+export default function FAQPage() {
+  const [openIndex, setOpenIndex] = useState<string | null>(null)
 
-const faqs = [
+  const faqs = [
   {
     category: 'Getting Started',
     questions: [
@@ -204,130 +201,145 @@ const faqs = [
   },
 ]
 
-export default function FAQPage() {
   return (
     <div className="min-h-screen bg-zinc-950 text-white">
-      {/* Header */}
-      <nav className="px-8 py-6 border-b border-zinc-800">
-        <div className="max-w-5xl mx-auto flex justify-between items-center">
-          <Link href="/" className="text-2xl font-black">
-            <span className="bg-gradient-to-r from-white via-zinc-200 to-zinc-500 bg-clip-text text-transparent">Hatch</span>
-            <span className="bg-gradient-to-r from-blue-400 via-purple-400 to-pink-400 bg-clip-text text-transparent">It</span>
-            <span className="text-zinc-600">.dev</span>
-          </Link>
-          <Link href="/builder" className="px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 rounded-lg font-semibold text-sm transition-all">
-            Open Builder
-          </Link>
-        </div>
-      </nav>
+      {/* Gradient orbs */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-40 -left-40 w-80 h-80 bg-purple-500/20 rounded-full blur-[100px]" />
+        <div className="absolute top-1/3 -right-40 w-96 h-96 bg-blue-500/15 rounded-full blur-[100px]" />
+      </div>
 
-      <div className="max-w-5xl mx-auto px-4 py-16">
-        {/* Hero */}
-        <div className="text-center mb-16">
-          <h1 className="text-4xl md:text-5xl font-bold mb-4">Frequently Asked Questions</h1>
-          <p className="text-xl text-zinc-400 max-w-2xl mx-auto">
-            Everything you need to know about HatchIt.dev, the AI website builder that generates real code.
-          </p>
+      {/* Hero */}
+      <section className="relative px-6 pt-20 pb-24 text-center">
+        <div className="max-w-3xl mx-auto">
+          <motion.div
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-300 text-sm mb-8"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
+          >
+            <span className="text-lg">💬</span>
+            <span>Questions & Answers</span>
+          </motion.div>
+          
+          <motion.h1 
+            className="text-5xl md:text-7xl font-bold mb-6 leading-tight"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+          >
+            Frequently Asked
+            <br />
+            <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-amber-400 bg-clip-text text-transparent">
+              Questions
+            </span>
+          </motion.h1>
+          
+          <motion.p 
+            className="text-xl text-zinc-400 max-w-2xl mx-auto"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+          >
+            Everything you need to know about HatchIt
+          </motion.p>
         </div>
+      </section>
 
-        {/* Quick Links */}
-        <div className="flex flex-wrap justify-center gap-2 mb-12">
-          {faqs.map((section) => (
-            <a
-              key={section.category}
-              href={`#${section.category.toLowerCase().replace(/\s+/g, '-')}`}
-              className="px-4 py-2 bg-zinc-800/50 hover:bg-zinc-800 border border-zinc-700 rounded-full text-sm text-zinc-300 hover:text-white transition-colors"
-            >
-              {section.category}
-            </a>
-          ))}
-        </div>
-
-        {/* FAQ Sections */}
-        <div className="space-y-16">
-          {faqs.map((section) => (
-            <section key={section.category} id={section.category.toLowerCase().replace(/\s+/g, '-')}>
-              <h2 className="text-2xl font-bold mb-6 text-white flex items-center gap-3">
-                <div className="w-1 h-8 bg-gradient-to-b from-blue-500 to-purple-500 rounded-full"></div>
+      {/* Content */}
+      <div className="relative px-6 pb-16">
+        <div className="max-w-4xl mx-auto">
+          {/* Quick Links */}
+          <div className="flex flex-wrap justify-center gap-2 mb-12">
+            {faqs.map((section) => (
+              <button
+                key={section.category}
+                onClick={() => {
+                  const element = document.getElementById(section.category.toLowerCase().replace(/\s+/g, '-'))
+                  element?.scrollIntoView({ behavior: 'smooth' })
+                }}
+                className="px-4 py-2 bg-zinc-800/50 hover:bg-zinc-800 border border-zinc-700 rounded-full text-sm text-zinc-300 hover:text-white transition-colors"
+              >
                 {section.category}
-              </h2>
-              <div className="space-y-4">
-                {section.questions.map((faq, idx) => (
-                  <details
-                    key={idx}
-                    className="group bg-zinc-900/50 border border-zinc-800 rounded-xl overflow-hidden"
-                  >
-                    <summary className="flex items-center justify-between p-5 cursor-pointer hover:bg-zinc-800/50 transition-colors list-none">
-                      <h3 className="font-medium text-white pr-4">{faq.q}</h3>
-                      <svg
-                        className="w-5 h-5 text-zinc-500 group-open:rotate-180 transition-transform flex-shrink-0"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                      </svg>
-                    </summary>
-                    <div className="px-5 pb-5 text-zinc-400 leading-relaxed border-t border-zinc-800 pt-4">
-                      {faq.a}
-                    </div>
-                  </details>
-                ))}
-              </div>
-            </section>
-          ))}
-        </div>
-
-        {/* CTA */}
-        <div className="mt-20 text-center bg-gradient-to-r from-blue-600/10 to-purple-600/10 border border-zinc-800 rounded-2xl p-8 md:p-12">
-          <h2 className="text-2xl md:text-3xl font-bold mb-4">Still have questions?</h2>
-          <p className="text-zinc-400 mb-6 max-w-xl mx-auto">
-            Our team is here to help. Reach out through the chat widget or start building and use the in-app assistant.
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Link
-              href="/builder"
-              className="px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-500 hover:to-purple-500 rounded-xl font-semibold transition-all"
-            >
-              Start Building Free
-            </Link>
-            <a
-              href="mailto:support@hatchit.dev"
-              className="px-6 py-3 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 rounded-xl font-semibold transition-all"
-            >
-              Contact Support
-            </a>
+              </button>
+            ))}
           </div>
-        </div>
 
-        {/* Footer Links */}
-        <div className="mt-16 pt-8 border-t border-zinc-800 flex flex-wrap justify-center gap-6 text-sm text-zinc-500">
-          <Link href="/" className="hover:text-white transition-colors">Home</Link>
-          <Link href="/builder" className="hover:text-white transition-colors">Builder</Link>
-          <Link href="/terms" className="hover:text-white transition-colors">Terms</Link>
-          <Link href="/privacy" className="hover:text-white transition-colors">Privacy</Link>
-        </div>
+          {/* FAQ Sections */}
+          <div className="space-y-16">
+            {faqs.map((section) => (
+              <section key={section.category} id={section.category.toLowerCase().replace(/\s+/g, '-')}>
+                <h2 className="text-2xl font-bold mb-6 text-white flex items-center gap-3">
+                  <div className="w-1 h-8 bg-gradient-to-b from-purple-500 to-pink-500 rounded-full"></div>
+                  {section.category}
+                </h2>
+                <div className="space-y-4">
+                  {section.questions.map((faq, idx) => {
+                    const questionId = `${section.category}-${idx}`
+                    const isOpen = openIndex === questionId
+                    return (
+                      <motion.div
+                        key={idx}
+                        className="bg-zinc-900/50 border border-zinc-800 rounded-xl overflow-hidden hover:border-zinc-700 transition-colors"
+                        initial={{ opacity: 0, y: 20 }}
+                        whileInView={{ opacity: 1, y: 0 }}
+                        viewport={{ once: true }}
+                        transition={{ delay: idx * 0.05 }}
+                      >
+                        <button
+                          onClick={() => setOpenIndex(isOpen ? null : questionId)}
+                          className="w-full text-left p-6 flex items-start justify-between gap-4 group"
+                        >
+                          <span className="font-semibold text-white group-hover:text-purple-400 transition-colors flex-1">{faq.q}</span>
+                          <motion.span
+                            animate={{ rotate: isOpen ? 180 : 0 }}
+                            className="text-zinc-500 text-xl flex-shrink-0"
+                          >
+                            ↓
+                          </motion.span>
+                        </button>
+                        <motion.div
+                          initial={false}
+                          animate={{ height: isOpen ? 'auto' : 0, opacity: isOpen ? 1 : 0 }}
+                          className="overflow-hidden"
+                        >
+                          <div className="px-6 pb-6 text-zinc-400 leading-relaxed border-t border-zinc-800 pt-4">{faq.a}</div>
+                        </motion.div>
+                      </motion.div>
+                    )
+                  })}
+                </div>
+              </section>
+            ))}
+          </div>
 
-        {/* Schema.org FAQ markup for SEO */}
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{
-            __html: JSON.stringify({
-              '@context': 'https://schema.org',
-              '@type': 'FAQPage',
-              mainEntity: faqs.flatMap((section) =>
-                section.questions.map((faq) => ({
-                  '@type': 'Question',
-                  name: faq.q,
-                  acceptedAnswer: {
-                    '@type': 'Answer',
-                    text: faq.a,
-                  },
-                }))
-              ),
-            }),
-          }}
-        />
+          {/* CTA */}
+          <motion.div
+            className="mt-16 p-8 bg-gradient-to-br from-purple-900/30 via-pink-900/20 to-amber-900/30 border border-purple-500/20 rounded-2xl text-center"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+          >
+            <h3 className="text-2xl font-bold mb-4">Still have questions?</h3>
+            <p className="text-zinc-400 mb-6">Reach out on X or email us directly</p>
+            <div className="flex flex-wrap justify-center gap-4">
+              <a
+                href="https://x.com/HatchItD"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="px-6 py-3 bg-zinc-800 hover:bg-zinc-700 rounded-xl font-semibold transition-colors"
+              >
+                @HatchItD on X
+              </a>
+              <a
+                href="mailto:support@hatchit.dev"
+                className="px-6 py-3 bg-purple-600 hover:bg-purple-500 rounded-xl font-semibold transition-colors"
+              >
+                support@hatchit.dev
+              </a>
+            </div>
+          </motion.div>
+        </div>
       </div>
     </div>
   )

@@ -1,60 +1,67 @@
+'use client'
+
 import type { Metadata } from 'next'
 import Link from 'next/link'
-
-export const metadata: Metadata = {
-  title: 'Vision 2026-2028 | HatchIt.dev',
-  description: 'The HatchIt.dev vision: From AI-powered site builder to autonomous web development. See our ambitious roadmap for 2026, 2027, and 2028.',
-  openGraph: {
-    title: 'Vision 2026-2028 | HatchIt.dev',
-    description: 'The HatchIt.dev vision: From AI-powered site builder to autonomous web development.',
-    type: 'website',
-  },
-}
+import { motion } from 'framer-motion'
 
 export default function VisionPage() {
   return (
-    <main className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
+    <main className="min-h-screen bg-zinc-950 text-white">
+      {/* Gradient orbs */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-40 -left-40 w-80 h-80 bg-purple-500/20 rounded-full blur-[100px]" />
+        <div className="absolute top-1/3 -right-40 w-96 h-96 bg-blue-500/15 rounded-full blur-[100px]" />
+        <div className="absolute -bottom-40 left-1/3 w-80 h-80 bg-pink-500/10 rounded-full blur-[100px]" />
+      </div>
+
       {/* Hero */}
-      <section className="relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-r from-amber-500/10 via-orange-500/5 to-rose-500/10" />
-        <div className="absolute top-20 left-10 w-72 h-72 bg-amber-500/20 rounded-full blur-3xl animate-pulse" />
-        <div className="absolute bottom-10 right-10 w-96 h-96 bg-orange-500/10 rounded-full blur-3xl" />
-        
-        <div className="relative max-w-6xl mx-auto px-6 py-24">
-          <Link 
-            href="/"
-            className="inline-flex items-center gap-2 text-slate-400 hover:text-white transition mb-8 group"
+      <section className="relative px-6 pt-20 pb-24 text-center">
+        <div className="max-w-3xl mx-auto">
+          <motion.div
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-300 text-sm mb-8"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
           >
-            <svg className="w-4 h-4 group-hover:-translate-x-1 transition-transform" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
-            Back to Home
-          </Link>
+            <span className="text-lg">🚀</span>
+            <span>2026 → 2028</span>
+          </motion.div>
           
-          <div className="flex items-center gap-3 mb-6">
-            <span className="text-5xl">🚀</span>
-            <h1 className="text-5xl md:text-7xl font-bold bg-gradient-to-r from-amber-400 via-orange-400 to-rose-400 bg-clip-text text-transparent">
-              Vision
-            </h1>
-          </div>
+          <motion.h1 
+            className="text-5xl md:text-7xl font-bold mb-6 leading-tight"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.1 }}
+          >
+            The Vision for
+            <br />
+            <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-amber-400 bg-clip-text text-transparent">
+              Autonomous Development
+            </span>
+          </motion.h1>
           
-          <p className="text-2xl md:text-3xl text-slate-300 max-w-3xl mb-4">
-            2026 → 2028
-          </p>
+          <motion.p 
+            className="text-xl text-zinc-400 max-w-2xl mx-auto"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+          >
+            From AI-powered site builder to autonomous web development. This is where we're going—and we're moving fast.
+          </motion.p>
           
-          <p className="text-lg text-slate-400 max-w-2xl">
-            From AI-powered site builder to <span className="text-amber-400 font-semibold">autonomous web development</span>. 
-            This is where we&apos;re going—and we&apos;re moving fast.
-          </p>
-          
-          <div className="mt-8">
+          <motion.div 
+            className="mt-8"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.4 }}
+          >
             <Link 
               href="/roadmap"
-              className="text-sm text-slate-500 hover:text-slate-300 transition underline underline-offset-4"
+              className="text-sm text-zinc-500 hover:text-zinc-300 transition underline underline-offset-4"
             >
-              See what we&apos;ve shipped recently →
+              See what we've shipped recently →
             </Link>
-          </div>
+          </motion.div>
         </div>
       </section>
 
