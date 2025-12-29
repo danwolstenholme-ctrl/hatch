@@ -4,6 +4,7 @@ import { useEffect, useState, useRef, useSyncExternalStore } from 'react'
 import Link from 'next/link'
 import { SignInButton, SignedIn, SignedOut, UserButton } from '@clerk/nextjs'
 import { motion, useInView } from 'framer-motion'
+import HatchCharacter from '@/components/HatchCharacter'
 
 // Client-side check to prevent hydration mismatch - uses useSyncExternalStore for proper SSR handling
 const emptySubscribe = () => () => {}
@@ -77,8 +78,8 @@ function TypewriterCode({ code, speed = 30 }: { code: string; speed?: number }) 
   }, [])
 
   return (
-    <pre className="text-[10px] sm:text-xs md:text-sm font-mono text-left overflow-hidden">
-      <code>
+    <pre className="text-[10px] sm:text-xs md:text-sm font-mono text-left overflow-x-auto max-w-full">
+      <code className="break-words">
         {displayedCode}
         <span className="animate-pulse">|</span>
       </code>
@@ -200,6 +201,63 @@ function AIThinkingCaption() {
         <span className="text-sm">{current.icon}</span>
         <span className="text-sm text-purple-300/90">{current.text}</span>
       </motion.div>
+    </div>
+  )
+}
+
+// Mouse-following Hatch for the hero section
+function MouseFollowingHatch() {
+  const hatchRef = useRef<HTMLDivElement>(null)
+  const [eyeOffset, setEyeOffset] = useState({ x: 0, y: 0 })
+  
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      if (!hatchRef.current) return
+      
+      const rect = hatchRef.current.getBoundingClientRect()
+      const hatchCenterX = rect.left + rect.width / 2
+      const hatchCenterY = rect.top + rect.height / 2
+      
+      // Calculate direction to mouse
+      const deltaX = e.clientX - hatchCenterX
+      const deltaY = e.clientY - hatchCenterY
+      
+      // Normalize and limit the offset (max 3px movement)
+      const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY)
+      const maxOffset = 3
+      const normalizedX = distance > 0 ? (deltaX / distance) * Math.min(distance / 100, 1) * maxOffset : 0
+      const normalizedY = distance > 0 ? (deltaY / distance) * Math.min(distance / 100, 1) * maxOffset : 0
+      
+      setEyeOffset({ x: normalizedX, y: normalizedY })
+    }
+    
+    window.addEventListener('mousemove', handleMouseMove)
+    return () => window.removeEventListener('mousemove', handleMouseMove)
+  }, [])
+  
+  return (
+    <div ref={hatchRef} className="inline-block align-middle relative">
+      {/* Egg body */}
+      <div className="w-8 h-10 bg-gradient-to-b from-amber-100 via-amber-50 to-amber-100 rounded-full shadow-md relative overflow-hidden">
+        {/* Subtle shine */}
+        <div className="absolute top-1 left-1 w-2 h-3 bg-white/40 rounded-full blur-[2px]" />
+        
+        {/* Face container */}
+        <div className="absolute inset-0 flex items-center justify-center pt-1">
+          {/* Eyes that follow cursor */}
+          <motion.div 
+            className="font-mono text-[8px] tracking-wider select-none text-zinc-700"
+            animate={{ x: eyeOffset.x, y: eyeOffset.y }}
+            transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+          >
+            ◦ ◦
+          </motion.div>
+        </div>
+        
+        {/* Blush */}
+        <div className="absolute bottom-3 left-1 w-1.5 h-1 bg-pink-300/50 rounded-full" />
+        <div className="absolute bottom-3 right-1 w-1.5 h-1 bg-pink-300/50 rounded-full" />
+      </div>
     </div>
   )
 }
@@ -411,12 +469,13 @@ export default function Home() {
           </div>
 
           {/* Subheadline */}
-          <motion.p 
-            className="text-center text-lg sm:text-xl md:text-2xl text-zinc-400 max-w-3xl mx-auto mb-8 leading-relaxed"
+          <motion.div 
+            className="text-center text-lg sm:text-xl md:text-2xl text-zinc-400 max-w-3xl mx-auto mb-8 leading-relaxed flex flex-wrap items-center justify-center gap-1"
             {...getAnimation(0.2, 20)}
           >
-            The AI website builder that writes <span className="text-white font-medium">real, maintainable</span> React code. Section by section. With Hatch, your friendly helper 🥚
-          </motion.p>
+            <span>The AI website builder that writes <span className="text-white font-medium">real, maintainable</span> React code. Section by section. With Hatch, your friendly helper</span>
+            <MouseFollowingHatch />
+          </motion.div>
 
           {/* CTAs */}
           <motion.div 
@@ -576,49 +635,89 @@ export default function Home() {
 
           {/* Feature cards */}
           <div className="grid md:grid-cols-3 gap-6">
-            {[
-              { icon: '🧠', title: 'Three-Model Pipeline', description: 'Sonnet builds. Opus polishes. Gemini audits. Each AI does what it\'s best at. Not just one model doing everything.', gradient: 'from-purple-500 to-indigo-600' },
-              { icon: '🥚', title: 'Meet Hatch', description: 'Your friendly egg helper. Stuck on a prompt? Hatch writes it for you. She\'s cute, helpful, and genuinely excited about your project.', gradient: 'from-amber-500 to-orange-600', badge: 'NEW' },
-              { icon: '🏗️', title: 'Section-by-Section', description: 'Build your site one section at a time. Header, hero, features, pricing — each piece crafted and refined before moving on.', gradient: 'from-emerald-500 to-teal-600' },
-            ].map((feature, i) => (
-              <motion.div 
-                key={i} 
-                className="group relative p-6 bg-zinc-900/50 border border-zinc-800 rounded-2xl hover:border-zinc-700 transition-colors duration-300 gpu-accelerate"
-                style={{ willChange: 'transform, opacity' }}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.5, delay: i * 0.1, ease: [0.25, 0.1, 0.25, 1] }}
-                whileHover={{ y: -8, transition: { type: 'spring', stiffness: 400, damping: 17 } }}
-              >
-                <div className={`absolute inset-0 bg-gradient-to-br ${feature.gradient} opacity-0 group-hover:opacity-10 rounded-2xl transition-opacity duration-500`} />
-                <div className="relative">
-                  <div className="flex items-start justify-between mb-4">
-                    <motion.span 
-                      className="text-4xl block"
-                      style={{ willChange: 'transform' }}
-                      whileHover={{ scale: 1.2, rotate: 10 }}
-                      transition={{ type: 'spring', stiffness: 400, damping: 10 }}
-                    >
-                      {feature.icon}
-                    </motion.span>
-                    {feature.badge && (
-                      <motion.span 
-                        className="flex items-center gap-1 px-2 py-1 bg-amber-500/10 border border-amber-500/20 rounded-full text-[10px] text-amber-400"
-                        style={{ willChange: 'transform' }}
-                        initial={{ scale: 1 }}
-                        animate={{ scale: [1, 1.05, 1] }}
-                        transition={{ duration: 2, repeat: Infinity }}
-                      >
-                        🐣 {feature.badge}
-                      </motion.span>
-                    )}
-                  </div>
-                  <h3 className="text-xl font-bold mb-2 group-hover:text-purple-300 transition-colors">{feature.title}</h3>
-                  <p className="text-zinc-400">{feature.description}</p>
+            {/* Three-Model Pipeline Card */}
+            <motion.div 
+              className="group relative p-6 bg-zinc-900/50 border border-zinc-800 rounded-2xl hover:border-zinc-700 transition-colors duration-300 gpu-accelerate"
+              style={{ willChange: 'transform, opacity' }}
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: 0, ease: [0.25, 0.1, 0.25, 1] }}
+              whileHover={{ y: -8, transition: { type: 'spring', stiffness: 400, damping: 17 } }}
+            >
+              <div className="absolute inset-0 bg-gradient-to-br from-purple-500 to-indigo-600 opacity-0 group-hover:opacity-10 rounded-2xl transition-opacity duration-500" />
+              <div className="relative">
+                <motion.span 
+                  className="text-4xl block mb-4"
+                  style={{ willChange: 'transform' }}
+                  whileHover={{ scale: 1.2, rotate: 10 }}
+                  transition={{ type: 'spring', stiffness: 400, damping: 10 }}
+                >
+                  🧠
+                </motion.span>
+                <h3 className="text-xl font-bold mb-2 group-hover:text-purple-300 transition-colors">Three-Model Pipeline</h3>
+                <p className="text-zinc-400">Sonnet builds. Opus polishes. Gemini audits. Each AI does what it&apos;s best at. Not just one model doing everything.</p>
+              </div>
+            </motion.div>
+
+            {/* MEET HATCH - The star of the show! */}
+            <motion.div 
+              className="group relative p-6 bg-gradient-to-br from-amber-500/5 to-orange-500/5 border border-amber-500/20 rounded-2xl hover:border-amber-500/40 transition-colors duration-300 gpu-accelerate"
+              style={{ willChange: 'transform, opacity' }}
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: 0.1, ease: [0.25, 0.1, 0.25, 1] }}
+              whileHover={{ y: -8, transition: { type: 'spring', stiffness: 400, damping: 17 } }}
+            >
+              <div className="absolute inset-0 bg-gradient-to-br from-amber-500 to-orange-600 opacity-0 group-hover:opacity-10 rounded-2xl transition-opacity duration-500" />
+              <div className="relative">
+                <div className="flex items-start justify-between mb-4">
+                  <motion.div
+                    whileHover={{ scale: 1.1 }}
+                    transition={{ type: 'spring', stiffness: 400, damping: 10 }}
+                  >
+                    <HatchCharacter state="excited" size="lg" />
+                  </motion.div>
+                  <motion.span 
+                    className="flex items-center gap-1 px-2 py-1 bg-amber-500/10 border border-amber-500/20 rounded-full text-[10px] text-amber-400"
+                    style={{ willChange: 'transform' }}
+                    initial={{ scale: 1 }}
+                    animate={{ scale: [1, 1.05, 1] }}
+                    transition={{ duration: 2, repeat: Infinity }}
+                  >
+                    ✨ NEW
+                  </motion.span>
                 </div>
-              </motion.div>
-            ))}
+                <h3 className="text-xl font-bold mb-2 text-amber-200 group-hover:text-amber-100 transition-colors">Meet Hatch</h3>
+                <p className="text-zinc-400">Your friendly prompt helper. Stuck on what to write? Hatch writes it for you. She&apos;s cute, helpful, and genuinely excited about your project.</p>
+              </div>
+            </motion.div>
+
+            {/* Section-by-Section Card */}
+            <motion.div 
+              className="group relative p-6 bg-zinc-900/50 border border-zinc-800 rounded-2xl hover:border-zinc-700 transition-colors duration-300 gpu-accelerate"
+              style={{ willChange: 'transform, opacity' }}
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.5, delay: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
+              whileHover={{ y: -8, transition: { type: 'spring', stiffness: 400, damping: 17 } }}
+            >
+              <div className="absolute inset-0 bg-gradient-to-br from-emerald-500 to-teal-600 opacity-0 group-hover:opacity-10 rounded-2xl transition-opacity duration-500" />
+              <div className="relative">
+                <motion.span 
+                  className="text-4xl block mb-4"
+                  style={{ willChange: 'transform' }}
+                  whileHover={{ scale: 1.2, rotate: 10 }}
+                  transition={{ type: 'spring', stiffness: 400, damping: 10 }}
+                >
+                  🏗️
+                </motion.span>
+                <h3 className="text-xl font-bold mb-2 group-hover:text-purple-300 transition-colors">Section-by-Section</h3>
+                <p className="text-zinc-400">Build your site one section at a time. Header, hero, features, pricing — each piece crafted and refined before moving on.</p>
+              </div>
+            </motion.div>
           </div>
 
           <div className="text-center mt-12">
@@ -637,7 +736,7 @@ export default function Home() {
 
           <div className="grid md:grid-cols-3 gap-8">
             {[
-              { step: '01', title: 'Describe', description: 'Pick a template, set your brand colors, then describe each section. Stuck? Hatch writes your prompts for you.', icon: '💭' },
+              { step: '01', title: 'Describe', description: 'Choose your site type, set your brand colors, then describe each section. Stuck? Hatch writes your prompts for you.', icon: '💭' },
               { step: '02', title: 'Build', description: 'Watch Sonnet generate code live. Opus auto-polishes for accessibility. Get AI suggestions to make it even better.', icon: '⚡' },
               { step: '03', title: 'Ship', description: 'One click. Live URL. Your site is on the internet. Connect your domain if you want.', icon: '🚀' },
             ].map((item, i) => (
@@ -724,7 +823,7 @@ export default function Home() {
             {[
               { value: 30, suffix: 's', label: 'Avg. generation' },
               { value: 100, suffix: '%', label: 'Code ownership' },
-              { value: 3, suffix: '', label: 'Days to build this' },
+              { value: 10, suffix: '', label: 'Days (& nights) to build V3' },
               { value: 1, suffix: '', label: 'Person team' },
             ].map((stat, i) => (
               <div key={i}>
