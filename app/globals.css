@@ -1,5 +1,10 @@
 @import "tailwindcss";
 
+/* Scale up base font for better readability on high-DPI monitors */
+html {
+  font-size: 112.5%; /* 18px base instead of 16px - looks normal at 100% zoom */
+}
+
 html, body {
   height: 100%;
   width: 100%;

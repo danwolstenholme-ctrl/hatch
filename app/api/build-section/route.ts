@@ -1,11 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
 import Anthropic from '@anthropic-ai/sdk'
-import { 
-  getSectionById, 
-  markSectionBuilding, 
-  completeSection 
-} from '@/lib/db'
 
 // =============================================================================
 // SONNET 4.5 - THE BUILDER
@@ -16,14 +11,27 @@ const anthropic = new Anthropic({
   apiKey: process.env.ANTHROPIC_API_KEY,
 })
 
+interface BrandConfig {
+  brandName: string
+  tagline?: string
+  logoUrl?: string
+  colors: {
+    primary: string
+    secondary: string
+    accent: string
+  }
+  fontStyle: 'modern' | 'classic' | 'playful' | 'technical'
+  styleVibe: 'professional' | 'creative' | 'minimal' | 'bold' | 'elegant' | 'friendly'
+}
+
 function buildSystemPrompt(
   sectionName: string,
   sectionDescription: string,
   templateType: string,
   userPrompt: string,
-  previousSections: Record<string, string>
+  previousSections: Record<string, string>,
+  brandConfig: BrandConfig | null
 ): string {
-  // Generate a PascalCase component name from section name
   const componentName = sectionName
     .split(/[\s-_]+/)
     .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
@@ -37,8 +45,44 @@ function buildSystemPrompt(
       }`
     : ''
 
-  return `You are building a ${sectionName} section for a ${templateType}.
+  // Build brand-specific styling instructions
+  let brandInstructions = ''
+  if (brandConfig) {
+    const fontClasses = {
+      modern: 'font-sans (clean geometric fonts like Inter/Outfit)',
+      classic: 'font-serif (elegant serif fonts like Georgia/Merriweather)',
+      playful: 'font-sans with rounded, friendly styling',
+      technical: 'font-mono for headers, font-sans for body (techy feel)',
+    }[brandConfig.fontStyle]
 
+    const vibeDescriptions = {
+      professional: 'Clean, corporate, trustworthy. Subtle animations, structured layouts.',
+      creative: 'Artistic, expressive, unique. Asymmetric layouts, bold choices.',
+      minimal: 'Ultra-clean, lots of whitespace, essential elements only.',
+      bold: 'High contrast, large typography, impactful statements.',
+      elegant: 'Refined, luxurious, sophisticated. Subtle gradients, graceful animations.',
+      friendly: 'Warm, approachable, welcoming. Rounded corners, soft colors.',
+    }[brandConfig.styleVibe]
+
+    brandInstructions = `
+## BRAND IDENTITY (USE THESE!)
+- **Brand Name**: "${brandConfig.brandName}"${brandConfig.tagline ? `\n- **Tagline**: "${brandConfig.tagline}"` : ''}
+- **Primary Color**: ${brandConfig.colors.primary} (use for main CTAs, key elements)
+- **Secondary Color**: ${brandConfig.colors.secondary} (use for backgrounds, subtle accents)  
+- **Accent Color**: ${brandConfig.colors.accent} (use for highlights, links, hover states)
+- **Font Style**: ${fontClasses}
+- **Overall Vibe**: ${brandConfig.styleVibe} - ${vibeDescriptions}
+${brandConfig.logoUrl ? `- **Logo URL**: ${brandConfig.logoUrl} (use in header/navigation if applicable)` : ''}
+
+IMPORTANT: Apply these colors as Tailwind classes. For custom hex colors, use inline styles:
+- style={{ backgroundColor: '${brandConfig.colors.primary}' }}
+- style={{ color: '${brandConfig.colors.accent}' }}
+Or use CSS variables / Tailwind arbitrary values: bg-[${brandConfig.colors.primary}]
+`
+  }
+
+  return `You are building a ${sectionName} section for a ${templateType}.
+${brandInstructions}
 ## OUTPUT FORMAT (MANDATORY - READ THIS CAREFULLY)
 
 You MUST return a named function component. Here's the EXACT format:
@@ -85,13 +129,17 @@ Build EXACTLY what they asked for. Be specific to their request, not generic.
 - Framer Motion available: motion.div, motion.button, AnimatePresence, etc.
 - Lucide icons available: ArrowRight, Check, Menu, X, etc. (use directly, no import)
 
-## STYLE GUIDE (FOLLOW THIS)
-- Dark backgrounds: bg-zinc-950, bg-zinc-900
+## STYLE GUIDE${brandConfig ? ' (ADAPT TO BRAND COLORS ABOVE)' : ''}
+${brandConfig ? `- Use the brand colors specified above as primary styling
+- Dark backgrounds: bg-zinc-950, bg-zinc-900 (or brand secondary if dark)
 - Text colors: text-white, text-zinc-400, text-zinc-500
-- Accent colors: Use cyan-500, cyan-400 for CTAs and highlights (or match user's brand)
+- Accent: Use brand primary/accent colors for CTAs and highlights` :
+`- Dark backgrounds: bg-zinc-950, bg-zinc-900
+- Text colors: text-white, text-zinc-400, text-zinc-500
+- Accent colors: Use cyan-500, cyan-400 for CTAs and highlights`}
 - Borders: border-zinc-800, border-zinc-700
 - Rounded corners: rounded-xl, rounded-2xl for cards, rounded-full for badges
-- Shadows: shadow-lg, shadow-xl, shadow-cyan-500/20 for glow effects
+- Shadows: shadow-lg, shadow-xl, add glow effects with brand colors
 - Spacing: py-20, py-24 for sections, gap-4, gap-6, gap-8 for flex/grid
 - Typography: text-4xl/text-5xl for headlines, text-lg/text-xl for body
 
@@ -124,7 +172,8 @@ export async function POST(request: NextRequest) {
       sectionType,
       sectionName,
       userPrompt, 
-      previousSections = {} 
+      previousSections = {},
+      brandConfig = null
     } = body
 
     if (!projectId || !sectionId || !userPrompt) {
@@ -132,12 +181,6 @@ export async function POST(request: NextRequest) {
         { error: 'Missing required fields: projectId, sectionId, userPrompt' },
         { status: 400 }
       )
-    }
-
-    // Get section from DB if it exists
-    const dbSection = await getSectionById(sectionId)
-    if (dbSection) {
-      await markSectionBuilding(sectionId)
     }
 
     // Build the system prompt
@@ -149,12 +192,13 @@ export async function POST(request: NextRequest) {
       `${sectionDesc} component`,
       templateType,
       userPrompt,
-      previousSections
+      previousSections,
+      brandConfig
     )
 
-    // Call Sonnet 4.5
+    // Call Sonnet 4
     const response = await anthropic.messages.create({
-      model: 'claude-sonnet-4-5-20250514',
+      model: 'claude-sonnet-4-20250514',
       max_tokens: 8192,
       messages: [
         {
@@ -187,11 +231,6 @@ export async function POST(request: NextRequest) {
       
       generatedCode = `function ${componentName}() {\n  return (\n    ${generatedCode}\n  )\n}`
       console.log(`[build-section] Wrapped raw JSX in function: ${componentName}`)
-    }
-
-    // Save to database if section exists
-    if (dbSection) {
-      await completeSection(sectionId, generatedCode, userPrompt)
     }
 
     return NextResponse.json({

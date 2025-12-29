@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
 import Anthropic from '@anthropic-ai/sdk'
-import { updateSectionRefinement } from '@/lib/db'
 
 // =============================================================================
 // OPUS 4.5 - THE REFINER
@@ -68,6 +67,31 @@ If code is already good:
 
 Be surgical. Minimal changes. Maximum impact.`
 
+// User-directed refinement prompt - when user asks for specific changes
+const USER_REFINE_SYSTEM_PROMPT = `You are a precise code modifier. The user has already generated React + Tailwind code and wants specific changes.
+
+## YOUR TASK
+
+Apply the user's requested changes to the code. Be precise and surgical.
+
+## RULES
+
+1. **Apply exactly what the user asks** - no more, no less
+2. **Preserve the original structure** - don't rewrite or reorganize unless asked
+3. **Keep the code valid** - ensure it still works after changes
+4. **Maintain the style** - keep consistent with existing Tailwind patterns
+
+## OUTPUT FORMAT
+
+Return ONLY valid JSON (no markdown code blocks, no explanation):
+
+{
+  "refinedCode": "function ComponentName() { return ( <section>...</section> ) }",
+  "changes": ["Made buttons larger with py-4 px-8", "Changed primary color to blue-500"]
+}
+
+Apply the requested changes precisely. Do not add unrequested improvements.`
+
 export async function POST(request: NextRequest) {
   try {
     const { userId } = await auth()
@@ -76,7 +100,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { sectionId, code, sectionType, sectionName, userPrompt } = body
+    const { sectionId, code, sectionType, sectionName, userPrompt, refineRequest } = body
 
     if (!sectionId || !code) {
       return NextResponse.json(
@@ -85,22 +109,38 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Call Opus 4.5 for refinement
-    const response = await anthropic.messages.create({
-      model: 'claude-opus-4-5-20250514',
-      max_tokens: 8192,
-      messages: [
-        {
-          role: 'user',
-          content: `Section: ${sectionName || sectionType || 'Unknown'}
+    // Determine if this is a user-directed refinement or auto-polish
+    const isUserDirected = !!refineRequest
+    
+    // Build the appropriate prompt
+    const userMessage = isUserDirected
+      ? `Section: ${sectionName || sectionType || 'Unknown'}
+
+CURRENT CODE:
+${code}
+
+USER'S REFINEMENT REQUEST:
+"${refineRequest}"
+
+Apply these specific changes to the code.`
+      : `Section: ${sectionName || sectionType || 'Unknown'}
 User's original request: "${userPrompt || 'Not provided'}"
 
 Refine this code:
 
-${code}`,
+${code}`
+
+    // Call Opus 4.5 for refinement
+    const response = await anthropic.messages.create({
+      model: 'claude-opus-4-20250514',
+      max_tokens: 8192,
+      messages: [
+        {
+          role: 'user',
+          content: userMessage,
         },
       ],
-      system: REFINER_SYSTEM_PROMPT,
+      system: isUserDirected ? USER_REFINE_SYSTEM_PROMPT : REFINER_SYSTEM_PROMPT,
     })
 
     // Extract the response
@@ -132,18 +172,11 @@ ${code}`,
     } catch (parseError) {
       console.error('[refine-section] Failed to parse response:', parseError)
       console.error('[refine-section] Raw response:', responseText.slice(0, 500))
+      // Fall back to original code
       refinedCode = code
       changes = []
       wasRefined = false
     }
-
-    // Update database
-    await updateSectionRefinement(
-      sectionId,
-      wasRefined,
-      wasRefined ? refinedCode : undefined,
-      wasRefined ? changes : undefined
-    )
 
     return NextResponse.json({
       refined: wasRefined,

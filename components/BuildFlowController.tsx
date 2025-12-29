@@ -2,8 +2,10 @@
 
 import { useState, useEffect, useCallback } from 'react'
 import { useUser } from '@clerk/nextjs'
+import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import TemplateSelector, { BuildComplete } from './TemplateSelector'
+import BrandingStep, { BrandConfig } from './BrandingStep'
 import SectionProgress from './SectionProgress'
 import SectionBuilder from './SectionBuilder'
 import { Template, Section, getTemplateById, createInitialBuildState, BuildState } from '@/lib/templates'
@@ -14,46 +16,43 @@ import { DbProject, DbSection } from '@/lib/supabase'
 // Orchestrates the entire V3.0 build experience
 // =============================================================================
 
-type BuildPhase = 'select' | 'building' | 'complete'
+type BuildPhase = 'select' | 'branding' | 'building' | 'complete'
 
 interface BuildFlowControllerProps {
-  existingProjectId?: string // For resuming builds
-  demoMode?: boolean // Local testing without Supabase
+  existingProjectId?: string
+  demoMode?: boolean
 }
 
-// Generate mock IDs for demo mode
 const generateId = () => Math.random().toString(36).substring(2, 15)
 
 export default function BuildFlowController({ existingProjectId, demoMode: forceDemoMode }: BuildFlowControllerProps) {
   const { user } = useUser()
+  const router = useRouter()
   
-  // Auto-detect demo mode if Supabase isn't configured
   const [demoMode, setDemoMode] = useState(forceDemoMode ?? false)
-  
-  // Core state
   const [phase, setPhase] = useState<BuildPhase>('select')
   const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(null)
+  const [customizedSections, setCustomizedSections] = useState<Section[] | null>(null)
+  const [brandConfig, setBrandConfig] = useState<BrandConfig | null>(null)
   const [buildState, setBuildState] = useState<BuildState | null>(null)
-  
-  // Database state
   const [project, setProject] = useState<DbProject | null>(null)
   const [dbSections, setDbSections] = useState<DbSection[]>([])
-  
-  // UI state
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [isAuditRunning, setIsAuditRunning] = useState(false)
 
-  // Load existing project if resuming
+  // Check for existing project on mount (from URL or localStorage)
   useEffect(() => {
     if (existingProjectId) {
       loadExistingProject(existingProjectId)
+    } else {
+      // Check localStorage for in-progress project
+      const savedProjectId = localStorage.getItem('hatch_current_project')
+      if (savedProjectId && !forceDemoMode) {
+        loadExistingProject(savedProjectId)
+      }
     }
   }, [existingProjectId])
-
-  // =========================================================================
-  // PROJECT INITIALIZATION
-  // =========================================================================
 
   const loadExistingProject = async (projectId: string) => {
     setIsLoading(true)
@@ -70,7 +69,6 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
       setDbSections(sections)
       setSelectedTemplate(template)
       
-      // Rebuild build state from DB
       const state = createInitialBuildState(template.id)
       sections.forEach((s: DbSection) => {
         if (s.status === 'complete') {
@@ -83,13 +81,11 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
         }
       })
       
-      // Find current section index
       const firstPending = sections.findIndex((s: DbSection) => s.status === 'pending' || s.status === 'building')
       state.currentSectionIndex = firstPending === -1 ? template.sections.length : firstPending
       
       setBuildState(state)
       
-      // Determine phase
       const allDone = sections.every((s: DbSection) => s.status === 'complete' || s.status === 'skipped')
       setPhase(allDone ? 'complete' : 'building')
       
@@ -102,25 +98,32 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
   }
 
   const handleTemplateSelect = async (template: Template, customizedSections?: Section[]) => {
-    const sections = customizedSections || template.sections
+    // Store template and sections, move to branding phase
+    setSelectedTemplate(template)
+    setCustomizedSections(customizedSections || template.sections)
+    setPhase('branding')
+  }
+
+  const handleBrandingComplete = async (brand: BrandConfig) => {
+    if (!selectedTemplate) return
     
-    // Helper function to set up demo mode
+    setBrandConfig(brand)
+    const sections = customizedSections || selectedTemplate.sections
+    
     const setupDemoMode = () => {
       const mockProjectId = generateId()
       
-      // Create mock project
       const mockProject: DbProject = {
         id: mockProjectId,
         user_id: 'demo-user',
-        name: `${template.name} - ${new Date().toLocaleDateString()}`,
+        name: brand.brandName || `${selectedTemplate.name} - ${new Date().toLocaleDateString()}`,
         slug: `demo-${mockProjectId}`,
-        template_id: template.id,
+        template_id: selectedTemplate.id,
         status: 'building',
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       }
       
-      // Create mock sections
       const mockSections: DbSection[] = sections.map((s, index) => ({
         id: generateId(),
         project_id: mockProjectId,
@@ -137,14 +140,12 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
       
       setProject(mockProject)
       setDbSections(mockSections)
-      setSelectedTemplate(template)
-      setBuildState(createInitialBuildState(template.id))
+      setBuildState(createInitialBuildState(selectedTemplate.id))
       setPhase('building')
       setDemoMode(true)
       setIsLoading(false)
     }
     
-    // Demo mode - skip database, use local state
     if (demoMode || forceDemoMode || !user) {
       setupDemoMode()
       return
@@ -154,19 +155,18 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
     setError(null)
 
     try {
-      // Create project in database
       const response = await fetch('/api/project', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          templateId: template.id,
-          name: `${template.name} - ${new Date().toLocaleDateString()}`,
+          templateId: selectedTemplate.id,
+          name: brand.brandName || `${selectedTemplate.name} - ${new Date().toLocaleDateString()}`,
           sections: sections,
+          brand: brand,
         }),
       })
 
       if (!response.ok) {
-        // Fall back to demo mode if API fails
         console.warn('API failed, falling back to demo mode')
         setupDemoMode()
         return
@@ -176,23 +176,21 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
 
       setProject(newProject)
       setDbSections(dbSectionsData)
-      setSelectedTemplate(template)
-      setBuildState(createInitialBuildState(template.id))
+      setBuildState(createInitialBuildState(selectedTemplate.id))
       setPhase('building')
+      
+      // Persist project ID in URL and localStorage
+      router.replace(`/builder?project=${newProject.id}`, { scroll: false })
+      localStorage.setItem('hatch_current_project', newProject.id)
 
     } catch (err) {
       console.error('Error creating project:', err)
-      // Fall back to demo mode
       console.warn('Falling back to demo mode')
       setupDemoMode()
     } finally {
       setIsLoading(false)
     }
   }
-
-  // =========================================================================
-  // SECTION MANAGEMENT
-  // =========================================================================
 
   const getCurrentSection = useCallback((): Section | null => {
     if (!selectedTemplate || !buildState) return null
@@ -216,7 +214,6 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
     const dbSection = getCurrentDbSection()
     if (!currentSection || !dbSection) return
 
-    // Update local state
     const newState: BuildState = {
       ...buildState,
       completedSections: [...buildState.completedSections, currentSection.id],
@@ -228,7 +225,6 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
       currentSectionIndex: buildState.currentSectionIndex + 1,
     }
 
-    // Update DB sections state
     setDbSections(prev => 
       prev.map(s => 
         s.id === dbSection.id 
@@ -239,11 +235,11 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
 
     setBuildState(newState)
 
-    // Check if all sections are complete
     if (newState.currentSectionIndex >= selectedTemplate.sections.length) {
       setPhase('complete')
-      // Create build
-      await fetch(`/api/project/${project.id}/build`, { method: 'POST' })
+      if (!demoMode) {
+        await fetch(`/api/project/${project.id}/build`, { method: 'POST' }).catch(console.error)
+      }
     }
   }
 
@@ -254,10 +250,10 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
     const dbSection = getCurrentDbSection()
     if (!currentSection || !dbSection) return
 
-    // Update database
-    await fetch(`/api/section/${dbSection.id}/skip`, { method: 'POST' })
+    if (!demoMode) {
+      await fetch(`/api/section/${dbSection.id}/skip`, { method: 'POST' }).catch(console.error)
+    }
 
-    // Update local state
     const newState: BuildState = {
       ...buildState,
       skippedSections: [...buildState.skippedSections, currentSection.id],
@@ -274,18 +270,18 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
 
     setBuildState(newState)
 
-    // Check if all sections are complete
     if (newState.currentSectionIndex >= selectedTemplate.sections.length) {
       setPhase('complete')
-      await fetch(`/api/project/${project.id}/build`, { method: 'POST' })
+      if (!demoMode) {
+        await fetch(`/api/project/${project.id}/build`, { method: 'POST' }).catch(console.error)
+      }
     }
   }
 
   const handleSectionClick = (sectionIndex: number) => {
-    if (!buildState) return
-    // Only allow clicking on completed or skipped sections (for review)
-    // or the current section
-    const section = selectedTemplate?.sections[sectionIndex]
+    if (!buildState || !selectedTemplate) return
+    
+    const section = selectedTemplate.sections[sectionIndex]
     if (!section) return
     
     const isAccessible = 
@@ -298,18 +294,31 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
     }
   }
 
-  // =========================================================================
-  // FINAL ACTIONS
-  // =========================================================================
+  const handleNextSection = () => {
+    if (!buildState || !selectedTemplate) return
+    
+    const nextIndex = buildState.currentSectionIndex + 1
+    
+    if (nextIndex >= selectedTemplate.sections.length) {
+      // All sections done - go to complete phase
+      setPhase('complete')
+      // Clear localStorage since project is complete
+      localStorage.removeItem('hatch_current_project')
+      if (!demoMode && project) {
+        fetch(`/api/project/${project.id}/build`, { method: 'POST' }).catch(console.error)
+      }
+    } else {
+      setBuildState({ ...buildState, currentSectionIndex: nextIndex })
+    }
+  }
 
   const handleDeploy = async () => {
     if (!project) return
-    // TODO: Integrate with existing deploy flow
-    window.location.href = `/deploy/${project.id}`
+    window.location.href = `/builder?mode=legacy&deploy=${project.id}`
   }
 
   const handleRunAudit = async () => {
-    if (!project || !buildState) return
+    if (!project || !buildState || demoMode) return
 
     setIsAuditRunning(true)
 
@@ -336,18 +345,37 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
     }
   }
 
-  // =========================================================================
-  // RENDER
-  // =========================================================================
+  const handleStartFresh = () => {
+    localStorage.removeItem('hatch_current_project')
+    router.replace('/builder', { scroll: false })
+    setProject(null)
+    setDbSections([])
+    setSelectedTemplate(null)
+    setCustomizedSections(null)
+    setBrandConfig(null)
+    setBuildState(null)
+    setPhase('select')
+    setDemoMode(false)
+  }
+
+  const handleGoHome = () => {
+    router.push('/')
+  }
+
+  const handleViewBrand = () => {
+    // Go back to branding step to edit brand settings
+    setPhase('branding')
+  }
 
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-zinc-950 flex items-center justify-center">
+      <div className="min-h-screen bg-zinc-950 flex flex-col items-center justify-center gap-4">
         <motion.div
           animate={{ rotate: 360 }}
           transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
           className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full"
         />
+        <p className="text-zinc-400 text-sm">Resuming your project...</p>
       </div>
     )
   }
@@ -357,12 +385,20 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
       <div className="min-h-screen bg-zinc-950 flex items-center justify-center">
         <div className="text-center">
           <div className="text-red-400 mb-4">{error}</div>
-          <button
-            onClick={() => setError(null)}
-            className="px-4 py-2 bg-zinc-800 text-white rounded-lg hover:bg-zinc-700"
-          >
-            Try Again
-          </button>
+          <div className="flex gap-3 justify-center">
+            <button
+              onClick={() => setError(null)}
+              className="px-4 py-2 bg-zinc-800 text-white rounded-lg hover:bg-zinc-700"
+            >
+              Try Again
+            </button>
+            <button
+              onClick={handleStartFresh}
+              className="px-4 py-2 bg-zinc-700 text-zinc-300 rounded-lg hover:bg-zinc-600"
+            >
+              Start Fresh
+            </button>
+          </div>
         </div>
       </div>
     )
@@ -371,7 +407,6 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
   return (
     <div className="min-h-screen bg-zinc-950">
       <AnimatePresence mode="wait">
-        {/* PHASE 1: Template Selection */}
         {phase === 'select' && (
           <motion.div
             key="select"
@@ -383,40 +418,59 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
           </motion.div>
         )}
 
-        {/* PHASE 2: Building */}
+        {phase === 'branding' && selectedTemplate && (
+          <motion.div
+            key="branding"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <BrandingStep
+              onComplete={handleBrandingComplete}
+              onBack={() => setPhase('select')}
+              templateName={selectedTemplate.name}
+              templateIcon={selectedTemplate.icon}
+            />
+          </motion.div>
+        )}
+
         {phase === 'building' && selectedTemplate && buildState && (
           <motion.div
             key="building"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="flex flex-col min-h-screen"
+            className="flex flex-col h-screen overflow-hidden"
           >
-            {/* Progress Bar */}
             <SectionProgress
               template={selectedTemplate}
               buildState={buildState}
               onSectionClick={handleSectionClick}
               onSkip={handleSkipSection}
+              onGoHome={handleGoHome}
+              onStartOver={handleStartFresh}
+              onViewBrand={handleViewBrand}
+              brandConfig={brandConfig}
             />
 
-            {/* Section Builder */}
-            <div className="flex-1 flex">
+            <div className="flex-1 flex min-h-0 overflow-hidden">
               {getCurrentSection() && getCurrentDbSection() && project && (
                 <SectionBuilder
                   section={getCurrentSection()!}
                   dbSection={getCurrentDbSection()!}
                   projectId={project.id}
                   onComplete={handleSectionComplete}
+                  onNextSection={handleNextSection}
+                  isLastSection={buildState.currentSectionIndex >= selectedTemplate.sections.length - 1}
                   allSectionsCode={buildState.sectionCode}
                   demoMode={demoMode}
+                  brandConfig={brandConfig}
                 />
               )}
             </div>
           </motion.div>
         )}
 
-        {/* PHASE 3: Complete */}
         {phase === 'complete' && buildState && (
           <motion.div
             key="complete"

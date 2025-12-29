@@ -1,13 +1,206 @@
 'use client'
 
-import { motion } from 'framer-motion'
+import { useState, useRef, useEffect } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
 import { Section, Template, BuildState } from '@/lib/templates'
+import { BrandConfig } from './BrandingStep'
+
+// Interactive Hatching Chick with dropdown menu
+interface HatchingChickProps {
+  progress: number
+  onGoHome?: () => void
+  onStartOver?: () => void
+  onViewBrand?: () => void
+  brandConfig?: BrandConfig | null
+}
+
+const HatchingChick = ({ progress, onGoHome, onStartOver, onViewBrand, brandConfig }: HatchingChickProps) => {
+  const [isOpen, setIsOpen] = useState(false)
+  const menuRef = useRef<HTMLDivElement>(null)
+  
+  // 0-33%: hatching, 33-66%: chick, 66-100%: golden chick
+  const stage = progress < 33 ? 'hatching' : progress < 66 ? 'chick' : 'golden'
+  
+  // Close menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setIsOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [])
+  
+  return (
+    <div className="relative z-50" ref={menuRef}>
+      <motion.button 
+        onClick={() => setIsOpen(!isOpen)}
+        className="relative w-10 h-10 flex items-center justify-center rounded-full hover:bg-zinc-800 transition-colors cursor-pointer"
+        animate={{ 
+          y: [0, -2, 0],
+          rotate: [-3, 3, -3]
+        }}
+        transition={{ duration: 0.5, repeat: Infinity, ease: 'easeInOut' }}
+        whileHover={{ scale: 1.1 }}
+        whileTap={{ scale: 0.95 }}
+        title="HatchIt Menu"
+      >
+        {stage === 'hatching' && (
+          <motion.span 
+            className="text-2xl filter drop-shadow-lg"
+            animate={{ y: [0, -3, 0], scale: [1, 1.1, 1] }}
+            transition={{ duration: 0.4, repeat: Infinity }}
+          >
+            🐣
+          </motion.span>
+        )}
+        {stage === 'chick' && (
+          <motion.span className="text-2xl filter drop-shadow-lg">
+            🐥
+          </motion.span>
+        )}
+        {stage === 'golden' && (
+          <motion.span 
+            className="text-2xl filter drop-shadow-lg"
+            style={{ filter: 'drop-shadow(0 0 8px rgba(250, 204, 21, 0.5))' }}
+          >
+            🐥
+          </motion.span>
+        )}
+      </motion.button>
+
+      {/* Dropdown Menu */}
+      <AnimatePresence>
+        {isOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: -10, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: -10, scale: 0.95 }}
+            transition={{ duration: 0.15 }}
+            className="absolute top-full left-0 mt-2 w-56 border border-zinc-700 rounded-xl shadow-2xl overflow-hidden z-[100]"
+            style={{ backgroundColor: '#18181b' }}
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Brand Preview (if configured) */}
+            {brandConfig && (
+              <div className="px-4 py-3 border-b border-zinc-800" style={{ backgroundColor: '#27272a' }}>
+                <div className="flex items-center gap-3">
+                  {brandConfig.logoUrl ? (
+                    <img src={brandConfig.logoUrl} alt="Logo" className="w-8 h-8 rounded-lg object-cover" />
+                  ) : (
+                    <div 
+                      className="w-8 h-8 rounded-lg flex items-center justify-center text-white font-bold text-sm"
+                      style={{ backgroundColor: brandConfig.colors.primary }}
+                    >
+                      {brandConfig.brandName.charAt(0).toUpperCase()}
+                    </div>
+                  )}
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium text-white truncate">{brandConfig.brandName}</p>
+                    {brandConfig.tagline && (
+                      <p className="text-xs text-zinc-400 truncate">{brandConfig.tagline}</p>
+                    )}
+                  </div>
+                </div>
+                {/* Color swatches */}
+                <div className="flex gap-1 mt-2">
+                  <div 
+                    className="w-5 h-5 rounded-full border border-zinc-600" 
+                    style={{ backgroundColor: brandConfig.colors.primary }}
+                    title="Primary"
+                  />
+                  <div 
+                    className="w-5 h-5 rounded-full border border-zinc-600" 
+                    style={{ backgroundColor: brandConfig.colors.secondary }}
+                    title="Secondary"
+                  />
+                  <div 
+                    className="w-5 h-5 rounded-full border border-zinc-600" 
+                    style={{ backgroundColor: brandConfig.colors.accent }}
+                    title="Accent"
+                  />
+                  <span className="text-xs text-zinc-500 ml-2">{brandConfig.styleVibe}</span>
+                </div>
+              </div>
+            )}
+
+            {/* Menu Items */}
+            <div className="py-1">
+              {onViewBrand && brandConfig && (
+                <button
+                  type="button"
+                  onClick={() => { onViewBrand(); setIsOpen(false); }}
+                  className="w-full px-4 py-2.5 flex items-center gap-3 text-sm text-zinc-300 hover:bg-zinc-800 hover:text-white transition-colors cursor-pointer"
+                >
+                  <span className="text-base">🎨</span>
+                  <span>Edit Branding</span>
+                </button>
+              )}
+              
+              {onStartOver && (
+                <button
+                  type="button"
+                  onClick={() => { onStartOver(); setIsOpen(false); }}
+                  className="w-full px-4 py-2.5 flex items-center gap-3 text-sm text-zinc-300 hover:bg-zinc-800 hover:text-white transition-colors cursor-pointer"
+                >
+                  <span className="text-base">🔄</span>
+                  <span>Start New Project</span>
+                </button>
+              )}
+
+              <div className="h-px bg-zinc-800 my-1" />
+
+              {onGoHome && (
+                <button
+                  type="button"
+                  onClick={() => { onGoHome(); setIsOpen(false); }}
+                  className="w-full px-4 py-2.5 flex items-center gap-3 text-sm text-zinc-300 hover:bg-zinc-800 hover:text-white transition-colors cursor-pointer"
+                >
+                  <span className="text-base">🏠</span>
+                  <span>Back to Home</span>
+                </button>
+              )}
+
+              <a
+                href="/roadmap"
+                className="w-full px-4 py-2.5 flex items-center gap-3 text-sm text-zinc-300 hover:bg-zinc-800 hover:text-white transition-colors"
+              >
+                <span className="text-base">🗺️</span>
+                <span>Roadmap</span>
+              </a>
+
+              <a
+                href="/vision"
+                className="w-full px-4 py-2.5 flex items-center gap-3 text-sm text-zinc-300 hover:bg-zinc-800 hover:text-white transition-colors"
+              >
+                <span className="text-base">💡</span>
+                <span>Vision</span>
+              </a>
+            </div>
+
+            {/* Footer */}
+            <div className="px-4 py-2 border-t border-zinc-800" style={{ backgroundColor: '#1f1f23' }}>
+              <p className="text-xs text-zinc-500 text-center">
+                🐣 HatchIt v3.0
+              </p>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+    </div>
+  )
+}
 
 interface SectionProgressProps {
   template: Template
   buildState: BuildState
   onSectionClick?: (sectionIndex: number) => void
   onSkip?: () => void
+  onGoHome?: () => void
+  onStartOver?: () => void
+  onViewBrand?: () => void
+  brandConfig?: BrandConfig | null
 }
 
 export default function SectionProgress({
@@ -15,6 +208,10 @@ export default function SectionProgress({
   buildState,
   onSectionClick,
   onSkip,
+  onGoHome,
+  onStartOver,
+  onViewBrand,
+  brandConfig,
 }: SectionProgressProps) {
   const { currentSectionIndex, completedSections, skippedSections, sectionRefined, sectionChanges } = buildState
   const sections = template.sections
@@ -39,22 +236,27 @@ export default function SectionProgress({
 
       {/* Section Navigation */}
       <div className="px-4 py-3 flex items-center justify-between">
-        {/* Left: Current Section Info */}
+        {/* Left: Hatching Chick + Template Info */}
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-2">
-            <span className="text-lg">{template.icon}</span>
-            <span className="text-sm text-zinc-500">{template.name}</span>
-          </div>
-          
-          <div className="h-4 w-px bg-zinc-700" />
-          
-          <div className="flex items-center gap-2">
-            <span className="text-sm font-medium text-white">
-              {currentSectionIndex + 1}/{totalSections}
-            </span>
-            <span className="text-sm text-zinc-400">
-              {currentSection?.name || 'Complete'}
-            </span>
+            <HatchingChick 
+              progress={progressPercent} 
+              onGoHome={onGoHome}
+              onStartOver={onStartOver}
+              onViewBrand={onViewBrand}
+              brandConfig={brandConfig}
+            />
+            <div>
+              <span className="text-sm font-medium text-white">{template.name}</span>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-zinc-500">
+                  {currentSectionIndex + 1}/{totalSections}
+                </span>
+                <span className="text-xs text-zinc-400">
+                  {currentSection?.name || 'Complete!'}
+                </span>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -71,20 +273,33 @@ export default function SectionProgress({
               <div key={section.id} className="relative group">
                 <motion.button
                   onClick={() => onSectionClick?.(index)}
+                  disabled={!isCompleted && !isSkipped && !isCurrent}
                   className={`
                     w-8 h-8 rounded-full flex items-center justify-center text-xs font-medium
-                    transition-all duration-200
+                    transition-all duration-200 cursor-pointer
                     ${isCurrent
                       ? 'bg-emerald-500 text-white ring-2 ring-emerald-400 ring-offset-2 ring-offset-zinc-900'
                       : isCompleted
                         ? 'bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30'
                         : isSkipped
-                          ? 'bg-zinc-700 text-zinc-500'
-                          : 'bg-zinc-800 text-zinc-500 hover:bg-zinc-700'
+                          ? 'bg-zinc-700 text-zinc-500 hover:bg-zinc-600'
+                          : 'bg-zinc-800 text-zinc-500 opacity-50 cursor-not-allowed'
                     }
                   `}
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.95 }}
+                  whileHover={isCompleted || isSkipped || isCurrent ? { scale: 1.1 } : {}}
+                  whileTap={isCompleted || isSkipped || isCurrent ? { scale: 0.95 } : {}}
+                  animate={isCurrent ? {
+                    boxShadow: [
+                      '0 0 0 0 rgba(16, 185, 129, 0.4)',
+                      '0 0 0 8px rgba(16, 185, 129, 0)',
+                      '0 0 0 0 rgba(16, 185, 129, 0)'
+                    ]
+                  } : {}}
+                  transition={isCurrent ? {
+                    duration: 1.5,
+                    repeat: Infinity,
+                    ease: 'easeOut'
+                  } : {}}
                 >
                   {isCompleted ? (
                     <span className="flex items-center">
@@ -104,8 +319,10 @@ export default function SectionProgress({
                   )}
                 </motion.button>
 
-                {/* Tooltip */}
-                <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
+                {/* Tooltip - shows below */}
+                <div className="absolute top-full left-1/2 -translate-x-1/2 mt-2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
+                  {/* Arrow pointing up */}
+                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-[-1px] border-4 border-transparent border-b-zinc-800" />
                   <div className="bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm whitespace-nowrap shadow-xl">
                     <div className="font-medium text-white">{section.name}</div>
                     {section.required && (
@@ -124,8 +341,6 @@ export default function SectionProgress({
                       </div>
                     )}
                   </div>
-                  {/* Arrow */}
-                  <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-zinc-800" />
                 </div>
               </div>
             )
@@ -223,7 +438,7 @@ export function SectionCompleteIndicator({
             )}
           </div>
         ) : (
-          <span className="text-xs text-zinc-500">Code was already good ✨</span>
+          <span className="text-xs text-zinc-500">Code was already good 🐣</span>
         )}
       </div>
     </motion.div>

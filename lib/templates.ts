@@ -21,6 +21,100 @@ export interface Template {
 }
 
 // =============================================================================
+// WEBSITE TEMPLATE (First option)
+// Complete multi-page website for businesses, agencies, and companies
+// =============================================================================
+export const websiteTemplate: Template = {
+  id: 'website',
+  name: 'Website',
+  icon: '🌐',
+  description: 'A complete multi-page website. Perfect for businesses, agencies, and companies.',
+  sections: [
+    {
+      id: 'header',
+      name: 'Header/Navigation',
+      description: 'Logo, navigation links, and optional CTA button.',
+      prompt: 'What pages should be in your nav? Any CTA button?',
+      estimatedTime: '~20s',
+      required: true,
+      order: 1,
+    },
+    {
+      id: 'hero',
+      name: 'Hero Section',
+      description: 'Your main headline, value prop, and primary call-to-action.',
+      prompt: 'What do you do and who is it for? What action should visitors take?',
+      estimatedTime: '~30s',
+      required: true,
+      order: 2,
+    },
+    {
+      id: 'services',
+      name: 'Services/What We Do',
+      description: 'Showcase your core offerings or capabilities.',
+      prompt: 'What are your 3-4 main services or offerings?',
+      estimatedTime: '~30s',
+      required: true,
+      order: 3,
+    },
+    {
+      id: 'about',
+      name: 'About/Story',
+      description: 'Who you are, your mission, or company background.',
+      prompt: 'Tell your story. What makes you different?',
+      estimatedTime: '~30s',
+      required: false,
+      order: 4,
+    },
+    {
+      id: 'work',
+      name: 'Work/Case Studies',
+      description: 'Showcase past projects, clients, or results.',
+      prompt: 'Any projects, clients, or results to highlight?',
+      estimatedTime: '~30s',
+      required: false,
+      order: 5,
+    },
+    {
+      id: 'testimonials',
+      name: 'Testimonials',
+      description: 'Social proof from happy clients or customers.',
+      prompt: 'Any quotes or testimonials from clients?',
+      estimatedTime: '~25s',
+      required: false,
+      order: 6,
+    },
+    {
+      id: 'stats',
+      name: 'Stats/Metrics',
+      description: 'Key numbers that build credibility.',
+      prompt: 'Any impressive numbers? Revenue, clients, years, etc.',
+      estimatedTime: '~20s',
+      required: false,
+      order: 7,
+    },
+    {
+      id: 'cta',
+      name: 'Call to Action',
+      description: 'Final push to convert visitors.',
+      prompt: 'What action do you want visitors to take?',
+      estimatedTime: '~20s',
+      required: true,
+      order: 8,
+    },
+    {
+      id: 'footer',
+      name: 'Footer',
+      description: 'Links, contact info, social media, legal.',
+      prompt: 'Contact details, social links, any legal pages?',
+      estimatedTime: '~20s',
+      required: true,
+      order: 9,
+    },
+  ],
+}
+
+// =============================================================================
 // LANDING PAGE TEMPLATE
 // The most common use case - SaaS, product launches, services
 // =============================================================================
@@ -30,6 +124,15 @@ export const landingPageTemplate: Template = {
   icon: '🚀',
   description: 'Perfect for SaaS, products, services, or any business that needs to convert visitors.',
   sections: [
+    {
+      id: 'header',
+      name: 'Header/Navigation',
+      description: 'Logo, nav links, and CTA button. Sticky or fixed optional.',
+      prompt: 'Company/product name, main nav links (3-5), and CTA button text?',
+      estimatedTime: '~20s',
+      required: false,
+      order: 0,
+    },
     {
       id: 'hero',
       name: 'Hero Section',
@@ -90,7 +193,7 @@ export const landingPageTemplate: Template = {
       description: 'Navigation, legal links, and contact info.',
       prompt: 'Company name, key links, and any social media handles?',
       estimatedTime: '~20s',
-      required: true,
+      required: false,
       order: 7,
     },
   ],
@@ -289,6 +392,73 @@ export const documentationTemplate: Template = {
 }
 
 // =============================================================================
+// BLOG TEMPLATE
+// For content creators, writers, thought leaders
+// =============================================================================
+export const blogTemplate: Template = {
+  id: 'blog',
+  name: 'Blog',
+  icon: '✍️',
+  description: 'Share your thoughts. Perfect for writers, creators, and thought leaders.',
+  sections: [
+    {
+      id: 'blog-header',
+      name: 'Blog Header',
+      description: 'Logo, navigation, and search.',
+      prompt: 'Blog name, tagline, and main navigation links?',
+      estimatedTime: '~20s',
+      required: false,
+      order: 0,
+    },
+    {
+      id: 'featured-post',
+      name: 'Featured Post',
+      description: 'Highlight your best or latest article.',
+      prompt: 'What\'s your featured post? Title, excerpt, and topic?',
+      estimatedTime: '~25s',
+      required: true,
+      order: 1,
+    },
+    {
+      id: 'post-grid',
+      name: 'Recent Posts',
+      description: 'Grid or list of recent blog posts.',
+      prompt: 'Show 6 sample post titles with topics/categories.',
+      estimatedTime: '~30s',
+      required: true,
+      order: 2,
+    },
+    {
+      id: 'categories',
+      name: 'Categories',
+      description: 'Browse posts by topic.',
+      prompt: 'What are your main content categories? (e.g., Tech, Life, Tutorials)',
+      estimatedTime: '~20s',
+      required: false,
+      order: 3,
+    },
+    {
+      id: 'newsletter-signup',
+      name: 'Newsletter',
+      description: 'Capture subscribers with an email signup.',
+      prompt: 'What do subscribers get? Weekly digest, exclusive content?',
+      estimatedTime: '~20s',
+      required: false,
+      order: 4,
+    },
+    {
+      id: 'blog-footer',
+      name: 'Footer',
+      description: 'Links, social media, and about.',
+      prompt: 'Social links, about snippet, and any important pages?',
+      estimatedTime: '~15s',
+      required: false,
+      order: 5,
+    },
+  ],
+}
+
+// =============================================================================
 // CUSTOM TEMPLATE
 // For power users who know what they want
 // =============================================================================
@@ -315,6 +485,7 @@ export const customTemplate: Template = {
 // EXPORTS
 // =============================================================================
 export const templates: Template[] = [
+  websiteTemplate,
   landingPageTemplate,
   portfolioTemplate,
   productPageTemplate,
