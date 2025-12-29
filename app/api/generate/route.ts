@@ -627,7 +627,7 @@ export async function POST(request: NextRequest) {
     }
     
     if (data.content && data.content[0]) {
-      let fullResponse = data.content[0].text
+      const fullResponse = data.content[0].text
       let message = ''
       let code = ''
       let suggestions: string[] = []

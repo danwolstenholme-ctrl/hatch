@@ -102,13 +102,6 @@ export default function CanvasPage() {
     return () => window.removeEventListener('resize', checkMobile)
   }, [])
 
-  // Initialize history
-  useEffect(() => {
-    if (history.length === 0) {
-      saveToHistory()
-    }
-  }, [])
-
   const tools: Tool[] = [
     { id: 'pen', icon: '✏️', name: 'Pen' },
     { id: 'rectangle', icon: '⬜', name: 'Rectangle' },
@@ -142,6 +135,14 @@ export default function CanvasPage() {
     setHistory(newHistory)
     setHistoryIndex(newHistory.length - 1)
   }, [paths, shapes, texts, history, historyIndex])
+
+  // Initialize history - must be after saveToHistory is defined
+  useEffect(() => {
+    if (history.length === 0) {
+      saveToHistory()
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const undo = () => {
     if (historyIndex > 0) {

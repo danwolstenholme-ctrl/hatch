@@ -9,8 +9,7 @@ import {
   migrateProject, 
   migrateToMultiPage, 
   isMultiPageProject, 
-  getCurrentPage,
-  extractBrandFromCode
+  getCurrentPage
 } from '@/lib/project-utils'
 import { showSuccessToast, showErrorToast } from '@/app/lib/toast'
 
@@ -72,48 +71,43 @@ interface UseProjectsReturn {
   applyBrandColorChange: (oldColor: string, newColor: string) => void
 }
 
-export function useProjects(): UseProjectsReturn {
-  const [projects, setProjects] = useState<Project[]>([])
-  const [currentProjectId, setCurrentProjectId] = useState<string | null>(null)
-  const [isLoadingProjects, setIsLoadingProjects] = useState(true)
-  const { user } = useUser()
+// Initialize projects from localStorage (run once on load)
+function getInitialProjects(): { projects: Project[], currentId: string | null } {
+  if (typeof window === 'undefined') {
+    const defaultProject = createNewProject('My First Project')
+    return { projects: [defaultProject], currentId: defaultProject.id }
+  }
   
-  // Load projects from localStorage on mount
-  useEffect(() => {
-    try {
-      const savedProjects = localStorage.getItem('hatchit-projects')
-      const savedCurrentId = localStorage.getItem('hatchit-current-project')
-      if (savedProjects) {
-        try {
-          const parsed = JSON.parse(savedProjects) as Project[]
-          // First migrate old format, then convert to multi-page
-          const migrated = parsed.map(p => migrateToMultiPage(migrateProject(p)))
-          setProjects(migrated)
-          if (savedCurrentId && migrated.find(p => p.id === savedCurrentId)) {
-            setCurrentProjectId(savedCurrentId)
-          } else if (migrated.length > 0) {
-            setCurrentProjectId(migrated[0].id)
-          }
-        } catch (parseError) {
-          console.error('Failed to parse saved projects:', parseError)
-          localStorage.removeItem('hatchit-projects')
-          const defaultProject = createNewProject('My First Project')
-          setProjects([defaultProject])
-          setCurrentProjectId(defaultProject.id)
-        }
-      } else {
-        const defaultProject = createNewProject('My First Project')
-        setProjects([defaultProject])
-        setCurrentProjectId(defaultProject.id)
+  try {
+    const savedProjects = localStorage.getItem('hatchit-projects')
+    const savedCurrentId = localStorage.getItem('hatchit-current-project')
+    
+    if (savedProjects) {
+      try {
+        const parsed = JSON.parse(savedProjects) as Project[]
+        const migrated = parsed.map(p => migrateToMultiPage(migrateProject(p)))
+        const currentId = savedCurrentId && migrated.find(p => p.id === savedCurrentId) 
+          ? savedCurrentId 
+          : (migrated.length > 0 ? migrated[0].id : null)
+        return { projects: migrated, currentId }
+      } catch {
+        localStorage.removeItem('hatchit-projects')
       }
-    } catch (storageError) {
-      console.error('localStorage unavailable:', storageError)
-      const defaultProject = createNewProject('My First Project')
-      setProjects([defaultProject])
-      setCurrentProjectId(defaultProject.id)
     }
-    setIsLoadingProjects(false)
-  }, [])
+  } catch {
+    // localStorage unavailable
+  }
+  
+  const defaultProject = createNewProject('My First Project')
+  return { projects: [defaultProject], currentId: defaultProject.id }
+}
+
+export function useProjects(): UseProjectsReturn {
+  // Use lazy initialization to avoid setState in effect
+  const [projects, setProjects] = useState<Project[]>(() => getInitialProjects().projects)
+  const [currentProjectId, setCurrentProjectId] = useState<string | null>(() => getInitialProjects().currentId)
+  const [isLoadingProjects, setIsLoadingProjects] = useState(false)
+  const { user } = useUser()
   
   // Save projects to localStorage
   useEffect(() => {
@@ -155,6 +149,7 @@ export function useProjects(): UseProjectsReturn {
   }, [user?.publicMetadata?.subscriptions])
   
   // Current project slug
+  // eslint-disable-next-line react-hooks/preserve-manual-memoization
   const currentProjectSlug = useMemo(() => {
     if (!currentProject || !user?.id) return ''
     if (currentProject.deployedSlug) return currentProject.deployedSlug

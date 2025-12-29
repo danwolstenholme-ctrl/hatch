@@ -2458,7 +2458,7 @@ export default function Home() {
       <div className="bg-zinc-900 border border-zinc-700 rounded-2xl p-6 md:p-8 w-full max-w-lg shadow-2xl my-8">
         <div className="text-center mb-6">
           <div className="text-5xl mb-4">🐣</div>
-          <h2 className="text-2xl font-bold text-white mb-2">You're building!</h2>
+          <h2 className="text-2xl font-bold text-white mb-2">You{"'"}re building!</h2>
           <p className="text-zinc-400">Here are a few tips to get the most out of HatchIt.</p>
         </div>
         
@@ -2468,7 +2468,7 @@ export default function Home() {
             <span className="text-xl shrink-0">🔄</span>
             <div>
               <p className="text-sm text-white font-medium">Iterate to improve</p>
-              <p className="text-xs text-zinc-400">Say "make the header bigger" or "add a contact form"</p>
+              <p className="text-xs text-zinc-400">Say {"\"make the header bigger\""} or {"\"add a contact form\""}</p>
             </div>
           </div>
           <div className="flex items-start gap-3">
@@ -2741,7 +2741,7 @@ export default function Home() {
           <div className="text-center mb-6">
             <div className="text-5xl mb-4">🐣</div>
             <h2 className="text-2xl font-bold text-white mb-2">Welcome to HatchIt!</h2>
-            <p className="text-zinc-400">Let's name your first project. What are you building?</p>
+            <p className="text-zinc-400">Let{"'"}s name your first project. What are you building?</p>
           </div>
           
           <input

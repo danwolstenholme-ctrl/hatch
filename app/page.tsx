@@ -7,35 +7,39 @@ import { motion, useInView } from 'framer-motion'
 
 // Only respect user's accessibility preference - NOT device type
 function useReducedMotion() {
-  const [reduced, setReduced] = useState(false)
-  const [isClient, setIsClient] = useState(false)
+  const getReducedMotion = () => {
+    if (typeof window === 'undefined') return false
+    return window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  }
+  
+  const [reduced, setReduced] = useState(getReducedMotion)
   
   useEffect(() => {
-    setIsClient(true)
     const mq = window.matchMedia('(prefers-reduced-motion: reduce)')
-    setReduced(mq.matches)
-    const handler = () => setReduced(mq.matches)
+    const handler = (e: MediaQueryListEvent) => setReduced(e.matches)
     mq.addEventListener('change', handler)
     return () => mq.removeEventListener('change', handler)
   }, [])
   
-  return isClient ? reduced : false
+  return reduced
 }
 
 // Check if mobile for lighter animations (not disabled, just optimized)
 function useIsMobile() {
-  const [isMobile, setIsMobile] = useState(false)
-  const [isClient, setIsClient] = useState(false)
+  const getIsMobile = () => {
+    if (typeof window === 'undefined') return false
+    return window.innerWidth < 768
+  }
+  
+  const [isMobile, setIsMobile] = useState(getIsMobile)
   
   useEffect(() => {
-    setIsClient(true)
-    const check = () => setIsMobile(window.innerWidth < 768)
-    check()
-    window.addEventListener('resize', check)
-    return () => window.removeEventListener('resize', check)
+    const handler = () => setIsMobile(window.innerWidth < 768)
+    window.addEventListener('resize', handler)
+    return () => window.removeEventListener('resize', handler)
   }, [])
   
-  return isClient ? isMobile : false
+  return isMobile
 }
 
 // Typewriter effect for code demo
@@ -458,7 +462,7 @@ export default function Home() {
       <Section className="px-6 py-16 bg-zinc-900/30 border-y border-zinc-800/50">
         <div className="max-w-4xl mx-auto">
           <div className="relative">
-            <div className="absolute -left-4 top-0 text-6xl text-purple-500/20">"</div>
+            <div className="absolute -left-4 top-0 text-6xl text-purple-500/20">{"\""}</div>
             <blockquote className="text-xl sm:text-2xl md:text-3xl text-center font-medium text-zinc-200 leading-relaxed pl-8">
               I built this entire product in 3 days with Claude Opus 4.5. <span className="text-purple-400">The AI writes the code, I make the decisions.</span> This is the future of building.
             </blockquote>
@@ -541,7 +545,7 @@ export default function Home() {
 
           <div className="grid md:grid-cols-3 gap-8">
             {[
-              { step: '01', title: 'Describe', description: 'Tell the AI what you want in plain English. "A dark SaaS landing page with pricing" works perfectly.', icon: '💭' },
+              { step: '01', title: 'Describe', description: 'Tell the AI what you want in plain English. A dark SaaS landing page with pricing works perfectly.', icon: '💭' },
               { step: '02', title: 'Build', description: 'Watch real React code stream in live. Refine with follow-up prompts. Iterate until perfect.', icon: '⚡' },
               { step: '03', title: 'Ship', description: 'One click. Live URL. Your site is on the internet. Connect your domain if you want.', icon: '🚀' },
             ].map((item, i) => (

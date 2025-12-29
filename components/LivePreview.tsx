@@ -1231,7 +1231,7 @@ const SectionHeader = ({ eyebrow, title, description }) => React.createElement('
         <div className="flex items-start gap-3 mb-3">
           <div className="text-2xl">⚠️</div>
           <div className="flex-1 min-w-0">
-            <h3 className="text-sm font-semibold text-white mb-0.5">Couldn't render preview</h3>
+            <h3 className="text-sm font-semibold text-white mb-0.5">Couldn{"'"}t render preview</h3>
             <p className="text-xs text-zinc-400 truncate">{previewError.type}: {previewError.message}</p>
           </div>
           <button 

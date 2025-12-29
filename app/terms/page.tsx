@@ -14,7 +14,7 @@ export default function TermsPage() {
           <section>
             <h2 className="text-xl font-semibold text-white mb-3">2. Subscription & Billing</h2>
             <ul className="list-disc list-inside space-y-2">
-              <li>"Go Hatched" costs $24 to launch (early bird pricing) plus $19/month</li>
+              <li>{"\"Go Hatched\""} costs $24 to launch (early bird pricing) plus $19/month</li>
               <li>Payment is processed securely via Stripe</li>
               <li>Subscription renews automatically each month</li>
             </ul>
@@ -27,7 +27,7 @@ export default function TermsPage() {
               <li>This is because you receive immediate access to generated code, deployment services, and downloads</li>
               <li>After 30 days, you may cancel anytime. Your access continues until the end of your billing period</li>
               <li>Upon cancellation or non-renewal, deployed sites will be taken offline immediately</li>
-              <li>You retain ownership of any code you've downloaded</li>
+              <li>You retain ownership of any code you{"'"}ve downloaded</li>
             </ul>
           </section>
 
@@ -41,7 +41,7 @@ export default function TermsPage() {
             <ul className="list-disc list-inside space-y-2">
               <li>While subscribed, your projects and code are stored indefinitely</li>
               <li>Upon cancellation, deployed sites are taken offline at the end of your billing period</li>
-              <li>You have <strong>30 days</strong> to request your code via email before it's permanently deleted</li>
+              <li>You have <strong>30 days</strong> to request your code via email before it{"'"}s permanently deleted</li>
               <li>After 30 days, all project data is permanently deleted</li>
               <li>We are not responsible for recovering deleted projects</li>
             </ul>
@@ -50,15 +50,15 @@ export default function TermsPage() {
           <section>
             <h2 className="text-xl font-semibold text-white mb-3">6. Acceptable Use</h2>
             <ul className="list-disc list-inside space-y-2">
-              <li>Don't use HatchIt.dev to generate illegal, harmful, or infringing content</li>
-              <li>Don't attempt to abuse, exploit, or overload our systems</li>
+              <li>Don{"'"}t use HatchIt.dev to generate illegal, harmful, or infringing content</li>
+              <li>Don{"'"}t attempt to abuse, exploit, or overload our systems</li>
               <li>We reserve the right to terminate accounts that violate these terms</li>
             </ul>
           </section>
 
           <section>
             <h2 className="text-xl font-semibold text-white mb-3">7. Limitation of Liability</h2>
-            <p>HatchIt.dev is provided "as is" without warranties. We're not liable for any damages arising from use of the service.</p>
+            <p>HatchIt.dev is provided {"\"as is\""} without warranties. We{"'"}re not liable for any damages arising from use of the service.</p>
           </section>
 
           <section>
