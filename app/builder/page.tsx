@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect, useRef, useMemo, Suspense } from 'react'
+import { useState, useEffect, useRef, useMemo, Suspense, useSyncExternalStore } from 'react'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useUser } from '@clerk/nextjs'
@@ -13,6 +13,20 @@ import HatchModal from '@/components/HatchModal'
 import SuccessModal from '@/components/SuccessModal'
 import BuildFlowController from '@/components/BuildFlowController'
 import { showSuccessToast, showErrorToast } from '@/app/lib/toast'
+
+// Hydration-safe mobile detection
+const resizeSubscribe = (callback: () => void) => {
+  window.addEventListener('resize', callback)
+  return () => window.removeEventListener('resize', callback)
+}
+
+function useIsMobile() {
+  return useSyncExternalStore(
+    resizeSubscribe,
+    () => window.innerWidth < 768,
+    () => false // Server returns false to prevent flicker
+  )
+}
 
 // Glowing Chick component for pro feature indicators
 const ProBadge = ({ size = 'sm' }: { size?: 'sm' | 'md' | 'lg' }) => {
@@ -394,7 +408,7 @@ function LegacyBuilder() {
   const [deployName, setDeployName] = useState('')
   const [activeTab, setActiveTab] = useState<'preview' | 'code'>('preview')
   const [previewWidth, setPreviewWidth] = useState(0)
-  const [isMobile, setIsMobile] = useState(false)
+  const isMobile = useIsMobile() // Hydration-safe mobile detection
   const [showPagesPanel, setShowPagesPanel] = useState(false)
   const [showAddPageModal, setShowAddPageModal] = useState(false)
   const [newPageName, setNewPageName] = useState('')
@@ -568,13 +582,6 @@ function LegacyBuilder() {
     document.addEventListener('mousedown', handleClickOutside)
     return () => document.removeEventListener('mousedown', handleClickOutside)
   }, [showDesktopMenu])
-
-  useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 768)
-    checkMobile()
-    window.addEventListener('resize', checkMobile)
-    return () => window.removeEventListener('resize', checkMobile)
-  }, [])
 
   useEffect(() => {
     if (!previewContainerRef.current) return

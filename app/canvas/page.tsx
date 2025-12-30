@@ -1,7 +1,21 @@
 'use client'
 
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef, useCallback, useSyncExternalStore } from 'react'
 import Link from 'next/link'
+
+// Hydration-safe mobile detection
+const resizeSubscribe = (callback: () => void) => {
+  window.addEventListener('resize', callback)
+  return () => window.removeEventListener('resize', callback)
+}
+
+function useIsMobile() {
+  return useSyncExternalStore(
+    resizeSubscribe,
+    () => window.innerWidth < 768,
+    () => false // Server returns false
+  )
+}
 
 interface Point {
   x: number
@@ -83,7 +97,7 @@ export default function CanvasPage() {
   const [textPosition, setTextPosition] = useState<Point | null>(null)
   
   // UI state
-  const [isMobile, setIsMobile] = useState(false)
+  const isMobile = useIsMobile()
   const [showMobilePanel, setShowMobilePanel] = useState<'layers' | 'colors' | 'export' | null>(null)
   const [showMobileMenu, setShowMobileMenu] = useState(false)
   const [showToast, setShowToast] = useState(false)
@@ -93,14 +107,6 @@ export default function CanvasPage() {
   const lastTouchRef = useRef<Point | null>(null)
   const lastPinchDistanceRef = useRef<number | null>(null)
   const canvasRef = useRef<HTMLDivElement>(null)
-
-  // Detect mobile
-  useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 768)
-    checkMobile()
-    window.addEventListener('resize', checkMobile)
-    return () => window.removeEventListener('resize', checkMobile)
-  }, [])
 
   const tools: Tool[] = [
     { id: 'pen', icon: '✏️', name: 'Pen' },

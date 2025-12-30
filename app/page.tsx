@@ -17,41 +17,33 @@ function useIsClient() {
   )
 }
 
-// Only respect user's accessibility preference - NOT device type
+// Only respect user's accessibility preference - uses useSyncExternalStore to prevent hydration mismatch
 function useReducedMotion() {
-  const getReducedMotion = () => {
-    if (typeof window === 'undefined') return false
-    return window.matchMedia('(prefers-reduced-motion: reduce)').matches
+  const subscribe = (callback: () => void) => {
+    const mq = window.matchMedia('(prefers-reduced-motion: reduce)')
+    mq.addEventListener('change', callback)
+    return () => mq.removeEventListener('change', callback)
   }
   
-  const [reduced, setReduced] = useState(getReducedMotion)
-  
-  useEffect(() => {
-    const mq = window.matchMedia('(prefers-reduced-motion: reduce)')
-    const handler = (e: MediaQueryListEvent) => setReduced(e.matches)
-    mq.addEventListener('change', handler)
-    return () => mq.removeEventListener('change', handler)
-  }, [])
-  
-  return reduced
+  return useSyncExternalStore(
+    subscribe,
+    () => window.matchMedia('(prefers-reduced-motion: reduce)').matches, // Client snapshot
+    () => false // Server snapshot - assume animations enabled on SSR
+  )
 }
 
-// Check if mobile for lighter animations (not disabled, just optimized)
+// Check if mobile for lighter animations - uses useSyncExternalStore to prevent hydration mismatch
 function useIsMobile() {
-  const getIsMobile = () => {
-    if (typeof window === 'undefined') return false
-    return window.innerWidth < 768
+  const subscribe = (callback: () => void) => {
+    window.addEventListener('resize', callback)
+    return () => window.removeEventListener('resize', callback)
   }
   
-  const [isMobile, setIsMobile] = useState(getIsMobile)
-  
-  useEffect(() => {
-    const handler = () => setIsMobile(window.innerWidth < 768)
-    window.addEventListener('resize', handler)
-    return () => window.removeEventListener('resize', handler)
-  }, [])
-  
-  return isMobile
+  return useSyncExternalStore(
+    subscribe,
+    () => window.innerWidth < 768, // Client snapshot
+    () => false // Server snapshot - prevents hydration mismatch flicker
+  )
 }
 
 // Typewriter effect for code demo

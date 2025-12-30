@@ -17,8 +17,23 @@ html, body {
 /* Reduce animations on mobile for better performance */
 @media (max-width: 768px) {
   *, *::before, *::after {
-    animation-duration: 0.2s !important;
-    transition-duration: 0.2s !important;
+    animation-duration: 0.15s !important;
+    transition-duration: 0.15s !important;
+  }
+  
+  /* Disable complex transforms on mobile for smoother performance */
+  .motion-reduce-mobile {
+    transform: none !important;
+    animation: none !important;
+  }
+  
+  /* GPU acceleration hints for mobile animations */
+  [class*="motion"], [class*="animate"] {
+    will-change: transform, opacity;
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+    -webkit-transform: translateZ(0);
+    transform: translateZ(0);
   }
 }
 

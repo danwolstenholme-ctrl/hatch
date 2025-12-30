@@ -5,9 +5,19 @@ import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { SignInButton, SignedIn, SignedOut, UserButton } from '@clerk/nextjs'
 import { motion, AnimatePresence } from 'framer-motion'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useSyncExternalStore } from 'react'
 import { SubscriptionBadge } from './SubscriptionIndicator'
 import { useSubscription } from '@/contexts/SubscriptionContext'
+
+// Prevent hydration mismatch on mobile detection
+const emptySubscribe = () => () => {}
+function useIsClient() {
+  return useSyncExternalStore(
+    emptySubscribe,
+    () => true,
+    () => false
+  )
+}
 
 export default function Navigation() {
   const pathname = usePathname()
@@ -140,14 +150,16 @@ export default function Navigation() {
         </div>
       </motion.nav>
 
-      {/* Mobile Menu Overlay */}
-      <AnimatePresence>
+      {/* Mobile Menu Overlay - optimized for mobile performance */}
+      <AnimatePresence mode="wait">
         {mobileMenuOpen && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
+            transition={{ duration: 0.15 }} // Fast fade for mobile
             className="fixed inset-0 z-40 md:hidden"
+            style={{ willChange: 'opacity' }}
           >
             {/* Backdrop */}
             <div 
@@ -155,13 +167,14 @@ export default function Navigation() {
               onClick={() => setMobileMenuOpen(false)}
             />
             
-            {/* Menu */}
+            {/* Menu - CSS transform for GPU acceleration */}
             <motion.div
               initial={{ x: '100%' }}
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
-              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+              transition={{ type: 'tween', duration: 0.2, ease: [0.32, 0.72, 0, 1] }} // Faster, smoother tween instead of spring
               className="absolute right-0 top-0 h-full w-64 bg-zinc-900 border-l border-zinc-800 shadow-2xl"
+              style={{ willChange: 'transform', backfaceVisibility: 'hidden' }}
             >
               <div className="p-4 border-b border-zinc-800 flex justify-between items-center">
                 <span className="font-semibold text-white">Menu</span>

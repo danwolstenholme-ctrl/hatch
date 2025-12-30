@@ -13,17 +13,20 @@ function useIsClient() {
   )
 }
 
-// Custom hook to detect mobile or reduced motion preference
+// Custom hook to detect reduced motion preference - uses useSyncExternalStore to prevent hydration mismatch
 function useReducedMotion() {
   const prefersReducedMotion = useFramerReducedMotion()
-  const [isMobile, setIsMobile] = useState(false)
   
-  useEffect(() => {
-    const checkMobile = () => setIsMobile(window.innerWidth < 768)
-    checkMobile()
-    window.addEventListener('resize', checkMobile)
-    return () => window.removeEventListener('resize', checkMobile)
-  }, [])
+  const subscribe = (callback: () => void) => {
+    window.addEventListener('resize', callback)
+    return () => window.removeEventListener('resize', callback)
+  }
+  
+  const isMobile = useSyncExternalStore(
+    subscribe,
+    () => window.innerWidth < 768,
+    () => false // Server returns false to prevent hydration mismatch
+  )
   
   return prefersReducedMotion || isMobile
 }
