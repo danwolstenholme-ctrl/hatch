@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
-import { getLatestBuild, updateBuildAudit } from '@/lib/db'
+import { getLatestBuild, updateBuildAudit, getProjectById } from '@/lib/db'
 import { GoogleGenAI } from '@google/genai'
 
 // =============================================================================
@@ -70,6 +70,12 @@ export async function POST(
     }
 
     const { id: projectId } = await params
+
+    // Verify ownership
+    const project = await getProjectById(projectId)
+    if (!project || project.user_id !== userId) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    }
 
     // Get the latest build
     const build = await getLatestBuild(projectId)

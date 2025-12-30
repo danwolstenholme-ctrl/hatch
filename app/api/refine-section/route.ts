@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { auth, clerkClient } from '@clerk/nextjs/server'
 import Anthropic from '@anthropic-ai/sdk'
 import { PRO_OPUS_MONTHLY_LIMIT, AccountSubscription } from '@/types/subscriptions'
+import { getProjectById, getSectionById } from '@/lib/db'
 
 // =============================================================================
 // OPUS 4.5 - THE REFINER
@@ -145,6 +146,16 @@ export async function POST(request: NextRequest) {
         { error: 'Missing required fields: sectionId, code' },
         { status: 400 }
       )
+    }
+
+    // Verify ownership: section -> project -> user
+    const section = await getSectionById(sectionId)
+    if (!section) {
+      return NextResponse.json({ error: 'Section not found' }, { status: 404 })
+    }
+    const project = await getProjectById(section.project_id)
+    if (!project || project.user_id !== userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
     }
 
     // Determine if this is a user-directed refinement or auto-polish

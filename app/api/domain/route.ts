@@ -15,6 +15,18 @@ async function isPaidUser(userId: string): Promise<boolean> {
   }
 }
 
+// Helper to verify project ownership
+async function verifyProjectOwnership(userId: string, projectSlug: string): Promise<boolean> {
+  try {
+    const client = await clerkClient()
+    const user = await client.users.getUser(userId)
+    const deployedProjects = user.publicMetadata?.deployedProjects as Array<{slug: string}> | undefined
+    return deployedProjects?.some(p => p.slug === projectSlug) ?? false
+  } catch {
+    return false
+  }
+}
+
 export async function POST(request: NextRequest) {
   try {
     // Authenticate user
@@ -23,10 +35,23 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ success: false, error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { domain, projectSlug } = await request.json()
+    let body: { domain?: string; projectSlug?: string }
+    try {
+      body = await request.json()
+    } catch {
+      return NextResponse.json({ success: false, error: 'Invalid request body' }, { status: 400 })
+    }
+    
+    const { domain, projectSlug } = body
 
     if (!domain || !projectSlug) {
       return NextResponse.json({ success: false, error: 'Missing domain or project' }, { status: 400 })
+    }
+    
+    // Validate projectSlug format (prevent path injection)
+    const safeProjectSlug = projectSlug.replace(/[^a-z0-9-]/gi, '')
+    if (safeProjectSlug !== projectSlug || projectSlug.length > 100) {
+      return NextResponse.json({ success: false, error: 'Invalid project slug' }, { status: 400 })
     }
 
     // Check if user has an active subscription
@@ -37,9 +62,22 @@ export async function POST(request: NextRequest) {
         requiresUpgrade: true 
       }, { status: 403 })
     }
+    
+    // Verify project ownership
+    if (!await verifyProjectOwnership(userId, projectSlug)) {
+      return NextResponse.json({ 
+        success: false, 
+        error: 'Project not found or not owned by you' 
+      }, { status: 403 })
+    }
 
     // Clean the domain
     const cleanDomain = domain.toLowerCase().replace(/^https?:\/\//, '').replace(/\/.*$/, '').trim()
+    
+    // Validate domain length
+    if (cleanDomain.length > 253 || cleanDomain.length < 3) {
+      return NextResponse.json({ success: false, error: 'Invalid domain length' }, { status: 400 })
+    }
 
     // Project name matches the slug used in deploy (no prefix)
     const projectName = projectSlug
@@ -110,6 +148,20 @@ export async function GET(request: NextRequest) {
 
     if (!domain || !projectSlug) {
       return NextResponse.json({ success: false, error: 'Missing domain or project' }, { status: 400 })
+    }
+    
+    // Validate projectSlug format
+    const safeProjectSlug = projectSlug.replace(/[^a-z0-9-]/gi, '')
+    if (safeProjectSlug !== projectSlug) {
+      return NextResponse.json({ success: false, error: 'Invalid project slug' }, { status: 400 })
+    }
+    
+    // Verify project ownership
+    if (!await verifyProjectOwnership(userId, projectSlug)) {
+      return NextResponse.json({ 
+        success: false, 
+        error: 'Project not found or not owned by you' 
+      }, { status: 403 })
     }
 
     const projectName = projectSlug

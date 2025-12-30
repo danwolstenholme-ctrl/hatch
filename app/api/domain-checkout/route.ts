@@ -17,6 +17,18 @@ const getStripe = () => {
 // Markup percentage (e.g., 0.20 = 20% markup)
 const MARKUP = 0.20
 
+// Helper to verify project ownership
+async function verifyProjectOwnership(userId: string, projectSlug: string): Promise<boolean> {
+  try {
+    const client = await clerkClient()
+    const user = await client.users.getUser(userId)
+    const deployedProjects = user.publicMetadata?.deployedProjects as Array<{slug: string}> | undefined
+    return deployedProjects?.some(p => p.slug === projectSlug) ?? false
+  } catch {
+    return false
+  }
+}
+
 export async function POST(request: NextRequest) {
   try {
     const stripe = getStripe()
@@ -25,10 +37,28 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { domain, price, projectSlug } = await request.json()
+    let body: { domain?: string; price?: number; projectSlug?: string }
+    try {
+      body = await request.json()
+    } catch {
+      return NextResponse.json({ error: 'Invalid request body' }, { status: 400 })
+    }
+    
+    const { domain, price, projectSlug } = body
 
     if (!domain || !price || !projectSlug) {
       return NextResponse.json({ error: 'Missing required fields' }, { status: 400 })
+    }
+    
+    // Validate price is a reasonable number (prevent manipulation)
+    if (typeof price !== 'number' || price < 1 || price > 10000) {
+      return NextResponse.json({ error: 'Invalid price' }, { status: 400 })
+    }
+    
+    // Validate projectSlug format
+    const safeProjectSlug = projectSlug.replace(/[^a-z0-9-]/gi, '')
+    if (safeProjectSlug !== projectSlug || projectSlug.length > 100) {
+      return NextResponse.json({ error: 'Invalid project slug' }, { status: 400 })
     }
 
     // Check if user has an active account subscription
@@ -40,6 +70,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ 
         error: 'Pro subscription required to buy domains',
         requiresUpgrade: true 
+      }, { status: 403 })
+    }
+    
+    // Verify project ownership
+    if (!await verifyProjectOwnership(userId, projectSlug)) {
+      return NextResponse.json({ 
+        error: 'Project not found or not owned by you' 
       }, { status: 403 })
     }
 

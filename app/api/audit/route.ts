@@ -5,6 +5,7 @@ import {
   getLatestBuild, 
   updateBuildAudit,
   createBuild,
+  getProjectById,
 } from '@/lib/db'
 
 // =============================================================================
@@ -124,6 +125,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { error: 'Missing required field: projectId' },
         { status: 400 }
+      )
+    }
+
+    // Verify project ownership
+    const project = await getProjectById(projectId)
+    if (!project || project.user_id !== userId) {
+      return NextResponse.json(
+        { error: 'Project not found' },
+        { status: 404 }
       )
     }
 

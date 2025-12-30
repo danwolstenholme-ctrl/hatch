@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
-import { createBuild, getLatestBuild, updateProjectStatus } from '@/lib/db'
+import { createBuild, getLatestBuild, updateProjectStatus, getProjectById } from '@/lib/db'
 
 // =============================================================================
 // POST: Create a build from completed sections
@@ -16,6 +16,12 @@ export async function POST(
     }
 
     const { id: projectId } = await params
+
+    // Verify ownership
+    const project = await getProjectById(projectId)
+    if (!project || project.user_id !== userId) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    }
 
     // Create the build
     const build = await createBuild(projectId)
@@ -51,6 +57,12 @@ export async function GET(
     }
 
     const { id: projectId } = await params
+
+    // Verify ownership
+    const project = await getProjectById(projectId)
+    if (!project || project.user_id !== userId) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    }
 
     const build = await getLatestBuild(projectId)
     if (!build) {

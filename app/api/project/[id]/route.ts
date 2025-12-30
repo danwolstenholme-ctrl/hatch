@@ -28,6 +28,11 @@ export async function GET(
       return NextResponse.json({ error: 'Project not found' }, { status: 404 })
     }
 
+    // Verify ownership
+    if (project.user_id !== userId) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    }
+
     const sections = await getSectionsByProjectId(id)
     const template = getTemplateById(project.template_id)
 

@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
-import { skipSection } from '@/lib/db'
+import { skipSection, getSectionById, getProjectById } from '@/lib/db'
 
 // =============================================================================
 // POST: Skip a section
@@ -16,6 +16,16 @@ export async function POST(
     }
 
     const { id: sectionId } = await params
+
+    // Verify ownership: section -> project -> user
+    const existingSection = await getSectionById(sectionId)
+    if (!existingSection) {
+      return NextResponse.json({ error: 'Section not found' }, { status: 404 })
+    }
+    const project = await getProjectById(existingSection.project_id)
+    if (!project || project.user_id !== userId) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    }
 
     const section = await skipSection(sectionId)
     if (!section) {

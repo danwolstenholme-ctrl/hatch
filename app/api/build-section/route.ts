@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
 import Anthropic from '@anthropic-ai/sdk'
+import { getProjectById } from '@/lib/db'
 
 // =============================================================================
 // SONNET 4.5 - THE BUILDER
@@ -191,6 +192,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json(
         { error: 'Missing required fields: projectId, sectionId, userPrompt' },
         { status: 400 }
+      )
+    }
+
+    // Verify project ownership
+    const project = await getProjectById(projectId)
+    if (!project || project.user_id !== userId) {
+      return NextResponse.json(
+        { error: 'Project not found' },
+        { status: 404 }
       )
     }
 

@@ -30,15 +30,22 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
+    // Parse body once
+    let body: { tier?: string; projectSlug?: string; projectName?: string }
+    try {
+      body = await req.json()
+    } catch {
+      return NextResponse.json({ error: 'Invalid request body' }, { status: 400 })
+    }
+    
+    const { tier, projectSlug, projectName } = body
+
     // Check if user already has an active subscription
     const client = await clerkClient()
     const user = await client.users.getUser(userId)
     const existingSubscription = user.publicMetadata?.accountSubscription as AccountSubscription | null
     
     if (existingSubscription?.status === 'active') {
-      // User already has a subscription - check if they're trying to upgrade
-      const { tier } = await req.json()
-      
       if (existingSubscription.tier === tier) {
         return NextResponse.json({ 
           error: 'You already have an active subscription to this tier',
@@ -56,8 +63,6 @@ export async function POST(req: NextRequest) {
       
       // Allow Pro -> Agency upgrade (will be handled below)
     }
-
-    const { tier, projectSlug, projectName } = await req.json()
 
     // Validate tier
     if (!tier || !['pro', 'agency'].includes(tier)) {
