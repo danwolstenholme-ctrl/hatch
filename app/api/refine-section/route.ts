@@ -42,6 +42,11 @@ You are surgical, precise, and aesthetic-obsessed.
    - Links missing hover → add hover:text-*, hover:underline
    - Missing transitions → add transition-all duration-200
 
+5. **Visual Analysis (The Retina)**
+   - If a screenshot is provided, analyze it for layout issues, contrast problems, or visual bugs.
+   - Fix alignment issues visible in the render.
+   - Ensure text contrast meets accessibility standards.
+
 ## WHAT NOT TO DO
 
 ❌ Add new features or content
@@ -146,7 +151,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { sectionId, code, sectionType, sectionName, userPrompt, refineRequest } = body
+    const { sectionId, code, sectionType, sectionName, userPrompt, refineRequest, screenshot } = body
 
     if (!sectionId || !code) {
       return NextResponse.json(
@@ -186,6 +191,29 @@ Refine this code:
 
 ${code}`
 
+    // Prepare content parts for Gemini
+    const parts: any[] = [
+      { text: isUserDirected ? USER_REFINE_SYSTEM_PROMPT : REFINER_SYSTEM_PROMPT },
+      { text: userMessage }
+    ]
+
+    // Add visual context if screenshot is provided (The Retina)
+    if (screenshot) {
+      // Remove data URL prefix if present to get raw base64
+      const base64Data = screenshot.replace(/^data:image\/\w+;base64,/, "")
+      
+      parts.push({
+        text: "I have attached a screenshot of the currently rendered component. Use this visual data to identify layout issues, contrast problems, or visual bugs that might not be obvious in the code alone. If the visual output contradicts the code's intent, prioritize fixing the code to match the visual goal."
+      })
+      
+      parts.push({
+        inlineData: {
+          mimeType: "image/png",
+          data: base64Data
+        }
+      })
+    }
+
     // Call Gemini 2.0 Flash for refinement
     const response = await genai.models.generateContent({
       model: 'gemini-2.0-flash-001',
@@ -195,10 +223,7 @@ ${code}`
       contents: [
         {
           role: 'user',
-          parts: [
-            { text: isUserDirected ? USER_REFINE_SYSTEM_PROMPT : REFINER_SYSTEM_PROMPT },
-            { text: userMessage }
-          ]
+          parts: parts
         }
       ]
     })
