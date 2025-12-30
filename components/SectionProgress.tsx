@@ -1,12 +1,14 @@
 'use client'
 
 import { useState, useRef, useEffect } from 'react'
+import Image from 'next/image'
+import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Section, Template, BuildState } from '@/lib/templates'
 import { BrandConfig } from './BrandingStep'
 
-// Interactive Hatching Chick with dropdown menu
-interface HatchingChickProps {
+// Interactive Logo with dropdown menu - Using actual HatchIt logo
+interface HatchLogoMenuProps {
   progress: number
   onGoHome?: () => void
   onStartOver?: () => void
@@ -14,12 +16,9 @@ interface HatchingChickProps {
   brandConfig?: BrandConfig | null
 }
 
-const HatchingChick = ({ progress, onGoHome, onStartOver, onViewBrand, brandConfig }: HatchingChickProps) => {
+const HatchLogoMenu = ({ progress, onGoHome, onStartOver, onViewBrand, brandConfig }: HatchLogoMenuProps) => {
   const [isOpen, setIsOpen] = useState(false)
   const menuRef = useRef<HTMLDivElement>(null)
-  
-  // 0-33%: hatching, 33-66%: chick, 66-100%: golden chick
-  const stage = progress < 33 ? 'hatching' : progress < 66 ? 'chick' : 'golden'
   
   // Close menu when clicking outside
   useEffect(() => {
@@ -36,37 +35,40 @@ const HatchingChick = ({ progress, onGoHome, onStartOver, onViewBrand, brandConf
     <div className="relative" ref={menuRef}>
       <motion.button 
         onClick={() => setIsOpen(!isOpen)}
-        className="relative w-10 h-10 flex items-center justify-center rounded-full hover:bg-zinc-800 transition-colors cursor-pointer z-10"
-        animate={{ 
-          y: [0, -2, 0],
-          rotate: [-3, 3, -3]
-        }}
-        transition={{ duration: 0.5, repeat: Infinity, ease: 'easeInOut' }}
-        whileHover={{ scale: 1.1 }}
-        whileTap={{ scale: 0.95 }}
+        className="relative flex items-center gap-2 px-2 py-1.5 rounded-xl hover:bg-zinc-800/50 transition-colors cursor-pointer z-10"
+        whileHover={{ scale: 1.02 }}
+        whileTap={{ scale: 0.98 }}
         title="HatchIt Menu"
       >
-        {stage === 'hatching' && (
-          <motion.span 
-            className="text-2xl filter drop-shadow-lg"
-            animate={{ y: [0, -3, 0], scale: [1, 1.1, 1] }}
-            transition={{ duration: 0.4, repeat: Infinity }}
-          >
-            🐣
-          </motion.span>
-        )}
-        {stage === 'chick' && (
-          <motion.span className="text-2xl filter drop-shadow-lg">
-            🐥
-          </motion.span>
-        )}
-        {stage === 'golden' && (
-          <motion.span 
-            className="text-2xl filter drop-shadow-lg"
-            style={{ filter: 'drop-shadow(0 0 8px rgba(250, 204, 21, 0.5))' }}
-          >
-            🐥
-          </motion.span>
+        {/* Animated Logo */}
+        <motion.div
+          animate={{ 
+            y: [0, -2, 0],
+          }}
+          transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+        >
+          <Image 
+            src="/assets/logo.png" 
+            alt="HatchIt" 
+            width={32} 
+            height={32} 
+            className="w-8 h-8"
+          />
+        </motion.div>
+        
+        {/* Logo text */}
+        <span className="hidden sm:flex items-center text-base font-bold">
+          <span className="text-white">Hatch</span>
+          <span className="bg-gradient-to-r from-amber-500 to-amber-400 bg-clip-text text-transparent">It</span>
+        </span>
+        
+        {/* Progress indicator glow */}
+        {progress > 0 && (
+          <motion.div 
+            className="absolute -inset-1 rounded-xl bg-gradient-to-r from-purple-500/20 to-pink-500/20 -z-10"
+            animate={{ opacity: [0.3, 0.6, 0.3] }}
+            transition={{ duration: 2, repeat: Infinity }}
+          />
         )}
       </motion.button>
 
@@ -244,10 +246,10 @@ export default function SectionProgress({
 
       {/* Section Navigation */}
       <div className="px-3 sm:px-4 py-2 sm:py-3 flex items-center justify-between overflow-visible">
-        {/* Left: Hatching Chick + Template Info */}
+        {/* Left: HatchIt Logo + Template Info */}
         <div className="flex items-center gap-2 sm:gap-4">
           <div className="flex items-center gap-2">
-            <HatchingChick 
+            <HatchLogoMenu 
               progress={progressPercent} 
               onGoHome={onGoHome}
               onStartOver={onStartOver}
