@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { SignInButton, SignedIn, SignedOut, UserButton } from '@clerk/nextjs'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -48,14 +49,14 @@ export default function Navigation() {
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 group">
-            <motion.span 
-              className="text-2xl inline-block"
+            <motion.div
+              className="inline-block"
               style={{ willChange: 'transform', backfaceVisibility: 'hidden' }}
               whileHover={{ scale: 1.1, rotate: 15 }}
               transition={{ type: 'spring', stiffness: 400, damping: 17 }}
             >
-              🐣
-            </motion.span>
+              <Image src="/logo.png" alt="HatchIt" width={28} height={28} className="w-7 h-7" />
+            </motion.div>
             <span className="text-xl font-bold bg-gradient-to-r from-white to-zinc-300 bg-clip-text text-transparent group-hover:from-purple-400 group-hover:to-pink-400 transition-all duration-300">
               HatchIt
             </span>
