@@ -55,7 +55,11 @@ export async function POST(req: Request) {
   const headersList = await headers()
   const signature = headersList.get('stripe-signature')
 
+  console.log('Webhook received, signature present:', !!signature)
+  console.log('STRIPE_WEBHOOK_SECRET configured:', !!process.env.STRIPE_WEBHOOK_SECRET)
+
   if (!signature) {
+    console.error('No stripe-signature header found')
     return NextResponse.json({ error: 'No signature' }, { status: 400 })
   }
 
@@ -68,8 +72,10 @@ export async function POST(req: Request) {
       signature,
       process.env.STRIPE_WEBHOOK_SECRET!
     )
+    console.log('Webhook signature verified, event type:', event.type)
   } catch (err) {
     console.error('Webhook signature verification failed:', err)
+    console.error('Secret length:', process.env.STRIPE_WEBHOOK_SECRET?.length || 0)
     return NextResponse.json({ error: 'Invalid signature' }, { status: 400 })
   }
 
