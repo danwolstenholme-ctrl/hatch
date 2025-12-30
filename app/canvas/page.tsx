@@ -97,7 +97,6 @@ export default function CanvasPage() {
   const [textPosition, setTextPosition] = useState<Point | null>(null)
   
   // UI state
-  const isMobile = useIsMobile()
   const [showMobilePanel, setShowMobilePanel] = useState<'layers' | 'colors' | 'export' | null>(null)
   const [showMobileMenu, setShowMobileMenu] = useState(false)
   const [showToast, setShowToast] = useState(false)
@@ -673,7 +672,7 @@ export default function CanvasPage() {
     }
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [historyIndex, selectedElement, selectedElementType])
+  }, [deleteSelected, historyIndex, redo, selectedElement, selectedElementType, undo])
 
   // Mobile Panel Component
   const MobilePanel = ({ type, onClose }: { type: 'layers' | 'colors' | 'export', onClose: () => void }) => (

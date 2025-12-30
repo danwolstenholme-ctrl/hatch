@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect, useRef, useMemo, Suspense, useSyncExternalStore } from 'react'
+import { useState, useEffect, useRef, useMemo, useCallback, Suspense, useSyncExternalStore } from 'react'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useUser } from '@clerk/nextjs'
@@ -566,6 +566,13 @@ function LegacyBuilder() {
     setShowWelcomeBackModal(false)
   }
 
+  const updateCurrentProject = useCallback((updates: Partial<Project>) => {
+    if (!currentProjectId) return
+    setProjects(prev => prev.map(p => p.id === currentProjectId ? { ...p, ...updates, updatedAt: new Date().toISOString() } : p))
+  }, [currentProjectId])
+
+  const handleDeployRef = useRef<((customName?: string) => Promise<void>) | null>(null)
+
   useEffect(() => {
     if (projects.length > 0) localStorage.setItem('hatchit-projects', JSON.stringify(projects))
   }, [projects])
@@ -597,7 +604,7 @@ function LegacyBuilder() {
       // Only auto-focus when modal first opens with no domain entered
       setTimeout(() => domainInputRef.current?.focus(), 100)
     }
-  }, [showDomainModal])
+  }, [customDomain, domainStatus, showDomainModal])
 
   useEffect(() => {
     if (searchParams.get('success') === 'true') {
@@ -660,7 +667,7 @@ function LegacyBuilder() {
           showErrorToast('Failed to start checkout')
         })
     }
-  }, [searchParams, user, isLoaded])
+  }, [searchParams, user, isLoaded, updateCurrentProject])
 
   // Auto-deploy after hatching (post-checkout reload)
   // This ensures the code is synced to cloud immediately after payment
@@ -690,7 +697,7 @@ function LegacyBuilder() {
         
         // Small delay to ensure state is updated
         setTimeout(() => {
-          handleDeploy(pendingDeploy)
+          handleDeployRef.current?.(pendingDeploy)
         }, 500)
       } else {
         // No code yet, clear the pending flag
@@ -726,7 +733,7 @@ function LegacyBuilder() {
     
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [canUndo, canRedo, currentVersionIndex])
+  }, [canUndo, canRedo, currentVersionIndex, updateCurrentProject])
 
   const getDevice = (width: number) => {
     if (width < 375) return { name: 'iPhone SE', icon: '📱' }
@@ -738,11 +745,6 @@ function LegacyBuilder() {
     return { name: 'Desktop', icon: '🖥️' }
   }
   const device = getDevice(previewWidth)
-
-  const updateCurrentProject = (updates: Partial<Project>) => {
-    if (!currentProjectId) return
-    setProjects(prev => prev.map(p => p.id === currentProjectId ? { ...p, ...updates, updatedAt: new Date().toISOString() } : p))
-  }
 
   const createProject = () => {
     // Free users can only have 1 project (paid subscription allows multiple)
@@ -903,20 +905,6 @@ function LegacyBuilder() {
     setProjects(prev => prev.map(p => p.id === currentProject.id ? updatedProject : p))
   }
 
-  const deleteAllPagesExceptFirst = () => {
-    if (!currentProject || !currentProject.pages || currentProject.pages.length <= 1) return
-    
-    const firstPage = currentProject.pages[0]
-    const updatedProject = {
-      ...currentProject,
-      pages: [firstPage],
-      currentPageId: firstPage.id,
-      updatedAt: new Date().toISOString()
-    }
-    
-    setProjects(prev => prev.map(p => p.id === currentProject.id ? updatedProject : p))
-  }
-
   const switchPage = (pageId: string) => {
     if (!currentProject) return
     
@@ -1012,7 +1000,7 @@ function LegacyBuilder() {
     
     // Handle multi-page deployed projects
     if (deployedProject.pages && deployedProject.pages.length > 0) {
-      const pages: Page[] = deployedProject.pages.map((p, index) => ({
+      const pages: Page[] = deployedProject.pages.map((p) => ({
         id: generateId(),
         name: p.name,
         path: p.path,
@@ -1221,7 +1209,6 @@ function LegacyBuilder() {
         if (!migratedProject) return null
         
         let updatedPages = [...(migratedProject.pages || [])]
-        let newPageId: string | null = null
         
         for (const op of data.pageOperations) {
           const newVersion: Version = { 
@@ -1241,7 +1228,6 @@ function LegacyBuilder() {
               currentVersionIndex: 0
             }
             updatedPages.push(createdPage)
-            newPageId = createdPage.id
           } else if (op.action === 'update') {
             // Update existing page
             const pageIdToUpdate = op.id === 'CURRENT_PAGE_ID' ? targetPageId : op.id
@@ -1448,34 +1434,6 @@ function LegacyBuilder() {
     }
   }
 
-  const handleUndo = () => {
-    if (!canUndo || !currentProject) return
-    if (isMultiPageProject(currentProject) && currentPage) {
-      const updatedPages = currentProject.pages!.map(page =>
-        page.id === currentPage.id
-          ? { ...page, currentVersionIndex: page.currentVersionIndex - 1 }
-          : page
-      )
-      updateCurrentProject({ pages: updatedPages })
-    } else {
-      updateCurrentProject({ currentVersionIndex: currentVersionIndex - 1 })
-    }
-  }
-
-  const handleRedo = () => {
-    if (!canRedo || !currentProject) return
-    if (isMultiPageProject(currentProject) && currentPage) {
-      const updatedPages = currentProject.pages!.map(page =>
-        page.id === currentPage.id
-          ? { ...page, currentVersionIndex: page.currentVersionIndex + 1 }
-          : page
-      )
-      updateCurrentProject({ pages: updatedPages })
-    } else {
-      updateCurrentProject({ currentVersionIndex: currentVersionIndex + 1 })
-    }
-  }
-
   const restoreVersion = (index: number) => {
     if (!currentProject) return
     if (isMultiPageProject(currentProject) && currentPage) {
@@ -1550,6 +1508,8 @@ function LegacyBuilder() {
       setIsDeploying(false)
     }
   }
+
+  handleDeployRef.current = handleDeploy
 
   const formatRelativeTime = (timestamp: string) => {
     const diffMs = Date.now() - new Date(timestamp).getTime()
@@ -1645,17 +1605,6 @@ function LegacyBuilder() {
     }
   }
 
-  const handleDomainClick = () => {
-    if (!isPaidUser) {
-      setHatchReason('deploy')
-      setShowHatchModal(true)
-      return
-    }
-    setShowDomainModal(true)
-    setDomainStatus('idle')
-    setCustomDomain(currentProject?.customDomain || '')
-  }
-
   const handleDownloadClick = async () => {
     if (!isPaidUser) {
       setHatchReason('download')
@@ -1665,13 +1614,6 @@ function LegacyBuilder() {
     // Trigger download through a custom event
     window.dispatchEvent(new CustomEvent('triggerDownload'))
   }
-
-  const HatchedBadge = () => (
-    <div className="flex items-center gap-1 px-2 py-1 bg-gradient-to-r from-amber-500/20 to-yellow-500/20 border border-amber-500/30 rounded-full">
-      <span className="text-xs">🐣</span>
-      <span className="text-xs font-medium bg-gradient-to-r from-amber-400 to-yellow-400 bg-clip-text text-transparent">Hatched</span>
-    </div>
-  )
 
   const ProjectDropdown = () => (
     <div ref={dropdownRef} className="absolute top-full left-0 mt-2 w-64 bg-zinc-900 border border-zinc-700 rounded-xl shadow-2xl z-[9999] overflow-hidden">
@@ -2271,37 +2213,6 @@ function LegacyBuilder() {
     </div>
   )
 
-  const HistoryButton = () => {
-    if (!isPaidUser) {
-      return (
-        <button 
-          onClick={() => {
-            setHatchReason('deploy')
-            setShowHatchModal(true)
-          }} 
-          className="p-2 text-zinc-500 hover:text-white hover:bg-zinc-800 rounded-lg transition-all" 
-          title="Version history (Hatched feature)"
-        >
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-        </button>
-      )
-    }
-    return (
-      <button onClick={() => setShowHistoryModal(true)} disabled={versions.length === 0} className="p-2 text-zinc-500 hover:text-white hover:bg-zinc-800 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed" title={`Version history (${versions.length} versions)`}>
-        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-      </button>
-    )
-  }
-
-  const AssetsButton = () => (
-    <button 
-      onClick={() => setShowAssetsModal(true)} 
-      className="p-2 text-zinc-500 hover:text-white hover:bg-zinc-800 rounded-lg transition-all" 
-      title={`Assets (${currentProject?.assets?.length || 0})`}
-    >
-      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
-    </button>
-  )
 
   const handleAssetUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files
@@ -2459,6 +2370,7 @@ function LegacyBuilder() {
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                 {assets.map(asset => (
                   <div key={asset.id} className="group relative bg-zinc-800 rounded-lg overflow-hidden aspect-square">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img 
                       src={asset.dataUrl} 
                       alt={asset.name}
@@ -2523,17 +2435,6 @@ function LegacyBuilder() {
     </button>
   )
 
-  const DomainButton = ({ mobile = false }: { mobile?: boolean }) => (
-    <button 
-      onClick={handleDomainClick}
-      disabled={!isDeployed}
-      className={`${mobile ? 'py-3 px-4 rounded-xl font-semibold' : 'px-3 py-2 rounded-lg text-xs font-medium'} border border-zinc-700 hover:border-zinc-500 disabled:opacity-50 disabled:cursor-not-allowed text-zinc-300 hover:text-white bg-zinc-800/50 hover:bg-zinc-700/50 transition-all duration-200 flex items-center justify-center gap-1.5 active:scale-95`}
-      title={isDeployed ? 'Manage domain' : 'Deploy first to connect a domain'}
-    >
-      <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-      {!mobile && (currentProject?.customDomain || 'Domain')}
-    </button>
-  )
 
   const ShipModal = () => (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
@@ -3138,11 +3039,33 @@ function LegacyBuilder() {
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
                 Assets
               </button>
-              <button onClick={() => { isPaidUser ? setShowBrandPanel(true) : (setHatchReason('deploy'), setShowHatchModal(true)); setShowMobileMenu(false) }} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-zinc-300 hover:bg-zinc-800 transition-colors">
+              <button
+                onClick={() => {
+                  if (isPaidUser) {
+                    setShowBrandPanel(true)
+                  } else {
+                    setHatchReason('deploy')
+                    setShowHatchModal(true)
+                  }
+                  setShowMobileMenu(false)
+                }}
+                className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-zinc-300 hover:bg-zinc-800 transition-colors"
+              >
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="13.5" cy="6.5" r="2.5"/><circle cx="19" cy="17" r="2.5"/><circle cx="6" cy="12" r="2.5"/><path d="M12 2a10 10 0 1 0 10 10"/></svg>
                 Brand {!isPaidUser && <ProBadge size="sm" />}
               </button>
-              <button onClick={() => { isPaidUser ? setShowHistoryModal(true) : (setHatchReason('deploy'), setShowHatchModal(true)); setShowMobileMenu(false) }} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-zinc-300 hover:bg-zinc-800 transition-colors">
+              <button
+                onClick={() => {
+                  if (isPaidUser) {
+                    setShowHistoryModal(true)
+                  } else {
+                    setHatchReason('deploy')
+                    setShowHatchModal(true)
+                  }
+                  setShowMobileMenu(false)
+                }}
+                className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-zinc-300 hover:bg-zinc-800 transition-colors"
+              >
                 <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
                 History {!isPaidUser && <ProBadge size="sm" />}
               </button>
@@ -3367,11 +3290,33 @@ function LegacyBuilder() {
                           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>
                           Assets
                         </button>
-                        <button onClick={() => { isPaidUser ? (setShowBrandPanel(true), setShowDesktopMenu(false)) : (setHatchReason('deploy'), setShowHatchModal(true), setShowDesktopMenu(false)) }} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-zinc-300 hover:bg-zinc-800 transition-colors">
+                        <button
+                          onClick={() => {
+                            if (isPaidUser) {
+                              setShowBrandPanel(true)
+                            } else {
+                              setHatchReason('deploy')
+                              setShowHatchModal(true)
+                            }
+                            setShowDesktopMenu(false)
+                          }}
+                          className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-zinc-300 hover:bg-zinc-800 transition-colors"
+                        >
                           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="13.5" cy="6.5" r="2.5"/><circle cx="19" cy="17" r="2.5"/><circle cx="6" cy="12" r="2.5"/><path d="M12 2a10 10 0 1 0 10 10"/></svg>
                           Brand {!isPaidUser && <ProBadge size="sm" />}
                         </button>
-                        <button onClick={() => { isPaidUser ? (setShowHistoryModal(true), setShowDesktopMenu(false)) : (setHatchReason('deploy'), setShowHatchModal(true), setShowDesktopMenu(false)) }} className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-zinc-300 hover:bg-zinc-800 transition-colors">
+                        <button
+                          onClick={() => {
+                            if (isPaidUser) {
+                              setShowHistoryModal(true)
+                            } else {
+                              setHatchReason('deploy')
+                              setShowHatchModal(true)
+                            }
+                            setShowDesktopMenu(false)
+                          }}
+                          className="w-full flex items-center gap-3 px-4 py-2.5 text-sm text-zinc-300 hover:bg-zinc-800 transition-colors"
+                        >
                           <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
                           History {!isPaidUser && <ProBadge size="sm" />}
                         </button>

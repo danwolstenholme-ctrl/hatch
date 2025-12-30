@@ -35,12 +35,12 @@ export async function GET(req: NextRequest) {
       // Site is ready if we get any successful response
       const ready = response.ok || response.status === 304
       return NextResponse.json({ ready, status: response.status })
-    } catch (fetchError) {
+    } catch {
       clearTimeout(timeout)
       // Site not ready yet
       return NextResponse.json({ ready: false, error: 'Site not responding' })
     }
-  } catch (error) {
+  } catch {
     return NextResponse.json({ ready: false, error: 'Invalid URL format' })
   }
 }

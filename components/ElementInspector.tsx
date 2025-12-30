@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useCallback, useEffect } from 'react'
+import { useState, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 
 // =============================================================================
@@ -90,13 +90,6 @@ export default function ElementInspector({
   const [showCodeEditor, setShowCodeEditor] = useState(false)
   const [aiPrompt, setAiPrompt] = useState('')
   const [editedClasses, setEditedClasses] = useState(element?.className || '')
-
-  // Update when element changes - properly in useEffect to avoid hydration issues
-  useEffect(() => {
-    if (element && element.className !== editedClasses && !showCodeEditor) {
-      setEditedClasses(element.className)
-    }
-  }, [element?.className, showCodeEditor])
 
   const currentClasses = editedClasses.split(' ').filter(Boolean)
 
@@ -295,14 +288,10 @@ export default function ElementInspector({
 // =============================================================================
 
 interface VisualEditorPageProps {
-  code: string
-  onCodeChange: (newCode: string) => void
   onAskAI: (prompt: string, element: ElementInfo) => void
 }
 
 export function VisualEditorPage({
-  code,
-  onCodeChange,
   onAskAI,
 }: VisualEditorPageProps) {
   const [selectedElement, setSelectedElement] = useState<ElementInfo | null>(null)
@@ -344,6 +333,7 @@ export function VisualEditorPage({
 
       {/* Inspector Sidebar */}
       <ElementInspector
+        key={selectedElement?.id ?? 'no-selection'}
         element={selectedElement}
         onClassChange={handleClassChange}
         onTextChange={handleTextChange}

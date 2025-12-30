@@ -1,5 +1,7 @@
 'use client'
 
+/* eslint-disable react/no-unescaped-entities */
+
 import { useState, useEffect, useCallback, useMemo } from 'react'
 import { useUser } from '@clerk/nextjs'
 import { useRouter } from 'next/navigation'
@@ -9,7 +11,7 @@ import BrandingStep, { BrandConfig } from './BrandingStep'
 import SectionProgress from './SectionProgress'
 import SectionBuilder from './SectionBuilder'
 import HatchModal from './HatchModal'
-import { Template, Section, getTemplateById, createInitialBuildState, BuildState } from '@/lib/templates'
+import { Template, Section, getTemplateById, getSectionById, createInitialBuildState, BuildState } from '@/lib/templates'
 import { DbProject, DbSection } from '@/lib/supabase'
 import { AccountSubscription } from '@/types/subscriptions'
 
@@ -171,7 +173,7 @@ interface BuildFlowControllerProps {
 const generateId = () => Math.random().toString(36).substring(2, 15)
 
 export default function BuildFlowController({ existingProjectId, demoMode: forceDemoMode }: BuildFlowControllerProps) {
-  const { user } = useUser()
+  const { user, isLoaded, isSignedIn } = useUser()
   const router = useRouter()
   
   const [demoMode, setDemoMode] = useState(forceDemoMode ?? false)
@@ -205,10 +207,24 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
   // Check if project is paid (hatched) - now based on account subscription
   const isPaid = isPaidUser
 
+  // The canonical section list for the build (must match the DB sections order/selection)
+  const sectionsForBuild = useMemo(() => {
+    if (!selectedTemplate) return [] as Section[]
+    return customizedSections && customizedSections.length > 0
+      ? customizedSections
+      : selectedTemplate.sections
+  }, [customizedSections, selectedTemplate])
+
+  const templateForBuild = useMemo(() => {
+    if (!selectedTemplate) return null
+    return { ...selectedTemplate, sections: sectionsForBuild }
+  }, [selectedTemplate, sectionsForBuild])
+
   // Track if we're in the middle of creating a project to prevent reload
   const [isCreatingProject, setIsCreatingProject] = useState(false)
 
   // Check for existing project on mount (from URL or localStorage)
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   useEffect(() => {
     // Skip if we're currently creating a project
     if (isCreatingProject) {
@@ -262,6 +278,24 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
       setProject(proj)
       setDbSections(sections)
       setSelectedTemplate(template)
+
+      // Reconstruct the exact section sequence from DB order_index.
+      // This prevents blank screens when the user customized sections during template selection.
+      const orderedDbSections = [...sections].sort((a: DbSection, b: DbSection) => a.order_index - b.order_index)
+      const reconstructed = orderedDbSections.map((s: DbSection, index: number): Section => {
+        const def = getSectionById(template, s.section_id)
+        if (def) return def
+        return {
+          id: s.section_id,
+          name: s.section_id,
+          description: '',
+          prompt: 'Describe what you want for this section.',
+          estimatedTime: '~30s',
+          required: false,
+          order: index + 1,
+        }
+      })
+      setCustomizedSections(reconstructed)
       
       // Restore brand config from project!
       if (proj.brand_config) {
@@ -281,7 +315,7 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
       })
       
       const firstPending = sections.findIndex((s: DbSection) => s.status === 'pending' || s.status === 'building')
-      state.currentSectionIndex = firstPending === -1 ? template.sections.length : firstPending
+      state.currentSectionIndex = firstPending === -1 ? reconstructed.length : firstPending
       
       setBuildState(state)
       
@@ -347,7 +381,22 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
       setIsLoading(false)
     }
     
-    if (demoMode || forceDemoMode || !user) {
+    if (demoMode || forceDemoMode) {
+      setupDemoMode()
+      return
+    }
+
+    // If Clerk is still loading, don't silently fall back to demo mode.
+    // This is a common source of “stuck” behavior where progress isn't persisted.
+    if (!isLoaded) {
+      setError('Loading your account… please try again in a moment.')
+      setIsCreatingProject(false)
+      setIsLoading(false)
+      return
+    }
+
+    // Signed out users can still use the demo flow.
+    if (!isSignedIn || !user) {
       setupDemoMode()
       return
     }
@@ -399,9 +448,9 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
   }
 
   const getCurrentSection = useCallback((): Section | null => {
-    if (!selectedTemplate || !buildState) return null
-    return selectedTemplate.sections[buildState.currentSectionIndex] || null
-  }, [selectedTemplate, buildState])
+    if (!buildState) return null
+    return sectionsForBuild[buildState.currentSectionIndex] || null
+  }, [buildState, sectionsForBuild])
 
   const getCurrentDbSection = useCallback((): DbSection | null => {
     const section = getCurrentSection()
@@ -414,7 +463,7 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
     refined: boolean,
     refinementChanges?: string[]
   ) => {
-    if (!buildState || !selectedTemplate || !project) return
+    if (!buildState) return
 
     const currentSection = getCurrentSection()
     const dbSection = getCurrentDbSection()
@@ -446,7 +495,7 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
   }
 
   const handleSkipSection = async () => {
-    if (!buildState || !selectedTemplate || !project) return
+    if (!buildState) return
 
     const currentSection = getCurrentSection()
     const dbSection = getCurrentDbSection()
@@ -482,10 +531,10 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
       }
     }
 
-    if (newState.currentSectionIndex >= selectedTemplate.sections.length) {
+    if (newState.currentSectionIndex >= sectionsForBuild.length) {
       setPhase('review')
       localStorage.removeItem('hatch_current_project')
-      if (!demoMode) {
+      if (!demoMode && project) {
         try {
           const response = await fetch(`/api/project/${project.id}/build`, { method: 'POST' })
           if (!response.ok) {
@@ -499,9 +548,9 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
   }
 
   const handleSectionClick = (sectionIndex: number) => {
-    if (!buildState || !selectedTemplate) return
+    if (!buildState) return
     
-    const section = selectedTemplate.sections[sectionIndex]
+    const section = sectionsForBuild[sectionIndex]
     if (!section) return
     
     const isAccessible = 
@@ -515,11 +564,11 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
   }
 
   const handleNextSection = () => {
-    if (!buildState || !selectedTemplate) return
+    if (!buildState) return
     
     const nextIndex = buildState.currentSectionIndex + 1
     
-    if (nextIndex >= selectedTemplate.sections.length) {
+    if (nextIndex >= sectionsForBuild.length) {
       // All sections done - go to review phase
       setPhase('review')
       // Clear localStorage since project is complete
@@ -539,9 +588,9 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
 
   // Assemble all section code into a full page for preview
   const assembledCode = useMemo(() => {
-    if (!buildState || !selectedTemplate) return ''
+    if (!buildState) return ''
     
-    const completedSections = selectedTemplate.sections
+    const completedSections = sectionsForBuild
       .filter(s => buildState.completedSections.includes(s.id))
       .map(s => buildState.sectionCode[s.id])
       .filter(Boolean)
@@ -549,7 +598,7 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
     if (completedSections.length === 0) return ''
     
     return completedSections.join('\n\n')
-  }, [buildState, selectedTemplate])
+  }, [buildState, sectionsForBuild])
 
   const handleDeploy = async () => {
     if (!project || !assembledCode || isDeploying) return
@@ -730,7 +779,7 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
           </motion.div>
         )}
 
-        {phase === 'building' && selectedTemplate && buildState && (
+        {phase === 'building' && templateForBuild && buildState && (
           <motion.div
             key="building"
             initial={{ opacity: 0 }}
@@ -739,7 +788,7 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
             className="flex flex-col h-screen overflow-hidden"
           >
             <SectionProgress
-              template={selectedTemplate}
+              template={templateForBuild}
               buildState={buildState}
               onSectionClick={handleSectionClick}
               onSkip={handleSkipSection}
@@ -750,14 +799,14 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
             />
 
             <div className="flex-1 flex min-h-0 overflow-hidden">
-              {getCurrentSection() && getCurrentDbSection() && project && (
+              {getCurrentSection() && getCurrentDbSection() && (project?.id || getCurrentDbSection()!.project_id) && (
                 <SectionBuilder
                   section={getCurrentSection()!}
                   dbSection={getCurrentDbSection()!}
-                  projectId={project.id}
+                  projectId={project?.id ?? getCurrentDbSection()!.project_id}
                   onComplete={handleSectionComplete}
                   onNextSection={handleNextSection}
-                  isLastSection={buildState.currentSectionIndex >= selectedTemplate.sections.length - 1}
+                  isLastSection={buildState.currentSectionIndex >= sectionsForBuild.length - 1}
                   allSectionsCode={buildState.sectionCode}
                   demoMode={demoMode}
                   brandConfig={brandConfig}
@@ -765,11 +814,63 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
                   onShowHatchModal={() => setShowHatchModal(true)}
                 />
               )}
+
+              {getCurrentSection() && getCurrentDbSection() && !(project?.id || getCurrentDbSection()!.project_id) && (
+                <div className="flex-1 flex items-center justify-center bg-zinc-950">
+                  <div className="max-w-md text-center px-6">
+                    <div className="text-4xl mb-4">⚠️</div>
+                    <h2 className="text-lg font-semibold text-white mb-2">Project data isn't available yet</h2>
+                    <p className="text-sm text-zinc-400 mb-6">
+                      We can't generate the next section because the project id is missing. Please refresh or start a new project.
+                    </p>
+                    <div className="flex gap-3 justify-center">
+                      <button
+                        onClick={() => window.location.reload()}
+                        className="px-4 py-2 bg-zinc-800 text-white rounded-lg hover:bg-zinc-700"
+                      >
+                        Refresh
+                      </button>
+                      <button
+                        onClick={handleStartFresh}
+                        className="px-4 py-2 bg-zinc-700 text-zinc-200 rounded-lg hover:bg-zinc-600"
+                      >
+                        Start Fresh
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {getCurrentSection() && !getCurrentDbSection() && (
+                <div className="flex-1 flex items-center justify-center bg-zinc-950">
+                  <div className="max-w-md text-center px-6">
+                    <div className="text-4xl mb-4">⚠️</div>
+                    <h2 className="text-lg font-semibold text-white mb-2">This section isn't in your project</h2>
+                    <p className="text-sm text-zinc-400 mb-6">
+                      Your selected section list doesn't match the project data. This can happen if the section list was customized.
+                    </p>
+                    <div className="flex gap-3 justify-center">
+                      <button
+                        onClick={handleStartFresh}
+                        className="px-4 py-2 bg-zinc-800 text-white rounded-lg hover:bg-zinc-700"
+                      >
+                        Start Fresh
+                      </button>
+                      <button
+                        onClick={() => setPhase('select')}
+                        className="px-4 py-2 bg-zinc-700 text-zinc-200 rounded-lg hover:bg-zinc-600"
+                      >
+                        Back to Templates
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </motion.div>
         )}
 
-        {phase === 'review' && buildState && selectedTemplate && (
+        {phase === 'review' && buildState && templateForBuild && (
           <motion.div
             key="review"
             initial={{ opacity: 0 }}
@@ -854,10 +955,9 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
                   <h2 className="text-sm font-medium text-zinc-400 uppercase tracking-wider">Sections</h2>
                 </div>
                 <div className="flex-1 overflow-auto p-2">
-                  {selectedTemplate.sections.map((section, index) => {
+                  {templateForBuild.sections.map((section, index) => {
                     const isCompleted = buildState.completedSections.includes(section.id)
                     const isSkipped = buildState.skippedSections.includes(section.id)
-                    const sectionCode = buildState.sectionCode[section.id]
                     
                     return (
                       <button

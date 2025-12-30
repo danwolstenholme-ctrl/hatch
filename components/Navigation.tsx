@@ -21,11 +21,6 @@ export default function Navigation() {
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
-  // Close mobile menu on route change
-  useEffect(() => {
-    setMobileMenuOpen(false)
-  }, [pathname])
-
   const navLinks = [
     { href: '/features', label: 'Features' },
     { href: '/how-it-works', label: 'How It Works' },

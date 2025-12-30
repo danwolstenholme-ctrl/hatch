@@ -1,6 +1,7 @@
 'use client'
 
-import type { Metadata } from 'next'
+/* eslint-disable react/no-unescaped-entities */
+
 import Link from 'next/link'
 import { motion } from 'framer-motion'
 

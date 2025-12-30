@@ -46,49 +46,6 @@ function checkRateLimit(userId: string): boolean {
   return true
 }
 
-// =============================================================================
-// LEGACY: In-memory generation tracking (backup only)
-// Primary tracking is now DB-backed via checkAndIncrementGeneration() in lib/db
-// This is kept as a secondary defense but should not be primary
-// =============================================================================
-const dailyGenerations = new Map<string, { count: number; date: string }>()
-const FREE_DAILY_LIMIT = 5  // Matches pricing page: 5 free generations per day
-const MAX_DAILY_GEN_ENTRIES = 10000 // Prevent unbounded growth
-
-// DEPRECATED: Use checkAndIncrementGeneration from lib/db instead
-function checkAndRecordGeneration(userId: string, isPaid: boolean): { allowed: boolean; remaining: number } {
-  if (isPaid) {
-    return { allowed: true, remaining: -1 } // Unlimited for paid users
-  }
-  
-  const today = new Date().toISOString().split('T')[0]
-  
-  // Cleanup old entries periodically
-  if (dailyGenerations.size > MAX_DAILY_GEN_ENTRIES) {
-    for (const [key, gen] of dailyGenerations.entries()) {
-      if (gen.date !== today) {
-        dailyGenerations.delete(key)
-      }
-    }
-  }
-  
-  const userGen = dailyGenerations.get(userId) || { count: 0, date: today }
-  
-  // Reset if new day
-  if (userGen.date !== today) {
-    userGen.count = 0
-    userGen.date = today
-  }
-  
-  if (userGen.count >= FREE_DAILY_LIMIT) {
-    return { allowed: false, remaining: 0 }
-  }
-  
-  userGen.count++
-  dailyGenerations.set(userId, userGen)
-  return { allowed: true, remaining: FREE_DAILY_LIMIT - userGen.count }
-}
-
 // Prompt complexity analysis - returns warning if prompt is too complex
 function analyzePromptComplexity(prompt: string): { isComplex: boolean; warning?: string; suggestions?: string[] } {
   const wordCount = prompt.split(/\s+/).length
@@ -130,7 +87,7 @@ function analyzePromptComplexity(prompt: string): { isComplex: boolean; warning?
   
   // Detect specific complexity patterns
   const hasDetailedStyling = /theme|color[s]?|palette|accent|pastel|gradient|aesthetic/i.test(prompt)
-  const hasMultipleSections = featureCount >= 3
+  // Multiple-sections info is currently unused, but keep the heuristic available via isComplex.
   const hasSpecificContent = /\b(SPF|euro|€|\$|price|option[s]?|value[s]?|tier[s]?)\b/i.test(prompt)
   
   const complexityScore = (
@@ -262,7 +219,7 @@ function detectJSXTruncation(code: string): { truncated: boolean; reason?: strin
   // Check for balanced JSX tags (more sophisticated check)
   const jsxOpenTags = code.match(/<([A-Z][a-zA-Z0-9]*|[a-z]+(?:-[a-z]+)*)\b[^>]*(?<!\/)>/g) || [];
   const jsxCloseTags = code.match(/<\/([A-Z][a-zA-Z0-9]*|[a-z]+(?:-[a-z]+)*)>/g) || [];
-  const selfClosingTags = code.match(/<[A-Za-z][^>]*\/>/g) || [];
+  // Self-closing tags are allowed; no special handling needed.
   
   // Count actual open tags (non-self-closing)
   const openCount = jsxOpenTags.length;

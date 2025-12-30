@@ -31,7 +31,8 @@ function buildSystemPrompt(
   templateType: string,
   userPrompt: string,
   previousSections: Record<string, string>,
-  brandConfig: BrandConfig | null
+  brandConfig: BrandConfig | null,
+  sectionPromptHint?: string
 ): string {
   const componentName = sectionName
     .split(/[\s-_]+/)
@@ -82,7 +83,17 @@ Or use CSS variables / Tailwind arbitrary values: bg-[${brandConfig.colors.prima
 `
   }
 
+  const scopeRules = `
+## STRICT SCOPE (MOST IMPORTANT)
+- You are generating ONLY the **${sectionName}** section.
+- Do NOT include any other sections (no hero, no services grid, no testimonials, no pricing, no footer, etc.) even if the user asks.
+- If the user's prompt contains requirements for other sections, ignore those parts and only implement what belongs in **${sectionName}**.
+- Keep the output tightly aligned to: ${sectionDescription || sectionName}
+${sectionPromptHint ? `- The UI asked the user: "${sectionPromptHint}"` : ''}
+`
+
   return `You are building a ${sectionName} section for a ${templateType}.
+${scopeRules}
 ${brandInstructions}
 ## OUTPUT FORMAT (MANDATORY - READ THIS CAREFULLY)
 
@@ -190,6 +201,8 @@ export async function POST(request: NextRequest) {
       sectionId, 
       sectionType,
       sectionName,
+      sectionDescription,
+      sectionPromptHint,
       userPrompt, 
       previousSections = {},
       brandConfig = null
@@ -213,15 +226,17 @@ export async function POST(request: NextRequest) {
 
     // Build the system prompt
     const templateType = sectionType || 'landing page'
-    const sectionDesc = sectionName || sectionType || 'section'
+    const sectionTitle = sectionName || sectionType || 'section'
+    const sectionDesc = sectionDescription || sectionTitle
 
     const systemPrompt = buildSystemPrompt(
+      sectionTitle,
       sectionDesc,
-      `${sectionDesc} component`,
       templateType,
       userPrompt,
       previousSections,
-      brandConfig
+      brandConfig,
+      sectionPromptHint
     )
 
     // Call Sonnet 4
@@ -238,7 +253,7 @@ export async function POST(request: NextRequest) {
     })
 
     // Extract the generated response
-    let responseText = response.content
+    const responseText = response.content
       .filter(block => block.type === 'text')
       .map(block => block.type === 'text' ? block.text : '')
       .join('')

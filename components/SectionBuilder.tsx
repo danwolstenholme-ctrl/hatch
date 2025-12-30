@@ -1,5 +1,7 @@
 'use client'
 
+/* eslint-disable react/no-unescaped-entities */
+
 import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Section } from '@/lib/templates'
@@ -530,6 +532,8 @@ export default function SectionBuilder({
           sectionId: dbSection.id,
           sectionType: section.id,
           sectionName: section.name,
+          sectionDescription: section.description,
+          sectionPromptHint: section.prompt,
           userPrompt: prompt,
           previousSections: allSectionsCode,
           brandConfig: brandConfig ? {

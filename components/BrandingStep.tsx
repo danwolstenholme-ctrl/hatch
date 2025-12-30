@@ -219,7 +219,7 @@ export default function BrandingStep({ onComplete, onBack, templateName, templat
       } else {
         setLogoError(data.error || 'Failed to generate logo')
       }
-    } catch (err) {
+    } catch {
       setLogoError('Failed to connect to AI')
     } finally {
       setIsGeneratingLogo(false)

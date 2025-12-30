@@ -1,5 +1,6 @@
 'use client'
 
+import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useSubscription } from '@/contexts/SubscriptionContext'
 
@@ -66,7 +67,7 @@ export function TierGlowOverlay() {
  * Displays in navigation or wherever needed
  */
 export function SubscriptionBadge({ showRenewal = true, compact = false }: { showRenewal?: boolean; compact?: boolean }) {
-  const { tier, isPaidUser, daysUntilRenewal, tierColor, isSyncing, syncSubscription } = useSubscription()
+  const { tier, isPaidUser, daysUntilRenewal, tierColor, isSyncing } = useSubscription()
 
   if (!isPaidUser) return null
 
@@ -245,12 +246,12 @@ export function SubscriptionStatusCard() {
       {!isPaidUser && (
         <div className="text-center py-4">
           <p className="text-zinc-400 mb-4">Upgrade to unlock all features</p>
-          <a 
-            href="/#pricing" 
+          <Link
+            href="/#pricing"
             className="inline-block px-6 py-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white font-semibold rounded-xl transition-all"
           >
             View Plans
-          </a>
+          </Link>
         </div>
       )}
     </div>

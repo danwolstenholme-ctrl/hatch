@@ -1,9 +1,9 @@
 'use client'
 
-import { useEffect, useState, Suspense, useCallback } from 'react'
+import { useEffect, useRef, Suspense } from 'react'
 import { useUser } from '@clerk/nextjs'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { motion, AnimatePresence } from 'framer-motion'
+import { motion } from 'framer-motion'
 import HatchCharacter from '@/components/HatchCharacter'
 import { AccountSubscription } from '@/types/subscriptions'
 import { useSubscription } from '@/contexts/SubscriptionContext'
@@ -198,50 +198,31 @@ function WelcomeContent() {
   const { user, isLoaded } = useUser()
   const router = useRouter()
   const searchParams = useSearchParams()
-  const [tier, setTier] = useState<WelcomeTier>('free')
-  const [isReady, setIsReady] = useState(false)
-  const [syncAttempts, setSyncAttempts] = useState(0)
-  const { syncSubscription, subscription } = useSubscription()
+  const hasTriggeredSyncRef = useRef(false)
+  const { syncSubscription } = useSubscription()
 
-  // Sync subscription when coming from checkout with tier param
-  const syncAndVerify = useCallback(async () => {
-    const urlTier = searchParams.get('tier') as WelcomeTier | null
-    if (urlTier && ['pro', 'agency'].includes(urlTier)) {
-      // Coming from checkout - sync to make sure it registered
-      await syncSubscription()
-      setSyncAttempts(prev => prev + 1)
-    }
-  }, [searchParams, syncSubscription])
+  const urlTier = searchParams.get('tier') as WelcomeTier | null
+  const hasValidUrlTier = !!urlTier && (urlTier === 'pro' || urlTier === 'agency')
 
+  const accountSub = user?.publicMetadata?.accountSubscription as AccountSubscription | null
+  const derivedTier: WelcomeTier = hasValidUrlTier
+    ? (urlTier as WelcomeTier)
+    : (accountSub?.status === 'active' ? (accountSub.tier as WelcomeTier) : 'free')
+
+  const tier = derivedTier
+
+  // Trigger a sync when returning from checkout with a tier param.
   useEffect(() => {
     if (!isLoaded) return
+    if (!hasValidUrlTier) return
+    if (hasTriggeredSyncRef.current) return
+    syncSubscription()
+    hasTriggeredSyncRef.current = true
+  }, [hasValidUrlTier, isLoaded, syncSubscription])
 
-    // Check URL params first (immediate after checkout)
-    const urlTier = searchParams.get('tier') as WelcomeTier | null
-    if (urlTier && ['pro', 'agency'].includes(urlTier)) {
-      setTier(urlTier)
-      setIsReady(true)
-      
-      // Trigger sync to verify payment registered
-      if (syncAttempts === 0) {
-        syncAndVerify()
-      }
-      return
-    }
+  const config = tierConfig[derivedTier]
 
-    // Check user's actual subscription
-    const accountSub = user?.publicMetadata?.accountSubscription as AccountSubscription | null
-    if (accountSub?.status === 'active') {
-      setTier(accountSub.tier)
-    } else {
-      setTier('free')
-    }
-    setIsReady(true)
-  }, [isLoaded, user, searchParams])
-
-  const config = tierConfig[tier]
-
-  if (!isReady) {
+  if (!isLoaded) {
     return (
       <div className="min-h-screen bg-zinc-950 flex items-center justify-center">
         <motion.div

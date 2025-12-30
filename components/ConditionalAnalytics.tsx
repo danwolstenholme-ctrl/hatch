@@ -1,45 +1,82 @@
 'use client'
 
 import { Analytics } from '@vercel/analytics/next'
-import { useEffect, useState } from 'react'
+import { useSyncExternalStore } from 'react'
+
+type AnalyticsEligibilityState =
+  | { status: 'unknown' }
+  | { status: 'allowed' }
+  | { status: 'blocked' }
+
+let eligibilityState: AnalyticsEligibilityState = { status: 'unknown' }
+const eligibilityListeners = new Set<() => void>()
+let eligibilityCheckStarted = false
+
+function emitEligibilityChange() {
+  for (const listener of eligibilityListeners) listener()
+}
+
+function startEligibilityCheckIfNeeded() {
+  if (eligibilityCheckStarted) return
+  eligibilityCheckStarted = true
+
+  // Default to blocked in development.
+  if (process.env.NODE_ENV === 'development') {
+    eligibilityState = { status: 'blocked' }
+    emitEligibilityChange()
+    return
+  }
+
+  // Manual override.
+  if (typeof document !== 'undefined' && document.cookie.includes('skipAnalytics=true')) {
+    eligibilityState = { status: 'blocked' }
+    emitEligibilityChange()
+    return
+  }
+
+  // Async eligibility check.
+  fetch('/api/check-ip')
+    .then(res => res.json())
+    .then((data: { ip?: string }) => {
+      const blockedIPs = [
+        '31.153.32.99',
+        '2a00:1358:e2d7:4000:dc08:631b:f1f7:6978',
+      ]
+
+      if (data.ip && blockedIPs.includes(data.ip)) {
+        eligibilityState = { status: 'blocked' }
+      } else {
+        eligibilityState = { status: 'allowed' }
+      }
+      emitEligibilityChange()
+    })
+    .catch(() => {
+      // If IP check fails, default to allowed.
+      eligibilityState = { status: 'allowed' }
+      emitEligibilityChange()
+    })
+}
+
+function subscribe(listener: () => void) {
+  eligibilityListeners.add(listener)
+  startEligibilityCheckIfNeeded()
+  return () => {
+    eligibilityListeners.delete(listener)
+  }
+}
+
+function getSnapshot() {
+  return eligibilityState
+}
+
+function getServerSnapshot(): AnalyticsEligibilityState {
+  return { status: 'blocked' }
+}
 
 export default function ConditionalAnalytics() {
-  const [shouldLoad, setShouldLoad] = useState(true)
+  const state = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot)
 
-  useEffect(() => {
-    // Skip analytics in development
-    if (process.env.NODE_ENV === 'development') {
-      setShouldLoad(false)
-      return
-    }
-
-    // Skip if cookie is set (manual override)
-    if (document.cookie.includes('skipAnalytics=true')) {
-      setShouldLoad(false)
-      return
-    }
-
-    // Get user's IP and compare against blocked IPs
-    fetch('/api/check-ip')
-      .then(res => res.json())
-      .then(data => {
-        // List of IPs to block (add your IP here)
-        const blockedIPs = [
-          '31.153.32.99', // Your Cyprus IP
-          '2a00:1358:e2d7:4000:dc08:631b:f1f7:6978', // Your IPv6
-        ]
-        
-        if (blockedIPs.includes(data.ip)) {
-          setShouldLoad(false)
-        }
-      })
-      .catch(() => {
-        // If IP check fails, default to loading analytics
-        setShouldLoad(true)
-      })
-  }, [])
-
-  if (!shouldLoad) {
+  if (state.status !== 'allowed') {
     return null
   }
 

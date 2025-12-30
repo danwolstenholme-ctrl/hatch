@@ -1,7 +1,7 @@
 'use client'
 import Link from 'next/link'
 import { motion, useReducedMotion as useFramerReducedMotion } from 'framer-motion'
-import { useState, useEffect, useSyncExternalStore } from 'react'
+import { useState, useSyncExternalStore } from 'react'
 
 // Client-side check to prevent hydration mismatch
 const emptySubscribe = () => () => {}
@@ -33,16 +33,8 @@ function useReducedMotion() {
 
 // Animated card that prevents hydration flash
 function AnimatedCard({ children, delay = 0, className = '', onClick }: { children: React.ReactNode; delay?: number; className?: string; onClick?: () => void }) {
-  const [mounted, setMounted] = useState(false)
-  
-  useEffect(() => {
-    setMounted(true)
-  }, [])
-  
-  // Don't animate until mounted
-  if (!mounted) {
-    return <div className={className} onClick={onClick}>{children}</div>
-  }
+  const isClient = useIsClient()
+  if (!isClient) return <div className={className} onClick={onClick}>{children}</div>
   
   return (
     <motion.div 

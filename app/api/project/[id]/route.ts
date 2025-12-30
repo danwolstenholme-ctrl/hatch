@@ -3,8 +3,6 @@ import { auth, currentUser } from '@clerk/nextjs/server'
 import { 
   getProjectById, 
   getSectionsByProjectId,
-  getSectionById,
-  skipSection as dbSkipSection,
   getOrCreateUser,
 } from '@/lib/db'
 import { getTemplateById } from '@/lib/templates'

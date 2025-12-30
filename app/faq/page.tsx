@@ -2,7 +2,6 @@
 
 import { motion } from 'framer-motion'
 import { useState } from 'react'
-import Link from 'next/link'
 
 export default function FAQPage() {
   const [openIndex, setOpenIndex] = useState<string | null>(null)

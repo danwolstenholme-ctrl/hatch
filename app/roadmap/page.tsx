@@ -4,7 +4,6 @@ import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useState } from 'react'
 import HatchCharacter from '@/components/HatchCharacter'
-import { SignInButton, SignedIn, SignedOut, UserButton } from '@clerk/nextjs'
 
 interface RoadmapItem {
   title: string

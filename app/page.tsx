@@ -1,9 +1,11 @@
 'use client'
 
+/* eslint-disable react/no-unescaped-entities */
+
 import { useEffect, useState, useRef, useSyncExternalStore } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { SignInButton, SignedIn, SignedOut, UserButton, useUser } from '@clerk/nextjs'
+import { useUser } from '@clerk/nextjs'
 import { motion, useInView } from 'framer-motion'
 import HatchCharacter from '@/components/HatchCharacter'
 
@@ -200,7 +202,7 @@ function AIThinkingCaption() {
 
 // Pricing button that handles auth + checkout
 function PricingButton({ tier, className, children }: { tier: 'pro' | 'agency', className: string, children: React.ReactNode }) {
-  const { isSignedIn, user } = useUser()
+  const { isSignedIn } = useUser()
   const [isLoading, setIsLoading] = useState(false)
   
   const handleClick = async (e: React.MouseEvent) => {
@@ -272,16 +274,8 @@ function Section({ children, className = '', id = '' }: { children: React.ReactN
 
 // Animated card that prevents hydration flash
 function AnimatedCard({ children, delay = 0, className = '' }: { children: React.ReactNode; delay?: number; className?: string }) {
-  const [mounted, setMounted] = useState(false)
-  
-  useEffect(() => {
-    setMounted(true)
-  }, [])
-  
-  // Don't animate until mounted
-  if (!mounted) {
-    return <div className={className}>{children}</div>
-  }
+  const isClient = useIsClient()
+  if (!isClient) return <div className={className}>{children}</div>
   
   return (
     <motion.div 

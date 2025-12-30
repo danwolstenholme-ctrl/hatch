@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth, clerkClient, currentUser } from '@clerk/nextjs/server'
 import Anthropic from '@anthropic-ai/sdk'
-import { PRO_OPUS_MONTHLY_LIMIT, AccountSubscription } from '@/types/subscriptions'
+import { PRO_OPUS_MONTHLY_LIMIT } from '@/types/subscriptions'
 import { getProjectById, getSectionById, getOrCreateUser, updateSectionRefinement } from '@/lib/db'
 
 // =============================================================================
