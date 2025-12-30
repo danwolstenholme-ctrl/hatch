@@ -8,10 +8,12 @@ import { SectionCompleteIndicator } from './SectionProgress'
 import SectionPreview from './SectionPreview'
 import { BrandConfig } from './BrandingStep'
 import HatchCharacter, { HatchState } from './HatchCharacter'
+import { useSubscription } from '@/contexts/SubscriptionContext'
 
 // =============================================================================
 // SECTION BUILDER
 // The actual interface for building one section at a time
+// Now with opt-in Opus refinement (not automatic)
 // =============================================================================
 
 interface SectionBuilderProps {
@@ -141,6 +143,16 @@ export default function SectionBuilder({
   const [opusSuggestions, setOpusSuggestions] = useState<string[]>([])
   const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false)
   const [appliedSuggestions, setAppliedSuggestions] = useState<Set<number>>(new Set())
+  const [isOpusPolishing, setIsOpusPolishing] = useState(false) // Opt-in Opus polish
+  const [expandedPreview, setExpandedPreview] = useState(false) // Expand preview on desktop
+  
+  // Get subscription info for Opus credits
+  const { tier, subscription } = useSubscription()
+  const opusCreditsUsed = (typeof window !== 'undefined' && subscription) 
+    ? (window as unknown as { __opusUsed?: number }).__opusUsed || 0 
+    : 0
+  const opusCreditsTotal = tier === 'agency' ? Infinity : tier === 'pro' ? 30 : 0
+  const opusCreditsRemaining = tier === 'agency' ? '∞' : Math.max(0, 30 - opusCreditsUsed)
   
   // Prompt Helper (Hatch) state
   const [showPromptHelper, setShowPromptHelper] = useState(false)
@@ -416,56 +428,15 @@ export default function SectionBuilder({
         codeEndRef.current?.scrollIntoView({ behavior: 'auto', block: 'end' })
       }
       
+      // Sonnet is done! No auto-Opus - user can opt-in later
       setGeneratedCode(sonnetCode)
-      setStreamingCode(sonnetCode) // Keep showing for refine stage
-      setStage('refining')
-
-      // Stage 2: Opus refines the section
-      const refineResponse = await fetch('/api/refine-section', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          sectionId: dbSection.id,
-          code: sonnetCode,
-          sectionType: section.id,
-          sectionName: section.name,
-          userPrompt: prompt,
-        }),
-      })
-
-      if (!refineResponse.ok) {
-        // Refinement failed, but generation succeeded - continue with original
-        console.error('Refinement failed, using original code')
-        setRefined(false)
-        setStreamingCode('')
-        setStage('complete')
-        onComplete(sonnetCode, false)
-        return
-      }
-
-      const { refined: wasRefined, code: finalCode, changes } = await refineResponse.json()
-
-      // Show refined code streaming if it changed - purple Opus color
-      if (wasRefined && finalCode !== sonnetCode) {
-        setStreamingCode('') // Reset to show from start in purple
-        for (let i = 0; i < finalCode.length; i += 20) {
-          await new Promise(resolve => setTimeout(resolve, 8))
-          setStreamingCode(finalCode.slice(0, i + 20))
-          codeEndRef.current?.scrollIntoView({ behavior: 'auto', block: 'end' })
-        }
-      }
-
-      setGeneratedCode(finalCode)
       setStreamingCode('')
-      setRefined(wasRefined)
-      setRefinementChanges(changes || [])
+      setRefined(false)
+      setRefinementChanges([])
       setStage('complete')
 
-      // Notify parent
-      onComplete(finalCode, wasRefined, changes)
-
-      // Fetch proactive Opus suggestions
-      fetchOpusSuggestions(finalCode)
+      // Notify parent with Sonnet-only code
+      onComplete(sonnetCode, false)
 
     } catch (err) {
       console.error('Build error:', err)
@@ -606,6 +577,61 @@ export default function SectionBuilder({
     }
   }
 
+  // Handle opt-in Opus polish (not automatic anymore)
+  const handleOpusPolish = async () => {
+    if (!generatedCode || isOpusPolishing) return
+    
+    setIsOpusPolishing(true)
+    setError(null)
+    
+    try {
+      const response = await fetch('/api/refine-section', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          sectionId: dbSection.id,
+          code: generatedCode,
+          sectionType: section.id,
+          sectionName: section.name,
+          userPrompt: prompt,
+        }),
+      })
+
+      if (!response.ok) {
+        const data = await response.json()
+        if (data.upgradeRequired) {
+          onShowHatchModal?.()
+          return
+        }
+        throw new Error(data.error || 'Refinement failed')
+      }
+
+      const { refined: wasRefined, code: polishedCode, changes } = await response.json()
+
+      if (wasRefined && polishedCode !== generatedCode) {
+        // Show polished code streaming
+        setStreamingCode('')
+        for (let i = 0; i < polishedCode.length; i += 20) {
+          await new Promise(resolve => setTimeout(resolve, 8))
+          setStreamingCode(polishedCode.slice(0, i + 20))
+          codeEndRef.current?.scrollIntoView({ behavior: 'auto', block: 'end' })
+        }
+        setGeneratedCode(polishedCode)
+        setStreamingCode('')
+      }
+
+      setRefined(wasRefined)
+      setRefinementChanges(changes || [])
+      onComplete(polishedCode || generatedCode, wasRefined, changes)
+
+    } catch (err) {
+      console.error('Opus polish error:', err)
+      setError('Failed to polish with Opus. Please try again.')
+    } finally {
+      setIsOpusPolishing(false)
+    }
+  }
+
   // Check if this is a contact section
   const isContactSection = section.id === 'contact' || 
     section.name.toLowerCase().includes('contact') ||
@@ -614,24 +640,24 @@ export default function SectionBuilder({
 
   return (
     <div className="flex-1 flex min-h-0 max-h-full overflow-hidden">
-      {/* Left: Input Panel */}
-      <div className="w-1/2 border-r border-zinc-800 flex flex-col min-h-0 max-h-full overflow-hidden relative">
+      {/* Left: Input Panel - Collapsible on desktop when preview is expanded */}
+      <div className={`${expandedPreview ? 'w-80 min-w-80' : 'w-[40%] min-w-[350px]'} border-r border-zinc-800 flex flex-col min-h-0 max-h-full overflow-hidden relative transition-all duration-300`}>
         {/* Section Header */}
-        <div className="p-6 border-b border-zinc-800 flex-shrink-0">
+        <div className="p-4 lg:p-6 border-b border-zinc-800 flex-shrink-0">
           <div className="flex items-center gap-3 mb-2">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500/20 to-teal-500/20 flex items-center justify-center">
               <span className="text-lg">🐣</span>
             </div>
             <div>
-              <h2 className="text-xl font-bold text-white">{section.name}</h2>
-              <p className="text-sm text-zinc-500">{section.estimatedTime}</p>
+              <h2 className="text-lg lg:text-xl font-bold text-white">{section.name}</h2>
+              <p className="text-xs lg:text-sm text-zinc-500">{section.estimatedTime}</p>
             </div>
           </div>
-          <p className="text-zinc-400 mt-3">{section.description}</p>
+          <p className="text-sm text-zinc-400 mt-2">{section.description}</p>
         </div>
 
         {/* Input Area */}
-        <div className="flex-1 p-6 flex flex-col min-h-0 overflow-auto">
+        <div className="flex-1 p-4 lg:p-6 flex flex-col min-h-0 overflow-auto">
           <label className="text-sm font-medium text-zinc-300 mb-2">
             {section.prompt}
           </label>
@@ -865,6 +891,87 @@ export default function SectionBuilder({
                     </button>
                   </div>
 
+                  {/* Opus Polish Button - Opt-in for Pro/Agency users */}
+                  {isPaid && !refined && !isOpusPolishing && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="p-4 bg-gradient-to-br from-violet-500/10 to-purple-500/5 border border-violet-500/20 rounded-xl"
+                    >
+                      <div className="flex items-start gap-3">
+                        <span className="text-2xl">🐣</span>
+                        <div className="flex-1">
+                          <h4 className="text-sm font-semibold text-violet-300 mb-1">Polish with Opus?</h4>
+                          <p className="text-xs text-zinc-400 mb-3">
+                            Opus will review for accessibility, semantic HTML, and best practices.
+                          </p>
+                          <div className="flex items-center justify-between">
+                            <button
+                              onClick={handleOpusPolish}
+                              disabled={isOpusPolishing}
+                              className="px-4 py-2 bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-500 hover:to-purple-500 text-white text-sm font-medium rounded-lg transition-all disabled:opacity-50"
+                            >
+                              ✨ Polish with Opus
+                            </button>
+                            <span className="text-xs text-zinc-500">
+                              {tier === 'agency' ? '∞ credits' : `${opusCreditsRemaining}/30 credits left`}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+
+                  {/* Show Opus polishing state */}
+                  {isOpusPolishing && (
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      className="p-4 bg-violet-500/10 border border-violet-500/20 rounded-xl"
+                    >
+                      <div className="flex items-center gap-3">
+                        <motion.span 
+                          animate={{ rotate: 360 }} 
+                          transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
+                          className="text-2xl"
+                        >
+                          🐣
+                        </motion.span>
+                        <div>
+                          <p className="text-sm font-medium text-violet-300">Opus is polishing...</p>
+                          <p className="text-xs text-zinc-500">Checking accessibility & best practices</p>
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+
+                  {/* Show refinement changes if Opus polished */}
+                  {refined && refinementChanges.length > 0 && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="p-4 bg-violet-500/10 border border-violet-500/20 rounded-xl"
+                    >
+                      <div className="flex items-start gap-3">
+                        <span className="text-xl">✅</span>
+                        <div>
+                          <h4 className="text-sm font-semibold text-violet-300 mb-2">Opus polished this section!</h4>
+                          <ul className="text-xs text-zinc-400 space-y-1">
+                            {refinementChanges.slice(0, 3).map((change, i) => (
+                              <li key={i} className="flex items-start gap-2">
+                                <span className="text-violet-400">•</span>
+                                <span>{change}</span>
+                              </li>
+                            ))}
+                            {refinementChanges.length > 3 && (
+                              <li className="text-zinc-500">+{refinementChanges.length - 3} more improvements</li>
+                            )}
+                          </ul>
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+
                   {/* Review prompt */}
                   <div className="p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-lg">
                     <p className="text-xs text-emerald-400 text-center">
@@ -1048,9 +1155,9 @@ export default function SectionBuilder({
         </AnimatePresence>
       </div>
 
-      {/* Right: Preview Panel */}
-      <div className="w-1/2 flex flex-col bg-zinc-900/30 min-h-0 max-h-full overflow-hidden">
-        <div className="p-4 border-b border-zinc-800 flex items-center justify-between flex-shrink-0">
+      {/* Right: Preview Panel - Expands on desktop */}
+      <div className={`${expandedPreview ? 'flex-1' : 'w-[60%]'} flex flex-col bg-zinc-900/30 min-h-0 max-h-full overflow-hidden transition-all duration-300`}>
+        <div className="p-3 border-b border-zinc-800 flex items-center justify-between flex-shrink-0">
           <div className="flex items-center gap-3">
             {stage === 'generating' ? (
               <div className="flex items-center gap-2">
@@ -1063,7 +1170,7 @@ export default function SectionBuilder({
                   Sonnet is building...
                 </span>
               </div>
-            ) : stage === 'refining' || isUserRefining ? (
+            ) : stage === 'refining' || isUserRefining || isOpusPolishing ? (
               <div className="flex items-center gap-2">
                 <motion.div
                   animate={{ scale: [1, 1.2, 1] }}
@@ -1073,7 +1180,7 @@ export default function SectionBuilder({
                   🐣
                 </motion.div>
                 <span className="text-sm font-medium bg-gradient-to-r from-violet-400 to-purple-400 bg-clip-text text-transparent">
-                  {isUserRefining ? 'Applying your changes...' : 'Opus is polishing...'}
+                  {isUserRefining ? 'Applying your changes...' : isOpusPolishing ? 'Opus is polishing...' : 'Refining...'}
                 </span>
               </div>
             ) : (
@@ -1095,34 +1202,58 @@ export default function SectionBuilder({
               </button>
             )}
           </div>
-          {(generatedCode || streamingCode) && (
-            <div className="flex items-center gap-2">
-              <button
-                onClick={handleCopyCode}
-                className="text-xs px-2 py-1 rounded bg-zinc-800 text-zinc-400 hover:text-white hover:bg-zinc-700 transition-colors flex items-center gap-1"
-              >
-                {copied ? (
-                  <><span className="text-emerald-400">✓</span> Copied!</>
-                ) : (
-                  <>
-                    <span>📋</span> Copy
-                    {!isPaid && <span className="text-amber-400 ml-1">🔒</span>}
-                  </>
-                )}
-              </button>
-              {stage === 'complete' && (
+          <div className="flex items-center gap-2">
+            {/* Expand/Collapse Preview Button */}
+            <button
+              onClick={() => setExpandedPreview(!expandedPreview)}
+              className="hidden lg:flex text-xs px-2 py-1 rounded bg-zinc-800 text-zinc-400 hover:text-white hover:bg-zinc-700 transition-colors items-center gap-1"
+              title={expandedPreview ? 'Collapse preview' : 'Expand preview'}
+            >
+              {expandedPreview ? (
                 <>
-                  <span className="text-emerald-400 text-xs">⚡ Sonnet</span>
-                  {refined && <span className="text-violet-400 text-xs">+ 🐣 Opus</span>}
+                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 9V4.5M9 9H4.5M9 9L3.75 3.75M9 15v4.5M9 15H4.5M9 15l-5.25 5.25M15 9h4.5M15 9V4.5M15 9l5.25-5.25M15 15h4.5M15 15v4.5m0-4.5l5.25 5.25" />
+                  </svg>
+                  <span>Collapse</span>
+                </>
+              ) : (
+                <>
+                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 8V4m0 0h4M4 4l5 5m11-5h-4m4 0v4m0-4l-5 5M4 16v4m0-4h4m-4 4l5-5m11 5l-5-5m5 5v-4m0 4h-4" />
+                  </svg>
+                  <span>Expand</span>
                 </>
               )}
-            </div>
-          )}
+            </button>
+            {(generatedCode || streamingCode) && (
+              <>
+                <button
+                  onClick={handleCopyCode}
+                  className="text-xs px-2 py-1 rounded bg-zinc-800 text-zinc-400 hover:text-white hover:bg-zinc-700 transition-colors flex items-center gap-1"
+                >
+                  {copied ? (
+                    <><span className="text-emerald-400">✓</span> Copied!</>
+                  ) : (
+                    <>
+                      <span>📋</span> Copy
+                      {!isPaid && <span className="text-amber-400 ml-1">🔒</span>}
+                    </>
+                  )}
+                </button>
+                {stage === 'complete' && (
+                  <>
+                    <span className="text-emerald-400 text-xs">⚡ Sonnet</span>
+                    {refined && <span className="text-violet-400 text-xs">+ 🐣 Opus</span>}
+                  </>
+                )}
+              </>
+            )}
+          </div>
         </div>
 
         <div className="flex-1 flex min-h-0">
           {/* Show streaming code during generation or user refinement - ONLY for paid users */}
-          {((stage === 'generating' || stage === 'refining') && streamingCode) || (isUserRefining && streamingCode) ? (
+          {((stage === 'generating' || stage === 'refining') && streamingCode) || ((isUserRefining || isOpusPolishing) && streamingCode) ? (
             isPaid ? (
               <div className="flex-1 overflow-auto p-4 bg-zinc-950">
                 <pre className="text-xs font-mono whitespace-pre-wrap">
