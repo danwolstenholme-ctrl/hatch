@@ -20,6 +20,12 @@ export default function DirectLine({ context, onAction }: DirectLineProps) {
   const [architectMessage, setArchitectMessage] = useState<string | null>(null)
   const recognitionRef = useRef<any>(null)
 
+  const contextRef = useRef(context)
+
+  useEffect(() => {
+    contextRef.current = context
+  }, [context])
+
   useEffect(() => {
     if (typeof window !== 'undefined' && ((window as any).webkitSpeechRecognition || (window as any).SpeechRecognition)) {
       const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
@@ -43,7 +49,7 @@ export default function DirectLine({ context, onAction }: DirectLineProps) {
         setIsListening(false)
       }
     }
-  }, [context])
+  }, [])
 
   const handleArchitectInteraction = async (transcript: string) => {
     setIsProcessing(true)
@@ -53,7 +59,7 @@ export default function DirectLine({ context, onAction }: DirectLineProps) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           transcript,
-          context
+          context: contextRef.current
         })
       })
       
@@ -97,12 +103,22 @@ export default function DirectLine({ context, onAction }: DirectLineProps) {
   }
 
   const toggleListening = () => {
+    if (!recognitionRef.current) {
+      alert('Voice input is not supported in this browser. Please use Chrome, Edge, or Safari.')
+      return
+    }
+
     if (isListening) {
       recognitionRef.current?.stop()
     } else {
-      recognitionRef.current?.start()
-      setIsListening(true)
-      setArchitectMessage(null)
+      try {
+        recognitionRef.current?.start()
+        setIsListening(true)
+        setArchitectMessage(null)
+      } catch (e) {
+        console.error('Failed to start speech recognition:', e)
+        setIsListening(false)
+      }
     }
   }
 
