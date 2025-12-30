@@ -7,7 +7,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { useUser } from '@clerk/nextjs'
 import { motion, useInView } from 'framer-motion'
-import { Cpu, Terminal, Layers, Shield, Zap, Code2, Globe, ArrowRight, CheckCircle2, Layout, Sparkles } from 'lucide-react'
+import { Cpu, Terminal, Layers, Shield, Zap, Code2, Globe, ArrowRight, CheckCircle2, Layout, Sparkles, Smartphone } from 'lucide-react'
 
 // Client-side check to prevent hydration mismatch - uses useSyncExternalStore for proper SSR handling
 const emptySubscribe = () => () => {}
@@ -247,6 +247,40 @@ const demoCode = `export default function Hero() {
     </section>
   )
 }`
+
+// Floating background elements
+function FloatingChicks() {
+  const isClient = useIsClient()
+  if (!isClient) return null
+
+  return (
+    <div className="absolute inset-0 overflow-hidden pointer-events-none select-none z-0">
+      {[...Array(6)].map((_, i) => (
+        <motion.div
+          key={i}
+          className="absolute text-2xl md:text-4xl opacity-[0.03]"
+          initial={{ 
+            x: Math.random() * 100 + '%', 
+            y: Math.random() * 100 + '%' 
+          }}
+          animate={{ 
+            y: [0, -30, 0],
+            rotate: [0, 10, -10, 0],
+            scale: [1, 1.1, 1]
+          }}
+          transition={{ 
+            duration: 5 + Math.random() * 5,
+            repeat: Infinity,
+            delay: Math.random() * 5,
+            ease: "easeInOut"
+          }}
+        >
+          🐣
+        </motion.div>
+      ))}
+    </div>
+  )
+}
 
 export default function Home() {
   const reducedMotion = useReducedMotion()

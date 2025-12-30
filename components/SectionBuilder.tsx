@@ -30,7 +30,8 @@ import {
   X,
   MousePointer2,
   Trash2,
-  CopyPlus
+  CopyPlus,
+  Info
 } from 'lucide-react'
 
 // Suggestions based on section type
