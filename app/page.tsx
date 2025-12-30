@@ -900,7 +900,7 @@ export default function Home() {
         <div className="max-w-6xl mx-auto">
           <div className="grid md:grid-cols-4 gap-8 mb-12">
             <div>
-              <div className="flex items-center gap-2 mb-4"><Image src="/logo.png" alt="HatchIt" width={40} height={40} className="w-10 h-10" /><span className="font-bold text-xl">HatchIt</span></div>
+              <div className="flex items-center gap-2 mb-4"><Image src="/assets/logo.png" alt="HatchIt" width={40} height={40} className="w-10 h-10" /><span className="font-bold text-xl">HatchIt</span></div>
               <p className="text-sm text-zinc-500 mb-4">AI website builder that outputs real, maintainable code.</p>
               <div className="flex items-center gap-3">
                 <a href="https://x.com/HatchItD" target="_blank" rel="noopener noreferrer" className="p-2 bg-zinc-900 hover:bg-zinc-800 rounded-lg transition-colors">

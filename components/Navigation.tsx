@@ -55,7 +55,7 @@ export default function Navigation() {
               whileHover={{ scale: 1.1, rotate: 15 }}
               transition={{ type: 'spring', stiffness: 400, damping: 17 }}
             >
-              <Image src="/logo.png" alt="HatchIt" width={36} height={36} className="w-9 h-9" />
+              <Image src="/assets/logo.png" alt="HatchIt" width={36} height={36} className="w-9 h-9" />
             </motion.div>
             <span className="text-xl font-bold bg-gradient-to-r from-white to-zinc-300 bg-clip-text text-transparent group-hover:from-purple-400 group-hover:to-pink-400 transition-all duration-300">
               HatchIt
