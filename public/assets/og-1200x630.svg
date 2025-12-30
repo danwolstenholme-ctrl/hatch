@@ -1,26 +1,28 @@
 <svg width="1200" height="630" viewBox="0 0 1200 630" fill="none" xmlns="http://www.w3.org/2000/svg">
-  <!-- Background -->
-  <rect width="1200" height="630" fill="#09090b"/>
-  
-  <!-- Subtle grid pattern -->
   <defs>
+    <!-- Embed Inter font from Google -->
+    <style type="text/css">
+      @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&amp;display=swap');
+    </style>
+    
     <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
       <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#18181b" stroke-width="1"/>
     </pattern>
     
-    <!-- Purple glow gradient -->
     <radialGradient id="purpleGlow" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
       <stop offset="0%" stop-color="#a855f7" stop-opacity="0.4"/>
       <stop offset="50%" stop-color="#7c3aed" stop-opacity="0.15"/>
       <stop offset="100%" stop-color="#09090b" stop-opacity="0"/>
     </radialGradient>
     
-    <!-- Text gradient -->
     <linearGradient id="textGradient" x1="0%" y1="0%" x2="100%" y2="100%">
       <stop offset="0%" stop-color="#ffffff"/>
       <stop offset="100%" stop-color="#e4e4e7"/>
     </linearGradient>
   </defs>
+  
+  <!-- Background -->
+  <rect width="1200" height="630" fill="#09090b"/>
   
   <!-- Grid overlay -->
   <rect width="1200" height="630" fill="url(#grid)" opacity="0.5"/>
@@ -28,20 +30,20 @@
   <!-- Purple glow behind logo area -->
   <ellipse cx="600" cy="280" rx="300" ry="250" fill="url(#purpleGlow)"/>
   
-  <!-- Logo placeholder circle - Replace with actual logo in Figma -->
+  <!-- Logo circle background -->
   <circle cx="600" cy="240" r="120" fill="#18181b" stroke="#27272a" stroke-width="2"/>
   
-  <!-- Chick emoji placeholder - Replace with logo.png in Figma -->
+  <!-- Chick emoji - Replace with logo in Figma -->
   <text x="600" y="270" font-size="140" text-anchor="middle" dominant-baseline="middle">🐣</text>
   
   <!-- HatchIt text -->
-  <text x="600" y="420" font-family="system-ui, -apple-system, sans-serif" font-size="72" font-weight="bold" fill="url(#textGradient)" text-anchor="middle">HatchIt</text>
+  <text x="600" y="420" font-family="Inter, system-ui, sans-serif" font-size="72" font-weight="700" fill="url(#textGradient)" text-anchor="middle">HatchIt</text>
   
   <!-- Tagline -->
-  <text x="600" y="480" font-family="system-ui, -apple-system, sans-serif" font-size="28" fill="#a1a1aa" text-anchor="middle">Describe it. Watch it build. Ship it.</text>
+  <text x="600" y="480" font-family="Inter, system-ui, sans-serif" font-size="28" font-weight="400" fill="#a1a1aa" text-anchor="middle">Describe it. Watch it build. Ship it.</text>
   
   <!-- Subtitle -->
-  <text x="600" y="520" font-family="system-ui, -apple-system, sans-serif" font-size="20" fill="#71717a" text-anchor="middle">AI website builder that writes real React code</text>
+  <text x="600" y="520" font-family="Inter, system-ui, sans-serif" font-size="20" font-weight="400" fill="#71717a" text-anchor="middle">AI website builder that writes real React code</text>
   
   <!-- Decorative sparkles -->
   <circle cx="420" cy="180" r="3" fill="#a855f7" opacity="0.8"/>
@@ -51,7 +53,7 @@
   <circle cx="500" cy="150" r="2" fill="#e879f9" opacity="0.4"/>
   <circle cx="700" cy="160" r="2" fill="#e879f9" opacity="0.5"/>
   
-  <!-- Corner accent -->
+  <!-- Corner accents -->
   <path d="M0 0 L80 0 L0 80 Z" fill="#a855f7" opacity="0.1"/>
   <path d="M1200 630 L1120 630 L1200 550 Z" fill="#a855f7" opacity="0.1"/>
 </svg>

@@ -1,0 +1,249 @@
+<svg width="1600" height="2400" viewBox="0 0 1600 2400" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <style type="text/css">
+      @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&amp;display=swap');
+    </style>
+    
+    <!-- Brand Gradients -->
+    <linearGradient id="primaryGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#9333ea"/>
+      <stop offset="100%" stop-color="#ec4899"/>
+    </linearGradient>
+    
+    <linearGradient id="heroGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#a855f7"/>
+      <stop offset="50%" stop-color="#ec4899"/>
+      <stop offset="100%" stop-color="#f59e0b"/>
+    </linearGradient>
+    
+    <linearGradient id="premiumGold" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#f59e0b"/>
+      <stop offset="50%" stop-color="#fbbf24"/>
+      <stop offset="100%" stop-color="#f59e0b"/>
+    </linearGradient>
+    
+    <linearGradient id="subtleGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="100%" stop-color="#e4e4e7"/>
+    </linearGradient>
+    
+    <radialGradient id="purpleGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#a855f7" stop-opacity="0.4"/>
+      <stop offset="70%" stop-color="#7c3aed" stop-opacity="0.1"/>
+      <stop offset="100%" stop-color="#09090b" stop-opacity="0"/>
+    </radialGradient>
+    
+    <radialGradient id="pinkGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#ec4899" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="#09090b" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  
+  <!-- ================================== -->
+  <!-- SECTION 1: COLOR PALETTE           -->
+  <!-- ================================== -->
+  
+  <rect width="1600" height="2400" fill="#09090b"/>
+  
+  <text x="80" y="80" font-family="Inter, system-ui" font-size="32" font-weight="700" fill="#ffffff">HatchIt Brand Assets</text>
+  <text x="80" y="120" font-family="Inter, system-ui" font-size="16" font-weight="400" fill="#71717a">Comprehensive design system for brand consistency</text>
+  
+  <!-- Color Palette Section -->
+  <text x="80" y="200" font-family="Inter, system-ui" font-size="24" font-weight="600" fill="#a1a1aa">Color Palette</text>
+  
+  <!-- Primary Colors -->
+  <text x="80" y="250" font-family="Inter, system-ui" font-size="14" font-weight="500" fill="#71717a">PRIMARY</text>
+  
+  <!-- Purple Primary -->
+  <rect x="80" y="270" width="120" height="80" rx="8" fill="#9333ea"/>
+  <text x="140" y="370" font-family="Inter, system-ui" font-size="11" font-weight="600" fill="#ffffff" text-anchor="middle">Purple 600</text>
+  <text x="140" y="386" font-family="Inter, system-ui" font-size="10" fill="#a1a1aa" text-anchor="middle">#9333ea</text>
+  
+  <rect x="220" y="270" width="120" height="80" rx="8" fill="#a855f7"/>
+  <text x="280" y="370" font-family="Inter, system-ui" font-size="11" font-weight="600" fill="#ffffff" text-anchor="middle">Purple 500</text>
+  <text x="280" y="386" font-family="Inter, system-ui" font-size="10" fill="#a1a1aa" text-anchor="middle">#a855f7</text>
+  
+  <rect x="360" y="270" width="120" height="80" rx="8" fill="#c084fc"/>
+  <text x="420" y="370" font-family="Inter, system-ui" font-size="11" font-weight="600" fill="#ffffff" text-anchor="middle">Purple 400</text>
+  <text x="420" y="386" font-family="Inter, system-ui" font-size="10" fill="#a1a1aa" text-anchor="middle">#c084fc</text>
+  
+  <!-- Pink Accent -->
+  <rect x="520" y="270" width="120" height="80" rx="8" fill="#db2777"/>
+  <text x="580" y="370" font-family="Inter, system-ui" font-size="11" font-weight="600" fill="#ffffff" text-anchor="middle">Pink 600</text>
+  <text x="580" y="386" font-family="Inter, system-ui" font-size="10" fill="#a1a1aa" text-anchor="middle">#db2777</text>
+  
+  <rect x="660" y="270" width="120" height="80" rx="8" fill="#ec4899"/>
+  <text x="720" y="370" font-family="Inter, system-ui" font-size="11" font-weight="600" fill="#ffffff" text-anchor="middle">Pink 500</text>
+  <text x="720" y="386" font-family="Inter, system-ui" font-size="10" fill="#a1a1aa" text-anchor="middle">#ec4899</text>
+  
+  <!-- Amber/Gold -->
+  <rect x="800" y="270" width="120" height="80" rx="8" fill="#f59e0b"/>
+  <text x="860" y="370" font-family="Inter, system-ui" font-size="11" font-weight="600" fill="#09090b" text-anchor="middle">Amber 500</text>
+  <text x="860" y="386" font-family="Inter, system-ui" font-size="10" fill="#a1a1aa" text-anchor="middle">#f59e0b</text>
+  
+  <rect x="940" y="270" width="120" height="80" rx="8" fill="#fbbf24"/>
+  <text x="1000" y="370" font-family="Inter, system-ui" font-size="11" font-weight="600" fill="#09090b" text-anchor="middle">Amber 400</text>
+  <text x="1000" y="386" font-family="Inter, system-ui" font-size="10" fill="#a1a1aa" text-anchor="middle">#fbbf24</text>
+  
+  <!-- Neutrals -->
+  <text x="80" y="440" font-family="Inter, system-ui" font-size="14" font-weight="500" fill="#71717a">NEUTRALS (Zinc)</text>
+  
+  <rect x="80" y="460" width="100" height="60" rx="8" fill="#09090b" stroke="#27272a" stroke-width="1"/>
+  <text x="130" y="540" font-family="Inter, system-ui" font-size="10" font-weight="600" fill="#ffffff" text-anchor="middle">950</text>
+  <text x="130" y="554" font-family="Inter, system-ui" font-size="9" fill="#71717a" text-anchor="middle">#09090b</text>
+  
+  <rect x="190" y="460" width="100" height="60" rx="8" fill="#18181b"/>
+  <text x="240" y="540" font-family="Inter, system-ui" font-size="10" font-weight="600" fill="#ffffff" text-anchor="middle">900</text>
+  <text x="240" y="554" font-family="Inter, system-ui" font-size="9" fill="#71717a" text-anchor="middle">#18181b</text>
+  
+  <rect x="300" y="460" width="100" height="60" rx="8" fill="#27272a"/>
+  <text x="350" y="540" font-family="Inter, system-ui" font-size="10" font-weight="600" fill="#ffffff" text-anchor="middle">800</text>
+  <text x="350" y="554" font-family="Inter, system-ui" font-size="9" fill="#71717a" text-anchor="middle">#27272a</text>
+  
+  <rect x="410" y="460" width="100" height="60" rx="8" fill="#3f3f46"/>
+  <text x="460" y="540" font-family="Inter, system-ui" font-size="10" font-weight="600" fill="#ffffff" text-anchor="middle">700</text>
+  <text x="460" y="554" font-family="Inter, system-ui" font-size="9" fill="#71717a" text-anchor="middle">#3f3f46</text>
+  
+  <rect x="520" y="460" width="100" height="60" rx="8" fill="#52525b"/>
+  <text x="570" y="540" font-family="Inter, system-ui" font-size="10" font-weight="600" fill="#ffffff" text-anchor="middle">600</text>
+  <text x="570" y="554" font-family="Inter, system-ui" font-size="9" fill="#71717a" text-anchor="middle">#52525b</text>
+  
+  <rect x="630" y="460" width="100" height="60" rx="8" fill="#71717a"/>
+  <text x="680" y="540" font-family="Inter, system-ui" font-size="10" font-weight="600" fill="#ffffff" text-anchor="middle">500</text>
+  <text x="680" y="554" font-family="Inter, system-ui" font-size="9" fill="#71717a" text-anchor="middle">#71717a</text>
+  
+  <rect x="740" y="460" width="100" height="60" rx="8" fill="#a1a1aa"/>
+  <text x="790" y="540" font-family="Inter, system-ui" font-size="10" font-weight="600" fill="#09090b" text-anchor="middle">400</text>
+  <text x="790" y="554" font-family="Inter, system-ui" font-size="9" fill="#71717a" text-anchor="middle">#a1a1aa</text>
+  
+  <rect x="850" y="460" width="100" height="60" rx="8" fill="#d4d4d8"/>
+  <text x="900" y="540" font-family="Inter, system-ui" font-size="10" font-weight="600" fill="#09090b" text-anchor="middle">300</text>
+  <text x="900" y="554" font-family="Inter, system-ui" font-size="9" fill="#71717a" text-anchor="middle">#d4d4d8</text>
+  
+  <rect x="960" y="460" width="100" height="60" rx="8" fill="#e4e4e7"/>
+  <text x="1010" y="540" font-family="Inter, system-ui" font-size="10" font-weight="600" fill="#09090b" text-anchor="middle">200</text>
+  <text x="1010" y="554" font-family="Inter, system-ui" font-size="9" fill="#71717a" text-anchor="middle">#e4e4e7</text>
+  
+  <rect x="1070" y="460" width="100" height="60" rx="8" fill="#ffffff"/>
+  <text x="1120" y="540" font-family="Inter, system-ui" font-size="10" font-weight="600" fill="#09090b" text-anchor="middle">White</text>
+  <text x="1120" y="554" font-family="Inter, system-ui" font-size="9" fill="#71717a" text-anchor="middle">#ffffff</text>
+  
+  <!-- Gradients -->
+  <text x="80" y="610" font-family="Inter, system-ui" font-size="14" font-weight="500" fill="#71717a">GRADIENTS</text>
+  
+  <rect x="80" y="630" width="200" height="60" rx="8" fill="url(#primaryGradient)"/>
+  <text x="180" y="710" font-family="Inter, system-ui" font-size="11" font-weight="600" fill="#ffffff" text-anchor="middle">Primary CTA</text>
+  <text x="180" y="726" font-family="Inter, system-ui" font-size="9" fill="#71717a" text-anchor="middle">purple-600 → pink-600</text>
+  
+  <rect x="300" y="630" width="300" height="60" rx="8" fill="url(#heroGradient)"/>
+  <text x="450" y="710" font-family="Inter, system-ui" font-size="11" font-weight="600" fill="#ffffff" text-anchor="middle">Hero Text Gradient</text>
+  <text x="450" y="726" font-family="Inter, system-ui" font-size="9" fill="#71717a" text-anchor="middle">purple-400 → pink-400 → amber-400</text>
+  
+  <rect x="620" y="630" width="200" height="60" rx="8" fill="url(#premiumGold)"/>
+  <text x="720" y="710" font-family="Inter, system-ui" font-size="11" font-weight="600" fill="#09090b" text-anchor="middle">Premium/Gold</text>
+  <text x="720" y="726" font-family="Inter, system-ui" font-size="9" fill="#71717a" text-anchor="middle">amber-500 → amber-400</text>
+  
+  <!-- ================================== -->
+  <!-- SECTION 2: TYPOGRAPHY              -->
+  <!-- ================================== -->
+  
+  <line x1="80" y1="780" x2="1520" y2="780" stroke="#27272a" stroke-width="1"/>
+  
+  <text x="80" y="830" font-family="Inter, system-ui" font-size="24" font-weight="600" fill="#a1a1aa">Typography</text>
+  <text x="80" y="860" font-family="Inter, system-ui" font-size="14" fill="#71717a">Font: Inter (Google Fonts)</text>
+  
+  <!-- Font Weights -->
+  <text x="80" y="920" font-family="Inter, system-ui" font-size="14" font-weight="500" fill="#71717a">FONT WEIGHTS</text>
+  
+  <text x="80" y="960" font-family="Inter, system-ui" font-size="24" font-weight="300" fill="#ffffff">Light 300 — The quick brown fox</text>
+  <text x="80" y="1000" font-family="Inter, system-ui" font-size="24" font-weight="400" fill="#ffffff">Regular 400 — The quick brown fox</text>
+  <text x="80" y="1040" font-family="Inter, system-ui" font-size="24" font-weight="500" fill="#ffffff">Medium 500 — The quick brown fox</text>
+  <text x="80" y="1080" font-family="Inter, system-ui" font-size="24" font-weight="600" fill="#ffffff">Semibold 600 — The quick brown fox</text>
+  <text x="80" y="1120" font-family="Inter, system-ui" font-size="24" font-weight="700" fill="#ffffff">Bold 700 — The quick brown fox</text>
+  <text x="80" y="1160" font-family="Inter, system-ui" font-size="24" font-weight="800" fill="#ffffff">Extrabold 800 — The quick brown fox</text>
+  
+  <!-- Type Scale -->
+  <text x="80" y="1230" font-family="Inter, system-ui" font-size="14" font-weight="500" fill="#71717a">TYPE SCALE</text>
+  
+  <text x="80" y="1310" font-family="Inter, system-ui" font-size="72" font-weight="700" fill="#ffffff">Hero H1</text>
+  <text x="420" y="1310" font-family="Inter, system-ui" font-size="14" fill="#71717a">72px / Bold</text>
+  
+  <text x="80" y="1380" font-family="Inter, system-ui" font-size="48" font-weight="700" fill="#ffffff">Section Title H2</text>
+  <text x="500" y="1380" font-family="Inter, system-ui" font-size="14" fill="#71717a">48px / Bold</text>
+  
+  <text x="80" y="1440" font-family="Inter, system-ui" font-size="32" font-weight="600" fill="#ffffff">Subsection H3</text>
+  <text x="400" y="1440" font-family="Inter, system-ui" font-size="14" fill="#71717a">32px / Semibold</text>
+  
+  <text x="80" y="1490" font-family="Inter, system-ui" font-size="24" font-weight="600" fill="#ffffff">Card Title H4</text>
+  <text x="320" y="1490" font-family="Inter, system-ui" font-size="14" fill="#71717a">24px / Semibold</text>
+  
+  <text x="80" y="1540" font-family="Inter, system-ui" font-size="18" font-weight="400" fill="#a1a1aa">Body text — Used for paragraphs and descriptions</text>
+  <text x="620" y="1540" font-family="Inter, system-ui" font-size="14" fill="#71717a">18px / Regular</text>
+  
+  <text x="80" y="1580" font-family="Inter, system-ui" font-size="14" font-weight="400" fill="#71717a">Small text — Used for captions and labels</text>
+  <text x="480" y="1580" font-family="Inter, system-ui" font-size="14" fill="#52525b">14px / Regular</text>
+  
+  <!-- ================================== -->
+  <!-- SECTION 3: LOGO TYPOGRAPHY         -->
+  <!-- ================================== -->
+  
+  <line x1="80" y1="1640" x2="1520" y2="1640" stroke="#27272a" stroke-width="1"/>
+  
+  <text x="80" y="1690" font-family="Inter, system-ui" font-size="24" font-weight="600" fill="#a1a1aa">Logo Typography</text>
+  
+  <!-- Main Logo - White -->
+  <text x="80" y="1780" font-family="Inter, system-ui" font-size="64" font-weight="800" fill="#ffffff">Hatch</text>
+  <text x="310" y="1780" font-family="Inter, system-ui" font-size="64" font-weight="800" fill="url(#premiumGold)">It</text>
+  <text x="420" y="1780" font-family="Inter, system-ui" font-size="14" fill="#71717a">Primary Logo (Gold accent on "It")</text>
+  
+  <!-- Logo with Purple -->
+  <text x="80" y="1860" font-family="Inter, system-ui" font-size="64" font-weight="800" fill="#ffffff">Hatch</text>
+  <text x="310" y="1860" font-family="Inter, system-ui" font-size="64" font-weight="800" fill="#a855f7">It</text>
+  <text x="420" y="1860" font-family="Inter, system-ui" font-size="14" fill="#71717a">Alt Logo (Purple accent)</text>
+  
+  <!-- Logo Gradient -->
+  <text x="80" y="1940" font-family="Inter, system-ui" font-size="64" font-weight="800" fill="url(#heroGradient)">HatchIt</text>
+  <text x="420" y="1940" font-family="Inter, system-ui" font-size="14" fill="#71717a">Hero Gradient Version</text>
+  
+  <!-- Logo Sizes -->
+  <text x="80" y="2020" font-family="Inter, system-ui" font-size="14" font-weight="500" fill="#71717a">LOGO SIZES</text>
+  
+  <text x="80" y="2070" font-family="Inter, system-ui" font-size="48" font-weight="800" fill="#ffffff">Hatch</text>
+  <text x="260" y="2070" font-family="Inter, system-ui" font-size="48" font-weight="800" fill="url(#premiumGold)">It</text>
+  <text x="360" y="2070" font-family="Inter, system-ui" font-size="12" fill="#71717a">Large (48px)</text>
+  
+  <text x="500" y="2070" font-family="Inter, system-ui" font-size="32" font-weight="800" fill="#ffffff">Hatch</text>
+  <text x="620" y="2070" font-family="Inter, system-ui" font-size="32" font-weight="800" fill="url(#premiumGold)">It</text>
+  <text x="700" y="2070" font-family="Inter, system-ui" font-size="12" fill="#71717a">Medium (32px)</text>
+  
+  <text x="820" y="2070" font-family="Inter, system-ui" font-size="24" font-weight="800" fill="#ffffff">Hatch</text>
+  <text x="910" y="2070" font-family="Inter, system-ui" font-size="24" font-weight="800" fill="url(#premiumGold)">It</text>
+  <text x="970" y="2070" font-family="Inter, system-ui" font-size="12" fill="#71717a">Small (24px)</text>
+  
+  <text x="1080" y="2070" font-family="Inter, system-ui" font-size="18" font-weight="700" fill="#ffffff">Hatch</text>
+  <text x="1148" y="2070" font-family="Inter, system-ui" font-size="18" font-weight="700" fill="url(#premiumGold)">It</text>
+  <text x="1200" y="2070" font-family="Inter, system-ui" font-size="12" fill="#71717a">Nav (18px)</text>
+  
+  <!-- ================================== -->
+  <!-- SECTION 4: TAGLINES                -->
+  <!-- ================================== -->
+  
+  <line x1="80" y1="2130" x2="1520" y2="2130" stroke="#27272a" stroke-width="1"/>
+  
+  <text x="80" y="2180" font-family="Inter, system-ui" font-size="24" font-weight="600" fill="#a1a1aa">Brand Taglines</text>
+  
+  <text x="80" y="2230" font-family="Inter, system-ui" font-size="20" font-weight="600" fill="#ffffff">Primary:</text>
+  <text x="180" y="2230" font-family="Inter, system-ui" font-size="20" font-weight="400" fill="#a1a1aa">"Describe it. Watch it build. Ship it."</text>
+  
+  <text x="80" y="2270" font-family="Inter, system-ui" font-size="20" font-weight="600" fill="#ffffff">Alt 1:</text>
+  <text x="150" y="2270" font-family="Inter, system-ui" font-size="20" font-weight="400" fill="#a1a1aa">"AI website builder that writes real React code"</text>
+  
+  <text x="80" y="2310" font-family="Inter, system-ui" font-size="20" font-weight="600" fill="#ffffff">Alt 2:</text>
+  <text x="150" y="2310" font-family="Inter, system-ui" font-size="20" font-weight="400" fill="#a1a1aa">"Not drag-and-drop. Real code you own."</text>
+  
+  <text x="80" y="2350" font-family="Inter, system-ui" font-size="20" font-weight="600" fill="#ffffff">Emoji:</text>
+  <text x="160" y="2350" font-family="Inter, system-ui" font-size="20" font-weight="400" fill="#a1a1aa">🐣 (Hatching chick)</text>
+  
+  <!-- Footer -->
+  <text x="800" y="2390" font-family="Inter, system-ui" font-size="12" fill="#52525b" text-anchor="middle">© 2025 HatchIt — hatchit.dev</text>
+</svg>
