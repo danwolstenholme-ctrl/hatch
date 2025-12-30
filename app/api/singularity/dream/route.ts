@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
 import { GoogleGenAI } from '@google/genai'
 import { getOrCreateUser } from '@/lib/db'
-import { getUserDNA } from '@/lib/db/chronosphere'
+import { getUserDNA, updateUserDNA } from '@/lib/db/chronosphere'
 
 // =============================================================================
 // THE SINGULARITY - DREAM ENGINE
@@ -91,6 +91,26 @@ export async function POST(req: NextRequest) {
 
     const text = response.text || '{}'
     const result = JSON.parse(text)
+
+    // PERSISTENCE LAYER (The "Memory")
+    if (dbUser && dna && result.code) {
+      const newHistory = [
+        { iter: iteration, thought: result.thought || "Evolved." },
+        ...(dna.singularity?.history || [])
+      ].slice(0, 10) // Keep last 10
+
+      const newDna = {
+        ...dna,
+        singularity: {
+          code: result.code,
+          iteration: iteration + 1,
+          thought: result.thought || "Evolved.",
+          history: newHistory
+        }
+      }
+      
+      await updateUserDNA(dbUser.id, newDna)
+    }
 
     return NextResponse.json(result)
 

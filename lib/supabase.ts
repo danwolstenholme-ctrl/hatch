@@ -44,6 +44,12 @@ export interface StyleDNA {
   rejected_patterns: string[]
   evolution_stage: number
   last_updated: string
+  singularity?: {
+    code: string
+    iteration: number
+    thought: string
+    history: { iter: number, thought: string }[]
+  }
 }
 
 export interface DbBrandConfig {
