@@ -372,7 +372,7 @@ export default function LegacyBuilder() {
   const [deployName, setDeployName] = useState('')
   const [activeTab, setActiveTab] = useState<'preview' | 'code'>('preview')
   const [previewWidth, setPreviewWidth] = useState(0)
-  const isMobile = useIsMobile() // Hydration-safe mobile detection
+  // const isMobile = useIsMobile() // Hydration-safe mobile detection
   const [showPagesPanel, setShowPagesPanel] = useState(false)
   const [showAddPageModal, setShowAddPageModal] = useState(false)
   const [newPageName, setNewPageName] = useState('')
@@ -1217,7 +1217,7 @@ export default function LegacyBuilder() {
           // currentPageId: newPageId || migratedProject.currentPageId
         })
         
-        if (isMobile) setMobileModal('preview')
+        // if (isMobile) setMobileModal('preview')
         return data.message || 'Pages updated!'
       }
       
@@ -1267,7 +1267,7 @@ export default function LegacyBuilder() {
           }
         }
         
-        if (isMobile) setMobileModal('preview')
+        // if (isMobile) setMobileModal('preview')
         
         // Show onboarding tips after first successful generation (not before)
         if (!localStorage.getItem('hatchit-onboarding-seen')) {
