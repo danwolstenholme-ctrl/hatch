@@ -295,7 +295,7 @@ export default function BrandingStep({ onComplete, onBack, templateName, templat
       </div>
 
       <div className="w-full max-w-4xl relative z-10">
-        {/* Header */}}
+        {/* Header */}
         <div className="flex items-center justify-between mb-8">
           <div className="flex items-center gap-4">
             <button

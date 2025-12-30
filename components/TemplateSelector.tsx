@@ -198,6 +198,15 @@ export default function TemplateSelector({ onSelectTemplate }: TemplateSelectorP
     // Start with just fixed sections (header + footer)
     setSelectedSections([...fixedSections])
     setCurrentQuestionIndex(0)
+    
+    // For advanced/custom templates, skip Q&A and go straight to branding
+    if (template.isAdvanced) {
+      // Just pass through with default sections (header + footer)
+      const orderedSections = [...fixedSections].map((s, i) => ({ ...s, order: i }))
+      onSelectTemplate(template, orderedSections)
+      return
+    }
+    
     setIsAsking(true)
     setShowSummary(false)
     setShowSectionEditor(true)
