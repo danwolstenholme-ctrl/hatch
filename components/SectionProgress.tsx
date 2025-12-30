@@ -219,6 +219,7 @@ export default function SectionProgress({
   onViewBrand,
   brandConfig,
 }: SectionProgressProps) {
+  const [showMobileDrawer, setShowMobileDrawer] = useState(false)
   const { currentSectionIndex, completedSections, skippedSections, sectionRefined, sectionChanges } = buildState
   const sections = template.sections
   const currentSection = sections[currentSectionIndex]
@@ -229,6 +230,7 @@ export default function SectionProgress({
   const progressPercent = Math.round((doneCount / totalSections) * 100)
 
   return (
+    <>
     <div className="w-full bg-zinc-900/80 backdrop-blur-sm border-b border-zinc-800 relative z-50">
       {/* Progress Bar */}
       <div className="h-1 bg-zinc-800">
@@ -241,9 +243,9 @@ export default function SectionProgress({
       </div>
 
       {/* Section Navigation */}
-      <div className="px-4 py-3 flex items-center justify-between overflow-visible">
+      <div className="px-3 sm:px-4 py-2 sm:py-3 flex items-center justify-between overflow-visible">
         {/* Left: Hatching Chick + Template Info */}
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-2 sm:gap-4">
           <div className="flex items-center gap-2">
             <HatchingChick 
               progress={progressPercent} 
@@ -253,7 +255,7 @@ export default function SectionProgress({
               brandConfig={brandConfig}
             />
             <div>
-              <span className="text-sm font-medium text-white">{template.name}</span>
+              <span className="text-xs sm:text-sm font-medium text-white">{template.name}</span>
               <div className="flex items-center gap-2">
                 <span className="text-xs text-zinc-500">
                   {currentSectionIndex + 1}/{totalSections}
@@ -353,8 +355,19 @@ export default function SectionProgress({
           })}
         </div>
 
+        {/* Mobile: Section drawer trigger */}
+        <button
+          onClick={() => setShowMobileDrawer(true)}
+          className="md:hidden flex items-center gap-2 px-3 py-1.5 rounded-lg bg-zinc-800 text-zinc-300 text-xs"
+        >
+          <span>{currentSectionIndex + 1}/{totalSections}</span>
+          <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+          </svg>
+        </button>
+
         {/* Right: Skip Button (for optional sections) */}
-        <div className="flex items-center gap-3">
+        <div className="hidden sm:flex items-center gap-3">
           {currentSection && !currentSection.required && (
             <motion.button
               onClick={onSkip}
@@ -362,23 +375,23 @@ export default function SectionProgress({
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
             >
-              Skip section →
+              Skip →
             </motion.button>
           )}
           
           <div className="text-sm text-zinc-500">
-            {progressPercent}% complete
+            {progressPercent}%
           </div>
         </div>
       </div>
 
-      {/* Current Section Description */}
+      {/* Current Section Description - hidden on mobile for space */}
       {currentSection && (
         <motion.div
           key={currentSection.id}
           initial={{ opacity: 0, y: -10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="px-4 pb-3 -mt-1"
+          className="hidden sm:block px-4 pb-3 -mt-1"
         >
           <p className="text-sm text-zinc-400">
             {currentSection.description}
@@ -389,6 +402,20 @@ export default function SectionProgress({
         </motion.div>
       )}
     </div>
+
+    {/* Mobile Section Drawer */}
+    <AnimatePresence>
+      {showMobileDrawer && onSectionClick && (
+        <MobileSectionDrawer
+          isOpen={showMobileDrawer}
+          onClose={() => setShowMobileDrawer(false)}
+          template={template}
+          buildState={buildState}
+          onSectionClick={onSectionClick}
+        />
+      )}
+    </AnimatePresence>
+    </>
   )
 }
 

@@ -145,6 +145,7 @@ export default function SectionBuilder({
   const [appliedSuggestions, setAppliedSuggestions] = useState<Set<number>>(new Set())
   const [isOpusPolishing, setIsOpusPolishing] = useState(false) // Opt-in Opus polish
   const [expandedPreview, setExpandedPreview] = useState(false) // Expand preview on desktop
+  const [mobileTab, setMobileTab] = useState<'input' | 'preview'>('input') // Mobile tab state
   
   // Get subscription info for Opus credits
   const { tier, subscription } = useSubscription()
@@ -639,9 +640,38 @@ export default function SectionBuilder({
     generatedCode.toLowerCase().includes('type="email"')
 
   return (
-    <div className="flex-1 flex min-h-0 max-h-full overflow-hidden">
-      {/* Left: Input Panel - Collapsible on desktop when preview is expanded */}
-      <div className={`${expandedPreview ? 'w-80 min-w-80' : 'w-[40%] min-w-[350px]'} border-r border-zinc-800 flex flex-col min-h-0 max-h-full overflow-hidden relative transition-all duration-300`}>
+    <div className="flex-1 flex flex-col md:flex-row min-h-0 max-h-full overflow-hidden">
+      {/* Mobile Tab Switcher */}
+      <div className="flex md:hidden border-b border-zinc-800 bg-zinc-900">
+        <button
+          onClick={() => setMobileTab('input')}
+          className={`flex-1 py-3 text-sm font-medium transition-colors ${
+            mobileTab === 'input' 
+              ? 'text-white border-b-2 border-emerald-500 bg-zinc-800/50' 
+              : 'text-zinc-400'
+          }`}
+        >
+          ✏️ Build
+        </button>
+        <button
+          onClick={() => setMobileTab('preview')}
+          className={`flex-1 py-3 text-sm font-medium transition-colors ${
+            mobileTab === 'preview' 
+              ? 'text-white border-b-2 border-emerald-500 bg-zinc-800/50' 
+              : 'text-zinc-400'
+          }`}
+        >
+          👁️ Preview
+        </button>
+      </div>
+
+      {/* Left: Input Panel - Full width on mobile when active, collapsible on desktop */}
+      <div className={`
+        ${mobileTab === 'input' ? 'flex' : 'hidden'} md:flex
+        ${expandedPreview ? 'md:w-80 md:min-w-80' : 'md:w-[40%] md:min-w-[350px]'} 
+        flex-col min-h-0 max-h-full overflow-hidden relative transition-all duration-300 
+        border-r-0 md:border-r border-zinc-800
+      `}>
         {/* Section Header */}
         <div className="p-4 lg:p-6 border-b border-zinc-800 flex-shrink-0">
           <div className="flex items-center gap-3 mb-2">
@@ -901,19 +931,37 @@ export default function SectionBuilder({
 
                   {/* Clear Next Section CTA */}
                   {!isLastSection ? (
-                    <button
-                      onClick={onNextSection}
-                      className="w-full py-4 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold text-lg hover:shadow-lg hover:shadow-emerald-500/20 transition-all"
-                    >
-                      Looks good! Continue to Next Section →
-                    </button>
+                    <>
+                      {/* Mobile: View Preview button */}
+                      <button
+                        onClick={() => setMobileTab('preview')}
+                        className="w-full py-3 rounded-xl border border-zinc-700 text-zinc-300 font-medium md:hidden hover:bg-zinc-800 transition-colors"
+                      >
+                        👁️ View Preview
+                      </button>
+                      <button
+                        onClick={onNextSection}
+                        className="w-full py-4 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold text-lg hover:shadow-lg hover:shadow-emerald-500/20 transition-all"
+                      >
+                        Continue to Next Section →
+                      </button>
+                    </>
                   ) : (
-                    <button
-                      onClick={onNextSection}
-                      className="w-full py-4 rounded-xl bg-gradient-to-r from-violet-500 to-purple-500 text-white font-bold text-lg hover:shadow-lg hover:shadow-violet-500/20 transition-all"
-                    >
-                      🎉 Finish & Review Full Site
-                    </button>
+                    <>
+                      {/* Mobile: View Preview button */}
+                      <button
+                        onClick={() => setMobileTab('preview')}
+                        className="w-full py-3 rounded-xl border border-zinc-700 text-zinc-300 font-medium md:hidden hover:bg-zinc-800 transition-colors"
+                      >
+                        👁️ View Preview
+                      </button>
+                      <button
+                        onClick={onNextSection}
+                        className="w-full py-4 rounded-xl bg-gradient-to-r from-violet-500 to-purple-500 text-white font-bold text-lg hover:shadow-lg hover:shadow-violet-500/20 transition-all"
+                      >
+                        🎉 Finish & Review Full Site
+                      </button>
+                    </>
                   )}
                   
                   {/* Rebuild - subtle */}
@@ -1072,8 +1120,12 @@ export default function SectionBuilder({
         </AnimatePresence>
       </div>
 
-      {/* Right: Preview Panel - Expands on desktop */}
-      <div className={`${expandedPreview ? 'flex-1' : 'w-[60%]'} flex flex-col bg-zinc-900/30 min-h-0 max-h-full overflow-hidden transition-all duration-300`}>
+      {/* Right: Preview Panel - Full width on mobile when active, expands on desktop */}
+      <div className={`
+        ${mobileTab === 'preview' ? 'flex' : 'hidden'} md:flex
+        ${expandedPreview ? 'md:flex-1' : 'md:w-[60%]'} 
+        flex-col bg-zinc-900/30 min-h-0 max-h-full overflow-hidden transition-all duration-300
+      `}>
         <div className="p-3 border-b border-zinc-800 flex items-center justify-between flex-shrink-0">
           <div className="flex items-center gap-3">
             {stage === 'generating' ? (
