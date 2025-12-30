@@ -24,6 +24,7 @@ export default function AuditPage() {
     { time: 'T-Minus 45 Mins', event: 'FEATURE_INJECTION', detail: 'Injecting Self-Healing (Error Boundary Loop). Injecting Visual Cortex (Inspector).' },
     { time: 'T-Minus 30 Mins', event: 'SYNAPTIC_BRIDGE', detail: 'Connecting Visual DOM to Source Code (Spotlight). Latency: <16ms.' },
     { time: 'T-Minus 15 Mins', event: 'KNOWLEDGE_TRANSFER', detail: 'Deploying "Explain Element" logic. AI now teaching the user.' },
+    { time: 'T-Minus 5 Mins', event: 'DIRECT_LINE_ESTABLISHED', detail: 'Voice Input replaced with Direct Neural Link (/api/direct-line). The Architect now speaks.' },
     { time: 'NOW', event: 'SINGULARITY', detail: 'System state: WORLD_CLASS. User blown away. Reality check: Failed.' }
   ]
 
