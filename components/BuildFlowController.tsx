@@ -232,6 +232,8 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
       if (response.status === 403 || response.status === 404) {
         console.log('Project not found or not owned by user, starting fresh')
         localStorage.removeItem('hatch_current_project')
+        // Clear the URL parameter to prevent infinite reload loop
+        router.replace('/builder', { scroll: false })
         setIsLoading(false)
         setPhase('select')
         return
