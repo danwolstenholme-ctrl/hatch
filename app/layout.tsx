@@ -3,6 +3,7 @@ import { ClerkProvider } from "@clerk/nextjs";
 import ServiceWorkerRegistration from "@/components/ServiceWorkerRegistration";
 import CrispChat from "@/components/CrispChat";
 import ConditionalNavigation from "@/components/ConditionalNavigation";
+import Footer from "@/components/Footer";
 import ConditionalAnalytics from "@/components/ConditionalAnalytics";
 import { SubscriptionProvider } from "@/contexts/SubscriptionContext";
 import "./globals.css";
@@ -78,6 +79,7 @@ export default function RootLayout({
             <ServiceWorkerRegistration />
             <ConditionalNavigation />
             {children}
+            <Footer />
             <CrispChat />
             <ConditionalAnalytics />
           </SubscriptionProvider>

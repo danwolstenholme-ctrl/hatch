@@ -161,14 +161,17 @@ export default function Navigation() {
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
               transition={{ type: 'tween', duration: 0.2, ease: [0.32, 0.72, 0, 1] }} // Faster, smoother tween instead of spring
-              className="absolute right-0 top-0 h-full w-64 bg-zinc-900 border-l border-zinc-800 shadow-2xl overflow-y-auto"
+              className="absolute right-0 top-0 h-full w-72 bg-zinc-950 border-l border-zinc-800 shadow-2xl overflow-y-auto"
               style={{ willChange: 'transform', backfaceVisibility: 'hidden', touchAction: 'pan-y' }}
             >
-              <div className="p-4 border-b border-zinc-800 flex justify-between items-center">
-                <span className="font-semibold text-white">Menu</span>
+              <div className="p-5 border-b border-zinc-800 flex justify-between items-center bg-zinc-900/50">
+                <span className="font-bold text-white flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-purple-500"></span>
+                  Menu
+                </span>
                 <button
                   onClick={() => setMobileMenuOpen(false)}
-                  className="p-2 text-zinc-400 hover:text-white"
+                  className="p-2 text-zinc-400 hover:text-white bg-zinc-900 rounded-lg transition-colors"
                 >
                   <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -176,17 +179,18 @@ export default function Navigation() {
                 </button>
               </div>
               
-              <div className="p-4 space-y-1">
+              <div className="p-4 space-y-2">
                 {navLinks.map((link) => {
                   const isActive = pathname === link.href
                   return (
                     <Link
                       key={link.href}
                       href={link.href}
-                      className={`block px-4 py-3 rounded-lg text-sm font-medium transition-colors ${
+                      onClick={() => setMobileMenuOpen(false)}
+                      className={`block px-4 py-3.5 rounded-xl text-sm font-medium transition-all ${
                         isActive 
-                          ? 'bg-zinc-800 text-white' 
-                          : 'text-zinc-400 hover:text-white hover:bg-zinc-800/50'
+                          ? 'bg-zinc-900 text-white border border-zinc-800' 
+                          : 'text-zinc-400 hover:text-white hover:bg-zinc-900/50 hover:pl-6'
                       }`}
                     >
                       {link.label}
@@ -197,14 +201,19 @@ export default function Navigation() {
               
               {/* Mobile Sign In */}
               <SignedOut>
-                <div className="p-4 border-t border-zinc-800">
+                <div className="p-4 mt-auto border-t border-zinc-800 bg-zinc-900/30">
                   <SignInButton mode="modal">
-                    <button className="w-full py-3 text-center text-zinc-300 hover:text-white transition-colors font-medium">
+                    <button className="w-full py-3.5 text-center bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 text-white rounded-xl font-semibold transition-all shadow-lg shadow-purple-900/20">
                       Sign In
                     </button>
                   </SignInButton>
                 </div>
               </SignedOut>
+              
+              {/* Mobile Footer Info */}
+              <div className="p-6 text-center">
+                <p className="text-xs text-zinc-600">© 2025 HatchIt.dev</p>
+              </div>
             </motion.div>
           </motion.div>
         )}
