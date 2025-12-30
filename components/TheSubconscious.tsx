@@ -44,8 +44,6 @@ export default function TheSubconscious() {
 
   useEffect(() => {
     let idleTimer: NodeJS.Timeout
-    let thoughtTimer: NodeJS.Timeout
-    let taskTimer: NodeJS.Timeout
 
     const resetIdle = () => {
       setIsIdle(false)
@@ -71,8 +69,6 @@ export default function TheSubconscious() {
       window.removeEventListener('click', resetIdle)
       window.removeEventListener('scroll', resetIdle)
       clearTimeout(idleTimer)
-      clearInterval(thoughtTimer)
-      clearInterval(taskTimer)
     }
   }, [])
 
