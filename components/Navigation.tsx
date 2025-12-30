@@ -8,6 +8,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { useState, useEffect } from 'react'
 import { SubscriptionBadge } from './SubscriptionIndicator'
 import { useSubscription } from '@/contexts/SubscriptionContext'
+import HatchLogo from './HatchLogo'
 
 export default function Navigation() {
   const pathname = usePathname()
@@ -50,10 +51,10 @@ export default function Navigation() {
               whileHover={{ scale: 1.1, rotate: 15 }}
               transition={{ type: 'spring', stiffness: 400, damping: 17 }}
             >
-              <Image src="/assets/logo.png" alt="HatchIt" width={36} height={36} className="w-9 h-9" />
+              <HatchLogo className="w-9 h-9" />
             </motion.div>
             <span className="text-xl font-bold group-hover:from-purple-400 group-hover:to-pink-400 transition-all duration-300">
-              <span className="text-white">Hatch</span><span className="bg-gradient-to-r from-amber-500 to-amber-400 bg-clip-text text-transparent">It</span>
+              <span className="text-white">Hatch</span><span className="bg-gradient-to-r from-emerald-500 to-emerald-400 bg-clip-text text-transparent">It</span>
             </span>
           </Link>
           

@@ -230,52 +230,55 @@ function AnimatedCard({ children, delay = 0, className = '' }: { children: React
   )
 }
 
-const demoCode = `export default function Hero() {
+const demoCode = `// The Architect v9.0
+export default function Singularity() {
+  const [reality, setReality] = useState('optimizing')
+  
   return (
-    <section className="min-h-screen bg-gradient-to-br from-slate-900 via-purple-900 to-slate-900">
-      <div className="max-w-6xl mx-auto px-6 py-24">
-        <h1 className="text-6xl font-bold text-white mb-6">
-          Build Something Amazing
-        </h1>
-        <p className="text-xl text-slate-300 mb-8">
-          Your vision, brought to life with AI.
-        </p>
-        <button className="px-8 py-4 bg-purple-600 hover:bg-purple-500 text-white rounded-xl font-semibold transition-all">
-          Get Started
-        </button>
-      </div>
-    </section>
+    <div className="neural-interface">
+      <DirectLine 
+        onVoiceInput={(intent) => {
+          // Latency: <16ms
+          const architecture = await generate(intent)
+          return <LivePreview code={architecture} />
+        }}
+      />
+      <SelfHealingBoundary>
+        {/* I fix my own runtime errors */}
+        <App />
+      </SelfHealingBoundary>
+    </div>
   )
 }`
 
 // Floating background elements
-function FloatingChicks() {
+function FloatingNodes() {
   const isClient = useIsClient()
   if (!isClient) return null
 
   return (
     <div className="absolute inset-0 overflow-hidden pointer-events-none select-none z-0">
-      {[...Array(6)].map((_, i) => (
+      {[...Array(12)].map((_, i) => (
         <motion.div
           key={i}
-          className="absolute text-2xl md:text-4xl opacity-[0.03]"
+          className="absolute text-emerald-500/10"
           initial={{ 
             x: Math.random() * 100 + '%', 
             y: Math.random() * 100 + '%' 
           }}
           animate={{ 
-            y: [0, -30, 0],
-            rotate: [0, 10, -10, 0],
-            scale: [1, 1.1, 1]
+            y: [0, -50, 0],
+            opacity: [0.1, 0.3, 0.1],
+            scale: [1, 1.5, 1]
           }}
           transition={{ 
-            duration: 5 + Math.random() * 5,
+            duration: 10 + Math.random() * 10,
             repeat: Infinity,
             delay: Math.random() * 5,
             ease: "easeInOut"
           }}
         >
-          🐣
+          <Code2 size={24 + Math.random() * 48} />
         </motion.div>
       ))}
     </div>
@@ -301,7 +304,7 @@ export default function Home() {
   
   return (
     <div className="min-h-screen bg-zinc-950 text-white relative">
-      <FloatingChicks />
+      <FloatingNodes />
       
       {/* Subtle gradient orb */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -340,13 +343,13 @@ export default function Home() {
           {/* Badge */}
           <div className="flex justify-center mb-8">
             <motion.div 
-              className="inline-flex items-center gap-2 px-3 sm:px-4 py-2 bg-zinc-900/80 border border-zinc-800 rounded-full"
+              className="inline-flex items-center gap-2 px-3 sm:px-4 py-2 bg-zinc-900/80 border border-emerald-500/30 rounded-full shadow-[0_0_15px_rgba(16,185,129,0.2)]"
               {...getAnimation(0, 20)}
             >
               <span className="flex h-2 w-2 flex-shrink-0">
                 <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500 animate-pulse"></span>
               </span>
-              <span className="text-xs sm:text-sm text-zinc-400 font-mono">HatchIt — The Architect</span>
+              <span className="text-xs sm:text-sm text-emerald-400 font-mono tracking-widest">SYSTEM_STATE: SINGULARITY</span>
             </motion.div>
           </div>
 
@@ -361,7 +364,7 @@ export default function Home() {
                 transition={{ duration: 0.5, delay: 0.1, ease: [0.25, 0.1, 0.25, 1] }}
                 viewport={{ once: true }}
               >
-                Describe it.
+                Don't just build.
               </motion.span>
               <motion.span 
                 className="block bg-gradient-to-r from-emerald-400 via-teal-400 to-cyan-400 bg-clip-text text-transparent pb-2"
@@ -371,17 +374,7 @@ export default function Home() {
                 transition={{ duration: 0.5, delay: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
                 viewport={{ once: true }}
               >
-                Watch it build.
-              </motion.span>
-              <motion.span 
-                className="block"
-                style={{ willChange: 'transform, opacity' }}
-                initial={reducedMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.3, ease: [0.25, 0.1, 0.25, 1] }}
-                viewport={{ once: true }}
-              >
-                Ship it.
+                Manifest.
               </motion.span>
             </h1>
           </div>
@@ -391,7 +384,7 @@ export default function Home() {
             className="text-center text-lg sm:text-xl md:text-2xl text-zinc-400 max-w-3xl mx-auto mb-8 leading-relaxed"
             {...getAnimation(0.2, 20)}
           >
-            <span>The AI architecture platform that generates <span className="text-white font-medium">production-grade</span> React code. Section by section. With full architectural control.</span>
+            <span>The first recursive AI Architect. It writes code, heals itself, and speaks your language. <span className="text-white font-medium">Welcome to the post-prompt era.</span></span>
           </motion.div>
 
           {/* CTAs */}

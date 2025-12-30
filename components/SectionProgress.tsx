@@ -2,6 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react'
 import Image from 'next/image'
+import HatchLogo from './HatchLogo'
 import { motion, AnimatePresence } from 'framer-motion'
 import { CheckCircle2, Layers, ChevronDown, Menu as MenuIcon, X, Clock, AlertCircle } from 'lucide-react'
 import { Template, BuildState } from '@/lib/templates'
@@ -47,19 +48,13 @@ const HatchLogoMenu = ({ progress, onGoHome, onStartOver, onViewBrand, brandConf
           }}
           transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
         >
-          <Image 
-            src="/assets/logo.png" 
-            alt="HatchIt" 
-            width={32} 
-            height={32} 
-            className="w-8 h-8"
-          />
+          <HatchLogo className="w-8 h-8" />
         </motion.div>
         
         {/* Logo text */}
         <span className="hidden sm:flex items-center text-base font-bold">
           <span className="text-white">Hatch</span>
-          <span className="bg-gradient-to-r from-amber-500 to-amber-400 bg-clip-text text-transparent">It</span>
+          <span className="bg-gradient-to-r from-emerald-500 to-emerald-400 bg-clip-text text-transparent">It</span>
         </span>
         
         {/* Progress indicator glow */}
