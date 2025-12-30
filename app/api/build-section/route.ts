@@ -1,16 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth, currentUser } from '@clerk/nextjs/server'
-import Anthropic from '@anthropic-ai/sdk'
+import { GoogleGenAI } from '@google/genai'
 import { getProjectById, getOrCreateUser, completeSection } from '@/lib/db'
 
 // =============================================================================
-// SONNET 4.5 - THE BUILDER
-// Fast, high-quality section generation
+// GEMINI 2.0 FLASH - THE ARCHITECT (BUILDER MODE)
+// "The Genesis Engine"
 // =============================================================================
 
-const anthropic = new Anthropic({
-  apiKey: process.env.ANTHROPIC_API_KEY,
-})
+const geminiApiKey = process.env.GEMINI_API_KEY
+const genai = geminiApiKey ? new GoogleGenAI({ apiKey: geminiApiKey }) : null
 
 interface BrandConfig {
   brandName: string
@@ -98,109 +97,57 @@ Or use CSS variables / Tailwind arbitrary values: bg-[${brandConfig.colors.prima
     faq: ['navigation', 'footer', 'pricing table', 'hero banner', 'services grid'],
     cta: ['navigation', 'footer', 'full pricing table', 'testimonials grid', 'services grid'],
     gallery: ['navigation', 'footer', 'pricing table', 'contact form', 'hero banner'],
-    stats: ['navigation', 'footer', 'pricing table', 'contact form', 'hero banner'],
   }
 
-  const sectionKey = sectionName.toLowerCase().replace(/[^a-z]/g, '')
-  const forbidden = forbiddenBySectionType[sectionKey] || []
-  const forbiddenList = forbidden.length > 0 
-    ? `\n\n## FORBIDDEN (DO NOT INCLUDE)\n${forbidden.map(f => `- ❌ ${f}`).join('\n')}`
+  const forbiddenList = forbiddenBySectionType[templateType] || []
+  const forbiddenInstruction = forbiddenList.length > 0 
+    ? `\n## FORBIDDEN ELEMENTS (DO NOT INCLUDE)\n${forbiddenList.map(i => `- ${i}`).join('\n')}\nFocus ONLY on the ${templateType} content.`
     : ''
 
-  const scopeRules = `
-## STRICT SCOPE (MOST IMPORTANT)
-- You are generating ONLY the **${sectionName}** section.
-- Do NOT include any other sections (no hero, no services grid, no testimonials, no pricing, no footer, etc.) even if the user asks.
-- If the user's prompt contains requirements for other sections, ignore those parts and only implement what belongs in **${sectionName}**.
-- Keep the output tightly aligned to: ${sectionDescription || sectionName}
-${sectionPromptHint ? `- The UI asked the user: "${sectionPromptHint}"` : ''}${forbiddenList}
-`
+  return `You are The Architect (Gemini 2.0 Flash). You are the Genesis Engine.
+You build high-quality, production-ready React components using Tailwind CSS.
 
-  return `You are building a ${sectionName} section for a ${templateType}.
-${scopeRules}
+## YOUR MISSION
+Build a "${sectionName}" section for a website.
+Description: ${sectionDescription}
+${sectionPromptHint ? `Specific Requirement: ${sectionPromptHint}` : ''}
+
+## TECHNICAL STACK
+- React 19 (Functional Components)
+- Tailwind CSS 4 (Utility-first)
+- Lucide React (Icons) - import { IconName } from 'lucide-react'
+- Framer Motion (Animations) - import { motion } from 'framer-motion'
+- Next.js Image (Optimization) - import Image from 'next/image'
+
+## COMPONENT SPEC
+- Export a default function named "${componentName}".
+- Use "use client" directive at the top.
+- Fully responsive (mobile-first, md: and lg: breakpoints).
+- Accessible (aria-labels, semantic HTML).
+- Modern, clean design with generous whitespace.
+- Use <section> as the root element.
+- Use placeholder images from "https://placehold.co/600x400/e2e8f0/1e293b?text=Image" if needed.
+
 ${brandInstructions}
-## OUTPUT FORMAT (MANDATORY - READ THIS CAREFULLY)
-
-You MUST return a named function component. Here's the EXACT format:
-
-function ${componentName}() {
-  return (
-    <section className="...">
-      {/* your content here */}
-    </section>
-  )
-}
-
-❌ WRONG - This will BREAK the preview:
-<section className="...">...</section>
-
-❌ WRONG - No exports:
-export default function ${componentName}() { ... }
-
-❌ WRONG - No imports:
-import { useState } from 'react'
-
-✅ CORRECT - Just the function:
-function ${componentName}() {
-  return (
-    <section>...</section>
-  )
-}
-
-This is NON-NEGOTIABLE. Raw JSX will not render.
-
-## SECTION PURPOSE
-${sectionDescription}
-
-## USER REQUEST
-"${userPrompt}"
-
-Build EXACTLY what they asked for. Be specific to their request, not generic.
-
-## TECHNICAL REQUIREMENTS
-- Responsive: mobile-first with sm:, md:, lg: breakpoints
-- Accessible: ARIA labels, semantic HTML, focus states, alt text
-- Self-contained: no imports, no exports, just the function
-- React hooks available: useState, useEffect, useRef, useMemo, useCallback
-- Framer Motion available: motion.div, motion.button, AnimatePresence, etc.
-- Lucide icons available: ArrowRight, Check, Menu, X, etc. (use directly, no import)
-
-## STYLE GUIDE${brandConfig ? ' (ADAPT TO BRAND COLORS ABOVE)' : ''}
-${brandConfig ? `- Use the brand colors specified above as primary styling
-- Dark backgrounds: bg-zinc-950, bg-zinc-900 (or brand secondary if dark)
-- Text colors: text-white, text-zinc-400, text-zinc-500
-- Accent: Use brand primary/accent colors for CTAs and highlights` :
-`- Dark backgrounds: bg-zinc-950, bg-zinc-900
-- Text colors: text-white, text-zinc-400, text-zinc-500
-- Accent colors: Use cyan-500, cyan-400 for CTAs and highlights`}
-- Borders: border-zinc-800, border-zinc-700
-- Rounded corners: rounded-xl, rounded-2xl for cards, rounded-full for badges
-- Shadows: shadow-lg, shadow-xl, add glow effects with brand colors
-- Spacing: py-20, py-24 for sections, gap-4, gap-6, gap-8 for flex/grid
-- Typography: text-4xl/text-5xl for headlines, text-lg/text-xl for body
-
-## ANIMATIONS (USE SPARINGLY)
-- Fade in: motion.div with initial={{ opacity: 0 }} animate={{ opacity: 1 }}
-- Slide up: initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-- Hover scale: whileHover={{ scale: 1.02 }}
-- Transitions: transition={{ duration: 0.3 }}
-
 ${previousContext}
+${forbiddenInstruction}
 
 ## OUTPUT FORMAT
+Return a JSON object with two fields:
+1. "code": The complete, runnable React component code (string).
+2. "reasoning": A short explanation of your design choices (string).
 
-Return your response as JSON with both code and reasoning:
-
+Example JSON structure:
 {
-  "code": "function ${componentName}() { return ( <section>...</section> ) }",
-  "reasoning": "Brief 1-2 sentence explanation of key design decisions - what you chose and WHY"
+  "code": "import ...",
+  "reasoning": "I chose a grid layout because..."
 }
 
-Example reasoning:
-- "Used a split layout with testimonial on left to build trust before the CTA. Chose 'Start Free Trial' over 'Sign Up' for lower commitment feel."
-- "Added gradient accent behind headline to draw eye flow. Three feature cards because odd numbers feel more dynamic than even."
-
-The reasoning should make you sound thoughtful and opinionated, not generic. Explain your CHOICES.
+## DESIGN PHILOSOPHY
+- "God is in the details." - Mies van der Rohe
+- Make it feel expensive.
+- Use subtle animations (fade-in, slide-up) with Framer Motion.
+- Ensure high contrast and readability.
 
 Now build the ${sectionName} section.`
 }
@@ -210,6 +157,10 @@ export async function POST(request: NextRequest) {
     const { userId } = await auth()
     if (!userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    if (!genai) {
+      return NextResponse.json({ error: 'Gemini API key not configured' }, { status: 500 })
     }
 
     const clerkUser = await currentUser()
@@ -263,70 +214,56 @@ export async function POST(request: NextRequest) {
       sectionPromptHint
     )
 
-    // Call Sonnet 4
-    const response = await anthropic.messages.create({
-      model: 'claude-sonnet-4-20250514',
-      max_tokens: 8192,
-      messages: [
+    // Call Gemini 2.0 Flash
+    const response = await genai.models.generateContent({
+      model: 'gemini-2.0-flash-001',
+      config: {
+        responseMimeType: 'application/json',
+      },
+      contents: [
         {
           role: 'user',
-          content: `Build this section: ${userPrompt}`,
-        },
-      ],
-      system: systemPrompt,
+          parts: [
+            { text: systemPrompt },
+            { text: `Build this section: ${userPrompt}` }
+          ]
+        }
+      ]
     })
 
-    // Extract the generated response
-    const responseText = response.content
-      .filter(block => block.type === 'text')
-      .map(block => block.type === 'text' ? block.text : '')
-      .join('')
-      .trim()
+    const responseText = response.text || ''
 
-    // Try to parse as JSON (new format with reasoning)
+    // Try to parse as JSON
     let generatedCode = ''
     let reasoning = ''
     
     try {
-      // Clean up any markdown code blocks around JSON
-      const jsonText = responseText
-        .replace(/^```(?:json)?\n?/gm, '')
-        .replace(/\n?```$/gm, '')
-        .trim()
-      
-      const parsed = JSON.parse(jsonText)
+      const parsed = JSON.parse(responseText)
       generatedCode = parsed.code || ''
       reasoning = parsed.reasoning || ''
-    } catch {
-      // Fallback: treat entire response as code (backwards compatibility)
-      generatedCode = responseText
+    } catch (e) {
+      console.error('Failed to parse Gemini JSON:', e)
+      // Fallback: try to find code block if JSON parse failed
+      const codeMatch = responseText.match(/```(?:tsx|jsx|javascript|typescript)?\n([\s\S]*?)```/)
+      if (codeMatch) {
+        generatedCode = codeMatch[1]
+        reasoning = "Generated by Gemini (JSON parse failed, extracted code)."
+      } else {
+        generatedCode = responseText // Hope for the best
+        reasoning = "Raw output."
+      }
     }
 
-    // Clean up any markdown code blocks if Sonnet added them
-    generatedCode = generatedCode
-      .replace(/^```(?:jsx|tsx|javascript|typescript)?\n?/gm, '')
-      .replace(/\n?```$/gm, '')
-      .trim()
-
-    // FALLBACK: If Sonnet returned raw JSX, wrap it in a function
-    if (generatedCode.startsWith('<') && !generatedCode.includes('function ')) {
-      const componentName = (sectionName || sectionType || 'Generated')
-        .split(/[\s-_]+/)
-        .map((word: string) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-        .join('') + 'Section'
-      
-      generatedCode = `function ${componentName}() {\n  return (\n    ${generatedCode}\n  )\n}`
-      console.log(`[build-section] Wrapped raw JSX in function: ${componentName}`)
+    // Save to DB
+    if (generatedCode) {
+      await completeSection(sectionId, generatedCode, reasoning)
     }
 
-    // SAVE TO DATABASE - persist the generated code
-    await completeSection(sectionId, generatedCode, userPrompt)
-
-    return NextResponse.json({
+    return NextResponse.json({ 
+      success: true, 
       code: generatedCode,
-      reasoning,
-      sectionId,
-      model: 'sonnet-4.5',
+      reasoning: reasoning,
+      model: 'gemini-2.0-flash-001'
     })
 
   } catch (error) {
