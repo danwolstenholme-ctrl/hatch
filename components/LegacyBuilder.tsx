@@ -1,5 +1,5 @@
 'use client'
-import { useState, useEffect, useRef, useMemo, useCallback, Suspense, useSyncExternalStore } from 'react'
+import { useState, useEffect, useRef, useMemo, useCallback, useSyncExternalStore } from 'react'
 import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
 import { useUser } from '@clerk/nextjs'
