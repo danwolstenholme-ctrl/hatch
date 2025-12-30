@@ -402,11 +402,9 @@ export default function Home() {
     <div className="min-h-screen bg-zinc-950 text-white relative">
       <FloatingChicks />
       
-      {/* Gradient orbs - simplified on mobile */}
+      {/* Subtle gradient orb */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -left-40 w-80 h-80 bg-purple-500/20 rounded-full blur-2xl md:blur-[100px]" />
-        <div className="absolute top-1/3 -right-40 w-96 h-96 bg-blue-500/15 rounded-full blur-2xl md:blur-[100px] hidden md:block" />
-        <div className="absolute -bottom-40 left-1/3 w-80 h-80 bg-pink-500/10 rounded-full blur-2xl md:blur-[100px] hidden md:block" />
+        <div className="absolute -top-40 -left-40 w-80 h-80 bg-purple-500/10 rounded-full blur-[100px]" />
       </div>
       
       {/* GPU-accelerated animations */}
@@ -441,23 +439,13 @@ export default function Home() {
           {/* Badge */}
           <div className="flex justify-center mb-8">
             <motion.div 
-              className="relative inline-flex items-center gap-2 px-3 sm:px-4 py-2 bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/20 rounded-full overflow-hidden gpu-accelerate"
+              className="inline-flex items-center gap-2 px-3 sm:px-4 py-2 bg-zinc-900/80 border border-zinc-800 rounded-full"
               {...getAnimation(0, 20)}
-              style={{ willChange: 'transform, opacity' }}
             >
-              {/* Shimmer effect */}
-              <motion.div
-                className="absolute inset-0 bg-gradient-to-r from-transparent via-amber-400/20 to-transparent -skew-x-12 shimmer-smooth"
-                initial={{ x: '-200%' }}
-                animate={{ x: '200%' }}
-                transition={{ duration: 3, repeat: Infinity, repeatDelay: 2, ease: 'easeInOut' }}
-                style={{ willChange: 'transform' }}
-              />
-              <span className="relative flex h-2 w-2 flex-shrink-0">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-amber-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-amber-500"></span>
+              <span className="flex h-2 w-2 flex-shrink-0">
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
               </span>
-              <span className="relative text-xs sm:text-sm text-amber-200/80 text-center">V3.0 — Section-by-section building is here 🥚</span>
+              <span className="text-xs sm:text-sm text-zinc-400">V3.0 — Section-by-section building</span>
             </motion.div>
           </div>
 
@@ -511,33 +499,22 @@ export default function Home() {
           >
             <motion.div
               style={{ willChange: 'transform' }}
-              whileHover={{ scale: 1.05 }}
+              whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               transition={{ type: 'spring', stiffness: 400, damping: 17 }}
             >
-              <Link href="/builder" className="group relative px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 rounded-xl font-bold text-lg flex items-center justify-center gap-2 overflow-hidden gpu-accelerate">
-                {/* Glow effect */}
-                <div
-                  className="absolute inset-0 bg-gradient-to-r from-purple-400 to-pink-400 opacity-0 group-hover:opacity-30 blur-xl transition-opacity duration-500"
-                />
-                <span className="relative">Start Building Free</span>
-                <motion.span 
-                  className="relative"
-                  style={{ willChange: 'transform' }}
-                  animate={{ x: [0, 5, 0] }}
-                  transition={{ duration: 1.5, repeat: Infinity, ease: 'easeInOut' }}
-                >
-                  →
-                </motion.span>
+              <Link href="/builder" className="px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 rounded-xl font-bold text-lg flex items-center justify-center gap-2 transition-colors">
+                <span>Start Building Free</span>
+                <span>→</span>
               </Link>
             </motion.div>
             <motion.div
               style={{ willChange: 'transform' }}
-              whileHover={{ scale: 1.05 }}
+              whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
               transition={{ type: 'spring', stiffness: 400, damping: 17 }}
             >
-              <Link href="/how-it-works" className="px-8 py-4 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 hover:border-purple-500/30 rounded-xl font-semibold text-lg transition-all flex items-center justify-center gap-2 gpu-accelerate">
+              <Link href="/how-it-works" className="px-8 py-4 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 rounded-xl font-semibold text-lg transition-colors flex items-center justify-center gap-2">
                 See How It Works
               </Link>
             </motion.div>
@@ -562,15 +539,14 @@ export default function Home() {
             </div>
           </motion.div>
 
-          {/* LIVE CODE DEMO - The showstopper */}
+          {/* LIVE CODE DEMO */}
           <motion.div 
             className="relative max-w-5xl mx-auto"
             initial={reducedMotion ? false : { opacity: 0, y: isMobile ? 20 : 40 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: isMobile ? 0.5 : 0.8, delay: isMobile ? 0.35 : 0.5, ease: [0.25, 0.1, 0.25, 1] }}
           >
-            <div className="absolute -inset-4 bg-gradient-to-r from-purple-500/20 via-pink-500/20 to-amber-500/20 rounded-3xl blur-xl" />
-            <div className="relative bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden shadow-2xl">
+            <div className="relative bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden shadow-xl">
               {/* Browser chrome */}
               <div className="bg-zinc-900 px-4 py-3 border-b border-zinc-800 flex items-center justify-between">
                 <div className="flex items-center gap-2">

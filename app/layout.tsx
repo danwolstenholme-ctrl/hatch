@@ -5,7 +5,6 @@ import ServiceWorkerRegistration from "@/components/ServiceWorkerRegistration";
 import CrispChat from "@/components/CrispChat";
 import ConditionalNavigation from "@/components/ConditionalNavigation";
 import { SubscriptionProvider } from "@/contexts/SubscriptionContext";
-import { TierGlowOverlay } from "@/components/SubscriptionIndicator";
 import "./globals.css";
 
 export const viewport: Viewport = {
@@ -79,7 +78,6 @@ export default function RootLayout({
           <SubscriptionProvider>
             <ServiceWorkerRegistration />
             <ConditionalNavigation />
-            <TierGlowOverlay />
             {children}
             <CrispChat />
             <Analytics />

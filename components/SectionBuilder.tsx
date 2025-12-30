@@ -668,7 +668,7 @@ export default function SectionBuilder({
             onChange={(e) => setPrompt(e.target.value)}
             disabled={stage !== 'input'}
             placeholder="Describe what you want for this section..."
-            className="min-h-[200px] max-h-[400px] bg-zinc-900/50 border border-zinc-800 rounded-xl p-4 text-white placeholder-zinc-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 disabled:opacity-50 no-swipe-navigation"
+            className="flex-1 min-h-[180px] bg-zinc-900/50 border border-zinc-800 rounded-xl p-4 text-white placeholder-zinc-600 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 disabled:opacity-50 no-swipe-navigation resize-none"
           />
 
           {/* Hatch - Your friendly prompt helper */}
