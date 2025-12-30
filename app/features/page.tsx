@@ -33,9 +33,6 @@ function useReducedMotion() {
 
 // Animated card that prevents hydration flash
 function AnimatedCard({ children, delay = 0, className = '', onClick }: { children: React.ReactNode; delay?: number; className?: string; onClick?: () => void }) {
-  const isClient = useIsClient()
-  if (!isClient) return <div className={className} onClick={onClick}>{children}</div>
-  
   return (
     <motion.div 
       className={className}

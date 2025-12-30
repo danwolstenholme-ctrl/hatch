@@ -35,7 +35,7 @@ export default function Navigation() {
         className={`sticky top-0 z-50 px-4 sm:px-6 transition-all duration-300 ${
           scrolled 
             ? 'py-3 bg-zinc-950/95 backdrop-blur-lg border-b border-zinc-800/50 shadow-lg' 
-            : 'py-4 sm:py-5 bg-zinc-950'
+            : 'py-3 sm:py-5 bg-zinc-950'
         }`}
         initial={false}
       >

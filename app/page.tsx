@@ -250,12 +250,10 @@ function Section({ children, className = '', id = '' }: { children: React.ReactN
   const ref = useRef(null)
   const isInView = useInView(ref, { once: true, margin: "-50px" })
   const reducedMotion = useReducedMotion()
-  const isMobile = useIsMobile()
   
-  // Mobile: lighter animation (less distance, faster)
-  // Desktop: full effect
-  const yOffset = isMobile ? 15 : 30
-  const duration = isMobile ? 0.35 : 0.5
+  // Standardized animation values to prevent hydration mismatch
+  const yOffset = 20
+  const duration = 0.4
   
   return (
     <motion.section
@@ -312,17 +310,16 @@ const demoCode = `export default function Hero() {
 
 export default function Home() {
   const reducedMotion = useReducedMotion()
-  const isMobile = useIsMobile()
   
-  // Animation config - lighter on mobile, full on desktop
+  // Animation config - standardized for consistency
   const getAnimation = (delay = 0, yOffset = 20) => {
     if (reducedMotion) return {}
     return {
-      initial: { opacity: 0, y: isMobile ? yOffset * 0.5 : yOffset },
+      initial: { opacity: 0, y: yOffset },
       animate: { opacity: 1, y: 0 },
       transition: { 
-        duration: isMobile ? 0.35 : 0.5, 
-        delay: isMobile ? delay * 0.7 : delay,
+        duration: 0.4, 
+        delay: delay,
         ease: [0.25, 0.1, 0.25, 1] as const // easeOut cubic bezier
       }
     }
@@ -471,9 +468,9 @@ export default function Home() {
           {/* LIVE CODE DEMO */}
           <motion.div 
             className="relative max-w-5xl mx-auto"
-            initial={reducedMotion ? false : { opacity: 0, y: isMobile ? 20 : 40 }}
+            initial={reducedMotion ? false : { opacity: 0, y: 30 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: isMobile ? 0.5 : 0.8, delay: isMobile ? 0.35 : 0.5, ease: [0.25, 0.1, 0.25, 1] }}
+            transition={{ duration: 0.6, delay: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
           >
             <div className="relative bg-zinc-900 border border-zinc-800 rounded-2xl overflow-hidden shadow-xl">
               {/* Browser chrome */}
