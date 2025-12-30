@@ -21,55 +21,55 @@ type WelcomeTier = 'free' | 'pro' | 'agency'
 // Tier-specific content and theming
 const tierConfig = {
   free: {
-    emoji: '🥚',
-    title: 'Welcome to the Nest!',
-    subtitle: "You're in. Let's build something amazing.",
-    description: "Start creating beautiful websites with AI. When you're ready to hatch your creations into the wild, upgrade to Pro.",
-    ctaText: 'Start Building',
+    emoji: '⚡',
+    title: 'Protocol: INITIATE',
+    subtitle: "Access granted. System resources allocated.",
+    description: "You have been granted basic access to the Architect's tools. Prove your worth to unlock higher functions.",
+    ctaText: 'Initialize Builder',
     ctaUrl: '/builder',
-    gradient: 'from-zinc-400 to-zinc-300',
+    gradient: 'from-zinc-600 to-zinc-400',
     accentColor: 'zinc',
     features: [
-      { icon: '🎨', text: '5 AI generations per day' },
-      { icon: '👀', text: 'Live preview your designs' },
-      { icon: '🏗️', text: 'Section-by-section building' },
-      { icon: '💡', text: 'Smart prompt assistance' },
+      { icon: '👁️', text: '5 Neural Generations/day' },
+      { icon: '🖥️', text: 'Live DOM Manipulation' },
+      { icon: '🧩', text: 'Component Assembly' },
+      { icon: '🤖', text: 'Basic Architect Guidance' },
     ],
   },
   pro: {
-    emoji: '🐣',
-    title: "You've Hatched!",
-    subtitle: 'Welcome to the Pro flock, creator.',
-    description: "You now have unlimited power to create, deploy, and share your websites with the world. Let's make something incredible.",
-    ctaText: 'Start Creating',
+    emoji: '🧠',
+    title: "Protocol: ARCHITECT",
+    subtitle: 'Full neural link established.',
+    description: "You are now one with the system. Create, deploy, and manifest without limits. The code obeys your thought.",
+    ctaText: 'Enter the Matrix',
     ctaUrl: '/builder',
-    gradient: 'from-purple-400 to-pink-400',
-    accentColor: 'purple',
+    gradient: 'from-emerald-500 to-teal-500',
+    accentColor: 'emerald',
     features: [
-      { icon: '∞', text: 'Unlimited AI generations' },
-      { icon: '🚀', text: 'Deploy to live URLs' },
-      { icon: '💻', text: 'Full code access & download' },
-      { icon: '🌐', text: 'Custom domain support' },
-      { icon: '🎨', text: 'Advanced brand customization' },
-      { icon: '⚡', text: 'Priority AI responses' },
+      { icon: '∞', text: 'Unlimited Neural Generations' },
+      { icon: '🚀', text: 'Direct-to-Edge Deployment' },
+      { icon: '💾', text: 'Full Source Export' },
+      { icon: '🌐', text: 'Custom Domain Binding' },
+      { icon: '🎨', text: 'Deep Style Injection' },
+      { icon: '⚡', text: 'Priority Kernel Access' },
     ],
   },
   agency: {
-    emoji: '🐔',
-    title: 'Welcome, Master Builder!',
-    subtitle: 'The golden tier. Maximum power unlocked.',
-    description: "You're now part of an elite group of creators. Build unlimited sites for clients, access white-label features, and scale your agency.",
-    ctaText: 'Enter the Studio',
+    emoji: '🔮',
+    title: 'Protocol: DEMIURGE',
+    subtitle: 'Reality distortion field active.',
+    description: "You build worlds for others. White-label the Architect and deploy fleets of sites. You are the system administrator.",
+    ctaText: 'Access Control Plane',
     ctaUrl: '/builder',
-    gradient: 'from-orange-400 to-amber-400',
-    accentColor: 'orange',
+    gradient: 'from-amber-400 to-orange-500',
+    accentColor: 'amber',
     features: [
-      { icon: '👑', text: 'Everything in Pro, plus...' },
-      { icon: '🏢', text: 'Unlimited client sites' },
-      { icon: '🏷️', text: 'White-label deployment' },
-      { icon: '📊', text: 'Priority support' },
-      { icon: '🔑', text: 'API access (coming soon)' },
-      { icon: '💼', text: 'Commercial license included' },
+      { icon: '👑', text: 'All Architect Privileges' },
+      { icon: '🏢', text: 'Unlimited Client Instances' },
+      { icon: '🏷️', text: 'White-Label Interface' },
+      { icon: '📊', text: 'Priority Support Line' },
+      { icon: '🔑', text: 'API Key Provisioning' },
+      { icon: '💼', text: 'Commercial Rights' },
     ],
   },
 }
@@ -78,53 +78,56 @@ const tierConfig = {
 function GoldenChicken() {
   return (
     <motion.div
-      initial={{ scale: 0, rotate: -20 }}
-      animate={{ scale: 1, rotate: 0 }}
+      initial={{ scale: 0 }}
+      animate={{ scale: 1 }}
       transition={{ type: 'spring', bounce: 0.5, delay: 0.3 }}
-      className="relative"
+      className="relative w-48 h-48 flex items-center justify-center"
     >
       {/* Subtle glow effect */}
-      <div className="absolute inset-0 blur-2xl bg-orange-500/20 rounded-full scale-125" />
+      <div className="absolute inset-0 blur-3xl bg-amber-500/20 rounded-full scale-150" />
       
-      {/* Main chicken */}
+      {/* Rotating Rings */}
+      <motion.div 
+        className="absolute inset-0 border-2 border-amber-500/30 rounded-full"
+        animate={{ rotate: 360 }}
+        transition={{ duration: 10, repeat: Infinity, ease: "linear" }}
+      />
+      <motion.div 
+        className="absolute inset-4 border-2 border-amber-500/50 rounded-full border-dashed"
+        animate={{ rotate: -360 }}
+        transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
+      />
+
+      {/* Core */}
       <motion.div
-        animate={{ y: [0, -10, 0] }}
+        animate={{ scale: [1, 1.1, 1], opacity: [0.8, 1, 0.8] }}
         transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
-        className="relative text-9xl"
-        style={{ filter: 'drop-shadow(0 0 20px rgba(251, 191, 36, 0.3))' }}
+        className="relative z-10"
       >
-        🐔
+        <div className="text-6xl">🔮</div>
       </motion.div>
       
-      {/* Crown */}
-      <motion.div
-        initial={{ y: -20, opacity: 0 }}
-        animate={{ y: 0, opacity: 1 }}
-        transition={{ delay: 0.8, type: 'spring', bounce: 0.6 }}
-        className="absolute -top-8 left-1/2 -translate-x-1/2 text-5xl"
-      >
-        👑
-      </motion.div>
-      
-      {/* Sparkles around chicken */}
+      {/* Orbiting Particles */}
       {[...Array(6)].map((_, i) => (
         <motion.div
           key={i}
-          className="absolute text-2xl"
-          initial={{ opacity: 0, scale: 0 }}
-          animate={{ opacity: [0, 1, 0], scale: [0.5, 1, 0.5] }}
+          className="absolute w-2 h-2 bg-amber-400 rounded-full"
+          animate={{ rotate: 360 }}
           transition={{
-            duration: 1.5,
+            duration: 3,
             repeat: Infinity,
-            delay: i * 0.3,
+            delay: i * 0.5,
+            ease: "linear"
           }}
           style={{
-            top: `${20 + Math.sin(i * 60 * Math.PI / 180) * 50}%`,
-            left: `${50 + Math.cos(i * 60 * Math.PI / 180) * 60}%`,
+            transformOrigin: "center center",
+            top: "50%",
+            left: "50%",
+            marginTop: "-1px",
+            marginLeft: "-1px",
+            transform: `rotate(${i * 60}deg) translateX(60px)`
           }}
-        >
-          ✨
-        </motion.div>
+        />
       ))}
     </motion.div>
   )
@@ -134,17 +137,31 @@ function GoldenChicken() {
 function ProHatchCharacter() {
   return (
     <motion.div
-      initial={{ scale: 0, rotate: -20 }}
-      animate={{ scale: 1, rotate: 0 }}
+      initial={{ scale: 0 }}
+      animate={{ scale: 1 }}
       transition={{ type: 'spring', bounce: 0.5, delay: 0.3 }}
-      className="relative"
+      className="relative w-48 h-48 flex items-center justify-center"
     >
-      {/* Subtle purple glow */}
-      <div className="absolute inset-0 blur-2xl bg-purple-500/20 rounded-full scale-125" />
+      {/* Subtle glow */}
+      <div className="absolute inset-0 blur-3xl bg-emerald-500/20 rounded-full scale-150" />
+      
+      {/* Rotating Rings */}
+      <motion.div 
+        className="absolute inset-0 border border-emerald-500/30 rounded-full"
+        animate={{ rotate: 360 }}
+        transition={{ duration: 20, repeat: Infinity, ease: "linear" }}
+      />
       
       <motion.div
         animate={{ y: [0, -10, 0] }}
         transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
+        className="relative z-10"
+      >
+        <div className="text-6xl">🧠</div>
+      </motion.div>
+    </motion.div>
+  )
+}
         className="relative"
       >
         <HatchCharacter state="excited" size="xl" />

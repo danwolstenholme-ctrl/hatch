@@ -7,37 +7,40 @@ import { motion } from 'framer-motion'
 
 export default function VisionPage() {
   return (
-    <main className="min-h-screen bg-zinc-950 text-white">
+    <main className="min-h-screen bg-black text-white overflow-hidden">
+      {/* Matrix/Grid Background */}
+      <div className="absolute inset-0 bg-[linear-gradient(rgba(16,185,129,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(16,185,129,0.03)_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none" />
+
       {/* Gradient orbs */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -left-40 w-80 h-80 bg-purple-500/20 rounded-full blur-[100px] opacity-50 md:opacity-100" />
-        <div className="absolute top-1/3 -right-40 w-96 h-96 bg-blue-500/15 rounded-full blur-[100px] opacity-50 md:opacity-100" />
-        <div className="absolute -bottom-40 left-1/3 w-80 h-80 bg-pink-500/10 rounded-full blur-[100px] opacity-50 md:opacity-100" />
+        <div className="absolute -top-40 -left-40 w-80 h-80 bg-emerald-500/10 rounded-full blur-[100px] opacity-50 md:opacity-100" />
+        <div className="absolute top-1/3 -right-40 w-96 h-96 bg-teal-500/10 rounded-full blur-[100px] opacity-50 md:opacity-100" />
+        <div className="absolute -bottom-40 left-1/3 w-80 h-80 bg-emerald-900/20 rounded-full blur-[100px] opacity-50 md:opacity-100" />
       </div>
 
       {/* Hero */}
-      <section className="relative px-6 pt-20 pb-24 text-center">
+      <section className="relative px-6 pt-20 pb-24 text-center z-10">
         <div className="max-w-3xl mx-auto">
           <motion.div
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-purple-500/10 border border-purple-500/20 text-purple-300 text-sm mb-8"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-sm mb-8 font-mono"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
           >
-            <span className="text-lg">🚀</span>
-            <span>2026 → 2028</span>
+            <span className="text-lg animate-pulse">●</span>
+            <span>PROTOCOL: EVOLUTION</span>
           </motion.div>
           
           <motion.h1 
-            className="text-5xl md:text-7xl font-bold mb-6 leading-tight"
+            className="text-5xl md:text-7xl font-bold mb-6 leading-tight tracking-tight"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.1 }}
           >
             The Vision for
             <br />
-            <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-amber-400 bg-clip-text text-transparent">
-              Autonomous Development
+            <span className="bg-gradient-to-r from-emerald-400 via-teal-400 to-emerald-600 bg-clip-text text-transparent">
+              The Singularity
             </span>
           </motion.h1>
           
@@ -47,7 +50,7 @@ export default function VisionPage() {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
           >
-            From AI-powered site builder to autonomous web development. This is where we're going—and we're moving fast.
+            We are not building a website builder. We are building an Architect. A recursive, self-improving system that renders human intent into digital reality.
           </motion.p>
           
           <motion.div 
@@ -57,10 +60,10 @@ export default function VisionPage() {
             transition={{ delay: 0.4 }}
           >
             <Link 
-              href="/roadmap"
-              className="text-sm text-zinc-500 hover:text-zinc-300 transition underline underline-offset-4"
+              href="/audit"
+              className="text-sm text-emerald-500 hover:text-emerald-400 transition underline underline-offset-4 font-mono"
             >
-              See what we've shipped recently →
+              View the Manifesto →
             </Link>
           </motion.div>
         </div>
