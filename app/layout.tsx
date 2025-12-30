@@ -44,7 +44,7 @@ export const metadata: Metadata = {
     description: 'The AI website builder that writes real React code. Not drag-and-drop. Real code you own. Built with Claude Sonnet 4.',
     images: [
       {
-        url: '/assets/og-1200x630.svg',
+        url: '/assets/og-1200x630.png',
         width: 1200,
         height: 630,
         alt: 'HatchIt — AI Website Builder That Writes Real Code',
@@ -57,7 +57,7 @@ export const metadata: Metadata = {
     creator: '@HatchItD',
     title: 'HatchIt — Describe it. Watch it build. Ship it. 🐣',
     description: 'The AI website builder that writes real React code. Not drag-and-drop garbage. Real code you own.',
-    images: ['/banner-og.svg'],
+    images: ['/assets/og-1200x630.png'],
   },
   robots: {
     index: true,

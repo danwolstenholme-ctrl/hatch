@@ -69,8 +69,11 @@ function getSnapshot() {
   return eligibilityState
 }
 
+// Cached server snapshot to avoid infinite loop
+const serverSnapshot: AnalyticsEligibilityState = { status: 'blocked' }
+
 function getServerSnapshot(): AnalyticsEligibilityState {
-  return { status: 'blocked' }
+  return serverSnapshot
 }
 
 export default function ConditionalAnalytics() {

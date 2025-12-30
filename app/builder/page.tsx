@@ -2800,9 +2800,8 @@ function LegacyBuilder() {
     )
   }
 
-  if (isMobile) {
-    return (
-      <div className="h-dvh bg-zinc-950 flex flex-col overflow-hidden relative">
+  const mobileLayout = (
+    <div className="md:hidden h-dvh bg-zinc-950 flex flex-col overflow-hidden relative">
         {!isLoadingProjects && !isDeployed && (
           <div className="absolute top-0 left-0 right-0 bg-blue-500/20 border-b border-blue-400/30 text-blue-100 text-xs px-3 py-2 z-50">
             <div className="flex items-center gap-2">
@@ -3185,10 +3184,11 @@ function LegacyBuilder() {
         </div>
       </div>
     )
-  }
 
   return (
-    <div className="h-dvh bg-gradient-to-br from-zinc-950 via-zinc-900 to-zinc-950 p-3 overflow-hidden relative">
+    <>
+      {mobileLayout}
+      <div className="hidden md:block h-dvh bg-gradient-to-br from-zinc-950 via-zinc-900 to-zinc-950 p-3 overflow-hidden relative">
       {!isLoadingProjects && !isDeployed && (
         <div className="absolute top-3 left-3 right-3 bg-blue-500/20 border-b border-blue-400/30 text-blue-100 text-xs px-4 py-2 rounded-t-2xl z-50">
           <div className="flex items-center gap-2">
@@ -3504,5 +3504,6 @@ function LegacyBuilder() {
       </Group>
       </div>
     </div>
+    </>
   )
 }

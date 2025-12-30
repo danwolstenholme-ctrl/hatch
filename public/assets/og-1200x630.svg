@@ -1,59 +1,74 @@
 <svg width="1200" height="630" viewBox="0 0 1200 630" fill="none" xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <!-- Embed Inter font from Google -->
-    <style type="text/css">
-      @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;700&amp;display=swap');
-    </style>
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#09090b"/>
+      <stop offset="50%" stop-color="#18181b"/>
+      <stop offset="100%" stop-color="#09090b"/>
+    </linearGradient>
     
-    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
-      <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#18181b" stroke-width="1"/>
-    </pattern>
-    
-    <radialGradient id="purpleGlow" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
+    <radialGradient id="purpleGlow" cx="50%" cy="50%" r="50%">
       <stop offset="0%" stop-color="#a855f7" stop-opacity="0.4"/>
-      <stop offset="50%" stop-color="#7c3aed" stop-opacity="0.15"/>
+      <stop offset="40%" stop-color="#a855f7" stop-opacity="0.15"/>
       <stop offset="100%" stop-color="#09090b" stop-opacity="0"/>
     </radialGradient>
     
-    <linearGradient id="textGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#ffffff"/>
-      <stop offset="100%" stop-color="#e4e4e7"/>
+    <radialGradient id="pinkGlow" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#ec4899" stop-opacity="0.3"/>
+      <stop offset="100%" stop-color="#09090b" stop-opacity="0"/>
+    </radialGradient>
+    
+    <linearGradient id="gold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fcd34d"/>
+      <stop offset="50%" stop-color="#fbbf24"/>
+      <stop offset="100%" stop-color="#f59e0b"/>
     </linearGradient>
+    
+    <linearGradient id="amberGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#fbbf24"/>
+      <stop offset="100%" stop-color="#f59e0b"/>
+    </linearGradient>
+    
+    <filter id="glow" x="-50%" y="-50%" width="200%" height="200%">
+      <feGaussianBlur stdDeviation="20" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
   </defs>
   
-  <!-- Background -->
-  <rect width="1200" height="630" fill="#09090b"/>
+  <rect width="1200" height="630" fill="url(#bgGradient)"/>
   
-  <!-- Grid overlay -->
-  <rect width="1200" height="630" fill="url(#grid)" opacity="0.5"/>
+  <ellipse cx="600" cy="280" rx="350" ry="300" fill="url(#purpleGlow)" filter="url(#glow)"/>
+  <ellipse cx="500" cy="350" rx="200" ry="180" fill="url(#pinkGlow)"/>
   
-  <!-- Purple glow behind logo area -->
-  <ellipse cx="600" cy="280" rx="300" ry="250" fill="url(#purpleGlow)"/>
+  <circle cx="350" cy="150" r="4" fill="#a855f7" opacity="0.8"/>
+  <circle cx="850" cy="180" r="3" fill="#ec4899" opacity="0.7"/>
+  <circle cx="280" cy="400" r="2" fill="#fbbf24" opacity="0.6"/>
+  <circle cx="920" cy="350" r="3" fill="#a855f7" opacity="0.5"/>
+  <circle cx="400" cy="500" r="2" fill="#ec4899" opacity="0.4"/>
+  <circle cx="800" cy="480" r="4" fill="#fbbf24" opacity="0.6"/>
   
-  <!-- Logo circle background -->
-  <circle cx="600" cy="240" r="120" fill="#18181b" stroke="#27272a" stroke-width="2"/>
+  <g transform="translate(600, 260)">
+    <ellipse cx="0" cy="20" rx="120" ry="140" fill="url(#purpleGlow)" opacity="0.5"/>
+    <ellipse cx="0" cy="20" rx="85" ry="105" fill="url(#gold)"/>
+    <path d="M-35 -25 L-15 0 L-35 25" stroke="#09090b" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M35 -25 L15 0 L35 25" stroke="#09090b" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    <path d="M-20 -70 L0 -50 L20 -70" stroke="#09090b" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+    <circle cx="100" cy="-60" r="6" fill="#a855f7"/>
+    <circle cx="-90" cy="-40" r="4" fill="#ec4899"/>
+    <circle cx="80" cy="80" r="3" fill="#fbbf24"/>
+  </g>
   
-  <!-- Chick emoji - Replace with logo in Figma -->
-  <text x="600" y="270" font-size="140" text-anchor="middle" dominant-baseline="middle">🐣</text>
+  <text x="600" y="480" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-weight="700" font-size="72">
+    <tspan fill="#ffffff">Hatch</tspan><tspan fill="url(#amberGradient)">It</tspan>
+  </text>
   
-  <!-- HatchIt text -->
-  <text x="600" y="420" font-family="Inter, system-ui, sans-serif" font-size="72" font-weight="700" fill="url(#textGradient)" text-anchor="middle">HatchIt</text>
+  <text x="600" y="540" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-weight="400" font-size="28" fill="#a1a1aa">
+    Describe it. Watch it build. Ship it.
+  </text>
   
-  <!-- Tagline -->
-  <text x="600" y="480" font-family="Inter, system-ui, sans-serif" font-size="28" font-weight="400" fill="#a1a1aa" text-anchor="middle">Describe it. Watch it build. Ship it.</text>
-  
-  <!-- Subtitle -->
-  <text x="600" y="520" font-family="Inter, system-ui, sans-serif" font-size="20" font-weight="400" fill="#71717a" text-anchor="middle">AI website builder that writes real React code</text>
-  
-  <!-- Decorative sparkles -->
-  <circle cx="420" cy="180" r="3" fill="#a855f7" opacity="0.8"/>
-  <circle cx="780" cy="200" r="2" fill="#a855f7" opacity="0.6"/>
-  <circle cx="450" cy="300" r="2" fill="#c084fc" opacity="0.5"/>
-  <circle cx="750" cy="280" r="3" fill="#c084fc" opacity="0.7"/>
-  <circle cx="500" cy="150" r="2" fill="#e879f9" opacity="0.4"/>
-  <circle cx="700" cy="160" r="2" fill="#e879f9" opacity="0.5"/>
-  
-  <!-- Corner accents -->
-  <path d="M0 0 L80 0 L0 80 Z" fill="#a855f7" opacity="0.1"/>
-  <path d="M1200 630 L1120 630 L1200 550 Z" fill="#a855f7" opacity="0.1"/>
+  <text x="600" y="590" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-weight="500" font-size="20" fill="#71717a">
+    hatchit.dev
+  </text>
 </svg>
