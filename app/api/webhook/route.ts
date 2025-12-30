@@ -146,11 +146,16 @@ export async function POST(req: Request) {
         try {
           const stripe = getStripe()
           const client = await clerkClient()
+          
+          console.log(`Processing account_subscription: tier=${tier}, userId=${userId}, subscriptionId=${subscriptionId}`)
+          
           const user = await client.users.getUser(userId)
+          console.log(`Found Clerk user: ${user.id}`)
           
           // Get subscription details for period end
           const subscriptionResponse = await stripe.subscriptions.retrieve(subscriptionId)
           const periodEnd = (subscriptionResponse as unknown as { current_period_end: number }).current_period_end
+          console.log(`Retrieved subscription, periodEnd: ${periodEnd}`)
           
           const accountSubscription: AccountSubscription = {
             tier,
@@ -177,7 +182,13 @@ export async function POST(req: Request) {
           // Track subscription event
           await track('Account Subscription Created', { tier })
         } catch (err) {
-          console.error('Failed to create account subscription:', err)
+          console.error('❌ Failed to create account subscription:', err)
+          // Return error so we can see it in Stripe dashboard
+          return NextResponse.json({ 
+            received: true, 
+            error: 'Failed to process subscription',
+            details: err instanceof Error ? err.message : 'Unknown error'
+          }, { status: 200 }) // Still 200 so Stripe doesn't retry endlessly
         }
       }
       return NextResponse.json({ received: true })
