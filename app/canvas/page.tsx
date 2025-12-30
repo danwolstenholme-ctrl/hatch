@@ -126,11 +126,11 @@ export default function CanvasPage() {
   const strokeWidths = [1, 2, 3, 5, 8, 12]
 
   // Toast notification
-  const showToastNotification = (message: string) => {
+  const showToastNotification = useCallback((message: string) => {
     setToastMessage(message)
     setShowToast(true)
     setTimeout(() => setShowToast(false), 2000)
-  }
+  }, [])
 
   // History management
   const saveToHistory = useCallback(() => {
@@ -149,7 +149,7 @@ export default function CanvasPage() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  const undo = () => {
+  const undo = useCallback(() => {
     if (historyIndex > 0) {
       const prevState = history[historyIndex - 1]
       setPaths(prevState.paths)
@@ -159,9 +159,9 @@ export default function CanvasPage() {
       setSelectedElement(null)
       setSelectedElementType(null)
     }
-  }
+  }, [history, historyIndex])
 
-  const redo = () => {
+  const redo = useCallback(() => {
     if (historyIndex < history.length - 1) {
       const nextState = history[historyIndex + 1]
       setPaths(nextState.paths)
@@ -169,7 +169,7 @@ export default function CanvasPage() {
       setTexts(nextState.texts)
       setHistoryIndex(historyIndex + 1)
     }
-  }
+  }, [history, historyIndex])
 
   // Get canvas coordinates from event
   const getCanvasPoint = (clientX: number, clientY: number): Point => {
@@ -545,7 +545,7 @@ export default function CanvasPage() {
   }
 
   // Delete selected
-  const deleteSelected = () => {
+  const deleteSelected = useCallback(() => {
     if (selectedElement !== null && selectedElementType) {
       if (selectedElementType === 'path') {
         setPaths(prev => prev.filter((_, i) => i !== selectedElement))
@@ -559,7 +559,7 @@ export default function CanvasPage() {
       setTimeout(saveToHistory, 0)
       showToastNotification('Deleted')
     }
-  }
+  }, [selectedElement, selectedElementType, saveToHistory, showToastNotification])
 
   // Export as PNG
   const exportAsPNG = () => {

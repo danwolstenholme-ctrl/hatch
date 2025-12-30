@@ -126,7 +126,10 @@ export function useProjects(): UseProjectsReturn {
   // Derived state
   const currentProject = projects.find(p => p.id === currentProjectId)
   const currentPage = currentProject ? getCurrentPage(currentProject) : null
-  const versions = currentPage?.versions || currentProject?.versions || []
+  const versions = useMemo(
+    () => currentPage?.versions || currentProject?.versions || [],
+    [currentPage?.versions, currentProject?.versions]
+  )
   const currentVersionIndex = currentPage?.currentVersionIndex ?? currentProject?.currentVersionIndex ?? -1
   const code = versions[currentVersionIndex]?.code || ''
   

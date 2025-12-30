@@ -224,7 +224,7 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
   const [isCreatingProject, setIsCreatingProject] = useState(false)
 
   // Check for existing project on mount (from URL or localStorage)
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+  // Intentionally omits phase/loadExistingProject/forceDemoMode from deps to avoid re-running
   useEffect(() => {
     // Skip if we're currently creating a project
     if (isCreatingProject) {
@@ -250,6 +250,7 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
         loadExistingProject(savedProjectId)
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [existingProjectId, justCreatedProjectId, isCreatingProject])
 
   const loadExistingProject = async (projectId: string) => {

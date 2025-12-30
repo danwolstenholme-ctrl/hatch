@@ -337,7 +337,8 @@ export default function SectionBuilder({
     }
   }, [stage, section.id])
 
-  // Reset when section changes
+  // Reset when section changes - intentionally only depends on dbSection.id
+  // We read the current dbSection values inside the effect, not as reactive deps
   useEffect(() => {
     setPrompt(dbSection.user_prompt || '')
     setStage(dbSection.status === 'complete' ? 'complete' : 'input')
@@ -355,7 +356,8 @@ export default function SectionBuilder({
     setHelperInput('')
     setGeneratedPrompt(null)
     setHatchState('idle')
-  }, [dbSection.id])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [dbSection.id]) // Only reset when switching to a different section
 
   // Auto-resize textarea to fit content
   useEffect(() => {

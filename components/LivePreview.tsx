@@ -144,6 +144,7 @@ function LivePreview({ code, pages, currentPageId, isLoading = false, loadingPro
     }
   }, [inspectorMode, iframeLoaded])
 
+  // Download trigger listener - intentionally stable to avoid re-registering
   useEffect(() => {
     const handleDownloadTrigger = () => {
       downloadZip()
@@ -151,7 +152,8 @@ function LivePreview({ code, pages, currentPageId, isLoading = false, loadingPro
     
     window.addEventListener('triggerDownload', handleDownloadTrigger)
     return () => window.removeEventListener('triggerDownload', handleDownloadTrigger)
-  }, [code, pages])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []) // Empty deps - downloadZip reads current state via closure
 
   const downloadZip = async () => {
     if (!isPaid) {
