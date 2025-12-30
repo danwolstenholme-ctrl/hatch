@@ -199,9 +199,6 @@ export default function VisualEditor({
   // Handle messages from iframe
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
-      if (event.data.type === 'element-hover') {
-        setHoveredElement(event.data.element)
-      }
       if (event.data.type === 'element-select') {
         setSelectedElement(event.data.element)
         onElementSelect?.(event.data.element)

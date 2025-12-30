@@ -1376,7 +1376,6 @@ export default function SectionBuilder({
           ) : (
             <SectionPreview 
               code={generatedCode} 
-              allSectionsCode={allSectionsCode}
               darkMode={true}
             />
           )}

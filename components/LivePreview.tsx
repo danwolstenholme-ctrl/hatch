@@ -161,7 +161,6 @@ function LivePreview({ code, pages, currentPageId, isLoading = false, loadingPro
       alert('Nothing to download: pages list is empty')
       return
     }
-    setIsDownloading(true)
 
     const decodeDataUrl = (dataUrl: string) => {
       const match = dataUrl.match(/^data:([^;]+);base64,(.*)$/)
@@ -327,7 +326,6 @@ The easiest way to deploy is with [Vercel](https://vercel.com):
           assetBytes += decoded.bytes.length
           if (assetBytes > 5_000_000) {
             alert('Assets exceed 5MB. Remove some files and try again.')
-            setIsDownloading(false)
             return
           }
           const safeName = sanitizeName(asset.name, 'asset')
@@ -400,8 +398,6 @@ export default function RootLayout({
     } catch (error) {
       console.error('Download failed:', error)
       alert('Failed to download project')
-    } finally {
-      setIsDownloading(false)
     }
   }
 
