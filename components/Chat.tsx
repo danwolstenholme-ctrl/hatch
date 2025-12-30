@@ -304,7 +304,12 @@ function Chat({ onGenerate, isGenerating, onStopGeneration, currentCode, isPaid 
         </div>
       )}
 
-      <div className="flex-1 overflow-y-auto p-3 space-y-3">
+      <div 
+        className="flex-1 overflow-y-auto p-3 space-y-3"
+        role="log"
+        aria-live="polite"
+        aria-atomic="false"
+      >
         {/* Mode toggle */}
         <div className="flex items-center gap-1 p-1 bg-zinc-900/95 backdrop-blur-md rounded-xl sticky top-0 z-10 mb-2 border border-zinc-800/50 shadow-xl shadow-black/20">
           <button

@@ -25,7 +25,7 @@ export default function BuilderLoading() {
           <div className="h-full bg-gradient-to-r from-purple-500 to-pink-500 rounded-full animate-pulse loading-bar" />
         </div>
         
-        <p className="text-zinc-500 text-sm">Loading builder...</p>
+        <p className="text-zinc-400 font-medium text-sm">Loading builder...</p>
       </div>
       
       <style jsx>{`

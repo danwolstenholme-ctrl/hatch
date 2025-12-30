@@ -42,9 +42,7 @@ export default function Navigation() {
             ? 'py-3 bg-zinc-950/95 backdrop-blur-lg border-b border-zinc-800/50 shadow-lg' 
             : 'py-4 sm:py-5 bg-zinc-950'
         }`}
-        initial={{ y: -100 }}
-        animate={{ y: 0 }}
-        transition={{ duration: 0.3 }}
+        initial={false}
       >
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           {/* Logo */}
