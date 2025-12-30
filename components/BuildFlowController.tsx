@@ -26,7 +26,9 @@ import {
   Share2,
   Edit3,
   Plus,
-  Terminal
+  Terminal,
+  ArrowRight,
+  Copy
 } from 'lucide-react'
 import TemplateSelector from './TemplateSelector'
 import BrandingStep, { BrandConfig } from './BrandingStep'
