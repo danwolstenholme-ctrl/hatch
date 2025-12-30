@@ -165,34 +165,6 @@ function ProHatchCharacter() {
     </motion.div>
   )
 }
-        className="relative"
-      >
-        <HatchCharacter state="excited" size="xl" />
-      </motion.div>
-      
-      {/* Sparkles */}
-      {[...Array(4)].map((_, i) => (
-        <motion.div
-          key={i}
-          className="absolute text-xl"
-          initial={{ opacity: 0, scale: 0 }}
-          animate={{ opacity: [0, 1, 0], scale: [0.5, 1, 0.5] }}
-          transition={{
-            duration: 1.5,
-            repeat: Infinity,
-            delay: i * 0.4,
-          }}
-          style={{
-            top: `${20 + Math.sin(i * 90 * Math.PI / 180) * 40}%`,
-            left: `${50 + Math.cos(i * 90 * Math.PI / 180) * 50}%`,
-          }}
-        >
-          💜
-        </motion.div>
-      ))}
-    </motion.div>
-  )
-}
 
 // Free tier friendly egg
 function FreeEgg() {
