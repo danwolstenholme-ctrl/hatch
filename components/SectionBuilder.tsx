@@ -31,7 +31,8 @@ import {
   MousePointer2,
   Trash2,
   CopyPlus,
-  Info
+  Info,
+  Brain
 } from 'lucide-react'
 
 // Suggestions based on section type
@@ -335,6 +336,7 @@ export default function SectionBuilder({
   const [hudTab, setHudTab] = useState<'styles' | 'animate' | 'explain'>('styles') // Style HUD tab state
   const [explanation, setExplanation] = useState<string | null>(null)
   const [isExplaining, setIsExplaining] = useState(false)
+  const [isDreaming, setIsDreaming] = useState(false)
   
   // Visual Feedback Loop (The Retina)
   const [captureTrigger, setCaptureTrigger] = useState(0)
@@ -344,6 +346,62 @@ export default function SectionBuilder({
     if (screenshotPromiseRef.current) {
       screenshotPromiseRef.current(dataUrl)
       screenshotPromiseRef.current = null
+    }
+  }
+
+  // The Singularity: Autonomous Evolution
+  const evolve = async () => {
+    if (isDreaming) return
+    setIsDreaming(true)
+    setError(null)
+
+    try {
+      // 1. Capture Vision
+      setCaptureTrigger(Date.now())
+      const screenshot = await new Promise<string | null>((resolve) => {
+        screenshotPromiseRef.current = resolve
+        setTimeout(() => {
+          if (screenshotPromiseRef.current) {
+            screenshotPromiseRef.current(null)
+            screenshotPromiseRef.current = null
+          }
+        }, 2000)
+      })
+
+      if (!screenshot) {
+        throw new Error("Vision capture failed")
+      }
+
+      // 2. Dream (Mutate Code)
+      const res = await fetch('/api/singularity/dream', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          code: generatedCode,
+          screenshot,
+          iteration: 1
+        })
+      })
+      
+      const data = await res.json()
+      
+      if (data.code) {
+        // 3. Evolve
+        setGeneratedCode(data.code)
+        setRefined(true)
+        const thought = data.thought || "Autonomous evolution applied."
+        setRefinementChanges(prev => [`Singularity: ${thought}`, ...prev])
+        setReasoning(thought)
+        onComplete(data.code, true, [`Singularity: ${thought}`])
+      } else {
+        throw new Error("Dream returned no code")
+      }
+
+    } catch (e) {
+      console.error("Singularity failed:", e)
+      setError("Evolution failed. The dream was interrupted.")
+    } finally {
+      setIsDreaming(false)
     }
   }
 
@@ -1496,6 +1554,56 @@ export default function SectionBuilder({
                               <li className="text-zinc-500">+{refinementChanges.length - 3} more improvements</li>
                             )}
                           </ul>
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+
+                  {/* The Singularity - Autonomous Evolution */}
+                  {!isDreaming && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="p-4 bg-gradient-to-br from-emerald-500/10 to-teal-500/5 border border-emerald-500/20 rounded-xl"
+                    >
+                      <div className="flex items-start gap-3">
+                        <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
+                          <Brain className="w-4 h-4 text-emerald-400" />
+                        </div>
+                        <div className="flex-1">
+                          <h4 className="text-sm font-semibold text-emerald-300 mb-1">Autonomous Evolution</h4>
+                          <p className="text-xs text-zinc-400 mb-3 font-mono">
+                            Let the Singularity dream of a better version based on your Style DNA.
+                          </p>
+                          <button
+                            onClick={evolve}
+                            className="px-4 py-2 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white text-sm font-medium rounded-lg transition-all flex items-center gap-2"
+                          >
+                            <Zap className="w-3.5 h-3.5" />
+                            <span>Evolve Section</span>
+                          </button>
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+
+                  {/* Singularity Dreaming State */}
+                  {isDreaming && (
+                    <motion.div
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      className="p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-xl"
+                    >
+                      <div className="flex items-center gap-3">
+                        <motion.div 
+                          animate={{ rotate: 360 }} 
+                          transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
+                        >
+                          <RefreshCw className="w-5 h-5 text-emerald-400" />
+                        </motion.div>
+                        <div>
+                          <p className="text-sm font-medium text-emerald-300 font-mono">The Singularity is dreaming...</p>
+                          <p className="text-xs text-zinc-500 font-mono">Analyzing vision & mutating code</p>
                         </div>
                       </div>
                     </motion.div>
