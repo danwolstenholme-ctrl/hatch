@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { auth, clerkClient, currentUser } from '@clerk/nextjs/server'
 import Anthropic from '@anthropic-ai/sdk'
 import { PRO_OPUS_MONTHLY_LIMIT, AccountSubscription } from '@/types/subscriptions'
-import { getProjectById, getSectionById, getOrCreateUser } from '@/lib/db'
+import { getProjectById, getSectionById, getOrCreateUser, updateSectionRefinement } from '@/lib/db'
 
 // =============================================================================
 // OPUS 4.5 - THE REFINER
@@ -263,6 +263,11 @@ ${code}`
         console.error('[refine-section] Failed to update Opus usage:', updateError)
         // Don't fail the request, just log
       }
+    }
+
+    // SAVE TO DATABASE - persist the refined code
+    if (wasRefined) {
+      await updateSectionRefinement(sectionId, true, refinedCode, changes)
     }
 
     return NextResponse.json({

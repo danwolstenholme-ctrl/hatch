@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth, currentUser } from '@clerk/nextjs/server'
 import Anthropic from '@anthropic-ai/sdk'
-import { getProjectById, getOrCreateUser } from '@/lib/db'
+import { getProjectById, getOrCreateUser, completeSection } from '@/lib/db'
 
 // =============================================================================
 // SONNET 4.5 - THE BUILDER
@@ -279,6 +279,9 @@ export async function POST(request: NextRequest) {
       generatedCode = `function ${componentName}() {\n  return (\n    ${generatedCode}\n  )\n}`
       console.log(`[build-section] Wrapped raw JSX in function: ${componentName}`)
     }
+
+    // SAVE TO DATABASE - persist the generated code
+    await completeSection(sectionId, generatedCode, userPrompt)
 
     return NextResponse.json({
       code: generatedCode,
