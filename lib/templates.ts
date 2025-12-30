@@ -18,6 +18,11 @@ export interface Template {
   description: string
   sections: Section[]
   isAdvanced?: boolean // For "Custom" mode
+  // New metadata for better UX
+  pageType: 'one-page' | 'multi-page' | 'flexible'
+  estimatedBuildTime: string // e.g., "3-5 min"
+  whatYouNeed: string[] // What info the user should have ready
+  bestFor: string[] // Who this template is ideal for
 }
 
 // =============================================================================
@@ -29,6 +34,16 @@ export const websiteTemplate: Template = {
   name: 'Website',
   icon: '🌐',
   description: 'A complete multi-page website. Perfect for businesses, agencies, and companies.',
+  pageType: 'multi-page',
+  estimatedBuildTime: '5-8 min',
+  whatYouNeed: [
+    'Your company/brand name',
+    'What you do (services, products)',
+    'Who your customers are',
+    'Any testimonials or client names',
+    'Contact details & social links',
+  ],
+  bestFor: ['Businesses', 'Agencies', 'Startups', 'Companies'],
   sections: [
     {
       id: 'header',
@@ -122,7 +137,17 @@ export const landingPageTemplate: Template = {
   id: 'landing-page',
   name: 'Landing Page',
   icon: '🚀',
-  description: 'Perfect for SaaS, products, services, or any business that needs to convert visitors.',
+  description: 'A single-page site focused on one goal. Great for launches and campaigns.',
+  pageType: 'one-page',
+  estimatedBuildTime: '3-5 min',
+  whatYouNeed: [
+    'Your product/service name',
+    'The main benefit you offer',
+    '3-6 key features',
+    'Pricing (if applicable)',
+    'What action visitors should take',
+  ],
+  bestFor: ['SaaS products', 'App launches', 'Services', 'Campaigns'],
   sections: [
     {
       id: 'header',
@@ -207,7 +232,17 @@ export const portfolioTemplate: Template = {
   id: 'portfolio',
   name: 'Portfolio',
   icon: '🎨',
-  description: 'Showcase your work. Perfect for designers, developers, photographers, and creatives.',
+  description: 'Showcase your work and tell your story. A personal brand site.',
+  pageType: 'one-page',
+  estimatedBuildTime: '3-4 min',
+  whatYouNeed: [
+    'Your name and title',
+    '3-6 projects to showcase',
+    'Brief descriptions of each project',
+    'Your story/background',
+    'How people can contact you',
+  ],
+  bestFor: ['Designers', 'Developers', 'Photographers', 'Freelancers'],
   sections: [
     {
       id: 'hero',
@@ -274,7 +309,17 @@ export const productPageTemplate: Template = {
   id: 'product-page',
   name: 'Product Page',
   icon: '📦',
-  description: 'Sell a specific product. Great for e-commerce, apps, or physical goods.',
+  description: 'Sell a specific product with all the details buyers need.',
+  pageType: 'one-page',
+  estimatedBuildTime: '3-5 min',
+  whatYouNeed: [
+    'Product name and price',
+    'Key features and benefits',
+    'Specs or dimensions',
+    'Customer reviews (if any)',
+    'Your return/guarantee policy',
+  ],
+  bestFor: ['E-commerce', 'Physical products', 'Apps', 'Digital products'],
   sections: [
     {
       id: 'product-hero',
@@ -341,7 +386,17 @@ export const documentationTemplate: Template = {
   id: 'documentation',
   name: 'Documentation',
   icon: '📚',
-  description: 'Clean documentation for products, APIs, or help centers.',
+  description: 'Help center or docs site with search and categories.',
+  pageType: 'multi-page',
+  estimatedBuildTime: '4-6 min',
+  whatYouNeed: [
+    'What you\'re documenting',
+    'Main categories/topics',
+    'Getting started steps',
+    'Common questions',
+    'Support contact info',
+  ],
+  bestFor: ['APIs', 'Software products', 'Help centers', 'Knowledge bases'],
   sections: [
     {
       id: 'doc-hero',
@@ -399,7 +454,17 @@ export const blogTemplate: Template = {
   id: 'blog',
   name: 'Blog',
   icon: '✍️',
-  description: 'Share your thoughts. Perfect for writers, creators, and thought leaders.',
+  description: 'A content site with posts, categories, and newsletter signup.',
+  pageType: 'multi-page',
+  estimatedBuildTime: '3-5 min',
+  whatYouNeed: [
+    'Your blog name/brand',
+    'Main content categories',
+    '3-6 sample post titles',
+    'What subscribers get',
+    'Your social links',
+  ],
+  bestFor: ['Writers', 'Content creators', 'Thought leaders', 'Educators'],
   sections: [
     {
       id: 'blog-header',
@@ -464,10 +529,17 @@ export const blogTemplate: Template = {
 // =============================================================================
 export const customTemplate: Template = {
   id: 'custom',
-  name: 'Custom',
+  name: 'Custom Build',
   icon: '⚡',
-  description: 'Build anything. For experienced users who know exactly what they need.',
+  description: 'Full control. Pick your sections, define your structure. For developers and power users who know exactly what they need.',
   isAdvanced: true,
+  pageType: 'flexible',
+  estimatedBuildTime: 'You decide',
+  whatYouNeed: [
+    'Clear project requirements',
+    'Content ready for each section',
+  ],
+  bestFor: ['Developers', 'Power users', 'Unique projects'],
   sections: [
     {
       id: 'custom-build',
@@ -489,6 +561,7 @@ export const templates: Template[] = [
   landingPageTemplate,
   portfolioTemplate,
   productPageTemplate,
+  blogTemplate,
   documentationTemplate,
   customTemplate,
 ]

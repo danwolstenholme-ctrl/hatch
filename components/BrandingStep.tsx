@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
+import HatchCharacter from './HatchCharacter'
 
 // Color presets with curated palettes
 const colorPresets = [
@@ -128,6 +129,12 @@ export default function BrandingStep({ onComplete, onBack, templateName, templat
     accent: '#10B981',
   })
   const [useCustomColors, setUseCustomColors] = useState(false)
+  
+  // AI Logo Generation state
+  const [logoPrompt, setLogoPrompt] = useState('')
+  const [isGeneratingLogo, setIsGeneratingLogo] = useState(false)
+  const [generatedLogos, setGeneratedLogos] = useState<string[]>([])
+  const [logoError, setLogoError] = useState<string | null>(null)
   const [selectedFont, setSelectedFont] = useState('clean')
   const [selectedVibe, setSelectedVibe] = useState('minimal')
   const [logoPreview, setLogoPreview] = useState<string | null>(null)
@@ -184,6 +191,41 @@ export default function BrandingStep({ onComplete, onBack, templateName, templat
     }
   }
 
+  // AI Logo Generation
+  const generateLogo = async () => {
+    if (!logoPrompt.trim() && !brandName.trim()) {
+      setLogoError('Enter a description or brand name first')
+      return
+    }
+    
+    setIsGeneratingLogo(true)
+    setLogoError(null)
+    
+    try {
+      const response = await fetch('/api/generate-logo', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          prompt: logoPrompt || `A logo for ${brandName}${tagline ? ` - ${tagline}` : ''}`,
+          style: selectedVibe
+        })
+      })
+      
+      const data = await response.json()
+      
+      if (data.success && data.image) {
+        setGeneratedLogos(prev => [data.image, ...prev.slice(0, 3)]) // Keep last 4
+        setLogoPreview(data.image)
+      } else {
+        setLogoError(data.error || 'Failed to generate logo')
+      }
+    } catch (err) {
+      setLogoError('Failed to connect to AI')
+    } finally {
+      setIsGeneratingLogo(false)
+    }
+  }
+
   const handleSubmit = () => {
     const selectedPreset = colorPresets.find(p => p.id === selectedColorPreset)
     const colors = useCustomColors ? customColors : {
@@ -203,6 +245,24 @@ export default function BrandingStep({ onComplete, onBack, templateName, templat
       colors,
       fontStyle: selectedFont,
       styleVibe: selectedVibe,
+    })
+  }
+
+  // Skip branding - use defaults
+  const handleSkip = () => {
+    localStorage.removeItem(STORAGE_KEY)
+    onComplete({
+      brandName: 'My Project',
+      tagline: undefined,
+      logoUrl: undefined,
+      colorPreset: 'modern',
+      colors: {
+        primary: '#3B82F6',
+        secondary: '#1E293B',
+        accent: '#10B981',
+      },
+      fontStyle: 'clean',
+      styleVibe: 'minimal',
     })
   }
 
@@ -240,27 +300,29 @@ export default function BrandingStep({ onComplete, onBack, templateName, templat
         className="w-full max-w-4xl relative z-10"
       >
         {/* Header */}
-        <div className="flex items-center gap-4 mb-8">
-          <button
-            onClick={onBack}
-            className="w-10 h-10 rounded-full bg-zinc-800/80 hover:bg-zinc-700 flex items-center justify-center text-zinc-400 hover:text-white transition-colors backdrop-blur-sm border border-zinc-700/50"
-          >
-            ←
-          </button>
-          <motion.span 
-            className="text-3xl"
-            animate={{ y: [0, -2, 0], rotate: [-2, 2, -2] }}
-            transition={{ duration: 0.5, repeat: Infinity, ease: 'easeInOut' }}
-          >
-            🐣
-          </motion.span>
-          <div className="flex items-center gap-3">
-            <span className="text-3xl">{templateIcon}</span>
-            <div>
-              <h1 className="text-2xl font-bold text-white">Brand Your {templateName}</h1>
-              <p className="text-sm text-zinc-500">Set your brand identity before building</p>
+        <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center gap-4">
+            <button
+              onClick={onBack}
+              className="w-10 h-10 rounded-full bg-zinc-800/80 hover:bg-zinc-700 flex items-center justify-center text-zinc-400 hover:text-white transition-colors backdrop-blur-sm border border-zinc-700/50"
+            >
+              ←
+            </button>
+            <HatchCharacter state="excited" size="sm" />
+            <div className="flex items-center gap-3">
+              <span className="text-3xl">{templateIcon}</span>
+              <div>
+                <h1 className="text-2xl font-bold text-white">Brand Your {templateName}</h1>
+                <p className="text-sm text-zinc-500">Optional — helps AI generate consistent designs</p>
+              </div>
             </div>
           </div>
+          <button
+            onClick={handleSkip}
+            className="text-sm text-zinc-500 hover:text-zinc-300 transition-colors"
+          >
+            Skip for now →
+          </button>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -284,7 +346,7 @@ export default function BrandingStep({ onComplete, onBack, templateName, templat
                     value={brandName}
                     onChange={(e) => setBrandName(e.target.value)}
                     placeholder="e.g., Acme Inc, TechFlow, MyStartup"
-                    className="w-full px-3 py-2.5 bg-zinc-800/50 border border-zinc-700 rounded-lg text-sm text-white placeholder:text-zinc-500 focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/20"
+                    className="w-full px-3 py-2.5 bg-zinc-800/50 border border-zinc-700 rounded-lg text-sm text-white placeholder:text-zinc-500 focus:outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/20"
                   />
                 </div>
                 <div>
@@ -294,13 +356,13 @@ export default function BrandingStep({ onComplete, onBack, templateName, templat
                     value={tagline}
                     onChange={(e) => setTagline(e.target.value)}
                     placeholder="e.g., Build faster, ship smarter"
-                    className="w-full px-3 py-2.5 bg-zinc-800/50 border border-zinc-700 rounded-lg text-sm text-white placeholder:text-zinc-500 focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/20"
+                    className="w-full px-3 py-2.5 bg-zinc-800/50 border border-zinc-700 rounded-lg text-sm text-white placeholder:text-zinc-500 focus:outline-none focus:border-purple-500/50 focus:ring-1 focus:ring-purple-500/20"
                   />
                 </div>
               </div>
             </motion.div>
 
-            {/* Logo Upload */}
+            {/* Logo - Upload or Generate */}
             <motion.div
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
@@ -308,25 +370,79 @@ export default function BrandingStep({ onComplete, onBack, templateName, templat
               className="bg-zinc-900/60 backdrop-blur-sm border border-zinc-800 rounded-2xl p-4"
             >
               <h3 className="text-base font-semibold text-white mb-3 flex items-center gap-2">
-                <span>🖼️</span> Logo (optional)
+                <span>🖼️</span> Logo
               </h3>
-              <div className="flex items-center gap-3">
-                <label className="flex-1 cursor-pointer">
-                  <div className={`border-2 border-dashed rounded-lg p-4 text-center transition-colors ${
-                    logoPreview ? 'border-emerald-500/50 bg-emerald-500/5' : 'border-zinc-700 hover:border-zinc-600'
-                  }`}>
-                    {logoPreview ? (
-                      <div className="flex items-center justify-center gap-3">
-                        <img src={logoPreview} alt="Logo preview" className="h-8 w-auto object-contain" />
-                        <span className="text-xs text-emerald-400">✓</span>
-                      </div>
-                    ) : (
-                      <>
-                        <div className="text-xl mb-1">📤</div>
-                        <p className="text-xs text-zinc-400">Upload logo</p>
-                      </>
-                    )}
+              
+              {/* Current Logo Preview */}
+              {logoPreview && (
+                <div className="mb-3 p-3 bg-zinc-800/50 rounded-lg flex items-center gap-3">
+                  <img src={logoPreview} alt="Logo preview" className="h-12 w-12 object-contain rounded" />
+                  <div className="flex-1">
+                    <p className="text-xs text-purple-400">✓ Logo selected</p>
                   </div>
+                  <button
+                    onClick={() => setLogoPreview(null)}
+                    className="text-xs text-zinc-500 hover:text-red-400 transition-colors"
+                  >
+                    Remove
+                  </button>
+                </div>
+              )}
+              
+              {/* AI Generation - Coming Soon */}
+              <div className="space-y-2 mb-3 relative">
+                <div className="absolute inset-0 bg-zinc-900/80 backdrop-blur-[2px] rounded-lg z-10 flex items-center justify-center">
+                  <div className="text-center">
+                    <span className="text-lg">🚀</span>
+                    <p className="text-xs text-zinc-400 mt-1">AI Logo Generation</p>
+                    <p className="text-[10px] text-purple-400 font-medium">Coming Soon</p>
+                  </div>
+                </div>
+                <label className="block text-xs text-zinc-400">Generate with AI ✨</label>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={logoPrompt}
+                    onChange={(e) => setLogoPrompt(e.target.value)}
+                    placeholder={brandName ? `Logo for ${brandName}...` : "Describe your logo idea..."}
+                    className="flex-1 px-3 py-2 bg-zinc-800/50 border border-zinc-700 rounded-lg text-sm text-white placeholder:text-zinc-500 focus:outline-none focus:border-purple-500/50"
+                    disabled
+                  />
+                  <button
+                    disabled
+                    className="px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 opacity-50 rounded-lg text-sm font-medium text-white transition-all flex items-center gap-2 cursor-not-allowed"
+                  >
+                    <span>🎨</span>
+                    <span className="hidden sm:inline">Generate</span>
+                  </button>
+                </div>
+              </div>
+              
+              {/* Generated Logo History */}
+              {generatedLogos.length > 0 && (
+                <div className="mb-3">
+                  <label className="block text-xs text-zinc-400 mb-2">Generated logos (click to select)</label>
+                  <div className="flex gap-2 overflow-x-auto pb-2">
+                    {generatedLogos.map((logo, i) => (
+                      <button
+                        key={i}
+                        onClick={() => setLogoPreview(logo)}
+                        className={`flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 transition-all ${
+                          logoPreview === logo ? 'border-purple-500 ring-2 ring-purple-500/30' : 'border-zinc-700 hover:border-zinc-600'
+                        }`}
+                      >
+                        <img src={logo} alt={`Generated ${i + 1}`} className="w-full h-full object-contain bg-zinc-800" />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
+              
+              {/* Upload Option */}
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-zinc-500">or</span>
+                <label className="cursor-pointer text-xs text-purple-400 hover:text-purple-300 transition-colors">
+                  upload your own
                   <input
                     type="file"
                     accept="image/*"
@@ -334,14 +450,6 @@ export default function BrandingStep({ onComplete, onBack, templateName, templat
                     className="hidden"
                   />
                 </label>
-                {logoPreview && (
-                  <button
-                    onClick={() => setLogoPreview(null)}
-                    className="text-sm text-zinc-500 hover:text-red-400 transition-colors"
-                  >
-                    Remove
-                  </button>
-                )}
               </div>
             </motion.div>
 
@@ -367,7 +475,7 @@ export default function BrandingStep({ onComplete, onBack, templateName, templat
                     }}
                     className={`p-2.5 rounded-lg border transition-all ${
                       selectedColorPreset === preset.id && !useCustomColors
-                        ? 'border-emerald-500 bg-emerald-500/10'
+                        ? 'border-purple-500 bg-purple-500/10'
                         : 'border-zinc-700 hover:border-zinc-600'
                     }`}
                   >
@@ -387,7 +495,7 @@ export default function BrandingStep({ onComplete, onBack, templateName, templat
                 onClick={() => setUseCustomColors(!useCustomColors)}
                 className={`w-full p-2.5 rounded-lg border text-xs transition-all ${
                   useCustomColors
-                    ? 'border-emerald-500 bg-emerald-500/10 text-emerald-400'
+                    ? 'border-purple-500 bg-purple-500/10 text-purple-400'
                     : 'border-zinc-700 text-zinc-400 hover:border-zinc-600'
                 }`}
               >
@@ -446,7 +554,7 @@ export default function BrandingStep({ onComplete, onBack, templateName, templat
                     onClick={() => setSelectedFont(font.id)}
                     className={`p-3 rounded-xl border transition-all text-left ${
                       selectedFont === font.id
-                        ? 'border-emerald-500 bg-emerald-500/10'
+                        ? 'border-purple-500 bg-purple-500/10'
                         : 'border-zinc-700 hover:border-zinc-600'
                     }`}
                   >
@@ -480,7 +588,7 @@ export default function BrandingStep({ onComplete, onBack, templateName, templat
                     onClick={() => setSelectedVibe(vibe.id)}
                     className={`p-2.5 rounded-lg border transition-all text-center ${
                       selectedVibe === vibe.id
-                        ? 'border-emerald-500 bg-emerald-500/10'
+                        ? 'border-purple-500 bg-purple-500/10'
                         : 'border-zinc-700 hover:border-zinc-600'
                     }`}
                   >
@@ -559,18 +667,24 @@ export default function BrandingStep({ onComplete, onBack, templateName, templat
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.4 }}
-          className="mt-8"
+          className="mt-8 flex flex-col sm:flex-row gap-3"
         >
           <button
-            onClick={handleSubmit}
-            className="w-full py-4 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-semibold text-lg shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/40 transition-all hover:scale-[1.02] active:scale-[0.98]"
+            onClick={handleSkip}
+            className="sm:w-auto px-6 py-4 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-medium transition-all border border-zinc-700"
           >
-            Continue to Section Builder →
+            Skip Branding
           </button>
-          <p className="text-center text-sm text-zinc-500 mt-3">
-            You can always adjust branding later. This helps AI generate consistent designs.
-          </p>
+          <button
+            onClick={handleSubmit}
+            className="flex-1 py-4 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold text-lg shadow-lg shadow-purple-500/20 hover:shadow-purple-500/40 transition-all hover:scale-[1.02] active:scale-[0.98]"
+          >
+            {brandName || logoPreview ? 'Continue with Branding →' : 'Continue →'}
+          </button>
         </motion.div>
+        <p className="text-center text-sm text-zinc-500 mt-3">
+          No pressure — you can always set this up later
+        </p>
       </motion.div>
     </div>
   )
