@@ -70,6 +70,8 @@ CREATE TABLE sections (
   user_prompt TEXT,
   refined BOOLEAN DEFAULT FALSE,
   refinement_changes TEXT[],
+  suggested_code TEXT,
+  suggestion_reason TEXT,
   status TEXT DEFAULT 'pending' CHECK (status IN ('pending', 'building', 'complete', 'skipped')),
   order_index INT NOT NULL,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),

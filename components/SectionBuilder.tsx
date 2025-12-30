@@ -349,6 +349,8 @@ export default function SectionBuilder({
     }
   }
 
+  const [suggestion, setSuggestion] = useState<{ code: string; reason: string } | null>(null)
+
   // The Singularity: Autonomous Evolution
   const evolve = async () => {
     if (isDreaming) return
@@ -386,13 +388,11 @@ export default function SectionBuilder({
       const data = await res.json()
       
       if (data.code) {
-        // 3. Evolve
-        setGeneratedCode(data.code)
-        setRefined(true)
-        const thought = data.thought || "Autonomous evolution applied."
-        setRefinementChanges(prev => [`Singularity: ${thought}`, ...prev])
-        setReasoning(thought)
-        onComplete(data.code, true, [`Singularity: ${thought}`])
+        // 3. Suggest (Do not apply yet)
+        setSuggestion({
+          code: data.code,
+          reason: data.thought || "Autonomous evolution applied."
+        })
       } else {
         throw new Error("Dream returned no code")
       }
@@ -403,6 +403,20 @@ export default function SectionBuilder({
     } finally {
       setIsDreaming(false)
     }
+  }
+
+  const acceptSuggestion = () => {
+    if (!suggestion) return
+    setGeneratedCode(suggestion.code)
+    setRefined(true)
+    setRefinementChanges(prev => [`Singularity: ${suggestion.reason}`, ...prev])
+    setReasoning(suggestion.reason)
+    onComplete(suggestion.code, true, [`Singularity: ${suggestion.reason}`])
+    setSuggestion(null)
+  }
+
+  const rejectSuggestion = () => {
+    setSuggestion(null)
   }
 
   // The Chronosphere: Evolve user style DNA in background
@@ -1559,8 +1573,45 @@ export default function SectionBuilder({
                     </motion.div>
                   )}
 
+                  {/* Singularity Suggestion State */}
+                  {suggestion && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-xl"
+                    >
+                      <div className="flex items-start gap-3">
+                        <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
+                          <Brain className="w-4 h-4 text-emerald-400" />
+                        </div>
+                        <div className="flex-1">
+                          <h4 className="text-sm font-semibold text-emerald-300 mb-1">Evolution Proposed</h4>
+                          <p className="text-xs text-zinc-400 mb-3 font-mono italic">
+                            "{suggestion.reason}"
+                          </p>
+                          <div className="flex gap-2">
+                            <button
+                              onClick={acceptSuggestion}
+                              className="flex-1 px-3 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-medium rounded-lg transition-all flex items-center justify-center gap-1.5"
+                            >
+                              <Check className="w-3.5 h-3.5" />
+                              Accept
+                            </button>
+                            <button
+                              onClick={rejectSuggestion}
+                              className="flex-1 px-3 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-xs font-medium rounded-lg transition-all flex items-center justify-center gap-1.5"
+                            >
+                              <X className="w-3.5 h-3.5" />
+                              Reject
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+
                   {/* The Singularity - Autonomous Evolution */}
-                  {!isDreaming && (
+                  {!isDreaming && !suggestion && (
                     <motion.div
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
