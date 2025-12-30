@@ -20,7 +20,6 @@ interface UseProjectsReturn {
   currentProject: Project | undefined
   currentProjectId: string | null
   setCurrentProjectId: (id: string | null) => void
-  isLoadingProjects: boolean
   
   // Current page (for multi-page projects)
   currentPage: Page | null
@@ -106,7 +105,6 @@ export function useProjects(): UseProjectsReturn {
   // Use lazy initialization to avoid setState in effect
   const [projects, setProjects] = useState<Project[]>(() => getInitialProjects().projects)
   const [currentProjectId, setCurrentProjectId] = useState<string | null>(() => getInitialProjects().currentId)
-  const [isLoadingProjects, setIsLoadingProjects] = useState(false)
   const { user } = useUser()
   
   // Save projects to localStorage
@@ -461,7 +459,6 @@ export function useProjects(): UseProjectsReturn {
     currentProject,
     currentProjectId,
     setCurrentProjectId,
-    isLoadingProjects,
     currentPage,
     versions,
     currentVersionIndex,

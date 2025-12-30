@@ -2,9 +2,8 @@
 
 import { useState, useRef, useEffect } from 'react'
 import Image from 'next/image'
-import Link from 'next/link'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Section, Template, BuildState } from '@/lib/templates'
+import { Template, BuildState } from '@/lib/templates'
 import { BrandConfig } from './BrandingStep'
 
 // Interactive Logo with dropdown menu - Using actual HatchIt logo
@@ -94,7 +93,15 @@ const HatchLogoMenu = ({ progress, onGoHome, onStartOver, onViewBrand, brandConf
               <div className="px-4 py-3 border-b border-zinc-800" style={{ backgroundColor: '#27272a' }}>
                 <div className="flex items-center gap-3">
                   {brandConfig.logoUrl ? (
-                    <img src={brandConfig.logoUrl} alt="Logo" className="w-8 h-8 rounded-lg object-cover" />
+                    <div className="relative w-8 h-8 rounded-lg overflow-hidden">
+                      <Image 
+                        src={brandConfig.logoUrl} 
+                        alt="Logo" 
+                        fill
+                        className="object-cover"
+                        unoptimized
+                      />
+                    </div>
                   ) : (
                     <div 
                       className="w-8 h-8 rounded-lg flex items-center justify-center text-white font-bold text-sm"
@@ -499,7 +506,7 @@ export function MobileSectionDrawer({
   buildState,
   onSectionClick,
 }: MobileSectionDrawerProps) {
-  const { completedSections, skippedSections, currentSectionIndex, sectionRefined, sectionChanges } = buildState
+  const { completedSections, skippedSections, currentSectionIndex, sectionRefined } = buildState
 
   if (!isOpen) return null
 

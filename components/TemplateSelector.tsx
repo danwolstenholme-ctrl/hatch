@@ -357,7 +357,7 @@ export default function TemplateSelector({ onSelectTemplate }: TemplateSelectorP
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              {templates.map((template, index) => {
+              {templates.map((template) => {
                 const isExpanded = expandedTemplate === template.id
                 return (
                   <div

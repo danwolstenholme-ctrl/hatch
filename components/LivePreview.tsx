@@ -46,8 +46,6 @@ interface ElementInfo {
 
 function LivePreview({ code, pages, currentPageId, isLoading = false, loadingProgress, isPaid = false, assets = [], setShowHatchModal, inspectorMode = false, onElementSelect, onViewCode, onRegenerate, onQuickFix }: LivePreviewProps) {
   const [iframeLoaded, setIframeLoaded] = useState(false)
-  const [iframeKey, setIframeKey] = useState(0)
-  const [isDownloading, setIsDownloading] = useState(false)
   const [previewError, setPreviewError] = useState<{ type: string; message: string } | null>(null)
   const iframeRef = useRef<HTMLIFrameElement>(null)
 
@@ -106,11 +104,6 @@ function LivePreview({ code, pages, currentPageId, isLoading = false, loadingPro
     return null
   }
 
-  const refreshPreview = () => {
-    setIframeLoaded(false)
-    setPreviewError(null)
-    setIframeKey(prev => prev + 1)
-  }
 
   // Listen for error and inspector messages from iframe
   useEffect(() => {
@@ -139,7 +132,7 @@ function LivePreview({ code, pages, currentPageId, isLoading = false, loadingPro
         type: 'inspector-mode', 
         enabled: inspectorMode 
       }, '*')
-    } catch (e) {
+    } catch {
       // Iframe may not be ready
     }
   }, [inspectorMode, iframeLoaded])
@@ -459,63 +452,7 @@ export default function RootLayout({
       
       const hooksDestructure = 'const { useState, useEffect, useMemo, useCallback, useRef } = React;'
 
-      const serializedPages = pages.map((page, idx) => {
-        const regex = /(?:function|const|let|var)\s+([A-Z][a-zA-Z0-9]*)(?:\s*[=:(]|\s*:)/g
-        const matches = [...page.code.matchAll(regex)]
-        // Use FIRST match (the main component) not last (which catches inline helpers)
-        const componentName = matches.length > 0 ? matches[0][1] : `Page${idx}`
 
-        const cleanedCode = page.code
-          // Remove import statements for motion, lucide, and react
-          .replace(/import\s*\{[^}]*\}\s*from\s*['"](?:motion\/react|framer-motion|motion)['"]\s*;?/g, '')
-          .replace(/import\s*\{[^}]*\}\s*from\s*['"]lucide-react['"]\s*;?/g, '')
-          .replace(/import\s*\{[^}]*\}\s*from\s*['"]react['"]\s*;?/g, '')
-          .replace(/import\s+\w+\s*from\s*['"][^'"]+['"]\s*;?/g, '')
-          .replace(/import\s*['"][^'"]+['"]\s*;?/g, '')
-          // Remove TypeScript types
-          .replace(/interface\s+\w+\s*\{[\s\S]*?\}/g, '')
-          .replace(/type\s+\w+\s*=[^;]+;/g, '')
-          .replace(/\s+as\s+[A-Za-z][A-Za-z0-9\[\]<>|&\s,'_]*/g, '')
-          .replace(/(useState|useRef|useMemo|useCallback|useEffect)<[^>]+>/g, '$1')
-          .replace(/:\s*(React\.)?FC(<[^>]*>)?/g, '')
-          .replace(/:\s*[A-Z][A-Za-z0-9\[\]<>|&\s,']*(?=\s*=\s*[\[{(])/g, '')
-          .replace(/(\(\s*\w+):\s*(?:keyof\s+|typeof\s+|readonly\s+)?[A-Z][^,)]*(?=[,)])/g, '$1')
-          .replace(/,(\s*\w+):\s*(?:keyof\s+|typeof\s+|readonly\s+)?[A-Z][^,)]*(?=[,)])/g, ',$1')
-          .replace(/(\(\s*\w+):\s*(?:string|number|boolean|any|void|never|unknown)(?:\[\])?(?=[,)])/g, '$1')
-          .replace(/,(\s*\w+):\s*(?:string|number|boolean|any|void|never|unknown)(?:\[\])?(?=[,)])/g, ',$1')
-          .replace(/\):\s*[A-Za-z][A-Za-z0-9\[\]<>|&\s,']*(?=\s*[{=])/g, ')')
-          .replace(/export\s+default\s+/g, '')
-          .replace(/export\s+/g, '')
-          .replace(/React\.useState/g, 'useState')
-          .replace(/React\.useEffect/g, 'useEffect')
-          .replace(/React\.useMemo/g, 'useMemo')
-          .replace(/React\.useCallback/g, 'useCallback')
-          .replace(/React\.useRef/g, 'useRef')
-          // Remove 'use client' directive
-          .replace(/'use client'\s*;?/g, '')
-          .replace(/"use client"\s*;?/g, '')
-          // Remove React event types (e.g., e: React.FormEvent<HTMLFormElement>)
-          .replace(/:\s*React\.\w+(?:Event|Handler)(?:<[^>]+>)?/g, '')
-          // Remove HTML event types (e.g., e: FormEvent<HTMLFormElement>)
-          .replace(/:\s*(?:Form|Mouse|Keyboard|Change|Focus|Touch|Input|Submit|Click)Event(?:<[^>]+>)?/g, '')
-          // Remove generic Event types
-          .replace(/:\s*(?:Event|SyntheticEvent)(?:<[^>]+>)?/g, '')
-
-        // Add globals at the start of each page (Lucide icons, theme, router shim, component stubs)
-        const pageGlobals = `
-const { ArrowRight, ArrowLeft, ArrowUp, ArrowDown, Check, CheckCircle, CheckCircle2, Circle, X, Menu, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, Plus, Minus, Search, Settings, User, Users, Mail, Phone, MapPin, Calendar, Clock, Star, Heart, Home, Globe, Layers, Lock, Award, BookOpen, Zap, Shield, Target, TrendingUp, BarChart, PieChart, Activity, Eye, EyeOff, Edit, Trash, Copy, Download, Upload, Share, Link, ExternalLink, Send, MessageCircle, Bell, AlertCircle, Info, HelpCircle, Loader, RefreshCw, RotateCcw, Save, FileText, Folder, Image, Play, Pause, SkipBack, SkipForward, Volume2, VolumeX, Mic, Video, Camera, Wifi, Battery, Sun, Moon, Cloud, Droplet, Wind, Thermometer, MapIcon, Navigation: NavIcon, Compass, Flag, Bookmark, Tag, Hash, AtSign, Filter, Grid, List, LayoutGrid, Maximize, Minimize, Move, Crop, ZoomIn, ZoomOut, MoreHorizontal, MoreVertical, Briefcase, Building, Cpu, Database, Server, Code, Terminal, GitBranch, Github, Linkedin, Twitter, Facebook, Instagram, Youtube } = LucideIcons || {};
-// Navigation component stub
-const Navigation = () => null;
-const Footer = () => null;
-`;
-
-        return {
-          path: page.path,
-          componentName,
-          // Don't include JSX in code string - it won't work with new Function()
-          // Instead, just store metadata
-        }
-      })
 
       // Build components directly in the Babel script (so JSX gets transpiled)
       const pageComponents = pages.map((page, idx) => {
@@ -1309,7 +1246,6 @@ const SectionHeader = ({ eyebrow, title, description }) => React.createElement('
           )}
           <iframe
             ref={iframeRef}
-            key={iframeKey}
             srcDoc={srcDoc}
             className="w-full h-full border-0"
             sandbox="allow-scripts"

@@ -1,21 +1,7 @@
 'use client'
 
-import { useState, useEffect, useRef, useCallback, useSyncExternalStore } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import Link from 'next/link'
-
-// Hydration-safe mobile detection
-const resizeSubscribe = (callback: () => void) => {
-  window.addEventListener('resize', callback)
-  return () => window.removeEventListener('resize', callback)
-}
-
-function useIsMobile() {
-  return useSyncExternalStore(
-    resizeSubscribe,
-    () => window.innerWidth < 768,
-    () => false // Server returns false
-  )
-}
 
 interface Point {
   x: number

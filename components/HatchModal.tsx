@@ -14,7 +14,7 @@ interface HatchModalProps {
   generationsRemaining?: number
 }
 
-export default function HatchModal({ isOpen, onClose, reason, projectSlug = '', projectName = 'this project', generationsRemaining }: HatchModalProps) {
+export default function HatchModal({ isOpen, onClose, reason, projectSlug = '', generationsRemaining }: HatchModalProps) {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const { isPaidUser, tier, syncSubscription, isSyncing } = useSubscription()

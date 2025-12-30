@@ -5,7 +5,6 @@ import { motion } from 'framer-motion'
 
 interface SectionPreviewProps {
   code: string
-  allSectionsCode?: Record<string, string>
   darkMode?: boolean
 }
 
@@ -17,8 +16,7 @@ const deviceSizes: Record<DeviceView, { width: string; icon: string; label: stri
   desktop: { width: '100%', icon: '🖥️', label: 'Desktop' },
 }
 
-export default function SectionPreview({ code, allSectionsCode = {}, darkMode = true }: SectionPreviewProps) {
-  const [hasError, setHasError] = useState(false)
+export default function SectionPreview({ code, darkMode = true }: SectionPreviewProps) {
   const [deviceView, setDeviceView] = useState<DeviceView>('desktop')
 
   const srcDoc = useMemo(() => {
@@ -261,8 +259,6 @@ export default function SectionPreview({ code, allSectionsCode = {}, darkMode = 
             }}
             sandbox="allow-scripts"
             title="Section Preview"
-            onLoad={() => setHasError(false)}
-            onError={() => setHasError(true)}
           />
         </motion.div>
       </div>

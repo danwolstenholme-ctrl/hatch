@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, useEffect } from 'react'
+import Image from 'next/image'
 import { motion, AnimatePresence } from 'framer-motion'
 import HatchCharacter from './HatchCharacter'
 
@@ -369,7 +370,15 @@ export default function BrandingStep({ onComplete, onBack, templateName, templat
               {/* Current Logo Preview */}
               {logoPreview && (
                 <div className="mb-3 p-3 bg-zinc-800/50 rounded-lg flex items-center gap-3">
-                  <img src={logoPreview} alt="Logo preview" className="h-12 w-12 object-contain rounded" />
+                  <div className="relative h-12 w-12">
+                    <Image 
+                      src={logoPreview} 
+                      alt="Logo preview" 
+                      fill
+                      className="object-contain rounded"
+                      unoptimized
+                    />
+                  </div>
                   <div className="flex-1">
                     <p className="text-xs text-purple-400">✓ Logo selected</p>
                   </div>
@@ -423,11 +432,17 @@ export default function BrandingStep({ onComplete, onBack, templateName, templat
                       <button
                         key={i}
                         onClick={() => setLogoPreview(logo)}
-                        className={`flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 transition-all ${
+                        className={`flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 transition-all relative ${
                           logoPreview === logo ? 'border-purple-500 ring-2 ring-purple-500/30' : 'border-zinc-700 hover:border-zinc-600'
                         }`}
                       >
-                        <img src={logo} alt={`Generated ${i + 1}`} className="w-full h-full object-contain bg-zinc-800" />
+                        <Image 
+                          src={logo} 
+                          alt={`Generated ${i + 1}`} 
+                          fill
+                          className="object-contain bg-zinc-800"
+                          unoptimized
+                        />
                       </button>
                     ))}
                   </div>
@@ -594,7 +609,16 @@ export default function BrandingStep({ onComplete, onBack, templateName, templat
               >
                 <div className="flex items-center gap-3 mb-4">
                   {logoPreview ? (
-                    <img src={logoPreview} alt="Logo" className="h-8 w-auto" />
+                    <div className="relative h-8 w-auto min-w-[32px]">
+                      <Image 
+                        src={logoPreview} 
+                        alt="Logo" 
+                        width={32}
+                        height={32}
+                        className="h-8 w-auto object-contain"
+                        unoptimized
+                      />
+                    </div>
                   ) : (
                     <div 
                       className="w-8 h-8 rounded-lg flex items-center justify-center text-white font-bold"

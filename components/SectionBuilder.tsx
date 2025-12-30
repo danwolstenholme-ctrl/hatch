@@ -3,6 +3,7 @@
 /* eslint-disable react/no-unescaped-entities */
 
 import { useState, useRef, useEffect } from 'react'
+import Image from 'next/image'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Section } from '@/lib/templates'
 import { DbSection } from '@/lib/supabase'
@@ -224,11 +225,13 @@ function BrandQuickReference({ brandConfig }: { brandConfig: BrandConfig }) {
               {brandConfig.logoUrl && (
                 <div>
                   <span className="text-zinc-500 block mb-1">Logo:</span>
-                  <div className="w-10 h-10 bg-zinc-900 rounded-lg overflow-hidden">
-                    <img 
+                  <div className="w-10 h-10 bg-zinc-900 rounded-lg overflow-hidden relative">
+                    <Image 
                       src={brandConfig.logoUrl} 
                       alt="Brand logo" 
-                      className="w-full h-full object-contain"
+                      fill
+                      className="object-contain"
+                      unoptimized
                     />
                   </div>
                 </div>
@@ -278,9 +281,6 @@ export default function SectionBuilder({
   const [copied, setCopied] = useState(false)
   const [refinePrompt, setRefinePrompt] = useState('')
   const [isUserRefining, setIsUserRefining] = useState(false)
-  const [opusSuggestions, setOpusSuggestions] = useState<string[]>([])
-  const [isLoadingSuggestions, setIsLoadingSuggestions] = useState(false)
-  const [appliedSuggestions, setAppliedSuggestions] = useState<Set<number>>(new Set())
   const [isOpusPolishing, setIsOpusPolishing] = useState(false) // Opt-in Opus polish
   const [expandedPreview, setExpandedPreview] = useState(false) // Expand preview on desktop
   const [mobileTab, setMobileTab] = useState<'input' | 'preview'>('input') // Mobile tab state
@@ -290,7 +290,6 @@ export default function SectionBuilder({
   const opusCreditsUsed = (typeof window !== 'undefined' && subscription) 
     ? (window as unknown as { __opusUsed?: number }).__opusUsed || 0 
     : 0
-  const opusCreditsTotal = tier === 'agency' ? Infinity : tier === 'pro' ? 30 : 0
   const opusCreditsRemaining = tier === 'agency' ? '∞' : Math.max(0, 30 - opusCreditsUsed)
   
   // Prompt Helper (Hatch) state
@@ -303,7 +302,6 @@ export default function SectionBuilder({
   
   const textareaRef = useRef<HTMLTextAreaElement>(null)
   const codeEndRef = useRef<HTMLDivElement>(null)
-  const refineTextareaRef = useRef<HTMLTextAreaElement>(null)
   const helperInputRef = useRef<HTMLInputElement>(null)
   const helperChatRef = useRef<HTMLDivElement>(null)
 
@@ -348,8 +346,6 @@ export default function SectionBuilder({
     setError(null)
     setRefinePrompt('')
     setIsUserRefining(false)
-    setOpusSuggestions([])
-    setAppliedSuggestions(new Set())
     // Reset prompt helper
     setShowPromptHelper(false)
     setHelperMessages([])
@@ -412,7 +408,7 @@ export default function SectionBuilder({
         }])
         setHatchState('idle')
       }
-    } catch (err) {
+    } catch {
       setHelperMessages([{ 
         role: 'assistant', 
         content: `Hey! I'm Hatch 🥚✨ Let's write an awesome ${section.name} section! Tell me about your business - what do you do?` 
@@ -589,51 +585,6 @@ export default function SectionBuilder({
     }
   }
 
-  // Fetch proactive suggestions from Opus
-  const fetchOpusSuggestions = async (code: string) => {
-    if (demoMode) {
-      // Demo suggestions
-      setOpusSuggestions([
-        'Add a subtle gradient background for more depth',
-        'Include a secondary CTA for users not ready to commit',
-        'Add trust badges or security icons near the form',
-        'Consider adding an FAQ accordion below',
-      ])
-      return
-    }
-
-    setIsLoadingSuggestions(true)
-    try {
-      const response = await fetch('/api/suggest-improvements', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          code,
-          sectionType: section.id,
-          sectionName: section.name,
-          userPrompt: prompt,
-        }),
-      })
-
-      if (response.ok) {
-        const { suggestions } = await response.json()
-        setOpusSuggestions(suggestions || [])
-      }
-    } catch (err) {
-      console.error('Failed to fetch suggestions:', err)
-    } finally {
-      setIsLoadingSuggestions(false)
-    }
-  }
-
-  // Apply a suggestion
-  const handleApplySuggestion = async (suggestion: string, index: number) => {
-    if (appliedSuggestions.has(index)) return
-    
-    setRefinePrompt(suggestion)
-    // Auto-trigger refinement
-    setAppliedSuggestions(prev => new Set([...prev, index]))
-  }
 
   const handleRebuild = () => {
     setStage('input')
@@ -642,8 +593,6 @@ export default function SectionBuilder({
     setRefinementChanges([])
     setRefinePrompt('')
     setIsUserRefining(false)
-    setOpusSuggestions([])
-    setAppliedSuggestions(new Set())
   }
 
   const handleUserRefine = async () => {

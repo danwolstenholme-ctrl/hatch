@@ -31,7 +31,6 @@ export default function VisualEditor({
 }: VisualEditorProps) {
   const iframeRef = useRef<HTMLIFrameElement>(null)
   const [selectedElement, setSelectedElement] = useState<ElementInfo | null>(null)
-  const [hoveredElement, setHoveredElement] = useState<ElementInfo | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [history, setHistory] = useState<string[]>([code])
   const [historyIndex, setHistoryIndex] = useState(0)
@@ -441,7 +440,7 @@ export function VisualEditorWithInspector({
   onCodeChange,
 }: VisualEditorWithInspectorProps) {
   const [selectedElement, setSelectedElement] = useState<ElementInfo | null>(null)
-  const [showInspector, setShowInspector] = useState(true)
+  const showInspector = true
 
   return (
     <div className="flex h-full">
