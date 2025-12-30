@@ -18,39 +18,44 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Prompt required' }, { status: 400 })
     }
 
-    // Craft optimized logo prompt
-    const logoPrompt = `Create a professional logo design for: ${prompt}
+    // Craft optimized logo prompt for SVG generation
+    const logoPrompt = `Create a professional SVG logo design for: ${prompt}
 
 Style: ${style || 'modern, minimal'}
 
 Requirements:
-- Simple, clean icon or symbol
-- Works at small sizes (favicon) and large sizes
-- Single focal point
-- Professional and memorable
-- Suitable for a website/app
-- No text in the logo, just the icon/symbol
-- Flat design with subtle gradients allowed
-- Centered composition on a transparent or solid background`
+- Return ONLY the raw SVG code. No markdown, no explanations.
+- The SVG should be square (viewBox="0 0 512 512" or similar).
+- Use simple shapes and solid colors.
+- Ensure it works well on dark and light backgrounds.
+- Do not use external fonts or images. Convert text to paths if necessary or use standard fonts.
+- The SVG code must be valid and complete.`
 
     const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash-image',
+      model: 'gemini-1.5-flash',
       contents: logoPrompt,
     })
 
-    // Extract image from response
-    if (response.candidates?.[0]?.content?.parts) {
-      for (const part of response.candidates[0].content.parts) {
-        if (part.inlineData) {
-          return NextResponse.json({
-            success: true,
-            image: `data:${part.inlineData.mimeType};base64,${part.inlineData.data}`
-          })
-        }
+    const text = response.candidates?.[0]?.content?.parts?.[0]?.text
+    
+    if (text) {
+      // Clean up the response to get just the SVG
+      const svgMatch = text.match(/<svg[\s\S]*?<\/svg>/)
+      const svgCode = svgMatch ? svgMatch[0] : text
+
+      if (svgCode.includes('<svg')) {
+        // Convert to base64 data URL
+        const base64Svg = Buffer.from(svgCode).toString('base64')
+        const dataUrl = `data:image/svg+xml;base64,${base64Svg}`
+        
+        return NextResponse.json({
+          success: true,
+          image: dataUrl
+        })
       }
     }
 
-    return NextResponse.json({ error: 'No image generated' }, { status: 500 })
+    return NextResponse.json({ error: 'Failed to generate valid SVG' }, { status: 500 })
 
   } catch (error) {
     console.error('Logo generation error:', error)
