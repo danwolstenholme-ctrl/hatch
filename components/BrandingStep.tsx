@@ -382,15 +382,8 @@ export default function BrandingStep({ onComplete, onBack, templateName, templat
                 </div>
               )}
               
-              {/* AI Generation - Coming Soon */}
-              <div className="space-y-2 mb-3 relative">
-                <div className="absolute inset-0 bg-zinc-900/80 backdrop-blur-[2px] rounded-lg z-10 flex items-center justify-center">
-                  <div className="text-center">
-                    <span className="text-lg">🚀</span>
-                    <p className="text-xs text-zinc-400 mt-1">AI Logo Generation</p>
-                    <p className="text-[10px] text-purple-400 font-medium">Coming Soon</p>
-                  </div>
-                </div>
+              {/* AI Generation */}
+              <div className="space-y-2 mb-3">
                 <label className="block text-xs text-zinc-400">Generate with AI ✨</label>
                 <div className="flex gap-2">
                   <input
@@ -399,16 +392,26 @@ export default function BrandingStep({ onComplete, onBack, templateName, templat
                     onChange={(e) => setLogoPrompt(e.target.value)}
                     placeholder={brandName ? `Logo for ${brandName}...` : "Describe your logo idea..."}
                     className="flex-1 px-3 py-2 bg-zinc-800/50 border border-zinc-700 rounded-lg text-sm text-white placeholder:text-zinc-500 focus:outline-none focus:border-purple-500/50"
-                    disabled
+                    disabled={isGeneratingLogo}
                   />
                   <button
-                    disabled
-                    className="px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 opacity-50 rounded-lg text-sm font-medium text-white transition-all flex items-center gap-2 cursor-not-allowed"
+                    onClick={generateLogo}
+                    disabled={isGeneratingLogo || (!logoPrompt.trim() && !brandName.trim())}
+                    className="px-4 py-2 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-500 hover:to-pink-500 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg text-sm font-medium text-white transition-all flex items-center gap-2 min-h-[44px]"
                   >
-                    <span>🎨</span>
-                    <span className="hidden sm:inline">Generate</span>
+                    {isGeneratingLogo ? (
+                      <span className="animate-spin">⏳</span>
+                    ) : (
+                      <>
+                        <span>🎨</span>
+                        <span className="hidden sm:inline">Generate</span>
+                      </>
+                    )}
                   </button>
                 </div>
+                {logoError && (
+                  <p className="text-xs text-red-400">{logoError}</p>
+                )}
               </div>
               
               {/* Generated Logo History */}

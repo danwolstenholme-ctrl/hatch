@@ -446,10 +446,7 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
     const dbSection = getCurrentDbSection()
     if (!currentSection || !dbSection) return
 
-    if (!demoMode) {
-      await fetch(`/api/section/${dbSection.id}/skip`, { method: 'POST' }).catch(console.error)
-    }
-
+    // Optimistically update UI first for responsiveness
     const newState: BuildState = {
       ...buildState,
       skippedSections: [...buildState.skippedSections, currentSection.id],
@@ -466,11 +463,31 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
 
     setBuildState(newState)
 
+    // Then sync with server (don't block UI)
+    if (!demoMode) {
+      try {
+        const response = await fetch(`/api/section/${dbSection.id}/skip`, { method: 'POST' })
+        if (!response.ok) {
+          console.error('Failed to sync skip to server:', response.status)
+          // State already updated optimistically - could add retry logic here
+        }
+      } catch (err) {
+        console.error('Failed to sync skip to server:', err)
+      }
+    }
+
     if (newState.currentSectionIndex >= selectedTemplate.sections.length) {
       setPhase('review')
       localStorage.removeItem('hatch_current_project')
       if (!demoMode) {
-        await fetch(`/api/project/${project.id}/build`, { method: 'POST' }).catch(console.error)
+        try {
+          const response = await fetch(`/api/project/${project.id}/build`, { method: 'POST' })
+          if (!response.ok) {
+            console.error('Failed to create build:', response.status)
+          }
+        } catch (err) {
+          console.error('Failed to create build:', err)
+        }
       }
     }
   }
@@ -502,7 +519,12 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
       // Clear localStorage since project is complete
       localStorage.removeItem('hatch_current_project')
       if (!demoMode && project) {
-        fetch(`/api/project/${project.id}/build`, { method: 'POST' }).catch(console.error)
+        // Create build with proper error handling
+        fetch(`/api/project/${project.id}/build`, { method: 'POST' })
+          .then(res => {
+            if (!res.ok) console.error('Failed to create build:', res.status)
+          })
+          .catch(err => console.error('Failed to create build:', err))
       }
     } else {
       setBuildState({ ...buildState, currentSectionIndex: nextIndex })

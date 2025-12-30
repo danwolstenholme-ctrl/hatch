@@ -6,7 +6,7 @@ import { supabaseAdmin, DbUser } from '../supabase'
 
 /**
  * Get or create a user record from Clerk ID
- * Called when user first accesses the builder
+ * Uses upsert to handle race conditions safely
  */
 export async function getOrCreateUser(
   clerkId: string,
@@ -17,40 +17,33 @@ export async function getOrCreateUser(
     return null
   }
 
-  // First, try to find existing user
-  const { data: existingUser, error: findError } = await supabaseAdmin
+  // Use upsert to atomically create or get user (race-condition safe)
+  const { data: user, error } = await supabaseAdmin
     .from('users')
-    .select('*')
-    .eq('clerk_id', clerkId)
-    .single()
-
-  if (existingUser && !findError) {
-    // Update email if it changed
-    if (email && existingUser.email !== email) {
-      await supabaseAdmin
-        .from('users')
-        .update({ email })
-        .eq('id', existingUser.id)
-    }
-    return existingUser as DbUser
-  }
-
-  // User doesn't exist, create them
-  const { data: newUser, error: createError } = await supabaseAdmin
-    .from('users')
-    .insert({
-      clerk_id: clerkId,
-      email: email || null,
-    })
+    .upsert(
+      { clerk_id: clerkId, email: email || null },
+      { onConflict: 'clerk_id', ignoreDuplicates: false }
+    )
     .select()
     .single()
 
-  if (createError) {
-    console.error('Error creating user:', createError)
+  if (error) {
+    // If upsert failed, try a simple select (user might already exist)
+    const { data: existingUser, error: selectError } = await supabaseAdmin
+      .from('users')
+      .select('*')
+      .eq('clerk_id', clerkId)
+      .single()
+
+    if (existingUser && !selectError) {
+      return existingUser as DbUser
+    }
+
+    console.error('Error in getOrCreateUser:', error)
     return null
   }
 
-  return newUser as DbUser
+  return user as DbUser
 }
 
 /**

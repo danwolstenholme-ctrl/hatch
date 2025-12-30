@@ -60,31 +60,48 @@ export async function createBuild(projectId: string): Promise<DbBuild | null> {
     return null
   }
 
-  // Get current version number
-  const { data: existingBuilds } = await supabaseAdmin
-    .from('builds')
-    .select('version')
-    .eq('project_id', projectId)
-    .order('version', { ascending: false })
-    .limit(1)
+  // Use a transaction-safe approach: insert with subquery to get next version atomically
+  // This prevents race conditions where two concurrent builds get the same version
+  const { data, error } = await supabaseAdmin.rpc('create_build_atomic', {
+    p_project_id: projectId,
+    p_full_code: fullCode
+  })
 
-  const nextVersion = existingBuilds && existingBuilds.length > 0 
-    ? existingBuilds[0].version + 1 
-    : 1
+  // If RPC doesn't exist, fall back to regular insert (with potential race condition)
+  if (error && error.message?.includes('function') && error.message?.includes('does not exist')) {
+    // Get current version number (fallback - has race condition risk)
+    const { data: existingBuilds } = await supabaseAdmin
+      .from('builds')
+      .select('version')
+      .eq('project_id', projectId)
+      .order('version', { ascending: false })
+      .limit(1)
 
-  // Create the build
-  const { data, error } = await supabaseAdmin
-    .from('builds')
-    .insert({
-      project_id: projectId,
-      full_code: fullCode,
-      version: nextVersion,
-      audit_complete: false,
-      audit_changes: null,
-      deployed_url: null,
-    })
-    .select()
-    .single()
+    const nextVersion = existingBuilds && existingBuilds.length > 0 
+      ? existingBuilds[0].version + 1 
+      : 1
+
+    // Create the build
+    const { data: fallbackData, error: fallbackError } = await supabaseAdmin
+      .from('builds')
+      .insert({
+        project_id: projectId,
+        full_code: fullCode,
+        version: nextVersion,
+        audit_complete: false,
+        audit_changes: null,
+        deployed_url: null,
+      })
+      .select()
+      .single()
+
+    if (fallbackError) {
+      console.error('Error creating build:', fallbackError)
+      return null
+    }
+
+    return fallbackData as DbBuild
+  }
 
   if (error) {
     console.error('Error creating build:', error)
