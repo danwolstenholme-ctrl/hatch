@@ -83,13 +83,37 @@ Or use CSS variables / Tailwind arbitrary values: bg-[${brandConfig.colors.prima
 `
   }
 
+  // Forbidden elements per section type - prevents scope bleed
+  const forbiddenBySectionType: Record<string, string[]> = {
+    header: ['hero banner', 'pricing table', 'testimonials', 'footer', 'contact form', 'services grid', 'team section', 'FAQ accordion'],
+    hero: ['navigation menu', 'footer', 'pricing table', 'testimonials', 'contact form', 'FAQ accordion', 'team section'],
+    services: ['navigation', 'hero banner', 'footer', 'pricing table', 'contact form', 'testimonials'],
+    features: ['navigation', 'hero banner', 'footer', 'pricing table', 'contact form', 'testimonials'],
+    pricing: ['navigation', 'hero banner', 'footer', 'contact form', 'testimonials', 'services grid'],
+    testimonials: ['navigation', 'hero banner', 'footer', 'pricing table', 'contact form', 'services grid'],
+    contact: ['navigation', 'hero banner', 'footer', 'pricing table', 'testimonials', 'services grid'],
+    footer: ['navigation menu', 'hero banner', 'pricing table', 'testimonials', 'contact form', 'services grid'],
+    about: ['navigation', 'footer', 'pricing table', 'contact form'],
+    team: ['navigation', 'footer', 'pricing table', 'contact form', 'hero banner'],
+    faq: ['navigation', 'footer', 'pricing table', 'hero banner', 'services grid'],
+    cta: ['navigation', 'footer', 'full pricing table', 'testimonials grid', 'services grid'],
+    gallery: ['navigation', 'footer', 'pricing table', 'contact form', 'hero banner'],
+    stats: ['navigation', 'footer', 'pricing table', 'contact form', 'hero banner'],
+  }
+
+  const sectionKey = sectionName.toLowerCase().replace(/[^a-z]/g, '')
+  const forbidden = forbiddenBySectionType[sectionKey] || []
+  const forbiddenList = forbidden.length > 0 
+    ? `\n\n## FORBIDDEN (DO NOT INCLUDE)\n${forbidden.map(f => `- ❌ ${f}`).join('\n')}`
+    : ''
+
   const scopeRules = `
 ## STRICT SCOPE (MOST IMPORTANT)
 - You are generating ONLY the **${sectionName}** section.
 - Do NOT include any other sections (no hero, no services grid, no testimonials, no pricing, no footer, etc.) even if the user asks.
 - If the user's prompt contains requirements for other sections, ignore those parts and only implement what belongs in **${sectionName}**.
 - Keep the output tightly aligned to: ${sectionDescription || sectionName}
-${sectionPromptHint ? `- The UI asked the user: "${sectionPromptHint}"` : ''}
+${sectionPromptHint ? `- The UI asked the user: "${sectionPromptHint}"` : ''}${forbiddenList}
 `
 
   return `You are building a ${sectionName} section for a ${templateType}.
