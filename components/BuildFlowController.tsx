@@ -221,6 +221,16 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
     setIsLoading(true)
     try {
       const response = await fetch(`/api/project/${projectId}`)
+      
+      // Handle 403 (not your project) or 404 (doesn't exist) gracefully
+      if (response.status === 403 || response.status === 404) {
+        console.log('Project not found or not owned by user, starting fresh')
+        localStorage.removeItem('hatch_current_project')
+        setIsLoading(false)
+        setPhase('select')
+        return
+      }
+      
       if (!response.ok) throw new Error('Failed to load project')
       
       const { project: proj, sections } = await response.json()
@@ -571,7 +581,7 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
 
   const handleStartFresh = () => {
     localStorage.removeItem('hatch_current_project')
-    router.replace('/builder', { scroll: false })
+    setError(null) // Clear any error state
     setProject(null)
     setDbSections([])
     setSelectedTemplate(null)
@@ -580,6 +590,8 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
     setBuildState(null)
     setPhase('select')
     setDemoMode(false)
+    // Use window.location for a clean state reset
+    window.location.href = '/builder'
   }
 
   const handleGoHome = () => {
@@ -611,7 +623,7 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
           <div className="text-red-400 mb-4">{error}</div>
           <div className="flex gap-3 justify-center">
             <button
-              onClick={() => setError(null)}
+              onClick={() => window.location.reload()}
               className="px-4 py-2 bg-zinc-800 text-white rounded-lg hover:bg-zinc-700"
             >
               Try Again
