@@ -17,8 +17,8 @@ interface HatchQuestion {
 const hatchQuestions: HatchQuestion[] = [
   {
     id: 'hero',
-    question: "Every great site needs a hero section - your big headline and main message. Include it?",
-    emoji: "🦸",
+    question: "Primary Interface Module required. Initialize Hero Section?",
+    emoji: "⚡",
     section: {
       id: 'hero',
       name: 'Hero Section',
@@ -31,8 +31,8 @@ const hatchQuestions: HatchQuestion[] = [
   },
   {
     id: 'services',
-    question: "Do you offer services or products you want to showcase?",
-    emoji: "💼",
+    question: "Service Matrix Module available. Integrate Capabilities Display?",
+    emoji: "🛠️",
     section: {
       id: 'services',
       name: 'Services/What We Do',
@@ -45,8 +45,8 @@ const hatchQuestions: HatchQuestion[] = [
   },
   {
     id: 'about',
-    question: "Want to tell your story? An about section helps build trust.",
-    emoji: "📖",
+    question: "Identity Verification Module. Establish Entity Trust?",
+    emoji: "🆔",
     section: {
       id: 'about',
       name: 'About/Story',
@@ -59,8 +59,8 @@ const hatchQuestions: HatchQuestion[] = [
   },
   {
     id: 'work',
-    question: "Got projects or work to show off?",
-    emoji: "🎨",
+    question: "Portfolio Database Module. Display Operational History?",
+    emoji: "📂",
     section: {
       id: 'work',
       name: 'Work/Portfolio',
@@ -73,7 +73,7 @@ const hatchQuestions: HatchQuestion[] = [
   },
   {
     id: 'testimonials',
-    question: "Have happy customers? Testimonials are powerful!",
+    question: "Social Proof Algorithms. Integrate User Validation?",
     emoji: "⭐",
     section: {
       id: 'testimonials',
@@ -87,7 +87,7 @@ const hatchQuestions: HatchQuestion[] = [
   },
   {
     id: 'stats',
-    question: "Got impressive numbers? Stats build credibility.",
+    question: "Metrics Visualization Module. Display Performance Data?",
     emoji: "📊",
     section: {
       id: 'stats',
@@ -101,7 +101,7 @@ const hatchQuestions: HatchQuestion[] = [
   },
   {
     id: 'cta',
-    question: "Want a strong call-to-action section to drive conversions?",
+    question: "Conversion Optimization Module. Initialize Final CTA?",
     emoji: "🎯",
     section: {
       id: 'cta',
@@ -115,8 +115,8 @@ const hatchQuestions: HatchQuestion[] = [
   },
   {
     id: 'contact',
-    question: "Need a contact form so people can reach you?",
-    emoji: "✉️",
+    question: "Communication Uplink Module. Enable User Input?",
+    emoji: "📡",
     section: {
       id: 'contact',
       name: 'Contact Form',
@@ -157,14 +157,14 @@ interface TemplateSelectorProps {
 
 // Hatch tips for when clicked
 const hatchTips = [
-  "You can always add or remove sections later!",
-  "Don't overthink it - start simple and expand!",
-  "Most successful sites have 4-6 sections.",
-  "Hero + CTA = conversion magic ✨",
-  "When in doubt, say yes - you can always skip during build!",
-  "I believe in you! 🐣",
-  "Quality over quantity - less is more!",
-  "Your visitors will thank you for keeping it focused.",
+  "Modular architecture allows for post-initialization reconfiguration.",
+  "Recommendation: Begin with core systems. Expand complexity iteratively.",
+  "Optimal configuration detected: 4-6 active modules.",
+  "Hero + CTA Modules = Maximum Conversion Efficiency.",
+  "Affirmative selection recommended. Redundancy can be pruned later.",
+  "System confidence: High. Proceed with architecture.",
+  "Efficiency Protocol: Prioritize signal over noise.",
+  "User Experience Optimization: Maintain focus.",
 ]
 
 export default function TemplateSelector({ onSelectTemplate }: TemplateSelectorProps) {
@@ -286,7 +286,7 @@ export default function TemplateSelector({ onSelectTemplate }: TemplateSelectorP
         <div className="md:hidden absolute inset-0 bg-gradient-to-br from-purple-500/10 via-transparent to-violet-500/10" />
         {/* Gradient orbs - desktop only */}
         <motion.div
-          className="hidden md:block absolute w-[600px] h-[600px] rounded-full bg-purple-500/10 blur-[120px]"
+          className="hidden md:block absolute w-[600px] h-[600px] rounded-full bg-emerald-500/10 blur-[120px]"
           animate={{
             x: ['-10%', '5%', '-10%'],
             y: ['-10%', '10%', '-10%'],
@@ -299,7 +299,7 @@ export default function TemplateSelector({ onSelectTemplate }: TemplateSelectorP
           style={{ top: '-20%', left: '-10%' }}
         />
         <motion.div
-          className="hidden md:block absolute w-[500px] h-[500px] rounded-full bg-violet-500/10 blur-[100px]"
+          className="hidden md:block absolute w-[500px] h-[500px] rounded-full bg-teal-500/10 blur-[100px]"
           animate={{
             x: ['10%', '-5%', '10%'],
             y: ['5%', '-10%', '5%'],
@@ -312,7 +312,7 @@ export default function TemplateSelector({ onSelectTemplate }: TemplateSelectorP
           style={{ top: '30%', right: '-10%' }}
         />
         <motion.div
-          className="hidden md:block absolute w-[400px] h-[400px] rounded-full bg-blue-500/8 blur-[80px]"
+          className="hidden md:block absolute w-[400px] h-[400px] rounded-full bg-cyan-500/8 blur-[80px]"
           animate={{
             x: ['-5%', '10%', '-5%'],
             y: ['10%', '-5%', '10%'],
@@ -349,10 +349,10 @@ export default function TemplateSelector({ onSelectTemplate }: TemplateSelectorP
                 <div className="md:hidden"><HatchCharacter state="excited" size="md" /></div>
               </div>
               <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-3 md:mb-4 px-2">
-                What are you building?
+                Initialize Project Sequence
               </h1>
               <p className="text-zinc-400 text-lg max-w-xl mx-auto">
-                Choose a template to get started. You can customize every section.
+                Select a structural blueprint. All parameters are mutable.
               </p>
             </div>
 
@@ -365,7 +365,7 @@ export default function TemplateSelector({ onSelectTemplate }: TemplateSelectorP
                     className={`
                       relative rounded-2xl border transition-all duration-200 backdrop-blur-sm overflow-hidden
                       ${template.isAdvanced
-                        ? 'bg-gradient-to-br from-violet-500/10 to-purple-500/10 border-violet-500/30 sm:col-span-2'
+                        ? 'bg-gradient-to-br from-emerald-500/10 to-teal-500/10 border-emerald-500/30 sm:col-span-2'
                         : 'bg-zinc-900/60 border-zinc-800 hover:border-zinc-600'
                       }
                     `}
@@ -378,7 +378,7 @@ export default function TemplateSelector({ onSelectTemplate }: TemplateSelectorP
                       }`}
                     >
                       {template.isAdvanced && (
-                        <div className="absolute top-3 right-3 text-[10px] bg-violet-500/20 text-violet-400 px-2 py-0.5 rounded-full font-medium">
+                        <div className="absolute top-3 right-3 text-[10px] bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded-full font-medium">
                           Pro
                         </div>
                       )}
@@ -398,13 +398,13 @@ export default function TemplateSelector({ onSelectTemplate }: TemplateSelectorP
                         {template.isAdvanced && (
                           <div className="flex flex-wrap gap-3 mb-4 text-xs text-zinc-500">
                             <span className="flex items-center gap-1.5">
-                              <span className="text-purple-400">✓</span> Choose any sections
+                              <span className="text-emerald-400">✓</span> Choose any sections
                             </span>
                             <span className="flex items-center gap-1.5">
-                              <span className="text-purple-400">✓</span> Reorder freely
+                              <span className="text-emerald-400">✓</span> Reorder freely
                             </span>
                             <span className="flex items-center gap-1.5">
-                              <span className="text-purple-400">✓</span> No hand-holding
+                              <span className="text-emerald-400">✓</span> No hand-holding
                             </span>
                           </div>
                         )}
@@ -416,7 +416,7 @@ export default function TemplateSelector({ onSelectTemplate }: TemplateSelectorP
                               ? 'bg-green-500/20 text-green-400' 
                               : template.pageType === 'multi-page'
                               ? 'bg-blue-500/20 text-blue-400'
-                              : 'bg-purple-500/20 text-purple-400'
+                              : 'bg-emerald-500/20 text-emerald-400'
                           }`}>
                             <span>{template.pageType === 'one-page' ? '📄' : template.pageType === 'multi-page' ? '📑' : '⚡'}</span>
                             <span>{template.pageType === 'one-page' ? 'One Page' : template.pageType === 'multi-page' ? 'Multi-Page' : 'Flexible'}</span>
@@ -438,7 +438,7 @@ export default function TemplateSelector({ onSelectTemplate }: TemplateSelectorP
                         }}
                         className="w-full px-5 py-2 border-t border-zinc-800/50 text-xs text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/30 transition-colors flex items-center justify-center gap-1"
                       >
-                        <span>{isExpanded ? 'Less info' : 'What you\'ll need'}</span>
+                        <span>{isExpanded ? 'Hide Data' : 'Requirements'}</span>
                         <span className={`transition-transform ${isExpanded ? 'rotate-180' : ''}`}>▼</span>
                       </button>
                     )}
@@ -455,11 +455,11 @@ export default function TemplateSelector({ onSelectTemplate }: TemplateSelectorP
                           <div className="p-4 bg-zinc-900/50 space-y-4">
                             {/* What you'll need */}
                             <div>
-                              <h4 className="text-xs font-medium text-zinc-400 mb-2 uppercase tracking-wider">Have ready:</h4>
+                              <h4 className="text-xs font-medium text-zinc-400 mb-2 uppercase tracking-wider">Required Assets:</h4>
                               <ul className="space-y-1">
                                 {template.whatYouNeed.map((item, i) => (
                                   <li key={i} className="text-sm text-zinc-300 flex items-start gap-2">
-                                    <span className="text-purple-400 mt-0.5">•</span>
+                                    <span className="text-emerald-400 mt-0.5">•</span>
                                     {item}
                                   </li>
                                 ))}
@@ -468,7 +468,7 @@ export default function TemplateSelector({ onSelectTemplate }: TemplateSelectorP
 
                             {/* Best for */}
                             <div>
-                              <h4 className="text-xs font-medium text-zinc-400 mb-2 uppercase tracking-wider">Best for:</h4>
+                              <h4 className="text-xs font-medium text-zinc-400 mb-2 uppercase tracking-wider">Optimal Use Case:</h4>
                               <div className="flex flex-wrap gap-1">
                                 {template.bestFor.map((item, i) => (
                                   <span key={i} className="text-xs px-2 py-1 bg-zinc-800 text-zinc-300 rounded">
@@ -481,9 +481,9 @@ export default function TemplateSelector({ onSelectTemplate }: TemplateSelectorP
                             {/* Start button in expanded */}
                             <button
                               onClick={() => handleTemplateClick(template)}
-                              className="w-full py-2 rounded-lg bg-purple-500/20 text-purple-400 font-medium text-sm hover:bg-purple-500/30 transition-colors"
+                              className="w-full py-2 rounded-lg bg-emerald-500/20 text-emerald-400 font-medium text-sm hover:bg-emerald-500/30 transition-colors"
                             >
-                              Start with {template.name} →
+                              Initialize {template.name} →
                             </button>
                           </div>
                         </motion.div>
@@ -498,18 +498,18 @@ export default function TemplateSelector({ onSelectTemplate }: TemplateSelectorP
             <div className="mt-10">
               <div className="bg-zinc-900/60 backdrop-blur-sm border border-zinc-800 rounded-2xl p-4 md:p-6">
                 <div className="text-center mb-4 md:mb-5">
-                  <h3 className="text-xl md:text-2xl font-semibold text-white mb-1">Powered by 4 AI Models</h3>
-                  <p className="text-base md:text-lg text-zinc-500">Working together to build your site</p>
+                  <h3 className="text-xl md:text-2xl font-semibold text-white mb-1">Multi-Model Synthesis Active</h3>
+                  <p className="text-base md:text-lg text-zinc-500">Collaborative Intelligence Grid Online</p>
                 </div>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
                   <motion.div 
                     className="text-center"
                     whileHover={{ scale: 1.05 }}
                   >
-                    <div className="w-10 h-10 md:w-12 md:h-12 mx-auto mb-2 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center">
+                    <div className="w-10 h-10 md:w-12 md:h-12 mx-auto mb-2 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
                       <span className="text-lg md:text-xl">🎨</span>
                     </div>
-                    <div className="text-amber-400 font-semibold text-sm md:text-base">Gemini Flash</div>
+                    <div className="text-emerald-400 font-semibold text-sm md:text-base">Gemini Flash</div>
                     <div className="text-xs md:text-sm text-zinc-500">Logo design</div>
                   </motion.div>
                   
@@ -517,10 +517,10 @@ export default function TemplateSelector({ onSelectTemplate }: TemplateSelectorP
                     className="text-center"
                     whileHover={{ scale: 1.05 }}
                   >
-                    <div className="w-10 h-10 md:w-12 md:h-12 mx-auto mb-2 rounded-xl bg-pink-500/10 border border-pink-500/20 flex items-center justify-center">
+                    <div className="w-10 h-10 md:w-12 md:h-12 mx-auto mb-2 rounded-xl bg-teal-500/10 border border-teal-500/20 flex items-center justify-center">
                       <span className="text-lg md:text-xl">⚡</span>
                     </div>
-                    <div className="text-pink-400 font-semibold text-sm md:text-base">Sonnet 4</div>
+                    <div className="text-teal-400 font-semibold text-sm md:text-base">Sonnet 4</div>
                     <div className="text-xs md:text-sm text-zinc-500">Writes code</div>
                   </motion.div>
                   
@@ -528,10 +528,10 @@ export default function TemplateSelector({ onSelectTemplate }: TemplateSelectorP
                     className="text-center"
                     whileHover={{ scale: 1.05 }}
                   >
-                    <div className="w-10 h-10 md:w-12 md:h-12 mx-auto mb-2 rounded-xl bg-violet-500/10 border border-violet-500/20 flex items-center justify-center">
+                    <div className="w-10 h-10 md:w-12 md:h-12 mx-auto mb-2 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center">
                       <span className="text-lg md:text-xl">✨</span>
                     </div>
-                    <div className="text-violet-400 font-semibold text-sm md:text-base">Opus 4</div>
+                    <div className="text-cyan-400 font-semibold text-sm md:text-base">Opus 4</div>
                     <div className="text-xs md:text-sm text-zinc-500">Polishes & fixes</div>
                   </motion.div>
                   
@@ -539,10 +539,10 @@ export default function TemplateSelector({ onSelectTemplate }: TemplateSelectorP
                     className="text-center"
                     whileHover={{ scale: 1.05 }}
                   >
-                    <div className="w-10 h-10 md:w-12 md:h-12 mx-auto mb-2 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center">
+                    <div className="w-10 h-10 md:w-12 md:h-12 mx-auto mb-2 rounded-xl bg-sky-500/10 border border-sky-500/20 flex items-center justify-center">
                       <span className="text-lg md:text-xl">🔍</span>
                     </div>
-                    <div className="text-blue-400 font-semibold text-sm md:text-base">Gemini Pro</div>
+                    <div className="text-sky-400 font-semibold text-sm md:text-base">Gemini Pro</div>
                     <div className="text-xs md:text-sm text-zinc-500">Quality audit</div>
                   </motion.div>
                 </div>
@@ -571,7 +571,7 @@ export default function TemplateSelector({ onSelectTemplate }: TemplateSelectorP
                   <h2 className="text-2xl font-bold text-white">
                     {selectedTemplate?.name}
                   </h2>
-                  <p className="text-sm text-zinc-500">Let&apos;s build your site structure</p>
+                  <p className="text-sm text-zinc-500">Architecting System Structure</p>
                 </div>
               </div>
             </div>
@@ -593,7 +593,7 @@ export default function TemplateSelector({ onSelectTemplate }: TemplateSelectorP
                       whileHover={{ scale: 1.1 }}
                       whileTap={{ scale: 0.95 }}
                       className="cursor-pointer relative"
-                      title="Click me for a tip!"
+                      title="Access System Data"
                     >
                       <HatchCharacter state="excited" size="lg" />
                     </motion.button>
@@ -605,9 +605,9 @@ export default function TemplateSelector({ onSelectTemplate }: TemplateSelectorP
                           initial={{ opacity: 0, x: -10, scale: 0.9 }}
                           animate={{ opacity: 1, x: 0, scale: 1 }}
                           exit={{ opacity: 0, x: -10, scale: 0.9 }}
-                          className="bg-purple-500/20 border border-purple-500/30 rounded-xl px-4 py-2 text-sm text-purple-300 max-w-[200px] text-left relative"
+                          className="bg-emerald-500/20 border border-emerald-500/30 rounded-xl px-4 py-2 text-sm text-emerald-300 max-w-[200px] text-left relative"
                         >
-                          <div className="absolute top-1/2 -left-2 -translate-y-1/2 w-3 h-3 bg-purple-500/20 border-l border-b border-purple-500/30 rotate-45" />
+                          <div className="absolute top-1/2 -left-2 -translate-y-1/2 w-3 h-3 bg-emerald-500/20 border-l border-b border-emerald-500/30 rotate-45" />
                           {hatchTip}
                         </motion.div>
                       )}
@@ -631,9 +631,9 @@ export default function TemplateSelector({ onSelectTemplate }: TemplateSelectorP
                     whileHover={{ scale: 1.02 }}
                     whileTap={{ scale: 0.98 }}
                     onClick={() => handleAnswer(true)}
-                    className="w-full sm:w-auto px-8 py-4 sm:py-3 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold text-lg shadow-lg shadow-purple-500/20 active:shadow-purple-500/40 min-h-[48px]"
+                    className="w-full sm:w-auto px-8 py-4 sm:py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-semibold text-lg shadow-lg shadow-emerald-500/20 active:shadow-emerald-500/40 min-h-[48px]"
                   >
-                    Yes, add it!
+                    Confirm Module
                   </motion.button>
                   <motion.button
                     whileHover={{ scale: 1.02 }}
@@ -641,7 +641,7 @@ export default function TemplateSelector({ onSelectTemplate }: TemplateSelectorP
                     onClick={() => handleAnswer(false)}
                     className="w-full sm:w-auto px-8 py-4 sm:py-3 rounded-xl bg-zinc-800 text-zinc-300 font-medium text-lg hover:bg-zinc-700 active:bg-zinc-600 min-h-[48px]"
                   >
-                    Skip
+                    Bypass
                   </motion.button>
                 </div>
 
@@ -670,7 +670,7 @@ export default function TemplateSelector({ onSelectTemplate }: TemplateSelectorP
                   <div className="text-center mb-4">
                     <HatchCharacter state="excited" size="md" />
                     <p className="text-lg text-zinc-300 mt-2">
-                      Here&apos;s your site structure!
+                      System Architecture Generated.
                     </p>
                   </div>
                 )}
@@ -678,7 +678,7 @@ export default function TemplateSelector({ onSelectTemplate }: TemplateSelectorP
                 {/* Current sections */}
                 <div className="bg-zinc-900/80 backdrop-blur-sm border border-zinc-800 rounded-2xl overflow-hidden">
                   <div className="px-5 py-3 border-b border-zinc-800 bg-zinc-800/50">
-                    <span className="text-sm text-zinc-400">Your sections ({selectedSections.length})</span>
+                    <span className="text-sm text-zinc-400">Active Modules ({selectedSections.length})</span>
                   </div>
                   {selectedSections.map((section) => {
                     const isFixed = section.id === 'header' || section.id === 'footer'
@@ -686,14 +686,14 @@ export default function TemplateSelector({ onSelectTemplate }: TemplateSelectorP
                       <div
                         key={section.id}
                         className={`flex items-center justify-between px-5 py-3 border-b border-zinc-800/50 last:border-b-0 ${
-                          isFixed ? 'bg-purple-500/5' : ''
+                          isFixed ? 'bg-emerald-500/5' : ''
                         }`}
                       >
                         <div className="flex items-center gap-3">
-                          {isFixed && <span className="text-purple-400">📌</span>}
+                          {isFixed && <span className="text-emerald-400">📌</span>}
                           <span className="text-white font-medium">{section.name}</span>
                           {isFixed && (
-                            <span className="text-xs bg-purple-500/20 text-purple-400 px-2 py-0.5 rounded">
+                            <span className="text-xs bg-emerald-500/20 text-emerald-400 px-2 py-0.5 rounded">
                               Fixed
                             </span>
                           )}
@@ -713,7 +713,7 @@ export default function TemplateSelector({ onSelectTemplate }: TemplateSelectorP
 
                 {/* Add more sections */}
                 <div className="bg-zinc-900/80 backdrop-blur-sm border border-zinc-800 rounded-2xl p-4">
-                  <p className="text-sm text-zinc-400 mb-3">Add more sections:</p>
+                  <p className="text-sm text-zinc-400 mb-3">Available Modules:</p>
                   <div className="flex flex-wrap gap-2">
                     {hatchQuestions
                       .filter(q => !selectedSections.some(s => s.id === q.id))
@@ -721,7 +721,7 @@ export default function TemplateSelector({ onSelectTemplate }: TemplateSelectorP
                         <button
                           key={q.id}
                           onClick={() => toggleSection(q.section)}
-                          className="flex items-center gap-2 px-3 py-2 rounded-lg bg-zinc-800 hover:bg-purple-500/20 text-zinc-300 hover:text-white text-sm transition-colors"
+                          className="flex items-center gap-2 px-3 py-2 rounded-lg bg-zinc-800 hover:bg-emerald-500/20 text-zinc-300 hover:text-white text-sm transition-colors"
                         >
                           <span>{q.emoji}</span>
                           <span>{q.section.name}</span>
@@ -733,7 +733,7 @@ export default function TemplateSelector({ onSelectTemplate }: TemplateSelectorP
                 {/* Stats and start button */}
                 <div className="flex items-center justify-between text-sm text-zinc-500">
                   <span>{selectedSections.length} sections</span>
-                  <span>~{estimatedMinutes} min to build</span>
+                  <span>Est. Compilation: {estimatedMinutes}m</span>
                 </div>
 
                 <motion.button
@@ -742,7 +742,7 @@ export default function TemplateSelector({ onSelectTemplate }: TemplateSelectorP
                   whileTap={{ scale: 0.98 }}
                   className="w-full py-4 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-semibold text-lg shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/40 active:shadow-emerald-500/30 transition-shadow min-h-[56px]"
                 >
-                  Initialize Architecture →
+                  Execute Build Sequence →
                 </motion.button>
               </motion.div>
             )}
@@ -779,21 +779,21 @@ export function BuildComplete({
         initial={{ scale: 0 }}
         animate={{ scale: 1 }}
         transition={{ type: 'spring', damping: 15, delay: 0.1 }}
-        className="w-20 h-20 mx-auto mb-6 rounded-full bg-gradient-to-br from-purple-500/20 to-pink-500/20 flex items-center justify-center"
+        className="w-20 h-20 mx-auto mb-6 rounded-full bg-gradient-to-br from-emerald-500/20 to-teal-500/20 flex items-center justify-center"
       >
         <span className="text-4xl">✅</span>
       </motion.div>
 
-      <h2 className="text-2xl font-bold text-white mb-2">All sections complete!</h2>
-      <p className="text-zinc-400 mb-8">Your site is ready to deploy</p>
+      <h2 className="text-2xl font-bold text-white mb-2">System Architecture Finalized.</h2>
+      <p className="text-zinc-400 mb-8">Deployment Protocols Ready.</p>
 
       {auditComplete && auditChanges && (
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-6 p-4 bg-blue-500/10 border border-blue-500/30 rounded-xl text-left"
+          className="mb-6 p-4 bg-sky-500/10 border border-sky-500/30 rounded-xl text-left"
         >
-          <div className="flex items-center gap-2 text-blue-400 font-medium mb-2">
+          <div className="flex items-center gap-2 text-sky-400 font-medium mb-2">
             <span>🔍</span>
             <span>Gemini Audit Complete</span>
           </div>
@@ -801,13 +801,13 @@ export function BuildComplete({
             <ul className="text-sm text-zinc-300 space-y-1">
               {auditChanges.map((change, i) => (
                 <li key={i} className="flex items-start gap-2">
-                  <span className="text-blue-400">✓</span>
+                  <span className="text-sky-400">✓</span>
                   {typeof change === 'string' ? change : (change as { fix?: string }).fix || String(change)}
                 </li>
               ))}
             </ul>
           ) : (
-            <p className="text-sm text-zinc-400">No issues found. Your code passed! 🐣</p>
+            <p className="text-sm text-zinc-400">No issues found. System optimized. 🟢</p>
           )}
         </motion.div>
       )}
@@ -816,9 +816,9 @@ export function BuildComplete({
         onClick={onDeploy}
         whileHover={{ scale: 1.02 }}
         whileTap={{ scale: 0.98 }}
-        className="w-full py-4 rounded-xl bg-gradient-to-r from-purple-500 to-pink-500 text-white font-semibold text-lg shadow-lg shadow-purple-500/20 hover:shadow-purple-500/40 transition-shadow"
+        className="w-full py-4 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-semibold text-lg shadow-lg shadow-emerald-500/20 hover:shadow-emerald-500/40 transition-shadow"
       >
-        Deploy Now 🚀
+        Initiate Deployment Sequence 🚀
       </motion.button>
 
       <div className="flex items-center gap-4 my-6">
@@ -837,7 +837,7 @@ export function BuildComplete({
             w-full py-4 rounded-xl border transition-all
             ${isAuditRunning
               ? 'bg-zinc-800 border-zinc-700 text-zinc-400 cursor-wait'
-              : 'bg-zinc-900 border-zinc-700 text-white hover:border-blue-500/50 hover:bg-blue-500/10'
+              : 'bg-zinc-900 border-zinc-700 text-white hover:border-sky-500/50 hover:bg-sky-500/10'
             }
           `}
         >
@@ -855,10 +855,10 @@ export function BuildComplete({
             <span className="flex flex-col items-center">
               <span className="flex items-center gap-2 font-semibold">
                 <span>🔍</span>
-                Run final audit
+                Execute System Audit
               </span>
               <span className="text-xs text-zinc-500 mt-1">
-                A different AI checks accessibility, performance, and consistency
+                Heuristic Analysis Protocol
               </span>
             </span>
           )}

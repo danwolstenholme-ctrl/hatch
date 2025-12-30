@@ -242,7 +242,7 @@
   <text x="150" y="2310" font-family="Inter, system-ui" font-size="20" font-weight="400" fill="#a1a1aa">"Not drag-and-drop. Real code you own."</text>
   
   <text x="80" y="2350" font-family="Inter, system-ui" font-size="20" font-weight="600" fill="#ffffff">Emoji:</text>
-  <text x="160" y="2350" font-family="Inter, system-ui" font-size="20" font-weight="400" fill="#a1a1aa">🐣 (Hatching chick)</text>
+  <text x="160" y="2350" font-family="Inter, system-ui" font-size="20" font-weight="400" fill="#a1a1aa">� (System Online)</text>
   
   <!-- Footer -->
   <text x="800" y="2390" font-family="Inter, system-ui" font-size="12" fill="#52525b" text-anchor="middle">© 2025 HatchIt — hatchit.dev</text>

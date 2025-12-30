@@ -25,8 +25,8 @@ export default function FAQPage() {
         a: 'Negative. The System is designed for natural language interaction. However, the generated source code is fully accessible and editable for Architects with technical proficiency.',
       },
       {
-        q: 'Identify the Hatch Interface Entity.',
-        a: 'Hatch is a sub-routine manifested as an egg-shaped interface companion. Powered by Claude Haiku, she bridges the gap between Architect intent and System execution, capable of extrapolating complex prompts from minimal input.',
+        q: 'Identify the System Architect.',
+        a: 'The Architect is a high-level cognitive sub-routine. Powered by Claude Haiku, it bridges the gap between User intent and System execution, capable of extrapolating complex prompts from minimal input.',
       },
     ],
   },

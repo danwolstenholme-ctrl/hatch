@@ -3,8 +3,9 @@
 import { motion, AnimatePresence } from 'framer-motion'
 
 // =============================================================================
-// HATCH - The Friendly Prompt Helper Character
-// A tiny egg that lives inside HatchIt.dev, eager to help users write prompts
+// THE SINGULARITY NODE
+// The visual representation of the Architect.
+// Abstract, geometric, pulsing. No faces. No eggs.
 // =============================================================================
 
 export type HatchState = 'idle' | 'thinking' | 'excited' | 'watching' | 'sleeping'
@@ -19,83 +20,10 @@ interface HatchCharacterProps {
 }
 
 const sizeMap = {
-  sm: { egg: 'w-8 h-10', eyes: 'text-[8px]', blush: 'w-1.5 h-1', sparkle: 'w-1 h-1' },
-  md: { egg: 'w-12 h-14', eyes: 'text-[10px]', blush: 'w-2 h-1.5', sparkle: 'w-1.5 h-1.5' },
-  lg: { egg: 'w-16 h-20', eyes: 'text-xs', blush: 'w-2.5 h-1.5', sparkle: 'w-2 h-2' },
-  xl: { egg: 'w-20 h-24', eyes: 'text-sm', blush: 'w-3 h-2', sparkle: 'w-2.5 h-2.5' },
-}
-
-// Sparkle component for decorations
-const Sparkle = ({ delay = 0, size = 'w-1.5 h-1.5', className = '' }: { delay?: number, size?: string, className?: string }) => (
-  <motion.div
-    className={`absolute ${size} ${className}`}
-    initial={{ opacity: 0, scale: 0 }}
-    animate={{ 
-      opacity: [0, 1, 0],
-      scale: [0, 1, 0],
-      rotate: [0, 180, 360]
-    }}
-    transition={{ 
-      duration: 1.5,
-      delay,
-      repeat: Infinity,
-      repeatDelay: 2
-    }}
-  >
-    <svg viewBox="0 0 24 24" fill="currentColor" className="text-amber-300">
-      <path d="M12 0L14 10L24 12L14 14L12 24L10 14L0 12L10 10L12 0Z" />
-    </svg>
-  </motion.div>
-)
-
-// Eyes based on state
-const Eyes = ({ state, size }: { state: HatchState, size: HatchSize }) => {
-  const eyeClass = `font-mono ${sizeMap[size].eyes} tracking-wider select-none`
-  
-  switch (state) {
-    case 'thinking':
-      return (
-        <motion.div 
-          className={eyeClass}
-          animate={{ x: [-1, 1, -1] }}
-          transition={{ duration: 0.5, repeat: Infinity }}
-        >
-          <span className="text-zinc-700">&gt;‿&lt;</span>
-        </motion.div>
-      )
-    case 'excited':
-      return (
-        <motion.div 
-          className={eyeClass}
-          animate={{ scale: [1, 1.1, 1] }}
-          transition={{ duration: 0.3, repeat: 3 }}
-        >
-          <span className="text-zinc-700">◠ ◠</span>
-        </motion.div>
-      )
-    case 'watching':
-      return (
-        <motion.div 
-          className={eyeClass}
-          animate={{ y: [0, -1, 0] }}
-          transition={{ duration: 1.5, repeat: Infinity }}
-        >
-          <span className="text-zinc-700">◦ ◦</span>
-        </motion.div>
-      )
-    case 'sleeping':
-      return (
-        <div className={eyeClass}>
-          <span className="text-zinc-700">－ －</span>
-        </div>
-      )
-    default: // idle - friendly, soft eyes
-      return (
-        <div className={eyeClass}>
-          <span className="text-zinc-700">◠ ◠</span>
-        </div>
-      )
-  }
+  sm: { node: 'w-6 h-6', core: 'w-2 h-2' },
+  md: { node: 'w-10 h-10', core: 'w-3 h-3' },
+  lg: { node: 'w-16 h-16', core: 'w-5 h-5' },
+  xl: { node: 'w-24 h-24', core: 'w-8 h-8' },
 }
 
 export default function HatchCharacter({ 
@@ -108,36 +36,62 @@ export default function HatchCharacter({
   const sizes = sizeMap[size]
   
   // Animation variants based on state
-  const eggAnimations = {
+  const coreAnimations = {
     idle: {
-      y: [0, -4, 0],
-      rotate: 0,
-      transition: { duration: 2, repeat: Infinity, ease: 'easeInOut' as const }
+      scale: [1, 1.2, 1],
+      opacity: [0.8, 1, 0.8],
+      transition: { duration: 3, repeat: Infinity, ease: 'easeInOut' as const }
     },
     thinking: {
-      rotate: [-5, 5, -5],
-      y: 0,
-      transition: { duration: 0.4, repeat: Infinity, ease: 'easeInOut' as const }
+      scale: [1, 0.8, 1],
+      rotate: [0, 180, 360],
+      transition: { duration: 1, repeat: Infinity, ease: 'linear' as const }
     },
     excited: {
-      y: [0, -8, 0],
-      scale: [1, 1.05, 1],
-      transition: { duration: 0.3, repeat: 3 }
+      scale: [1, 1.5, 1],
+      boxShadow: ['0 0 10px #10b981', '0 0 20px #10b981', '0 0 10px #10b981'],
+      transition: { duration: 0.5, repeat: Infinity }
     },
     watching: {
-      y: [0, -2, 0],
-      rotate: [-2, 2, -2],
-      transition: { duration: 1.5, repeat: Infinity, ease: 'easeInOut' as const }
+      scale: 1,
+      x: [-2, 2, -2],
+      transition: { duration: 2, repeat: Infinity, ease: 'easeInOut' as const }
     },
     sleeping: {
-      y: [0, -1, 0],
-      rotate: [-1, 1, -1],
-      transition: { duration: 3, repeat: Infinity, ease: 'easeInOut' as const }
+      opacity: [0.3, 0.5, 0.3],
+      scale: [0.9, 1, 0.9],
+      transition: { duration: 4, repeat: Infinity, ease: 'easeInOut' as const }
+    }
+  }
+
+  const ringAnimations = {
+    idle: {
+      rotate: 360,
+      transition: { duration: 20, repeat: Infinity, ease: 'linear' as const }
+    },
+    thinking: {
+      rotate: -360,
+      scale: [1, 1.1, 1],
+      transition: { duration: 2, repeat: Infinity, ease: 'linear' as const }
+    },
+    excited: {
+      rotate: 360,
+      scale: [1, 1.2, 1],
+      transition: { duration: 1, repeat: Infinity, ease: 'linear' as const }
+    },
+    watching: {
+      rotate: 180,
+      transition: { duration: 5, repeat: Infinity, ease: 'easeInOut' as const }
+    },
+    sleeping: {
+      rotate: 360,
+      opacity: 0.2,
+      transition: { duration: 30, repeat: Infinity, ease: 'linear' as const }
     }
   }
 
   return (
-    <div className={`relative inline-flex items-center ${className}`}>
+    <div className={`relative inline-flex items-center justify-center ${className}`}>
       {/* Speech Bubble */}
       <AnimatePresence>
         {showSpeechBubble && speechText && (
@@ -145,125 +99,59 @@ export default function HatchCharacter({
             initial={{ opacity: 0, x: -5, scale: 0.9 }}
             animate={{ opacity: 1, x: 0, scale: 1 }}
             exit={{ opacity: 0, x: -5, scale: 0.9 }}
-            className="absolute left-full ml-2 whitespace-nowrap z-10"
+            className="absolute left-full ml-4 whitespace-nowrap z-10"
           >
-            <div className="relative bg-white text-zinc-800 px-3 py-1.5 rounded-xl text-sm font-medium shadow-lg">
-              {/* Tail pointing to egg */}
-              <div className="absolute right-full top-1/2 -translate-y-1/2 w-0 h-0 border-t-[6px] border-t-transparent border-b-[6px] border-b-transparent border-r-[8px] border-r-white" />
+            <div className="relative bg-zinc-900 border border-emerald-500/30 text-emerald-400 px-3 py-1.5 rounded-lg text-xs font-mono shadow-[0_0_15px_rgba(16,185,129,0.1)]">
+              {/* Tail pointing to node */}
+              <div className="absolute right-full top-1/2 -translate-y-1/2 w-0 h-0 border-t-[6px] border-t-transparent border-b-[6px] border-b-transparent border-r-[8px] border-r-emerald-500/30" />
+              <span className="mr-2">System:</span>
               {speechText}
             </div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Main Egg Container */}
-      <motion.div 
-        className="relative"
-        animate={eggAnimations[state]}
-      >
-        {/* Sparkles - more when excited */}
-        <AnimatePresence>
-          {(state === 'idle' || state === 'excited') && (
-            <>
-              <Sparkle delay={0} size={sizes.sparkle} className="-top-1 -right-1" />
-              <Sparkle delay={0.5} size={sizes.sparkle} className="-top-2 left-0" />
-              {state === 'excited' && (
-                <>
-                  <Sparkle delay={0.2} size={sizes.sparkle} className="top-0 -left-2" />
-                  <Sparkle delay={0.3} size={sizes.sparkle} className="-top-3 right-1" />
-                  <Sparkle delay={0.4} size={sizes.sparkle} className="top-1 -right-3" />
-                </>
-              )}
-            </>
-          )}
-        </AnimatePresence>
+      {/* Main Node Container */}
+      <div className={`${sizes.node} relative flex items-center justify-center`}>
+        
+        {/* Outer Ring */}
+        <motion.div
+          className="absolute inset-0 rounded-full border border-emerald-500/30 border-t-emerald-400 border-r-transparent"
+          animate={ringAnimations[state]}
+        />
+        
+        {/* Inner Ring */}
+        <motion.div
+          className="absolute inset-1 rounded-full border border-emerald-500/20 border-b-emerald-400 border-l-transparent"
+          animate={ringAnimations[state]}
+          style={{ rotate: 180 }}
+        />
 
-        {/* Thinking sweat drop */}
+        {/* The Core */}
+        <motion.div
+          className={`${sizes.core} rounded-full bg-emerald-400 shadow-[0_0_10px_rgba(16,185,129,0.5)]`}
+          animate={coreAnimations[state]}
+        />
+
+        {/* Data Particles (Thinking) */}
         {state === 'thinking' && (
-          <motion.div
-            className="absolute -top-1 right-0"
-            initial={{ opacity: 0, y: -5 }}
-            animate={{ opacity: [0, 1, 0], y: [-5, 2, 5] }}
-            transition={{ duration: 1, repeat: Infinity }}
-          >
-            <span className="text-blue-400 text-xs">💧</span>
-          </motion.div>
+          <>
+            <motion.div className="absolute w-1 h-1 bg-emerald-400 rounded-full" animate={{ x: [0, 10, 0], y: [0, -10, 0], opacity: [0, 1, 0] }} transition={{ duration: 1, repeat: Infinity }} />
+            <motion.div className="absolute w-1 h-1 bg-emerald-400 rounded-full" animate={{ x: [0, -10, 0], y: [0, 10, 0], opacity: [0, 1, 0] }} transition={{ duration: 1.2, repeat: Infinity, delay: 0.2 }} />
+          </>
         )}
 
-        {/* Crack on top when excited */}
-        {state === 'excited' && (
-          <motion.div
-            className="absolute -top-1 left-1/2 -translate-x-1/2 z-10"
-            initial={{ opacity: 0, scale: 0 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.2 }}
-          >
-            <svg width="20" height="10" viewBox="0 0 20 10" className="text-zinc-400">
-              <path 
-                d="M2 8 L5 3 L8 7 L10 2 L12 6 L15 4 L18 8" 
-                stroke="currentColor" 
-                strokeWidth="1.5" 
-                fill="none"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
-          </motion.div>
-        )}
-
-        {/* The Egg */}
-        <div 
-          className={`${sizes.egg} relative rounded-[50%] overflow-hidden`}
-          style={{
-            background: 'linear-gradient(145deg, #FFF8E7 0%, #FEF3C7 50%, #FDE68A 100%)',
-            boxShadow: 'inset -2px -2px 6px rgba(0,0,0,0.05), inset 2px 2px 6px rgba(255,255,255,0.8), 0 4px 12px rgba(0,0,0,0.1)'
-          }}
-        >
-          {/* Inner egg content - face area */}
-          <div className="absolute inset-0 flex flex-col items-center justify-center pt-1">
-            {/* Eyes */}
-            <Eyes state={state} size={size} />
-            
-            {/* Blush marks - more visible for friendliness */}
-            <div className="flex gap-4 mt-0.5">
-              <motion.div 
-                className={`${sizes.blush} rounded-full bg-pink-400/50`}
-                animate={state === 'excited' ? { opacity: [0.5, 0.8, 0.5], scale: [1, 1.1, 1] } : { opacity: 0.5 }}
-                transition={{ duration: 0.5, repeat: state === 'excited' ? Infinity : 0 }}
-              />
-              <motion.div 
-                className={`${sizes.blush} rounded-full bg-pink-400/50`}
-                animate={state === 'excited' ? { opacity: [0.5, 0.8, 0.5], scale: [1, 1.1, 1] } : { opacity: 0.5 }}
-                transition={{ duration: 0.5, repeat: state === 'excited' ? Infinity : 0 }}
-              />
-            </div>
-
-            {/* Tiny smile - always visible, bigger when excited */}
-            <motion.div
-              className="mt-0.5 bg-zinc-600 rounded-full"
-              animate={state === 'excited' ? { width: 6, height: 3 } : { width: 4, height: 2 }}
-              style={{ borderRadius: '0 0 50% 50%' }}
-            />
-          </div>
-
-          {/* Subtle shine */}
-          <div 
-            className="absolute top-1 left-1 w-2 h-3 rounded-full bg-white/50"
-            style={{ filter: 'blur(1px)' }}
-          />
-        </div>
-
-        {/* Z's for sleeping */}
+        {/* Z's for sleeping (Low Power Mode) */}
         {state === 'sleeping' && (
           <motion.div
-            className="absolute -top-2 -right-2"
-            animate={{ opacity: [0, 1, 0], y: [0, -5], x: [0, 5] }}
+            className="absolute -top-2 -right-2 font-mono text-[10px] text-emerald-500/50"
+            animate={{ opacity: [0, 1, 0], y: [0, -5] }}
             transition={{ duration: 2, repeat: Infinity }}
           >
-            <span className="text-xs text-zinc-400">z</span>
+            STANDBY
           </motion.div>
         )}
-      </motion.div>
+      </div>
     </div>
   )
 }
@@ -276,7 +164,7 @@ export function HatchMini({ state = 'idle' }: { state?: HatchState }) {
 // With speech bubble wrapper for buttons
 export function HatchWithBubble({ 
   state = 'idle',
-  text = "Need help? ✨",
+  text = "System Ready",
   onClick
 }: { 
   state?: HatchState
@@ -291,9 +179,9 @@ export function HatchWithBubble({
       whileTap={{ scale: 0.98 }}
     >
       <HatchCharacter state={state} size="sm" />
-      <div className="relative bg-zinc-800/80 border border-zinc-700 rounded-xl px-3 py-1.5 group-hover:border-amber-400/30 group-hover:bg-zinc-800 transition-colors">
-        <div className="absolute left-0 top-1/2 -translate-x-1 -translate-y-1/2 w-2 h-2 bg-zinc-800/80 border-l border-b border-zinc-700 rotate-45 group-hover:border-amber-400/30" />
-        <span className="text-sm text-zinc-400 group-hover:text-amber-300 transition-colors">{text}</span>
+      <div className="relative bg-zinc-900/80 border border-zinc-800 rounded-lg px-3 py-1.5 group-hover:border-emerald-500/30 group-hover:bg-zinc-900 transition-colors">
+        <div className="absolute left-0 top-1/2 -translate-x-1 -translate-y-1/2 w-2 h-2 bg-zinc-900/80 border-l border-b border-zinc-800 rotate-45 group-hover:border-emerald-500/30" />
+        <span className="text-xs font-mono text-zinc-500 group-hover:text-emerald-400 transition-colors">{text}</span>
       </div>
     </motion.button>
   )

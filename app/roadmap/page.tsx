@@ -75,13 +75,13 @@ Created shared subscription types in types/subscriptions.ts for consistent tier 
 Each model has a specific role and system prompt optimized for its task. The pipeline runs sequentially: Sonnet → Opus → (optional) Gemini audit.`
       },
       { 
-        title: 'Hatch Interface Entity', 
-        description: 'The egg companion who bridges User and System.', 
+        title: 'System Architect Interface', 
+        description: 'The cognitive interface bridging User and System.', 
         status: 'deployed', 
         date: 'Dec 2025',
         technicalDetails: `Created HatchCharacter.tsx component with 5 animated states: idle, thinking, excited, watching, sleeping. Powered by Claude Haiku (claude-3-5-haiku-20241022) for instant responses.
 
-Floating button in SectionBuilder opens popup where Hatch writes prompts based on your branding and current section. Visual design: cute egg with soft ◠ ◠ eyes, pink blush, sparkles when excited, crack animation.`
+Floating button in SectionBuilder opens popup where the Architect optimizes prompts based on your branding and current section. Visual design: Abstract geometric node with pulsing core and rotating rings.`
       },
       { 
         title: 'Modular Construction Flow', 

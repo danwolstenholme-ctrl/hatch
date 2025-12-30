@@ -16,7 +16,7 @@ export default function HatchLogo({ className = "w-8 h-8", animated = true }: Ha
         xmlns="http://www.w3.org/2000/svg"
         className="w-full h-full"
       >
-        {/* Outer Shell - Cybernetic Egg */}
+        {/* Outer Shell - System Node */}
         <motion.path
           d="M50 5 C 25 5, 10 35, 10 60 C 10 85, 25 95, 50 95 C 75 95, 90 85, 90 60 C 90 35, 75 5, 50 5 Z"
           stroke="currentColor"

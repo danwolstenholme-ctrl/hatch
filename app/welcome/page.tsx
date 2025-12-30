@@ -13,7 +13,7 @@ import { useSubscription } from '@/contexts/SubscriptionContext'
 // A creative, animated welcome experience for all user types
 // Free: Grey theme, friendly intro
 // Pro: Purple theme with Hatch character
-// Agency: Gold/amber theme with golden chicken
+// Agency: Gold/amber theme with Agency Node
 // =============================================================================
 
 type WelcomeTier = 'free' | 'pro' | 'agency'
@@ -77,8 +77,8 @@ const tierConfig = {
   },
 }
 
-// Golden Chicken for Agency tier
-function GoldenChicken() {
+// Agency Node
+function AgencyNode() {
   return (
     <motion.div
       initial={{ scale: 0 }}
@@ -105,9 +105,9 @@ function GoldenChicken() {
       <motion.div
         animate={{ scale: [1, 1.1, 1], opacity: [0.8, 1, 0.8] }}
         transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
-        className="relative z-10"
+        className="relative z-10 w-16 h-16 bg-amber-500/20 rounded-full flex items-center justify-center border border-amber-500/50"
       >
-        <div className="text-6xl">🔮</div>
+        <div className="w-8 h-8 bg-amber-400 rounded-full shadow-[0_0_20px_rgba(251,191,36,0.5)]" />
       </motion.div>
       
       {/* Orbiting Particles */}
@@ -136,8 +136,8 @@ function GoldenChicken() {
   )
 }
 
-// Pro tier Hatch character with special effects
-function ProHatchCharacter() {
+// Pro Node
+function ProNode() {
   return (
     <motion.div
       initial={{ scale: 0 }}
@@ -156,31 +156,31 @@ function ProHatchCharacter() {
       />
       
       <motion.div
-        animate={{ y: [0, -10, 0] }}
+        animate={{ scale: [1, 1.1, 1] }}
         transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
-        className="relative z-10"
+        className="relative z-10 w-16 h-16 bg-emerald-500/20 rounded-full flex items-center justify-center border border-emerald-500/50"
       >
-        <div className="text-6xl">🧠</div>
+        <div className="w-8 h-8 bg-emerald-400 rounded-full shadow-[0_0_20px_rgba(52,211,153,0.5)]" />
       </motion.div>
     </motion.div>
   )
 }
 
-// Free tier friendly egg
-function FreeEgg() {
+// Free Node
+function FreeNode() {
   return (
     <motion.div
       initial={{ scale: 0 }}
       animate={{ scale: 1 }}
       transition={{ type: 'spring', bounce: 0.4, delay: 0.3 }}
-      className="relative"
+      className="relative w-32 h-32 flex items-center justify-center"
     >
       <motion.div
-        animate={{ y: [0, -8, 0], rotate: [-2, 2, -2] }}
+        animate={{ scale: [1, 1.05, 1] }}
         transition={{ duration: 2, repeat: Infinity, ease: 'easeInOut' }}
-        className="text-9xl"
+        className="w-12 h-12 bg-zinc-500/20 rounded-full flex items-center justify-center border border-zinc-500/50"
       >
-        🥚
+        <div className="w-6 h-6 bg-zinc-400 rounded-full" />
       </motion.div>
     </motion.div>
   )
@@ -252,11 +252,11 @@ function WelcomeContent() {
         {/* Character/Icon */}
         <div className="mb-8 flex justify-center">
           {tier === 'agency' ? (
-            <GoldenChicken />
+            <AgencyNode />
           ) : tier === 'pro' ? (
-            <ProHatchCharacter />
+            <ProNode />
           ) : (
-            <FreeEgg />
+            <FreeNode />
           )}
         </div>
 

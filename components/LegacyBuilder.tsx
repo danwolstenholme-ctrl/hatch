@@ -27,22 +27,22 @@ function useIsMobile() {
   )
 }
 
-// Glowing Chick component for pro feature indicators
+// Glowing Node component for pro feature indicators
 const ProBadge = ({ size = 'sm' }: { size?: 'sm' | 'md' | 'lg' }) => {
   const sizeClasses = {
-    sm: 'text-sm',
-    md: 'text-lg', 
-    lg: 'text-2xl'
+    sm: 'w-3 h-3',
+    md: 'w-4 h-4', 
+    lg: 'w-6 h-6'
   }
   return (
     <motion.span 
       className={`relative inline-flex items-center justify-center ${sizeClasses[size]}`}
       style={{ willChange: 'transform', backfaceVisibility: 'hidden' }}
-      animate={{ y: [0, -2, 0] }}
-      transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+      animate={{ scale: [1, 1.2, 1] }}
+      transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
     >
-      <span className="absolute inset-0 blur-sm bg-amber-400/40 rounded-full scale-150"></span>
-      <span className="relative">🐣</span>
+      <span className="absolute inset-0 blur-sm bg-emerald-400/40 rounded-full scale-150"></span>
+      <span className="relative w-full h-full bg-emerald-500 rounded-full border border-emerald-300"></span>
     </motion.span>
   )
 }
