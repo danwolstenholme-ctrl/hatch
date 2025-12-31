@@ -70,7 +70,7 @@
 
     <!-- BANNER (LinkedIn / X) -->
     <div class="section">
-        <div class="label">Social Banner (1500x500 - LinkedIn/X Compatible)</div>
+        <div class="label">Social Banner (1500x500 - X / Personal LinkedIn)</div>
         <div id="banner-container" style="width: 1500px; height: 500px; background: #09090b; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; overflow: hidden; border: 1px solid #27272a;">
             
             <!-- Grid Background -->
@@ -107,6 +107,75 @@
             </div>
         </div>
         <div class="download-hint">Use a screenshot tool to capture this area exactly.</div>
+    </div>
+
+    <!-- LINKEDIN COMPANY BANNER (1128 x 191) -->
+    <div class="section">
+        <div class="label">LinkedIn Company Banner (1128 x 191)</div>
+        <div id="linkedin-company-banner" style="width: 1128px; height: 191px; background: #09090b; display: flex; align-items: center; justify-content: space-between; padding: 0 60px; position: relative; overflow: hidden; border: 1px solid #27272a;">
+            
+            <!-- Grid Background -->
+            <div style="position: absolute; inset: 0; background-image: linear-gradient(to right, #18181b 1px, transparent 1px), linear-gradient(to bottom, #18181b 1px, transparent 1px); background-size: 30px 30px; opacity: 0.2;"></div>
+            
+            <!-- Glow Left -->
+            <div style="position: absolute; width: 300px; height: 300px; background: radial-gradient(circle, rgba(16, 185, 129, 0.15) 0%, transparent 70%); top: 50%; left: 0; transform: translate(-30%, -50%);"></div>
+
+            <!-- Left: Logo & Name -->
+            <div style="z-index: 10; display: flex; align-items: center; gap: 20px;">
+                <svg width="40" height="40" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M50 10 L 85 30 L 85 70 L 50 90 L 15 70 L 15 30 Z" stroke="#10b981" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M50 50 L 50 90 M 50 50 L 85 30 M 50 50 L 15 30" stroke="#34d399" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+                    <circle cx="50" cy="50" r="5" fill="white"/>
+                </svg>
+                <h1 style="font-size: 40px; font-weight: 800; color: white; margin: 0; letter-spacing: -0.05em; line-height: 1;">
+                    Hatch<span style="background: linear-gradient(to right, #10b981, #34d399); -webkit-background-clip: text; color: transparent;">It</span>
+                </h1>
+            </div>
+
+            <!-- Right: Tagline -->
+            <div style="z-index: 10; text-align: right;">
+                <div style="font-size: 14px; color: #a1a1aa; letter-spacing: 0.2em; text-transform: uppercase; font-weight: 600;">
+                    The Singularity Interface
+                </div>
+                <div style="font-size: 12px; color: #52525b; margin-top: 4px; font-family: monospace;">
+                    hatchit.dev
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SOCIAL SQUARE (1080 x 1080) -->
+    <div class="section">
+        <div class="label">Social Square (1080 x 1080 - Instagram/Twitter)</div>
+        <div id="social-square" style="width: 540px; height: 540px; transform: scale(1); transform-origin: top left; background: #09090b; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; overflow: hidden; border: 1px solid #27272a;">
+            <!-- Note: Displayed at 50% scale (540px) but design is for 1080px ratio -->
+            
+            <!-- Grid Background -->
+            <div style="position: absolute; inset: 0; background-image: linear-gradient(to right, #18181b 1px, transparent 1px), linear-gradient(to bottom, #18181b 1px, transparent 1px); background-size: 40px 40px; opacity: 0.2;"></div>
+            
+            <!-- Center Glow -->
+            <div style="position: absolute; width: 400px; height: 400px; background: radial-gradient(circle, rgba(16, 185, 129, 0.2) 0%, transparent 70%); top: 50%; left: 50%; transform: translate(-50%, -50%);"></div>
+
+            <!-- Big Logo -->
+            <div style="z-index: 10; margin-bottom: 40px;">
+                <svg width="180" height="180" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M50 10 L 85 30 L 85 70 L 50 90 L 15 70 L 15 30 Z" stroke="#10b981" stroke-width="6" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M50 50 L 50 90 M 50 50 L 85 30 M 50 50 L 15 30" stroke="#34d399" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+                    <circle cx="50" cy="50" r="5" fill="white"/>
+                </svg>
+            </div>
+
+            <!-- Text -->
+            <div style="z-index: 10; text-align: center;">
+                <h2 style="font-size: 48px; font-weight: 800; color: white; margin: 0; letter-spacing: -0.05em;">
+                    Build <span style="color: #10b981;">Faster.</span>
+                </h2>
+                <p style="font-size: 18px; color: #a1a1aa; margin-top: 10px; font-family: monospace;">
+                    No lock-in. Just code.
+                </p>
+            </div>
+        </div>
+        <div class="download-hint">Displayed at 50% scale. Zoom in to capture high-res.</div>
     </div>
 
 </body>
