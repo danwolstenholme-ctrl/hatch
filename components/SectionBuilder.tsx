@@ -1149,13 +1149,18 @@ export default function SectionBuilder({
             <label className="text-xs font-mono text-zinc-500 uppercase tracking-wider">
               Directive
             </label>
-            <button 
+            <motion.button 
               onClick={() => initializePromptHelper()}
-              className="text-xs text-purple-400 hover:text-purple-300 flex items-center gap-1.5 transition-colors"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+              className="group relative px-3 py-1.5 rounded-lg bg-zinc-900 border border-emerald-500/30 hover:border-emerald-500/60 flex items-center gap-2 transition-all shadow-[0_0_10px_rgba(16,185,129,0.1)] hover:shadow-[0_0_15px_rgba(16,185,129,0.2)]"
             >
-              <Bot className="w-3.5 h-3.5" />
-              <span>Ask The Architect</span>
-            </button>
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+              </span>
+              <span className="text-xs font-medium text-emerald-400 group-hover:text-emerald-300">Ask The Architect</span>
+            </motion.button>
           </div>
           
           <div className="relative group">
@@ -1210,26 +1215,6 @@ export default function SectionBuilder({
                 </button>
               ))}
             </div>
-          )}
-
-          {/* The Architect - Your friendly prompt helper */}
-          {stage === 'input' && (
-            <motion.button
-              onClick={initializePromptHelper}
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              className="mt-3 self-start flex items-center gap-2 group"
-            >
-              <div className="w-8 h-8 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center">
-                <Sparkles className="w-4 h-4 text-amber-400" />
-              </div>
-              <div className="relative bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 group-hover:border-amber-500/30 transition-colors">
-                <div className="absolute left-0 top-1/2 -translate-x-1 -translate-y-1/2 w-2 h-2 bg-zinc-900 border-l border-b border-zinc-800 rotate-45 group-hover:border-amber-500/30"></div>
-                <span className="text-xs font-mono text-zinc-400 group-hover:text-amber-300 transition-colors">Need inspiration? Initialize Architect Assistant.</span>
-              </div>
-            </motion.button>
           )}
 
           {/* Error */}

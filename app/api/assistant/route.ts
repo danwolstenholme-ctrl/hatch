@@ -223,7 +223,17 @@ export async function POST(request: NextRequest) {
       contents
     })
 
-    const assistantMessage = response.response.text() || 'Something went wrong. Try again.'
+    let assistantMessage = 'Something went wrong. Try again.'
+    
+    // Handle different SDK response structures
+    const anyResponse = response as any
+    if (anyResponse.text && typeof anyResponse.text === 'function') {
+      assistantMessage = anyResponse.text()
+    } else if (typeof anyResponse.text === 'string') {
+      assistantMessage = anyResponse.text
+    } else if (anyResponse.response && typeof anyResponse.response.text === 'function') {
+      assistantMessage = anyResponse.response.text()
+    }
 
     logAssistantUsage(
       userId,

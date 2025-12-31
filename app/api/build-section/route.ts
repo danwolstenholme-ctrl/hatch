@@ -262,7 +262,17 @@ export async function POST(request: NextRequest) {
       ]
     })
 
-    const responseText = response.response.text() || ''
+    let responseText = ''
+    // Handle different SDK response structures (@google/genai vs @google/generative-ai)
+    const anyResponse = response as any
+    if (anyResponse.text && typeof anyResponse.text === 'function') {
+      responseText = anyResponse.text()
+    } else if (typeof anyResponse.text === 'string') {
+      responseText = anyResponse.text
+    } else if (anyResponse.response && typeof anyResponse.response.text === 'function') {
+      responseText = anyResponse.response.text()
+    }
+    
     console.log('Gemini Raw Response:', responseText.slice(0, 500))
 
     // Try to parse as JSON
