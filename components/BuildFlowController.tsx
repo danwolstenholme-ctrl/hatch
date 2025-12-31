@@ -264,6 +264,45 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
   const [justCreatedProjectId, setJustCreatedProjectId] = useState<string | null>(null)
   const [showScorecard, setShowScorecard] = useState(false)
   const [showReset, setShowReset] = useState(false)
+  const [isReplicationReady, setIsReplicationReady] = useState(false)
+
+  // Handle Replicator Mode
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const mode = params.get('mode')
+    const data = params.get('data')
+
+    if (mode === 'replicate' && data) {
+      try {
+        const replicationData = JSON.parse(decodeURIComponent(data))
+        // Transform replication data into a template
+        const replicatedTemplate: Template = {
+          ...SINGULARITY_TEMPLATE,
+          name: replicationData.projectName || 'Replicated Project',
+          description: replicationData.description || 'Imported from URL',
+          sections: replicationData.sections.map((s: any, i: number) => ({
+            id: s.type || `section-${i}`,
+            name: s.type ? s.type.charAt(0).toUpperCase() + s.type.slice(1) : `Section ${i + 1}`,
+            description: s.prompt,
+            prompt: s.prompt,
+            estimatedTime: '~20s',
+            required: true,
+            order: i + 1
+          }))
+        }
+        
+        setSelectedTemplate(replicatedTemplate)
+        setCustomizedSections(replicatedTemplate.sections)
+        setIsReplicationReady(true)
+      } catch (e) {
+        console.error('Failed to parse replication data', e)
+        setError('Failed to load replicated project data')
+        setIsReplicationReady(true) // Proceed anyway to avoid hanging
+      }
+    } else {
+      setIsReplicationReady(true)
+    }
+  }, [])
 
   // Show reset button if loading takes too long
   useEffect(() => {
@@ -332,23 +371,31 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
       return
     }
 
+    // Wait for replication data to be processed
+    if (!isReplicationReady) {
+      console.log('BuildFlowController: Waiting for replication data')
+      return
+    }
+
     // Otherwise, INITIALIZE A NEW PROJECT IMMEDIATELY
     console.log('BuildFlowController: Initializing new project')
     initializeProject()
     
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [existingProjectId, justCreatedProjectId, isCreatingProject, isLoaded])
+  }, [existingProjectId, justCreatedProjectId, isCreatingProject, isLoaded, isReplicationReady])
 
   const initializeProject = async () => {
     console.log('BuildFlowController: initializeProject started')
     setIsCreatingProject(true)
     setIsLoading(true)
     
-    // Default "Singularity" setup
-    const template = SINGULARITY_TEMPLATE
-    const sections = template.sections
+    // Use selected template (which might be replicated)
+    const template = selectedTemplate
+    // Use customized sections (which might be replicated)
+    const sections = customizedSections.length > 0 ? customizedSections : template.sections
+    
     const brand: DbBrandConfig = {
-      brandName: 'Untitled Project',
+      brandName: template.name === 'The Singularity' ? 'Untitled Project' : template.name,
       colors: {
         primary: '#10b981', // Emerald-500
         secondary: '#09090b', // Zinc-950

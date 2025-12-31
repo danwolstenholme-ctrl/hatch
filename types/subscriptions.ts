@@ -30,25 +30,28 @@ export interface PricingTier {
  * Current pricing configuration
  */
 export const PRICING_TIERS: Record<string, PricingTier> = {
-  free: {
+  initiate: {
     name: 'free',
     price: 0,
     generationsPerDay: 5,
     opusRefinementsPerMonth: 0,
-    features: ['5 generations per day', 'Live preview', 'Basic templates'],
+    features: ['5 generations per day', 'Live preview', 'Basic templates', 'Community support'],
   },
-  pro: {
+  architect: {
     name: 'pro',
-    price: 19,
-    generationsPerDay: -1,
-    opusRefinementsPerMonth: 30,
-    features: ['Unlimited generations', '30 Opus refinements/month', 'Priority support', 'Custom domains'],
-  },
-  agency: {
-    name: 'agency',
-    price: 49,
+    price: 29,
     generationsPerDay: -1,
     opusRefinementsPerMonth: -1,
+    features: ['Unlimited generations', 'Unlimited Opus refinements', 'Full code export', 'Custom domains', 'The Living Site (Evolution Engine)'],
+  },
+  demiurge: {
+    name: 'agency',
+    price: 199,
+    generationsPerDay: -1,
+    opusRefinementsPerMonth: -1,
+    features: ['Everything in Architect', 'White-label client portal', 'The Replicator (Clone any site)', 'API Access', 'Priority 24/7 Support'],
+  },
+}    opusRefinementsPerMonth: -1,
     features: ['Unlimited everything', 'White-label exports', 'API access', 'Dedicated support'],
   },
 }

@@ -2,11 +2,15 @@
 
 import { useState, useEffect, ReactNode } from 'react'
 import { motion } from 'framer-motion'
-import { Activity, Bot, Brain, Cpu, Globe, Shield, Terminal, Zap } from 'lucide-react'
+import { Activity, Bot, Brain, Cpu, Globe, Shield, Terminal, Zap, Copy } from 'lucide-react'
+import ReplicatorModal from '@/components/ReplicatorModal'
+import { useRouter } from 'next/navigation'
 
 export default function AgencyDashboard() {
   const [systemLoad, setSystemLoad] = useState(0)
   const [activeAgents, setActiveAgents] = useState(0)
+  const [showReplicator, setShowReplicator] = useState(false)
+  const router = useRouter()
   
   useEffect(() => {
     // Simulate system activity
@@ -17,8 +21,24 @@ export default function AgencyDashboard() {
     return () => clearInterval(interval)
   }, [])
 
+  const handleReplication = (data: any) => {
+    // Store the replication data in localStorage or pass via URL
+    // For now, we'll use a simple URL param to trigger the builder
+    // In a real app, we'd save to DB first
+    const encodedPrompt = encodeURIComponent(JSON.stringify(data))
+    // Navigate to builder with the replicated data
+    // We'll use a special 'replicate' mode
+    router.push(`/builder?mode=replicate&data=${encodedPrompt}`)
+  }
+
   return (
     <div className="space-y-8">
+      <ReplicatorModal 
+        isOpen={showReplicator} 
+        onClose={() => setShowReplicator(false)}
+        onReplicate={handleReplication}
+      />
+
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard 
@@ -76,9 +96,10 @@ export default function AgencyDashboard() {
 
           <div className="grid grid-cols-2 gap-4">
             <ActionCard 
-              title="DEPLOY_AGENT" 
-              description="Initialize a new autonomous agent instance."
-              icon={<Bot className="w-6 h-6 text-emerald-400" />}
+              title="THE_REPLICATOR" 
+              description="Clone any website's DNA instantly."
+              icon={<Copy className="w-6 h-6 text-purple-400" />}
+              onClick={() => setShowReplicator(true)}
             />
             <ActionCard 
               title="RUN_DIAGNOSTICS" 
@@ -150,9 +171,12 @@ function LogEntry({ time, level, message }: { time: string; level: string; messa
   )
 }
 
-function ActionCard({ title, description, icon }: { title: string; description: string; icon: ReactNode }) {
+function ActionCard({ title, description, icon, onClick }: { title: string; description: string; icon: ReactNode; onClick?: () => void }) {
   return (
-    <button className="bg-zinc-900/50 border border-zinc-800 rounded-lg p-6 backdrop-blur-sm hover:bg-zinc-800/50 hover:border-emerald-500/50 transition-all text-left group">
+    <button 
+      onClick={onClick}
+      className="bg-zinc-900/50 border border-zinc-800 rounded-lg p-6 backdrop-blur-sm hover:bg-zinc-800/50 hover:border-emerald-500/50 transition-all text-left group"
+    >
       <div className="mb-4 p-3 bg-zinc-950 rounded-lg w-fit group-hover:scale-110 transition-transform duration-300 border border-zinc-800 group-hover:border-emerald-500/30">
         {icon}
       </div>
