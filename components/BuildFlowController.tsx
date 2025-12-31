@@ -918,6 +918,9 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
     alert("Brand settings are now managed by The Architect. Just ask to change colors or fonts.")
   }
 
+  // Debug ID to check for remounts
+  const debugId = useRef(Math.random().toString(36).substring(7))
+
   if (isLoading) {
     // Show different message depending on if we're loading existing vs creating new
     let loadingMessage = 'Initializing The Architect...'
@@ -931,7 +934,7 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
           transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
           className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full"
         />
-        <p className="text-zinc-400 text-sm font-mono">{loadingMessage}</p>
+        <p className="text-zinc-400 text-sm font-mono">{loadingMessage} [{debugId.current}]</p>
         
         {showReset && (
           <motion.div 
@@ -940,16 +943,33 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
             className="mt-4 flex flex-col items-center gap-2"
           >
             <p className="text-zinc-500 text-xs">Taking longer than expected?</p>
-            <button 
-              onClick={() => {
-                // Clear local storage and reload
-                localStorage.removeItem('hatch_current_project')
-                window.location.href = '/builder'
-              }}
-              className="px-4 py-2 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 rounded text-xs text-zinc-400 hover:text-white transition-colors"
-            >
-              Reset & Start New Project
-            </button>
+            <div className="flex gap-2">
+              <button 
+                onClick={() => {
+                  // Clear local storage and reload
+                  localStorage.removeItem('hatch_current_project')
+                  window.location.href = '/builder'
+                }}
+                className="px-4 py-2 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 rounded text-xs text-zinc-400 hover:text-white transition-colors"
+              >
+                Reset & Start New Project
+              </button>
+              <button 
+                onClick={() => {
+                  // Force demo mode
+                  setIsLoading(false)
+                  setDemoMode(true)
+                  setPhase('building')
+                  setBuildState(createInitialBuildState(SINGULARITY_TEMPLATE.id))
+                }}
+                className="px-4 py-2 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 rounded text-xs text-zinc-400 hover:text-white transition-colors"
+              >
+                Force Demo Mode
+              </button>
+            </div>
+            <div className="mt-4 p-2 bg-zinc-900/50 rounded text-[10px] text-zinc-600 font-mono max-w-md overflow-auto">
+              DEBUG: loaded={String(isLoaded)} creating={String(isCreatingProject)} existing={String(existingProjectId)} rep={String(isReplicationReady)}
+            </div>
           </motion.div>
         )}
       </div>
