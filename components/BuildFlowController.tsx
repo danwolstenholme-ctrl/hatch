@@ -251,6 +251,7 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
   const [isDeploying, setIsDeploying] = useState(false)
   const [deployedUrl, setDeployedUrl] = useState<string | null>(null)
   const [reviewDeviceView, setReviewDeviceView] = useState<'mobile' | 'tablet' | 'desktop'>('desktop')
+  const [reviewMobileTab, setReviewMobileTab] = useState<'modules' | 'preview'>('preview')
   const [editingSectionIndex, setEditingSectionIndex] = useState<number | null>(null)
   const [justCreatedProjectId, setJustCreatedProjectId] = useState<string | null>(null)
   const [showScorecard, setShowScorecard] = useState(false)
@@ -1205,9 +1206,41 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
             </div>
 
             {/* Main Content - Split Panel */}
-            <div className="flex-1 flex min-h-0 overflow-hidden">
+            <div className="flex-1 flex flex-col md:flex-row min-h-0 overflow-hidden">
+              
+              {/* Mobile Tab Switcher for Review */}
+              <div className="flex md:hidden border-b border-zinc-800/50 bg-zinc-950 p-2">
+                <div className="flex w-full bg-zinc-900/50 rounded-lg p-1 border border-zinc-800/50">
+                  <button
+                    onClick={() => setReviewMobileTab('modules')}
+                    className={`flex-1 py-2.5 text-sm font-medium rounded-md transition-all duration-200 flex items-center justify-center gap-2 ${
+                      reviewMobileTab === 'modules' 
+                        ? 'bg-zinc-800 text-white shadow-sm' 
+                        : 'text-zinc-400 hover:text-zinc-300'
+                    }`}
+                  >
+                    <Layers className="w-4 h-4" />
+                    <span>Modules</span>
+                  </button>
+                  <button
+                    onClick={() => setReviewMobileTab('preview')}
+                    className={`flex-1 py-2.5 text-sm font-medium rounded-md transition-all duration-200 flex items-center justify-center gap-2 ${
+                      reviewMobileTab === 'preview' 
+                        ? 'bg-zinc-800 text-white shadow-sm' 
+                        : 'text-zinc-400 hover:text-zinc-300'
+                    }`}
+                  >
+                    <Eye className="w-4 h-4" />
+                    <span>Preview</span>
+                  </button>
+                </div>
+              </div>
+
               {/* Left Panel - Section List */}
-              <div className="w-80 border-r border-zinc-800/50 flex flex-col bg-zinc-900/20 overflow-hidden">
+              <div className={`
+                ${reviewMobileTab === 'modules' ? 'flex' : 'hidden'} md:flex
+                w-full md:w-80 border-r border-zinc-800/50 flex-col bg-zinc-900/20 overflow-hidden
+              `}>
                 <div className="p-4 border-b border-zinc-800/50">
                   <h2 className="text-xs font-mono text-zinc-500 uppercase tracking-wider">Architecture Modules</h2>
                 </div>
@@ -1251,7 +1284,10 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
                         </div>
                       </button>
                     )
-                  })}
+                  })}{`
+                ${reviewMobileTab === 'preview' ? 'flex' : 'hidden'} md:flex
+                flex-1 flex-col bg-zinc-950 min-h-0 relative
+              `}
                 </div>
                 
                 {/* Run Audit Button */}

@@ -25,8 +25,11 @@ export default function TheSubconscious() {
 
   // Track real mouse for "The Presence" effect
   useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      setMousePos({ x: e.clientX, y: e.clientY })
+    const handleActivity = (e?: Event) => {
+      if (e?.type === 'mousemove') {
+        const mouseEvent = e as MouseEvent
+        setMousePos({ x: mouseEvent.clientX, y: mouseEvent.clientY })
+      }
       // Reset idle timer
       setIsIdle(false)
       setTargetElement(null)
@@ -36,9 +39,18 @@ export default function TheSubconscious() {
     
     const idleTimer = { current: setTimeout(() => setIsIdle(true), 3000) }
     
-    window.addEventListener('mousemove', handleMouseMove)
+    window.addEventListener('mousemove', handleActivity)
+    window.addEventListener('scroll', handleActivity)
+    window.addEventListener('keydown', handleActivity)
+    window.addEventListener('touchstart', handleActivity)
+    window.addEventListener('click', handleActivity)
+
     return () => {
-      window.removeEventListener('mousemove', handleMouseMove)
+      window.removeEventListener('mousemove', handleActivity)
+      window.removeEventListener('scroll', handleActivity)
+      window.removeEventListener('keydown', handleActivity)
+      window.removeEventListener('touchstart', handleActivity)
+      window.removeEventListener('click', handleActivity)
       clearTimeout(idleTimer.current)
     }
   }, [])
