@@ -4,7 +4,7 @@
 
 **Display Name:** HatchIt | The Architect
 **Handle:** @HatchItD
-**Location:** localhost:3000
+**Location:** hatchit.dev
 **Website:** https://hatchit.dev
 
 **Bio:**
@@ -23,7 +23,7 @@ We built an Architect that argues with you.
 That refuses bad code. 
 That evolves. 
 
-The Singularity isn't coming. It's running on localhost:3000.
+The Singularity isn't coming. It's running on hatchit.dev.
 
 Speak your intent: https://hatchit.dev
 
