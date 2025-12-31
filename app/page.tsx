@@ -256,11 +256,12 @@ function FloatingNodes() {
   const isClient = useIsClient()
   
   const nodes = useMemo(() => {
-    return [...Array(12)].map((_, i) => ({
+    // Reduced count for better performance (8 instead of 12)
+    return [...Array(8)].map((_, i) => ({
       id: i,
       initialX: Math.random() * 100 + '%',
       initialY: Math.random() * 100 + '%',
-      duration: 10 + Math.random() * 10,
+      duration: 20 + Math.random() * 10, // Slower duration (was 10+)
       delay: Math.random() * 5,
       size: 24 + Math.random() * 48
     }))
@@ -274,14 +275,15 @@ function FloatingNodes() {
         <motion.div
           key={node.id}
           className="absolute text-emerald-500/10"
+          style={{ willChange: 'transform, opacity' }}
           initial={{ 
             x: node.initialX, 
             y: node.initialY 
           }}
           animate={{ 
-            y: [0, -50, 0],
-            opacity: [0.1, 0.3, 0.1],
-            scale: [1, 1.5, 1]
+            y: [0, -30, 0], // Reduced movement
+            opacity: [0.1, 0.2, 0.1], // Reduced opacity flux
+            scale: [1, 1.1, 1] // Reduced scale flux
           }}
           transition={{ 
             duration: node.duration,
