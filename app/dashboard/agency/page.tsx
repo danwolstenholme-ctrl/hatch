@@ -2,9 +2,11 @@
 
 import { useState, useEffect, ReactNode } from 'react'
 import { motion } from 'framer-motion'
-import { Activity, Bot, Brain, Cpu, Globe, Shield, Terminal, Zap, Copy, Plus, ArrowRight } from 'lucide-react'
+import { Activity, Bot, Brain, Cpu, Globe, Shield, Terminal, Zap, Copy, Plus, ArrowRight, Layout, ExternalLink, Edit3, Trash2 } from 'lucide-react'
 import ReplicatorModal from '@/components/ReplicatorModal'
 import { useRouter } from 'next/navigation'
+import { useProjects } from '@/hooks/useProjects'
+import Link from 'next/link'
 
 export default function AgencyDashboard() {
   const [systemLoad, setSystemLoad] = useState(0)
@@ -12,6 +14,16 @@ export default function AgencyDashboard() {
   const [showReplicator, setShowReplicator] = useState(false)
   const [onboardingData, setOnboardingData] = useState<any>(null)
   const router = useRouter()
+  const { projects, deleteProject } = useProjects()
+  const [projectsLoading, setProjectsLoading] = useState(true)
+
+  useEffect(() => {
+    // Simulate loading state since useProjects doesn't expose it directly yet
+    // In reality, useProjects loads from localStorage which is instant, 
+    // but we want a smooth UI transition
+    const timer = setTimeout(() => setProjectsLoading(false), 500)
+    return () => clearTimeout(timer)
+  }, [])
   
   useEffect(() => {
     const data = localStorage.getItem('hatch_onboarding_data')
@@ -34,12 +46,7 @@ export default function AgencyDashboard() {
   }, [])
 
   const handleReplication = (data: any) => {
-    // Store the replication data in localStorage or pass via URL
-    // For now, we'll use a simple URL param to trigger the builder
-    // In a real app, we'd save to DB first
     const encodedPrompt = encodeURIComponent(JSON.stringify(data))
-    // Navigate to builder with the replicated data
-    // We'll use a special 'replicate' mode
     router.push(`/builder?mode=replicate&data=${encodedPrompt}`)
   }
 
@@ -54,10 +61,10 @@ export default function AgencyDashboard() {
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         <StatCard 
-          title="ACTIVE_AGENTS" 
-          value={activeAgents.toString()} 
-          icon={<Bot className="w-5 h-5 text-emerald-400" />}
-          trend="+2.4%"
+          title="ACTIVE_PROJECTS" 
+          value={projects.length.toString()} 
+          icon={<Layout className="w-5 h-5 text-emerald-400" />}
+          trend={projects.length > 0 ? "ONLINE" : "IDLE"}
         />
         <StatCard 
           title="SYSTEM_LOAD" 
@@ -80,29 +87,78 @@ export default function AgencyDashboard() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Main Feed */}
+        {/* Main Feed - Now Project List */}
         <div className="lg:col-span-2 space-y-6">
           <div className="bg-zinc-900/50 border border-zinc-800 rounded-lg p-6 backdrop-blur-sm">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-lg font-mono font-bold flex items-center gap-2">
                 <Terminal className="w-5 h-5 text-emerald-500" />
-                SYSTEM_LOGS
+                ACTIVE_OPERATIONS
               </h2>
               <div className="flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                <span className="text-xs font-mono text-zinc-500">LIVE</span>
+                <span className="text-xs font-mono text-zinc-500">SYNCED</span>
               </div>
             </div>
             
-            <div className="space-y-4 font-mono text-sm h-[400px] overflow-y-auto pr-2 custom-scrollbar">
-              <LogEntry time="10:42:05" level="INFO" message="Agent [ALPHA-7] initiated sequence: MARKET_ANALYSIS" />
-              <LogEntry time="10:42:02" level="SUCCESS" message="Self-healing protocol completed for module: AUTH_SERVICE" />
-              <LogEntry time="10:41:55" level="INFO" message="New node connection established: TOKYO_REGION" />
-              <LogEntry time="10:41:48" level="WARN" message="Latency spike detected in sector 4. Rerouting..." />
-              <LogEntry time="10:41:30" level="INFO" message="Agent [BETA-2] generated new creative assets" />
-              <LogEntry time="10:41:15" level="SUCCESS" message="Deployment verified: v2.0.4-SINGULARITY" />
-              <LogEntry time="10:40:55" level="INFO" message="System optimization routine started" />
-              <LogEntry time="10:40:42" level="INFO" message="User session authenticated: ADMIN_ROOT" />
+            <div className="space-y-4 font-mono text-sm min-h-[300px] max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
+              {projectsLoading ? (
+                <div className="flex items-center justify-center h-32 text-zinc-500">
+                  <Cpu className="w-5 h-5 animate-spin mr-2" />
+                  INITIALIZING_LINK...
+                </div>
+              ) : projects.length === 0 ? (
+                <div className="flex flex-col items-center justify-center h-48 text-zinc-500 border border-dashed border-zinc-800 rounded-lg">
+                  <p className="mb-4">NO_ACTIVE_OPERATIONS</p>
+                  <button 
+                    onClick={() => router.push('/builder')}
+                    className="px-4 py-2 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded hover:bg-emerald-500/20 transition-colors"
+                  >
+                    INITIALIZE_NEW
+                  </button>
+                </div>
+              ) : (
+                projects.map((project) => (
+                  <div key={project.id} className="group flex items-center justify-between p-4 bg-zinc-950/50 border border-zinc-800/50 rounded-lg hover:border-emerald-500/30 transition-all">
+                    <div className="flex items-center gap-4">
+                      <div className="w-10 h-10 bg-zinc-900 rounded flex items-center justify-center text-zinc-500 group-hover:text-emerald-400 transition-colors">
+                        <Layout className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <h3 className="font-bold text-zinc-200 group-hover:text-white">{project.name}</h3>
+                        <p className="text-xs text-zinc-500">ID: {project.id.slice(0, 8)}...</p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <Link 
+                        href={`/builder?project=${project.id}`}
+                        className="p-2 hover:bg-zinc-800 rounded text-zinc-400 hover:text-white"
+                        title="Edit Architecture"
+                      >
+                        <Edit3 className="w-4 h-4" />
+                      </Link>
+                      {project.deployedSlug && (
+                        <a 
+                          href={`https://${project.deployedSlug}.hatchit.dev`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="p-2 hover:bg-zinc-800 rounded text-zinc-400 hover:text-emerald-400"
+                          title="View Live System"
+                        >
+                          <ExternalLink className="w-4 h-4" />
+                        </a>
+                      )}
+                      <button 
+                        onClick={() => deleteProject()}
+                        className="p-2 hover:bg-red-900/20 rounded text-zinc-400 hover:text-red-400"
+                        title="Terminate Operation"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           </div>
 
