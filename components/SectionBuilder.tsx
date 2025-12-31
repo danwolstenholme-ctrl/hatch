@@ -341,6 +341,50 @@ export default function SectionBuilder({
   const [isExplaining, setIsExplaining] = useState(false)
   const [isDreaming, setIsDreaming] = useState(false)
   
+  // Dynamic placeholder effect
+  const [placeholderIndex, setPlaceholderIndex] = useState(0)
+  const [placeholderText, setPlaceholderText] = useState('')
+  const [isDeletingPlaceholder, setIsDeletingPlaceholder] = useState(false)
+  
+  useEffect(() => {
+    if (stage !== 'input') return
+    
+    const placeholders = [
+      "Describe the architecture of this section...",
+      "e.g. A minimalist hero with large typography...",
+      "e.g. A dark mode features grid with glowing cards...",
+      "e.g. A contact form with a map on the right...",
+      "e.g. A pricing table with 3 tiers and a toggle..."
+    ]
+    
+    const currentFullText = placeholders[placeholderIndex]
+    const typeSpeed = isDeletingPlaceholder ? 30 : 50
+    const pauseTime = 2000
+    
+    const timeout = setTimeout(() => {
+      if (!isDeletingPlaceholder) {
+        // Typing
+        if (placeholderText.length < currentFullText.length) {
+          setPlaceholderText(currentFullText.slice(0, placeholderText.length + 1))
+        } else {
+          // Finished typing, wait then delete
+          setTimeout(() => setIsDeletingPlaceholder(true), pauseTime)
+        }
+      } else {
+        // Deleting
+        if (placeholderText.length > 0) {
+          setPlaceholderText(currentFullText.slice(0, placeholderText.length - 1))
+        } else {
+          // Finished deleting, move to next
+          setIsDeletingPlaceholder(false)
+          setPlaceholderIndex((prev) => (prev + 1) % placeholders.length)
+        }
+      }
+    }, typeSpeed)
+    
+    return () => clearTimeout(timeout)
+  }, [placeholderText, isDeletingPlaceholder, placeholderIndex, stage])
+  
   // Visual Feedback Loop (The Retina)
   const [captureTrigger, setCaptureTrigger] = useState(0)
   const screenshotPromiseRef = useRef<((value: string | null) => void) | null>(null)
@@ -1175,7 +1219,7 @@ export default function SectionBuilder({
                 }
               }}
               disabled={stage !== 'input'}
-              placeholder="Describe the architecture of this section..."
+              placeholder={placeholderText}
               className="relative w-full min-h-[180px] bg-zinc-900/80 border border-zinc-800 rounded-xl p-4 text-sm font-mono text-zinc-200 placeholder-zinc-600 focus:outline-none focus:ring-0 focus:border-purple-500/50 disabled:opacity-50 resize-none transition-all"
             />
             {/* Voice Input Button */}
