@@ -66,7 +66,10 @@ export async function getSectionsByProjectId(projectId: string): Promise<DbSecti
  * Get a single section by ID
  */
 export async function getSectionById(id: string): Promise<DbSection | null> {
-  if (!supabaseAdmin) return null
+  if (!supabaseAdmin) {
+    console.error('[DB] supabaseAdmin is null in getSectionById')
+    return null
+  }
 
   const { data, error } = await supabaseAdmin
     .from('sections')
@@ -74,7 +77,10 @@ export async function getSectionById(id: string): Promise<DbSection | null> {
     .eq('id', id)
     .single()
 
-  if (error) return null
+  if (error) {
+    console.error('Error fetching section:', error)
+    return null
+  }
   return data as DbSection
 }
 
@@ -101,7 +107,7 @@ export async function markSectionBuilding(id: string): Promise<DbSection | null>
 
 /**
  * Complete a section with generated code
- * Called after Sonnet generates the code
+ * Called after Architect generates the code
  */
 export async function completeSection(
   id: string,
@@ -130,8 +136,8 @@ export async function completeSection(
 }
 
 /**
- * Update section with Opus refinement
- * Called after Opus reviews and potentially improves the code
+ * Update section with Architect refinement
+ * Called after Architect reviews and potentially improves the code
  */
 export async function updateSectionRefinement(
   id: string,
@@ -146,7 +152,7 @@ export async function updateSectionRefinement(
     refinement_changes: refinementChanges || null,
   }
 
-  // Only update code if Opus actually changed it
+  // Only update code if Architect actually changed it
   if (refined && refinedCode) {
     updateData.code = refinedCode
   }

@@ -418,7 +418,7 @@ export default function RootLayout({
       if (!displayCode || displayCode.trim().length === 0) {
         return '<!DOCTYPE html><html><body style="background: #18181b; height: 100vh; display: flex; align-items: center; justify-content: center;">' +
           '<div style="text-align: center; color: #71717a; font-family: system-ui;">' +
-          '<div style="font-size: 3rem; margin-bottom: 1rem;">�</div>' +
+          '<div style="font-size: 3rem; margin-bottom: 1rem;">🐣</div>' +
           '<h2 style="color: white; margin-bottom: 0.5rem; font-size: 1.25rem;">Ready to build</h2>' +
           '<p>Switch to <strong style="color: #60a5fa;">Build</strong> mode and describe what you want to create</p>' +
           '</div></body></html>'
@@ -459,11 +459,8 @@ export default function RootLayout({
         const componentName = matches.length > 0 ? matches[0][1] : `Page${idx}`
 
         const cleanedCode = page.code
-          // Remove import statements for motion, lucide, and react
-          .replace(/import\s*\{[^}]*\}\s*from\s*['"](?:motion\/react|framer-motion|motion)['"]\s*;?/g, '')
-          .replace(/import\s*\{[^}]*\}\s*from\s*['"]lucide-react['"]\s*;?/g, '')
-          .replace(/import\s*\{[^}]*\}\s*from\s*['"]react['"]\s*;?/g, '')
-          .replace(/import\s+\w+\s*from\s*['"][^'"]+['"]\s*;?/g, '')
+          // Remove all import statements (default, named, side-effect, multi-line)
+          .replace(/import\s+(?:[\s\S]*?)\s+from\s*['"][^'"]+['"]\s*;?/g, '')
           .replace(/import\s*['"][^'"]+['"]\s*;?/g, '')
           // Remove TypeScript types
           .replace(/interface\s+\w+\s*\{[\s\S]*?\}/g, '')

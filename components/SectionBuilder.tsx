@@ -327,7 +327,7 @@ export default function SectionBuilder({
   const [copied, setCopied] = useState(false)
   const [refinePrompt, setRefinePrompt] = useState('')
   const [isUserRefining, setIsUserRefining] = useState(false)
-  const [isOpusPolishing, setIsOpusPolishing] = useState(false) // Opt-in Opus polish
+  const [isArchitectPolishing, setIsArchitectPolishing] = useState(false) // Opt-in Architect polish
   const [isSelfHealing, setIsSelfHealing] = useState(false) // Auto-fix runtime errors
   const [hasSelfHealed, setHasSelfHealed] = useState(false) // Prevent infinite loops
   const [expandedPreview, setExpandedPreview] = useState(false) // Expand preview on desktop
@@ -438,12 +438,12 @@ export default function SectionBuilder({
   const [editingLineIndex, setEditingLineIndex] = useState<number | null>(null)
   const [editingLineContent, setEditingLineContent] = useState('')
   
-  // Get subscription info for Opus credits
+  // Get subscription info for Architect credits
   const { tier, subscription } = useSubscription()
-  const opusCreditsUsed = (typeof window !== 'undefined' && subscription) 
-    ? (window as unknown as { __opusUsed?: number }).__opusUsed || 0 
+  const architectCreditsUsed = (typeof window !== 'undefined' && subscription) 
+    ? (window as unknown as { __architectUsed?: number }).__architectUsed || 0 
     : 0
-  const opusCreditsRemaining = tier === 'agency' ? '∞' : Math.max(0, 30 - opusCreditsUsed)
+  const architectCreditsRemaining = tier === 'agency' ? '∞' : Math.max(0, 30 - architectCreditsUsed)
   
   // Prompt Helper (Hatch) state
   const [showPromptHelper, setShowPromptHelper] = useState(false)
@@ -463,8 +463,23 @@ export default function SectionBuilder({
     // Only attempt self-healing once per generation to avoid loops
     if (isSelfHealing || hasSelfHealed || !generatedCode) return
     
+    if (!dbSection?.id) {
+      console.error('Self-healing aborted: Missing dbSection.id', dbSection)
+      return
+    }
+
     console.log('Attempting self-healing for error:', errorMsg)
     setIsSelfHealing(true)
+
+    // Demo mode - simulate self-healing
+    if (demoMode) {
+      await new Promise(resolve => setTimeout(resolve, 2000))
+      setRefinementChanges(prev => [...prev, \`Auto-fixed crash: \${errorMsg.slice(0, 30)}...\`])
+      setHasSelfHealed(true)
+      onComplete(generatedCode, true, [...refinementChanges, \`Auto-fixed crash: \${errorMsg.slice(0, 30)}...\`])
+      setIsSelfHealing(false)
+      return
+    }
     
     try {
       const response = await fetch('/api/refine-section', {
@@ -472,6 +487,7 @@ export default function SectionBuilder({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           sectionId: dbSection.id,
+          projectId,
           code: generatedCode,
           sectionType: section.id,
           sectionName: section.name,
@@ -795,7 +811,7 @@ export default function SectionBuilder({
         throw new Error('Generation failed')
       }
 
-      const { code: sonnetCode, reasoning: aiReasoning } = await generateResponse.json()
+      const { code: generatedCode, reasoning: aiReasoning } = await generateResponse.json()
       
       // Store the AI's reasoning for display
       if (aiReasoning) {
@@ -806,25 +822,25 @@ export default function SectionBuilder({
       const chunkSize = 15 // Smaller chunks = smoother scroll
       const delay = 12 // ms between chunks - slower for visual effect
       
-      for (let i = 0; i < sonnetCode.length; i += chunkSize) {
+      for (let i = 0; i < generatedCode.length; i += chunkSize) {
         await new Promise(resolve => setTimeout(resolve, delay))
-        setStreamingCode(sonnetCode.slice(0, i + chunkSize))
+        setStreamingCode(generatedCode.slice(0, i + chunkSize))
         // Auto-scroll to bottom
         codeEndRef.current?.scrollIntoView({ behavior: 'auto', block: 'end' })
       }
       
-      // Sonnet is done! No auto-Opus - user can opt-in later
-      setGeneratedCode(sonnetCode)
+      // Architect is done! No auto-polish - user can opt-in later
+      setGeneratedCode(generatedCode)
       setStreamingCode('')
       setRefined(false)
       setRefinementChanges([])
       setStage('complete')
 
-      // Notify parent with Sonnet-only code
-      onComplete(sonnetCode, false)
+      // Notify parent with generated code
+      onComplete(generatedCode, false)
       
       // Evolve style DNA (background)
-      evolveUserStyle(sonnetCode)
+      evolveUserStyle(generatedCode)
 
     } catch (err) {
       console.error('Build error:', err)
@@ -930,6 +946,7 @@ export default function SectionBuilder({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           sectionId: dbSection.id,
+          projectId,
           code: generatedCode,
           sectionType: section.id,
           sectionName: section.name,
@@ -971,12 +988,22 @@ export default function SectionBuilder({
     }
   }
 
-  // Handle opt-in Opus polish (not automatic anymore)
-  const handleOpusPolish = async () => {
-    if (!generatedCode || isOpusPolishing) return
+  // Handle opt-in Architect polish (not automatic anymore)
+  const handleArchitectPolish = async () => {
+    if (!generatedCode || isArchitectPolishing) return
     
-    setIsOpusPolishing(true)
+    setIsArchitectPolishing(true)
     setError(null)
+
+    // Demo mode - simulate architect polish
+    if (demoMode) {
+      await new Promise(resolve => setTimeout(resolve, 3000))
+      setRefined(true)
+      setRefinementChanges(['Optimized accessibility', 'Improved contrast', 'Refined spacing'])
+      onComplete(generatedCode, true, ['Optimized accessibility', 'Improved contrast', 'Refined spacing'])
+      setIsArchitectPolishing(false)
+      return
+    }
     
     try {
       const response = await fetch('/api/refine-section', {
@@ -984,6 +1011,7 @@ export default function SectionBuilder({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           sectionId: dbSection.id,
+          projectId,
           code: generatedCode,
           sectionType: section.id,
           sectionName: section.name,
@@ -1024,10 +1052,10 @@ export default function SectionBuilder({
       }
 
     } catch (err) {
-      console.error('Opus polish error:', err)
-      setError('Failed to polish with Opus. Please try again.')
+      console.error('Architect polish error:', err)
+      setError('Failed to polish with Architect. Please try again.')
     } finally {
-      setIsOpusPolishing(false)
+      setIsArchitectPolishing(false)
     }
   }
 
@@ -1511,8 +1539,8 @@ export default function SectionBuilder({
                     </button>
                   </div>
 
-                  {/* Opus Polish Button - Opt-in for Pro/Agency users */}
-                  {isPaid && !refined && !isOpusPolishing && (
+                  {/* Architect Polish Button - Opt-in for Pro/Agency users */}
+                  {isPaid && !refined && !isArchitectPolishing && (
                     <motion.div
                       initial={{ opacity: 0, y: 10 }}
                       animate={{ opacity: 1, y: 0 }}
@@ -1529,15 +1557,15 @@ export default function SectionBuilder({
                           </p>
                           <div className="flex items-center justify-between">
                             <button
-                              onClick={handleOpusPolish}
-                              disabled={isOpusPolishing}
+                              onClick={handleArchitectPolish}
+                              disabled={isArchitectPolishing}
                               className="px-4 py-2 bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-500 hover:to-purple-500 text-white text-sm font-medium rounded-lg transition-all disabled:opacity-50 flex items-center gap-2"
                             >
                               <Sparkles className="w-3.5 h-3.5" />
                               <span>Polish with Architect</span>
                             </button>
                             <span className="text-xs text-zinc-500 font-mono">
-                              {tier === 'agency' ? '∞ credits' : `${opusCreditsRemaining}/30 credits left`}
+                              {tier === 'agency' ? '∞ credits' : `${architectCreditsRemaining}/30 credits left`}
                             </span>
                           </div>
                         </div>
@@ -1545,8 +1573,8 @@ export default function SectionBuilder({
                     </motion.div>
                   )}
 
-                  {/* Show Opus polishing state */}
-                  {isOpusPolishing && (
+                  {/* Show Architect polishing state */}
+                  {isArchitectPolishing && (
                     <motion.div
                       initial={{ opacity: 0 }}
                       animate={{ opacity: 1 }}
@@ -1567,7 +1595,7 @@ export default function SectionBuilder({
                     </motion.div>
                   )}
 
-                  {/* Show refinement changes if Opus polished */}
+                  {/* Show refinement changes if Architect polished */}
                   {refined && refinementChanges.length > 0 && (
                     <motion.div
                       initial={{ opacity: 0, y: 10 }}
@@ -1916,7 +1944,7 @@ export default function SectionBuilder({
                   Self-healing code...
                 </span>
               </div>
-            ) : stage === 'refining' || isUserRefining || isOpusPolishing ? (
+            ) : stage === 'refining' || isUserRefining || isArchitectPolishing ? (
               <div className="flex items-center gap-2">
                 <motion.div
                   animate={{ rotate: 180 }}
@@ -1926,7 +1954,7 @@ export default function SectionBuilder({
                   <Sparkles className="w-4 h-4" />
                 </motion.div>
                 <span className="text-sm font-medium bg-gradient-to-r from-violet-400 to-purple-400 bg-clip-text text-transparent">
-                  {isUserRefining ? 'Applying your changes...' : isOpusPolishing ? 'Architect is polishing...' : 'Refining...'}
+                  {isUserRefining ? 'Applying your changes...' : isArchitectPolishing ? 'Architect is polishing...' : 'Refining...'}
                 </span>
               </div>
             ) : (
@@ -2025,7 +2053,7 @@ export default function SectionBuilder({
 
         <div className="flex-1 flex min-h-0">
           {/* Show streaming code during generation or user refinement - ONLY for paid users */}
-          {((stage === 'generating' || stage === 'refining') && streamingCode) || ((isUserRefining || isOpusPolishing) && streamingCode) ? (
+          {((stage === 'generating' || stage === 'refining') && streamingCode) || ((isUserRefining || isArchitectPolishing) && streamingCode) ? (
             isPaid ? (
               <div className="flex-1 overflow-auto p-4 bg-zinc-950">
                 <pre className="text-xs font-mono whitespace-pre-wrap">

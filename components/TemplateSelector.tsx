@@ -520,7 +520,7 @@ export default function TemplateSelector({ onSelectTemplate }: TemplateSelectorP
                     <div className="w-10 h-10 md:w-12 md:h-12 mx-auto mb-2 rounded-xl bg-teal-500/10 border border-teal-500/20 flex items-center justify-center">
                       <span className="text-lg md:text-xl">⚡</span>
                     </div>
-                    <div className="text-teal-400 font-semibold text-sm md:text-base">Sonnet 4</div>
+                    <div className="text-teal-400 font-semibold text-sm md:text-base">Architect</div>
                     <div className="text-xs md:text-sm text-zinc-500">Writes code</div>
                   </motion.div>
                   
@@ -531,7 +531,7 @@ export default function TemplateSelector({ onSelectTemplate }: TemplateSelectorP
                     <div className="w-10 h-10 md:w-12 md:h-12 mx-auto mb-2 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center">
                       <span className="text-lg md:text-xl">✨</span>
                     </div>
-                    <div className="text-cyan-400 font-semibold text-sm md:text-base">Opus 4</div>
+                    <div className="text-cyan-400 font-semibold text-sm md:text-base">Architect</div>
                     <div className="text-xs md:text-sm text-zinc-500">Polishes & fixes</div>
                   </motion.div>
                   

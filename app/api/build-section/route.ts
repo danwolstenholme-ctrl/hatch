@@ -211,10 +211,16 @@ export async function POST(request: NextRequest) {
 
     // Verify project ownership using internal user ID
     const project = await getProjectById(projectId)
-    if (!project || project.user_id !== dbUser.id) {
+    if (!project) {
       return NextResponse.json(
         { error: 'Project not found' },
         { status: 404 }
+      )
+    }
+    if (project.user_id !== dbUser.id) {
+      return NextResponse.json(
+        { error: 'Unauthorized access to project' },
+        { status: 403 }
       )
     }
 

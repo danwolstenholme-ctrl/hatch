@@ -22,7 +22,7 @@ export interface PricingTier {
   name: 'free' | 'pro' | 'agency'
   price: number // USD per month
   generationsPerDay: number // -1 for unlimited
-  opusRefinementsPerMonth: number // -1 for unlimited
+  architectRefinementsPerMonth: number // -1 for unlimited
   features: string[]
 }
 
@@ -34,25 +34,25 @@ export const PRICING_TIERS: Record<string, PricingTier> = {
     name: 'free',
     price: 0,
     generationsPerDay: 5,
-    opusRefinementsPerMonth: 0,
+    architectRefinementsPerMonth: 0,
     features: ['5 generations per day', 'Live preview', 'Basic templates', 'Community support'],
   },
   architect: {
     name: 'pro',
     price: 29,
     generationsPerDay: -1,
-    opusRefinementsPerMonth: -1,
-    features: ['Unlimited generations', 'Unlimited Opus refinements', 'Full code export', 'Custom domains', 'The Living Site (Evolution Engine)'],
+    architectRefinementsPerMonth: -1,
+    features: ['Unlimited generations', 'Unlimited Architect refinements', 'Full code export', 'Custom domains', 'The Living Site (Evolution Engine)'],
   },
   demiurge: {
     name: 'agency',
     price: 199,
     generationsPerDay: -1,
-    opusRefinementsPerMonth: -1,
+    architectRefinementsPerMonth: -1,
     features: ['Everything in Architect', 'White-label client portal', 'The Replicator (Clone any site)', 'API Access', 'Priority 24/7 Support'],
   },
 }
 
 // Limits (can be overridden via env vars)
 export const FREE_DAILY_LIMIT = parseInt(process.env.FREE_DAILY_LIMIT || '5', 10)
-export const PRO_OPUS_MONTHLY_LIMIT = parseInt(process.env.PRO_OPUS_MONTHLY_LIMIT || '30', 10)
+export const PRO_ARCHITECT_MONTHLY_LIMIT = parseInt(process.env.PRO_ARCHITECT_MONTHLY_LIMIT || '30', 10)

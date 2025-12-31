@@ -342,7 +342,7 @@ export default function SectionProgress({
                       <div className="mt-2 pt-2 border-t border-zinc-800">
                         <div className="text-xs text-violet-400 flex items-center gap-1 font-medium">
                           <CheckCircle2 className="w-3 h-3" />
-                          Opus Polished
+                          Architect Polished
                         </div>
                         <ul className="text-[10px] text-zinc-400 mt-1 space-y-0.5 font-mono">
                           {changes.slice(0, 3).map((change, i) => (
@@ -425,7 +425,7 @@ export default function SectionProgress({
 
 // =============================================================================
 // SECTION COMPLETE INDICATOR
-// Shows when a section is complete, with Opus refinement status
+// Shows when a section is complete, with Architect refinement status
 // =============================================================================
 interface SectionCompleteIndicatorProps {
   sectionName: string
@@ -455,7 +455,7 @@ export function SectionCompleteIndicator({
           <div className="group relative inline-block">
             <span className="text-xs text-violet-400 flex items-center gap-1 cursor-help font-mono mt-1">
               <CheckCircle2 className="w-3 h-3" />
-              Opus 4.5 Polished
+              Architect Polished
               {changes.length > 0 && (
                 <span className="text-zinc-500">({changes.length} optimizations)</span>
               )}
@@ -465,7 +465,7 @@ export function SectionCompleteIndicator({
             {changes.length > 0 && (
               <div className="absolute bottom-full left-0 mb-2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
                 <div className="bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-xs whitespace-nowrap shadow-xl">
-                  <div className="font-medium text-violet-400 mb-1 font-mono">Opus 4.5 Optimizations:</div>
+                  <div className="font-medium text-violet-400 mb-1 font-mono">Architect Optimizations:</div>
                   <ul className="text-zinc-400 space-y-0.5 font-mono">
                     {changes.map((change, i) => (
                       <li key={i}>• {change}</li>

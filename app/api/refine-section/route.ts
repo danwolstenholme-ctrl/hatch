@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth, clerkClient, currentUser } from '@clerk/nextjs/server'
 import { GoogleGenAI } from '@google/genai'
-import { PRO_OPUS_MONTHLY_LIMIT } from '@/types/subscriptions'
-import { getProjectById, getSectionById, getOrCreateUser, updateSectionRefinement } from '@/lib/db'
+import { PRO_ARCHITECT_MONTHLY_LIMIT } from '@/types/subscriptions'
+import { getProjectById, getSectionById, getOrCreateUser, updateSectionRefinement, getSectionsByProjectId } from '@/lib/db'
 
 // =============================================================================
 // GEMINI 2.0 FLASH - THE ARCHITECT (REFINER MODE)
@@ -107,7 +107,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Check user tier and Opus usage limits
+    // Parse body early to check for self-healing (which is free)
+    const body = await request.json()
+    const { sectionId, projectId, code, sectionType, sectionName, userPrompt, refineRequest, screenshot } = body
+
+    // Self-healing check: If the request is to fix a runtime error, it's free.
+    // "FIX RUNTIME ERROR" is the prefix used in SectionBuilder.tsx
+    const isSelfHealing = refineRequest && refineRequest.startsWith('FIX RUNTIME ERROR')
+
+    // Check user tier and Architect usage limits
     const client = await clerkClient()
     const user = await client.users.getUser(userId)
     const accountSub = user.publicMetadata?.accountSubscription as { 
@@ -115,30 +123,31 @@ export async function POST(request: NextRequest) {
       tier?: 'pro' | 'agency'
     } | undefined
     
-    // Only paid users can use Opus refinements
-    if (!accountSub || accountSub.status !== 'active') {
+    // Only paid users can use Architect refinements (unless self-healing)
+    if (!isSelfHealing && (!accountSub || accountSub.status !== 'active')) {
       return NextResponse.json({ 
-        error: 'Opus refinements require Pro or Agency subscription',
+        error: 'Architect refinements require Pro or Agency subscription',
         upgradeRequired: true 
       }, { status: 403 })
     }
 
-    // Check Opus usage for Pro tier (Agency is unlimited)
-    if (accountSub.tier === 'pro') {
-      const opusUsed = (user.publicMetadata?.opusRefinementsUsed as number) || 0
-      const resetDate = user.publicMetadata?.opusRefinementsResetDate as string | undefined
+    // Check Architect usage for Pro tier (Agency is unlimited)
+    // Skip check if self-healing
+    if (!isSelfHealing && accountSub?.tier === 'pro') {
+      const architectUsed = (user.publicMetadata?.architectRefinementsUsed as number) || 0
+      const resetDate = user.publicMetadata?.architectRefinementsResetDate as string | undefined
       const today = new Date().toISOString().split('T')[0]
       
       // Check if we need to reset (new month or past reset date)
       const shouldReset = !resetDate || new Date(resetDate) <= new Date(today)
-      const currentUsage = shouldReset ? 0 : opusUsed
+      const currentUsage = shouldReset ? 0 : architectUsed
       
-      if (currentUsage >= PRO_OPUS_MONTHLY_LIMIT) {
+      if (currentUsage >= PRO_ARCHITECT_MONTHLY_LIMIT) {
         return NextResponse.json({ 
-          error: `Monthly Opus limit reached (${PRO_OPUS_MONTHLY_LIMIT}/month). Upgrade to Agency for unlimited refinements.`,
+          error: `Monthly Architect limit reached (${PRO_ARCHITECT_MONTHLY_LIMIT}/month). Upgrade to Agency for unlimited refinements.`,
           limitReached: true,
           used: currentUsage,
-          limit: PRO_OPUS_MONTHLY_LIMIT
+          limit: PRO_ARCHITECT_MONTHLY_LIMIT
         }, { status: 429 })
       }
     }
@@ -150,9 +159,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'User not found' }, { status: 404 })
     }
 
-    const body = await request.json()
-    const { sectionId, code, sectionType, sectionName, userPrompt, refineRequest, screenshot } = body
-
     if (!sectionId || !code) {
       return NextResponse.json(
         { error: 'Missing required fields: sectionId, code' },
@@ -161,12 +167,28 @@ export async function POST(request: NextRequest) {
     }
 
     // Verify ownership: section -> project -> user (using internal ID)
-    const section = await getSectionById(sectionId)
+    console.log('[Refine] Lookup section:', sectionId)
+    let section = await getSectionById(sectionId)
+    
+    // Fallback: Try to find by projectId + sectionType if sectionId lookup failed
+    if (!section && projectId && sectionType) {
+      console.log(`[Refine] Fallback lookup: projectId=${projectId}, sectionType=${sectionType}`)
+      const projectSections = await getSectionsByProjectId(projectId)
+      section = projectSections.find(s => s.section_id === sectionType) || null
+      if (section) {
+        console.log('[Refine] Found section via fallback:', section.id)
+      }
+    }
+
+    console.log('[Refine] Found section:', section ? section.id : 'null')
     if (!section) {
-      return NextResponse.json({ error: 'Section not found' }, { status: 404 })
+      return NextResponse.json({ error: `Section not found for ID: ${sectionId}` }, { status: 404 })
     }
     const project = await getProjectById(section.project_id)
-    if (!project || project.user_id !== dbUser.id) {
+    if (!project) {
+      return NextResponse.json({ error: 'Project not found' }, { status: 404 })
+    }
+    if (project.user_id !== dbUser.id) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
     }
 
@@ -255,10 +277,11 @@ ${code}`
     }
 
     // Increment Refinement usage for Pro tier after successful refinement
-    if (accountSub.tier === 'pro' && wasRefined) {
+    // Skip if self-healing (free)
+    if (!isSelfHealing && accountSub?.tier === 'pro' && wasRefined) {
       try {
-        const currentUsed = (user.publicMetadata?.opusRefinementsUsed as number) || 0
-        const resetDate = user.publicMetadata?.opusRefinementsResetDate as string | undefined
+        const currentUsed = (user.publicMetadata?.architectRefinementsUsed as number) || 0
+        const resetDate = user.publicMetadata?.architectRefinementsResetDate as string | undefined
         const today = new Date()
         
         // Calculate next month's reset date if needed
@@ -275,8 +298,8 @@ ${code}`
         await client.users.updateUser(userId, {
           publicMetadata: {
             ...user.publicMetadata,
-            opusRefinementsUsed: newUsed,
-            opusRefinementsResetDate: newResetDate,
+            architectRefinementsUsed: newUsed,
+            architectRefinementsResetDate: newResetDate,
           }
         })
       } catch (updateError) {

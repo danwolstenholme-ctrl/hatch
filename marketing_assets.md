@@ -61,8 +61,8 @@ This isn't a loading spinner. It's a brain scan.
 [Video of the ThinkingLog component]
 
 **Tweet 4 (The Challenge):**
-To @OpenAI and @AnthropicAI:
-You built the models.
+To the model builders:
+You built the brains.
 We built the body.
 HatchIt is the first interface that lets the AI reach through the screen and touch the DOM directly.
 Your move.

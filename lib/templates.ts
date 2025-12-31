@@ -589,9 +589,9 @@ export const getOptionalSections = (template: Template): Section[] => {
 // =============================================================================
 // | Model           | Role     | When                                         |
 // |-----------------|----------|----------------------------------------------|
-// | Sonnet 4.5      | Builder  | First generation per section                 |
-// | Opus 4.5        | Refiner  | Auto-runs after each section (silent/polish) |
-// | Gemini 2.5 Pro  | Auditor  | Optional "Final Audit" after all complete    |
+// | Architect       | Builder  | First generation per section                 |
+// | Architect       | Refiner  | Auto-runs after each section (silent/polish) |
+// | Architect       | Auditor  | Optional "Final Audit" after all complete    |
 // =============================================================================
 
 // Build state for tracking progress
@@ -601,8 +601,8 @@ export interface BuildState {
   completedSections: string[]
   skippedSections: string[]
   sectionCode: Record<string, string> // sectionId -> generated code
-  sectionRefined: Record<string, boolean> // sectionId -> was it refined by Opus?
-  sectionChanges: Record<string, string[]> // sectionId -> what Opus changed
+  sectionRefined: Record<string, boolean> // sectionId -> was it refined by Architect?
+  sectionChanges: Record<string, string[]> // sectionId -> what Architect changed
   // Gemini final audit (optional, end-of-build)
   finalAuditComplete: boolean
   finalAuditChanges: string[] | null // What Gemini found/fixed, null = not run yet
