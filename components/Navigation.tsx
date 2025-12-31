@@ -53,8 +53,8 @@ export default function Navigation() {
             >
               <HatchLogo className="w-9 h-9" />
             </motion.div>
-            <span className="text-xl font-bold group-hover:from-teal-400 group-hover:to-cyan-400 transition-all duration-300">
-              <span className="text-white">Hatch</span><span className="bg-gradient-to-r from-emerald-500 to-emerald-400 bg-clip-text text-transparent">It</span>
+            <span className="text-xl font-bold group-hover:from-purple-400 group-hover:to-pink-400 transition-all duration-300">
+              <span className="text-white">The</span><span className="bg-gradient-to-r from-purple-500 to-pink-500 bg-clip-text text-transparent ml-1">Architect</span>
             </span>
           </Link>
           

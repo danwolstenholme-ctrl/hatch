@@ -39,7 +39,7 @@ const HatchLogoMenu = ({ progress, onGoHome, onStartOver, onViewBrand, brandConf
         className="relative flex items-center gap-2 px-2 py-1.5 rounded-xl hover:bg-zinc-800/50 transition-colors cursor-pointer z-10"
         whileHover={{ scale: 1.02 }}
         whileTap={{ scale: 0.98 }}
-        title="HatchIt Menu"
+        title="The Architect Menu"
       >
         {/* Animated Logo */}
         <motion.div
@@ -53,8 +53,8 @@ const HatchLogoMenu = ({ progress, onGoHome, onStartOver, onViewBrand, brandConf
         
         {/* Logo text */}
         <span className="hidden sm:flex items-center text-base font-bold">
-          <span className="text-white">Hatch</span>
-          <span className="bg-gradient-to-r from-emerald-500 to-emerald-400 bg-clip-text text-transparent">It</span>
+          <span className="text-white">The</span>
+          <span className="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent ml-1">Architect</span>
         </span>
         
         {/* Progress indicator glow */}
