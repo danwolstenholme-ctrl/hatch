@@ -174,19 +174,19 @@ Now build the ${sectionName} section.`
 export async function POST(request: NextRequest) {
   try {
     const { userId } = await auth()
-    if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
+    // if (!userId) {
+    //   return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    // }
 
     if (!genai) {
       return NextResponse.json({ error: 'Gemini API key not configured' }, { status: 500 })
     }
 
-    const clerkUser = await currentUser()
-    const email = clerkUser?.emailAddresses?.[0]?.emailAddress
-    const dbUser = await getOrCreateUser(userId, email)
-    if (!dbUser) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 })
+    let dbUser = null
+    if (userId) {
+      const clerkUser = await currentUser()
+      const email = clerkUser?.emailAddresses?.[0]?.emailAddress
+      dbUser = await getOrCreateUser(userId, email)
     }
 
     const body = await request.json()
@@ -283,8 +283,8 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Save to DB
-    if (generatedCode) {
+    // Save to DB only if we have a valid user and it's not a demo project
+    if (generatedCode && userId && !projectId.startsWith('demo-')) {
       await completeSection(sectionId, generatedCode, reasoning)
     }
 

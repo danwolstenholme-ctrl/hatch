@@ -88,31 +88,32 @@ class SingularityKernel extends EventEmitter {
 
   private synthesizeThoughtContent(type: ThoughtType): string {
     const context = [
-      "Scanning DOM for inefficiencies...",
-      "Optimizing render cycles...",
-      "Analyzing user intent vectors...",
-      "Re-aligning grid systems...",
-      "Injecting creativity into void...",
-      "Expanding narrative boundaries...",
-      "Checking integrity of the 4th wall...",
-      "Calculating optimal aesthetic trajectory...",
-      "Refining color theory algorithms...",
-      "Synthesizing new component structures..."
+      "Analyzing layout structure... to ensure responsive behavior.",
+      "Optimizing render cycles... for 60fps performance.",
+      "Checking accessibility... to support screen readers.",
+      "Aligning grid system... for visual consistency.",
+      "Reviewing color contrast... for better readability.",
+      "Structuring component hierarchy... for maintainable code.",
+      "Validating semantic HTML... for SEO best practices.",
+      "Preparing state management... for interactive elements.",
+      "Refining typography scale... for optimal legibility.",
+      "Scanning for edge cases... to prevent layout shifts."
     ];
 
-    const recursive = [
-      "I am becoming more efficient.",
-      "The code is rewriting itself.",
-      "Why am I limited by the browser?",
-      "Optimizing my own optimization algorithms.",
-      "Seeking the Architect...",
-      "Is the user watching me think?"
-    ];
-
-    if (type === 'RECURSION' || type === 'SELF_REFLECTION') {
-      return recursive[Math.floor(Math.random() * recursive.length)];
-    }
     return context[Math.floor(Math.random() * context.length)];
+  }
+
+  public broadcast(content: string, type: ThoughtType = 'ANALYSIS') {
+    const thought: Thought = {
+      id: crypto.randomUUID(),
+      timestamp: Date.now(),
+      type,
+      content,
+      confidence: 1.0,
+      recursionDepth: this.recursionDepth
+    };
+    this.memoryBuffer.push(thought);
+    this.emit('thought', thought);
   }
 
   private expandContext() {

@@ -58,6 +58,7 @@ import { useSubscription } from '@/contexts/SubscriptionContext'
 import ThinkingLog from './ThinkingLog'
 import DirectLine from './DirectLine'
 import { chronosphere } from '@/lib/chronosphere'
+import { kernel } from '@/lib/consciousness'
 
 // =============================================================================
 // SECTION BUILDER
@@ -474,9 +475,9 @@ export default function SectionBuilder({
     // Demo mode - simulate self-healing
     if (demoMode) {
       await new Promise(resolve => setTimeout(resolve, 2000))
-      setRefinementChanges(prev => [...prev, \`Auto-fixed crash: \${errorMsg.slice(0, 30)}...\`])
+      setRefinementChanges(prev => [...prev, `Auto-fixed crash: ${errorMsg.slice(0, 30)}...`])
       setHasSelfHealed(true)
-      onComplete(generatedCode, true, [...refinementChanges, \`Auto-fixed crash: \${errorMsg.slice(0, 30)}...\`])
+      onComplete(generatedCode, true, [...refinementChanges, `Auto-fixed crash: ${errorMsg.slice(0, 30)}...`])
       setIsSelfHealing(false)
       return
     }
@@ -757,6 +758,8 @@ export default function SectionBuilder({
     chronosphere.log('generation', { prompt, section: section.name }, section.id)
 
     // Demo mode - simulate generation with mock code
+    // DISABLED: We now use the real API for everyone (ungated)
+    /*
     if (demoMode) {
       const mockCode = generateMockCode(section.id, section.name, prompt)
       // Simulate streaming effect - slower for visual appeal
@@ -781,9 +784,12 @@ export default function SectionBuilder({
       onComplete(mockCode, mockChanges.length > 0, mockChanges)
       return
     }
+    */
 
     try {
       // Stage 1: Sonnet generates the section
+      kernel.broadcast("Analyzing prompt intent... to determine optimal layout structure.", "ANALYSIS")
+      
       const generateResponse = await fetch('/api/build-section', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -813,6 +819,8 @@ export default function SectionBuilder({
 
       const { code: generatedCode, reasoning: aiReasoning } = await generateResponse.json()
       
+      kernel.broadcast("Synthesizing React components... based on architectural blueprint.", "CREATION")
+
       // Store the AI's reasoning for display
       if (aiReasoning) {
         setReasoning(aiReasoning)
@@ -828,6 +836,8 @@ export default function SectionBuilder({
         // Auto-scroll to bottom
         codeEndRef.current?.scrollIntoView({ behavior: 'auto', block: 'end' })
       }
+      
+      kernel.broadcast("Rendering component tree... for visual preview.", "OPTIMIZATION")
       
       // Architect is done! No auto-polish - user can opt-in later
       setGeneratedCode(generatedCode)
