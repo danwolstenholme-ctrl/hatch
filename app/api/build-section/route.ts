@@ -262,7 +262,7 @@ export async function POST(request: NextRequest) {
       ]
     })
 
-    const responseText = response.text || ''
+    const responseText = response.response.text() || ''
     console.log('Gemini Raw Response:', responseText.slice(0, 500))
 
     // Try to parse as JSON

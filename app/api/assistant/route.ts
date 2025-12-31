@@ -223,7 +223,7 @@ export async function POST(request: NextRequest) {
       contents
     })
 
-    const assistantMessage = response.text || 'Something went wrong. Try again.'
+    const assistantMessage = response.response.text() || 'Something went wrong. Try again.'
 
     logAssistantUsage(
       userId,
