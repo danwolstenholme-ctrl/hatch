@@ -52,9 +52,12 @@ function FullSitePreviewFrame({ code, deviceView }: { code: string; deviceView: 
     const hooksDestructure = `const { useState, useEffect, useMemo, useCallback, useRef, Fragment } = React;`
 
     let cleanedCode = code
-      .replace(/export\s+default\s+/g, '')
-      .replace(/export\s+/g, '')
+      // Remove imports
       .replace(/import\s+.*?from\s+['"].*?['"]\s*;?/g, '')
+      // Remove export default and named exports
+      .replace(/export\s+default\s+/g, '')
+      .replace(/export\s+(const|function|class|let|var)\s+/g, '$1 ')
+      // Fix React.* usage
       .replace(/React\.useState/g, 'useState')
       .replace(/React\.useEffect/g, 'useEffect')
       .replace(/React\.useMemo/g, 'useMemo')
@@ -99,6 +102,19 @@ function FullSitePreviewFrame({ code, deviceView }: { code: string; deviceView: 
         }
       }
     }
+  </script>
+  <script>
+    window.onerror = function(message, source, lineno, colno, error) {
+      console.error('Preview Error:', message);
+      const root = document.getElementById('root');
+      if (root) {
+        root.innerHTML = '<div style="color: #ef4444; padding: 20px; font-family: monospace; background: #18181b; border-radius: 8px; margin: 20px; border: 1px solid #3f3f46;">' +
+          '<h3 style="font-weight: bold; margin-bottom: 10px;">Runtime Error</h3>' +
+          '<div style="margin-bottom: 10px;">' + message + '</div>' +
+          '<div style="opacity: 0.7; font-size: 0.9em;">Line: ' + lineno + '</div>' +
+          '</div>';
+      }
+    };
   </script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
