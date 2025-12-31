@@ -1221,14 +1221,14 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
                         key={section.id}
                         onClick={() => {
                           if (isCompleted) {
-                            setEditingSectionIndex(index)
+                            // Go back to building mode for this section
+                            setBuildState(prev => prev ? ({ ...prev, currentSectionIndex: index }) : null)
+                            setPhase('building')
                           }
                         }}
                         className={`w-full text-left p-3 rounded-lg mb-1 transition-all group ${
-                          editingSectionIndex === index
-                            ? 'bg-purple-500/10 border border-purple-500/20'
-                            : isCompleted
-                            ? 'hover:bg-zinc-800/50 border border-transparent'
+                          isCompleted
+                            ? 'hover:bg-zinc-800/50 border border-transparent cursor-pointer'
                             : 'opacity-50 cursor-not-allowed border border-transparent'
                         }`}
                       >
@@ -1243,9 +1243,7 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
                             {isCompleted ? <CheckCircle2 className="w-3.5 h-3.5" /> : index + 1}
                           </div>
                           <div className="flex-1 min-w-0">
-                            <h3 className={`text-sm font-medium truncate ${
-                              editingSectionIndex === index ? 'text-purple-300' : 'text-zinc-300 group-hover:text-white'
-                            }`}>{section.name}</h3>
+                            <h3 className="text-sm font-medium truncate text-zinc-300 group-hover:text-white">{section.name}</h3>
                           </div>
                           {isCompleted && (
                             <Edit3 className="w-3.5 h-3.5 text-zinc-600 group-hover:text-zinc-400" />
