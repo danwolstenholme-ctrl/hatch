@@ -46,14 +46,6 @@ export const metadata: Metadata = {
     siteName: 'HatchIt',
     title: 'HatchIt | The Singularity Interface',
     description: 'Not just a website builder. A recursive, self-healing architectural system.',
-    images: [
-      {
-        url: '/assets/og-1200x630.png',
-        width: 1200,
-        height: 630,
-        alt: 'HatchIt — The Architect',
-      },
-    ],
   },
   twitter: {
     card: 'summary_large_image',
@@ -61,7 +53,6 @@ export const metadata: Metadata = {
     creator: '@HatchItD',
     title: 'HatchIt — The Architect | AI Website Builder',
     description: 'The prompt is dead. Speak your intent. Watch the code evolve. The Singularity Interface is here.',
-    images: ['/assets/og-1200x630.png'],
   },
   robots: {
     index: true,
