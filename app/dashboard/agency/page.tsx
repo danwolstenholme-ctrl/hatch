@@ -2,7 +2,7 @@
 
 import { useState, useEffect, ReactNode } from 'react'
 import { motion } from 'framer-motion'
-import { Activity, Bot, Brain, Cpu, Globe, Shield, Terminal, Zap, Copy } from 'lucide-react'
+import { Activity, Bot, Brain, Cpu, Globe, Shield, Terminal, Zap, Copy, Plus, ArrowRight } from 'lucide-react'
 import ReplicatorModal from '@/components/ReplicatorModal'
 import { useRouter } from 'next/navigation'
 
@@ -10,8 +10,20 @@ export default function AgencyDashboard() {
   const [systemLoad, setSystemLoad] = useState(0)
   const [activeAgents, setActiveAgents] = useState(0)
   const [showReplicator, setShowReplicator] = useState(false)
+  const [onboardingData, setOnboardingData] = useState<any>(null)
   const router = useRouter()
   
+  useEffect(() => {
+    const data = localStorage.getItem('hatch_onboarding_data')
+    if (data) {
+      try {
+        setOnboardingData(JSON.parse(data))
+      } catch (e) {
+        console.error('Failed to parse onboarding data', e)
+      }
+    }
+  }, [])
+
   useEffect(() => {
     // Simulate system activity
     const interval = setInterval(() => {
@@ -95,6 +107,20 @@ export default function AgencyDashboard() {
           </div>
 
           <div className="grid grid-cols-2 gap-4">
+            {onboardingData && (
+              <ActionCard 
+                title="CONTINUE_SETUP" 
+                description={`Initialize ${onboardingData.brandName || 'Entity'}`}
+                icon={<ArrowRight className="w-6 h-6 text-emerald-400" />}
+                onClick={() => router.push('/builder?mode=onboarding')}
+              />
+            )}
+            <ActionCard 
+              title="NEW_PROJECT" 
+              description="Initialize a new blank entity."
+              icon={<Plus className="w-6 h-6 text-blue-400" />}
+              onClick={() => router.push('/builder')}
+            />
             <ActionCard 
               title="THE_REPLICATOR" 
               description="Clone any website's DNA instantly."

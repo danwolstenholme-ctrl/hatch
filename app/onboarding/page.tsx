@@ -26,6 +26,15 @@ export default function OnboardingPage() {
   }
 
   const handleComplete = () => {
+    // Save onboarding data to localStorage so the dashboard or builder can pick it up
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('hatch_onboarding_data', JSON.stringify({
+        brandName,
+        description,
+        archetype,
+        timestamp: Date.now()
+      }))
+    }
     router.push('/dashboard/agency')
   }
 

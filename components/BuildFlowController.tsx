@@ -52,8 +52,8 @@ function FullSitePreviewFrame({ code, deviceView }: { code: string; deviceView: 
     const hooksDestructure = `const { useState, useEffect, useMemo, useCallback, useRef, Fragment } = React;`
 
     let cleanedCode = code
-      // Remove imports
-      .replace(/import\s+.*?from\s+['"].*?['"]\s*;?/g, '')
+      // Remove imports (handling multiline)
+      .replace(/import\s+[\s\S]*?from\s+['"].*?['"]\s*;?/g, '')
       // Remove export default and named exports
       .replace(/export\s+default\s+/g, '')
       .replace(/export\s+(const|function|class|let|var)\s+/g, '$1 ')
@@ -266,7 +266,7 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
   const [showReset, setShowReset] = useState(false)
   const [isReplicationReady, setIsReplicationReady] = useState(false)
 
-  // Handle Replicator Mode
+  // Handle Replicator Mode & Onboarding Mode
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
     const mode = params.get('mode')
@@ -299,6 +299,30 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
         setError('Failed to load replicated project data')
         setIsReplicationReady(true) // Proceed anyway to avoid hanging
       }
+    } else if (mode === 'onboarding') {
+      try {
+        const onboardingDataStr = localStorage.getItem('hatch_onboarding_data')
+        if (onboardingDataStr) {
+          const onboardingData = JSON.parse(onboardingDataStr)
+          
+          // Update template with onboarding data
+          const newTemplate: Template = {
+            ...SINGULARITY_TEMPLATE,
+            name: onboardingData.brandName || 'New Entity',
+            description: onboardingData.description || 'A new digital presence.',
+          }
+          
+          setSelectedTemplate(newTemplate)
+          setBrandConfig({
+            brandName: onboardingData.brandName,
+            description: onboardingData.description,
+            archetype: onboardingData.archetype
+          })
+        }
+      } catch (e) {
+        console.error('Failed to load onboarding data', e)
+      }
+      setIsReplicationReady(true)
     } else {
       setIsReplicationReady(true)
     }
@@ -395,14 +419,14 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
     const sections = customizedSections.length > 0 ? customizedSections : template.sections
     
     const brand: DbBrandConfig = {
-      brandName: template.name === 'The Singularity' ? 'Untitled Project' : template.name,
+      brandName: brandConfig?.brandName || (template.name === 'The Singularity' ? 'Untitled Project' : template.name),
       colors: {
         primary: '#10b981', // Emerald-500
         secondary: '#09090b', // Zinc-950
         accent: '#34d399' // Emerald-400
       },
       fontStyle: 'Inter',
-      styleVibe: 'modern'
+      styleVibe: brandConfig?.archetype ? 'modern' : 'modern'
     }
 
     const setupDemoMode = () => {
