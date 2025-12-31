@@ -496,6 +496,9 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
     }
 
     try {
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), 15000) // 15s timeout for creation
+
       const response = await fetch('/api/project', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -505,7 +508,9 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
           sections: sections,
           brand: brand,
         }),
+        signal: controller.signal
       })
+      clearTimeout(timeoutId)
 
       if (!response.ok) {
         console.warn('API failed, falling back to demo mode')
@@ -543,7 +548,11 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
 
     setIsLoading(true)
     try {
-      const response = await fetch(`/api/project/${projectId}`)
+      const controller = new AbortController()
+      const timeoutId = setTimeout(() => controller.abort(), 10000) // 10s timeout
+
+      const response = await fetch(`/api/project/${projectId}`, { signal: controller.signal })
+      clearTimeout(timeoutId)
       
       if (response.status === 403 || response.status === 404) {
         console.log('Project not found, starting fresh')
@@ -911,9 +920,9 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
 
   if (isLoading) {
     // Show different message depending on if we're loading existing vs creating new
-    const loadingMessage = phase === 'initializing'
-      ? 'Initializing The Architect...' 
-      : 'Resuming your project...'
+    let loadingMessage = 'Initializing The Architect...'
+    if (existingProjectId) loadingMessage = 'Resuming your project...'
+    else if (!isLoaded) loadingMessage = 'Connecting to neural network...'
     
     return (
       <div className="min-h-screen bg-zinc-950 flex flex-col items-center justify-center gap-4">
