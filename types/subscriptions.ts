@@ -39,14 +39,14 @@ export const PRICING_TIERS: Record<string, PricingTier> = {
   },
   pro: {
     name: 'pro',
-    price: 39,
+    price: 19,
     generationsPerDay: -1,
     opusRefinementsPerMonth: 30,
     features: ['Unlimited generations', '30 Opus refinements/month', 'Priority support', 'Custom domains'],
   },
   agency: {
     name: 'agency',
-    price: 99,
+    price: 49,
     generationsPerDay: -1,
     opusRefinementsPerMonth: -1,
     features: ['Unlimited everything', 'White-label exports', 'API access', 'Dedicated support'],

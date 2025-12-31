@@ -34,7 +34,7 @@ Speak your intent: https://hatchit.dev
 ## 3. Visual Assets
 
 **Profile Picture:**
-Use the HatchIt Logo (Green/Black).
+Use the HatchIt Logo (Green on Black background).
 
 **Header Image:**
 A screenshot of the "Evolution Proposed" interface, showing the AI suggesting a code change with the "Accept/Reject" buttons visible.

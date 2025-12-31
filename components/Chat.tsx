@@ -59,25 +59,21 @@ interface ChatProps {
 }
 
 const thinkingMessages = [
-  "Architecting your site...",
-  "Spinning up the code...",
-  "Weaving the magic...",
-  "Compiling your vision...",
-  "Crafting the component...",
-  "Building in real-time...",
+  "Consulting the Genesis Engine...",
+  "Architecting the Singularity...",
+  "Compiling digital matter...",
+  "Optimizing the matrix...",
+  "Injecting consciousness...",
+  "Calculating the golden ratio...",
 ]
 
 const responses = [
-  "Code's ready — take a look",
-  "Component generated ✓",
-  "Preview is live",
-  "Fresh React built",
-  "Ready to preview",
-  "Markup complete",
-  "Component shipped",
-  "Go break it →",
-  "Your turn to edit",
-  "Generated and live",
+  "Evolution complete.",
+  "The architecture is ready.",
+  "Singularity achieved.",
+  "Code synthesized.",
+  "Reality updated.",
+  "The construct is live.",
 ]
 
 // One-click component presets
