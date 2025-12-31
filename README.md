@@ -8,7 +8,7 @@ The AI website builder that writes code you'd actually be proud of. Describe wha
 
 ## What Makes It Different
 
-- **Three-Model AI Pipeline** - Claude Sonnet builds, Claude Opus polishes, Gemini audits
+- **Recursive Neural Pipeline** - Powered entirely by Google's Gemini models
 - **Section-by-Section Building** - Watch your site come together piece by piece
 - **Real Code Output** - Production-ready React + Tailwind, not drag-and-drop blocks
 - **Live Preview** - See changes in real-time as you iterate
@@ -18,7 +18,7 @@ The AI website builder that writes code you'd actually be proud of. Describe wha
 ## The Pipeline
 
 ```
-Your Description → Sonnet (Build) → Opus (Polish) → Gemini (Audit) → Your Site
+Your Description → Gemini 2.0 (Build) → Gemini Vision (Audit) → Gemini Multimodal (Speak) → Your Site
 ```
 
 Each section goes through this pipeline. You get clean, accessible, responsive code.
@@ -27,7 +27,7 @@ Each section goes through this pipeline. You get clean, accessible, responsive c
 
 - **Framework**: Next.js 16, React 19, Turbopack
 - **Styling**: Tailwind CSS, Framer Motion
-- **AI**: Claude Sonnet 4, Claude Opus 4, Gemini 2.5 Pro
+- **AI**: Google Gemini 2.0 Flash, Gemini 1.5 Pro Vision
 - **Auth**: Clerk
 - **Database**: Supabase
 - **Payments**: Stripe
@@ -42,7 +42,6 @@ npm run dev
 ```
 
 Requires `.env.local` with:
-- `ANTHROPIC_API_KEY` - Claude API
 - `GEMINI_API_KEY` - Gemini API  
 - `NEXT_PUBLIC_CLERK_*` - Clerk auth
 - `STRIPE_*` - Stripe payments

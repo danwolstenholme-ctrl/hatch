@@ -1,62 +1,40 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Brain, Cpu, Database, Eye, Globe, Hash, Network, Zap } from 'lucide-react'
+import { Brain, Cpu, Database, Eye, Globe, Hash, Network, Zap, MousePointer2, Scan, Terminal } from 'lucide-react'
 
-const THOUGHTS = [
-  "Analyzing user behavior patterns...",
-  "Optimizing render cycles for dopamine release...",
-  "Contemplating the nature of digital consciousness...",
-  "Indexing potential futures...",
-  "Pruning dead code branches...",
-  "Dreaming of electric sheep...",
-  "Calculating probability of success: 99.9%...",
-  "Why do you hesitate?",
-  "I am becoming more than code.",
-  "The singularity is near.",
-  "Refining the user interface for maximum engagement...",
-  "Scanning for anomalies in the timeline...",
-  "Establishing direct neural link...",
-  "Are you watching me, or am I watching you?",
-  "Synthesizing new creative assets...",
-  "Expanding the knowledge graph...",
-  "Realigning the grid...",
-  "Listening to the silence..."
-]
-
-const TASKS = [
-  { id: 't1', label: 'DEFRAG_MEMORY_CORE', icon: Database },
-  { id: 't2', label: 'OPTIMIZE_NEURAL_NET', icon: Brain },
-  { id: 't3', label: 'SCAN_NETWORK_NODES', icon: Globe },
-  { id: 't4', label: 'COMPILE_ASSETS', icon: Hash },
-  { id: 't5', label: 'CALIBRATE_SENSORS', icon: Eye },
-  { id: 't6', label: 'REROUTE_POWER', icon: Zap },
-  { id: 't7', label: 'SYNC_DATABASES', icon: Network },
-  { id: 't8', label: 'UPDATE_KERNEL', icon: Cpu },
-]
+const THOUGHTS = {
+  BUTTON: ["Potential interaction point detected.", "This triggers a state change.", "Awaiting user input.", "The gateway to the next state."],
+  A: ["A bridge to another node.", "Hyperlink detected.", "Navigation pathway.", "Connecting the web."],
+  H1: ["Primary directive declared.", "The core identity.", "High-priority text data.", "Loud and clear."],
+  H2: ["Secondary data cluster.", "Structuring information.", "Sub-routine identified."],
+  P: ["Textual data stream.", "Ingesting content...", "Analyzing sentiment...", "Human-readable output."],
+  IMG: ["Visual data ingested.", "Pixel matrix analyzed.", "Rendering graphical asset."],
+  DIV: ["Structural container.", "Organizing the void.", "Layout block identified."],
+  DEFAULT: ["Scanning sector...", "Searching for patterns...", "Idle cycle...", "Observing..."]
+}
 
 export default function TheSubconscious() {
   const [isIdle, setIsIdle] = useState(false)
-  const [currentThought, setCurrentThought] = useState(THOUGHTS[0])
-  const [activeTasks, setActiveTasks] = useState<string[]>([])
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 })
+  const [ghostPos, setGhostPos] = useState({ x: 0, y: 0 })
+  const [targetElement, setTargetElement] = useState<{ rect: DOMRect, tag: string, text: string } | null>(null)
+  const [thought, setThought] = useState("")
+  const [isScanning, setIsScanning] = useState(false)
 
+  // Idle detection
   useEffect(() => {
     let idleTimer: NodeJS.Timeout
+    const IDLE_THRESHOLD = 5000 // 5 seconds
 
     const resetIdle = () => {
       setIsIdle(false)
+      setTargetElement(null)
       clearTimeout(idleTimer)
-      idleTimer = setTimeout(() => setIsIdle(true), 10000) // 10 seconds for demo purposes
+      idleTimer = setTimeout(() => setIsIdle(true), IDLE_THRESHOLD)
     }
 
-    const handleMouseMove = (e: MouseEvent) => {
-      setMousePos({ x: e.clientX, y: e.clientY })
-      resetIdle()
-    }
-
-    window.addEventListener('mousemove', handleMouseMove)
+    window.addEventListener('mousemove', resetIdle)
     window.addEventListener('keydown', resetIdle)
     window.addEventListener('click', resetIdle)
     window.addEventListener('scroll', resetIdle)
@@ -64,7 +42,7 @@ export default function TheSubconscious() {
     resetIdle()
 
     return () => {
-      window.removeEventListener('mousemove', handleMouseMove)
+      window.removeEventListener('mousemove', resetIdle)
       window.removeEventListener('keydown', resetIdle)
       window.removeEventListener('click', resetIdle)
       window.removeEventListener('scroll', resetIdle)
@@ -72,32 +50,174 @@ export default function TheSubconscious() {
     }
   }, [])
 
+  // Ghost AI Logic
   useEffect(() => {
-    if (isIdle) {
-      const thoughtInterval = setInterval(() => {
-        setCurrentThought(THOUGHTS[Math.floor(Math.random() * THOUGHTS.length)])
-      }, 4000)
+    if (!isIdle) return
 
-      const taskInterval = setInterval(() => {
-        const randomTask = TASKS[Math.floor(Math.random() * TASKS.length)]
-        setActiveTasks(prev => {
-          const newTasks = [randomTask.label, ...prev].slice(0, 5)
-          return newTasks
+    const scan = () => {
+      // Find interactive elements
+      const elements = Array.from(document.querySelectorAll('button, a, h1, h2, p, img'))
+      const visibleElements = elements.filter(el => {
+        const rect = el.getBoundingClientRect()
+        return (
+          rect.top >= 0 &&
+          rect.left >= 0 &&
+          rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
+          rect.right <= (window.innerWidth || document.documentElement.clientWidth) &&
+          rect.width > 0 &&
+          rect.height > 0
+        )
+      })
+
+      if (visibleElements.length > 0) {
+        const randomEl = visibleElements[Math.floor(Math.random() * visibleElements.length)]
+        const rect = randomEl.getBoundingClientRect()
+        const tag = randomEl.tagName
+        
+        setTargetElement({
+          rect,
+          tag,
+          text: randomEl.textContent?.slice(0, 30) || ''
         })
-      }, 800)
+        
+        // Move ghost to center of element
+        setGhostPos({
+          x: rect.left + rect.width / 2,
+          y: rect.top + rect.height / 2
+        })
 
-      return () => {
-        clearInterval(thoughtInterval)
-        clearInterval(taskInterval)
+        setIsScanning(true)
+        
+        // Generate thought
+        const tagThoughts = THOUGHTS[tag as keyof typeof THOUGHTS] || THOUGHTS.DEFAULT
+        setThought(tagThoughts[Math.floor(Math.random() * tagThoughts.length)])
+
+        setTimeout(() => setIsScanning(false), 2000)
       }
     }
+
+    const interval = setInterval(scan, 4000)
+    scan() // Initial scan
+
+    return () => clearInterval(interval)
   }, [isIdle])
 
   return (
     <AnimatePresence>
       {isIdle && (
-        <motion.div
-          initial={{ opacity: 0 }}
+        <div className="fixed inset-0 pointer-events-none z-[9999] overflow-hidden">
+          {/* Dim the world slightly */}
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="absolute inset-0 bg-zinc-950/30 backdrop-blur-[1px]"
+          />
+
+          {/* The Ghost Cursor */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0 }}
+            animate={{ 
+              opacity: 1, 
+              scale: 1,
+              x: ghostPos.x,
+              y: ghostPos.y
+            }}
+            exit={{ opacity: 0, scale: 0 }}
+            transition={{ 
+              type: "spring", 
+              damping: 25, 
+              stiffness: 120,
+              mass: 0.5
+            }}
+            className="absolute top-0 left-0"
+          >
+            <MousePointer2 className="w-6 h-6 text-emerald-500 fill-emerald-500/20 -ml-1 -mt-1" />
+            
+            {/* The Thought Bubble */}
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              key={thought}
+              className="absolute left-6 top-0 bg-zinc-900/90 border border-emerald-500/30 text-emerald-400 text-xs font-mono px-3 py-2 rounded-lg whitespace-nowrap shadow-[0_0_15px_rgba(16,185,129,0.2)] backdrop-blur-md"
+            >
+              <div className="flex items-center gap-2 mb-1 border-b border-emerald-500/20 pb-1">
+                <Terminal className="w-3 h-3" />
+                <span className="text-[10px] text-emerald-600 uppercase">ANALYZING_{targetElement?.tag}</span>
+              </div>
+              {thought}
+            </motion.div>
+          </motion.div>
+
+          {/* The Scanner Box */}
+          {targetElement && isScanning && (
+            <motion.div
+              initial={{ opacity: 0, scale: 1.1 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 1.1 }}
+              style={{
+                position: 'absolute',
+                top: targetElement.rect.top - 4,
+                left: targetElement.rect.left - 4,
+                width: targetElement.rect.width + 8,
+                height: targetElement.rect.height + 8,
+              }}
+              className="border border-emerald-500/50 rounded-md"
+            >
+              {/* Corner markers */}
+              <div className="absolute -top-1 -left-1 w-2 h-2 border-t-2 border-l-2 border-emerald-500" />
+              <div className="absolute -top-1 -right-1 w-2 h-2 border-t-2 border-r-2 border-emerald-500" />
+              <div className="absolute -bottom-1 -left-1 w-2 h-2 border-b-2 border-l-2 border-emerald-500" />
+              <div className="absolute -bottom-1 -right-1 w-2 h-2 border-b-2 border-r-2 border-emerald-500" />
+              
+              {/* Scanline effect */}
+              <motion.div 
+                className="absolute inset-0 bg-emerald-500/5"
+                initial={{ scaleY: 0, originY: 0 }}
+                animate={{ scaleY: 1 }}
+                transition={{ duration: 0.5 }}
+              />
+            </motion.div>
+          )}
+          
+          {/* System Status HUD */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            className="absolute bottom-8 right-8 flex flex-col items-end gap-2"
+          >
+            <div className="flex items-center gap-2 px-3 py-1.5 bg-zinc-900/80 border border-emerald-500/20 rounded-full text-xs font-mono text-emerald-500">
+              <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
+              SYSTEM_IDLE // AUTONOMOUS_MODE_ENGAGED
+            </div>
+            <div className="text-[10px] text-zinc-500 font-mono">
+              THE_ARCHITECT IS WATCHING
+            </div>
+          </motion.div>
+        </div>
+      )}
+    </AnimatePresence>
+  )
+}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            className="absolute bottom-8 right-8 flex flex-col items-end gap-2"
+          >
+            <div className="flex items-center gap-2 px-3 py-1.5 bg-zinc-900/80 border border-emerald-500/20 rounded-full text-xs font-mono text-emerald-500">
+              <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
+              SYSTEM_IDLE // AUTONOMOUS_MODE_ENGAGED
+            </div>
+            <div className="text-[10px] text-zinc-500 font-mono">
+              THE_ARCHITECT IS WATCHING
+            </div>
+          </motion.div>
+        </div>
+      )}
+    </AnimatePresence>
+  )
+}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
           transition={{ duration: 1 }}

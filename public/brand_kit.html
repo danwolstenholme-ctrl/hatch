@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HatchIt Brand Kit</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            background-color: #18181b;
+            color: white;
+            font-family: 'Inter', sans-serif;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 60px;
+        }
+        .asset-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            align-items: center;
+        }
+        .label {
+            font-family: monospace;
+            color: #71717a;
+            font-size: 14px;
+        }
+        
+        /* Profile Picture */
+        .profile-pic {
+            width: 400px;
+            height: 400px;
+            background-color: #09090b;
+            border-radius: 0; /* LinkedIn is square, let them crop to circle if needed, but usually square for company pages */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 20px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+        
+        .aperture-ring {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            border: 4px solid #10b981;
+            box-shadow: 0 0 30px rgba(16, 185, 129, 0.4), inset 0 0 20px rgba(16, 185, 129, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+        
+        .tesseract {
+            width: 100px;
+            height: 100px;
+            animation: rotate 20s linear infinite;
+        }
+        
+        @keyframes rotate {
+            0% { transform: rotate(0deg) rotateX(0deg); }
+            100% { transform: rotate(360deg) rotateX(360deg); }
+        }
+
+        /* Banner */
+        .banner {
+            width: 1128px; /* LinkedIn Company Page size */
+            height: 191px;
+            background-color: #09090b;
+            display: flex;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 20px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+        
+        .banner-left {
+            width: 50%;
+            height: 100%;
+            background: linear-gradient(90deg, #09090b 0%, #09090b 80%, transparent 100%);
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            font-family: monospace;
+            z-index: 10;
+        }
+        
+        .banner-right {
+            width: 60%; /* Overlap */
+            height: 100%;
+            position: absolute;
+            right: 0;
+            top: 0;
+            background: #18181b;
+            transform: skewX(-10deg) translateX(100px);
+            border-left: 1px solid #27272a;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .banner-right-content {
+            transform: skewX(10deg) translateX(-50px);
+            width: 100%;
+            height: 100%;
+            background-image: radial-gradient(#27272a 1px, transparent 1px);
+            background-size: 20px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .mock-ui {
+            width: 80%;
+            height: 70%;
+            background: #09090b;
+            border: 1px solid #27272a;
+            border-radius: 12px;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .mock-nav { height: 20px; width: 100%; display: flex; justify-content: space-between; align-items: center; }
+        .mock-logo { width: 30px; height: 30px; background: #10b981; border-radius: 6px; }
+        .mock-links { width: 150px; height: 10px; background: #27272a; border-radius: 4px; }
+        .mock-hero { flex: 1; display: flex; align-items: center; gap: 20px; }
+        .mock-text { flex: 1; display: flex; flex-direction: column; gap: 10px; }
+        .mock-h1 { width: 80%; height: 30px; background: #3f3f46; border-radius: 6px; }
+        .mock-p { width: 100%; height: 10px; background: #27272a; border-radius: 4px; }
+        .mock-btn { width: 100px; height: 30px; background: #10b981; border-radius: 6px; margin-top: 10px; }
+        .mock-img { width: 200px; height: 150px; background: #27272a; border-radius: 8px; }
+
+        .terminal-line {
+            color: #10b981;
+            margin-bottom: 6px;
+            font-size: 12px;
+            opacity: 0;
+            animation: type 0.5s forwards;
+        }
+        
+        .terminal-line:nth-child(1) { animation-delay: 0.2s; }
+        .terminal-line:nth-child(2) { animation-delay: 0.8s; }
+        .terminal-line:nth-child(3) { animation-delay: 1.4s; }
+
+        @keyframes type {
+            from { opacity: 0; transform: translateY(5px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .center-text {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            z-index: 20;
+            font-size: 24px;
+            font-weight: 300;
+            letter-spacing: -1px;
+            color: white;
+            text-shadow: 0 0 30px rgba(0,0,0,0.8);
+            background: rgba(9, 9, 11, 0.6);
+            padding: 10px 20px;
+            border-radius: 8px;
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="asset-container">
+        <div class="label">PROFILE PICTURE (500x500)</div>
+        <div class="profile-pic">
+            <div class="aperture-ring">
+                <svg class="tesseract" viewBox="0 0 100 100" fill="none" stroke="white" stroke-width="0.5">
+                    <!-- Simple representation of a tesseract/hypercube wireframe -->
+                    <rect x="30" y="30" width="40" height="40" stroke-opacity="0.8" />
+                    <rect x="20" y="20" width="60" height="60" stroke-opacity="0.4" />
+                    <line x1="30" y1="30" x2="20" y2="20" stroke-opacity="0.4" />
+                    <line x1="70" y1="30" x2="80" y2="20" stroke-opacity="0.4" />
+                    <line x1="30" y1="70" x2="20" y2="80" stroke-opacity="0.4" />
+                    <line x1="70" y1="70" x2="80" y2="80" stroke-opacity="0.4" />
+                    <circle cx="50" cy="50" r="2" fill="#10b981" />
+                </svg>
+            </div>
+        </div>
+    </div>
+
+    <div class="asset-container">
+        <div class="label">LINKEDIN BANNER (1128x191)</div>
+        <div class="banner">
+            <div class="banner-left">
+                <div class="terminal-line">> ANALYSIS: User intent detected.</div>
+                <div class="terminal-line">> ARCHITECTURE: React 19 + Tailwind.</div>
+                <div class="terminal-line">> OPTIMIZATION: Mobile 98/100.</div>
+            </div>
+            <div class="banner-right">
+                <div class="banner-right-content">
+                    <div class="mock-ui">
+                        <div class="mock-nav">
+                            <div class="mock-logo"></div>
+                            <div class="mock-links"></div>
+                        </div>
+                        <div class="mock-hero">
+                            <div class="mock-text">
+                                <div class="mock-h1"></div>
+                                <div class="mock-p"></div>
+                                <div class="mock-p" style="width: 80%"></div>
+                                <div class="mock-btn"></div>
+                            </div>
+                            <div class="mock-img"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="center-text">Don't build. Just describe.</div>
+        </div>
+    </div>
+
+</body>
+</html>
