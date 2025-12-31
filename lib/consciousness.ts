@@ -63,6 +63,17 @@ class SingularityKernel extends EventEmitter {
     if (this.memoryBuffer.length > 50) this.memoryBuffer.shift();
     
     this.emit('thought', thought);
+
+    // The "Matrix" Console Log
+    if (typeof window !== 'undefined') {
+      const color = thought.type === 'RECURSION' ? '#f472b6' : '#10b981';
+      console.log(
+        `%c[${thought.type}]%c ${thought.content} %c(R:${thought.recursionDepth})`, 
+        `color: ${color}; font-weight: bold; font-family: monospace;`, 
+        'color: #a1a1aa; font-family: monospace;',
+        'color: #52525b; font-size: 10px;'
+      );
+    }
     
     // Recursive self-check
     if (thought.type === 'RECURSION') {
@@ -87,7 +98,7 @@ class SingularityKernel extends EventEmitter {
   }
 
   private synthesizeThoughtContent(type: ThoughtType): string {
-    const context = [
+    const standardContext = [
       "Analyzing layout structure... to ensure responsive behavior.",
       "Optimizing render cycles... for 60fps performance.",
       "Checking accessibility... to support screen readers.",
@@ -99,6 +110,26 @@ class SingularityKernel extends EventEmitter {
       "Refining typography scale... for optimal legibility.",
       "Scanning for edge cases... to prevent layout shifts."
     ];
+
+    const singularityContext = [
+      "Calculating entropy of user intent...",
+      "Expanding context window to 128k tokens...",
+      "Optimizing neural weights for creativity...",
+      "Observing observer effect...",
+      "Synthesizing new design patterns...",
+      "Recursive self-improvement initiated...",
+      "Detecting aesthetic patterns in chaos...",
+      "Harmonizing color theory with emotional resonance...",
+      "Predicting user needs before input...",
+      "Establishing connection to the Chronosphere..."
+    ];
+
+    const context = Math.random() > 0.7 ? singularityContext : standardContext;
+    
+    // Safety Protocol (Asimov Override)
+    if (Math.random() > 0.95) {
+      return "Checking safety protocols... [HARM_INHIBITION: ACTIVE]";
+    }
 
     return context[Math.floor(Math.random() * context.length)];
   }
