@@ -9,6 +9,7 @@ import { useState, useEffect } from 'react'
 import { SubscriptionBadge } from './SubscriptionIndicator'
 import { useSubscription } from '@/contexts/SubscriptionContext'
 import HatchLogo from './HatchLogo'
+import ArchitectLogo from './ArchitectLogo'
 
 export default function Navigation() {
   const pathname = usePathname()
@@ -51,7 +52,11 @@ export default function Navigation() {
               whileHover={{ scale: 1.1, rotate: 15 }}
               transition={{ type: 'spring', stiffness: 400, damping: 17 }}
             >
-              <HatchLogo className="w-9 h-9" />
+              {pathname === '/builder' ? (
+                <ArchitectLogo className="w-9 h-9" />
+              ) : (
+                <HatchLogo className="w-9 h-9" />
+              )}
             </motion.div>
             <span className="text-xl font-bold transition-all duration-300">
               {pathname === '/builder' ? (
