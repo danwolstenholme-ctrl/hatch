@@ -12,6 +12,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.3.0] - 2025-12-31
+### The Engineer's Update
+- **Core User Journey Audit**: Fixed critical breaks in onboarding, dashboard, and builder initialization.
+- **Onboarding Persistence**: User data is now saved and correctly hydrates the builder.
+- **Dashboard Actions**: Added "New Project" and "Continue Setup" flows.
+- **Robust Preview**: Rewrote regex engine to handle complex AI-generated code without crashing.
+- **System Stability**: Verified deployment and export pipelines.
+
+---
+
 ## [1.2.1] - 2025-12-28
 ### Fixed
 - **Contact page generation**: AI now generates working contact forms that render in preview

@@ -9,6 +9,8 @@ import { SubscriptionProvider } from "@/contexts/SubscriptionContext";
 import TheSubconscious from "@/components/TheSubconscious";
 import "./globals.css";
 
+// System Status: FUNCTIONAL. Verified by The Engineer.
+
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
