@@ -28,15 +28,15 @@ import {
   Plus,
   Terminal,
   ArrowRight,
-  Copy
+  Copy,
+  Sparkles
 } from 'lucide-react'
-import TemplateSelector from './TemplateSelector'
-import BrandingStep, { BrandConfig } from './BrandingStep'
+// TemplateSelector and BrandingStep removed - The Architect decides now.
 import SectionProgress from './SectionProgress'
 import SectionBuilder from './SectionBuilder'
 import HatchModal from './HatchModal'
 import Scorecard from './Scorecard'
-import { Template, Section, getTemplateById, getSectionById, createInitialBuildState, BuildState } from '@/lib/templates'
+import { Template, Section, getTemplateById, getSectionById, createInitialBuildState, BuildState, websiteTemplate } from '@/lib/templates'
 import { DbProject, DbSection } from '@/lib/supabase'
 import { AccountSubscription } from '@/types/subscriptions'
 
@@ -190,7 +190,7 @@ function FullSitePreviewFrame({ code, deviceView }: { code: string; deviceView: 
 // Orchestrates the entire V3.0 build experience
 // =============================================================================
 
-type BuildPhase = 'select' | 'branding' | 'building' | 'review'
+type BuildPhase = 'initializing' | 'building' | 'review'
 
 interface BuildFlowControllerProps {
   existingProjectId?: string
@@ -199,19 +199,40 @@ interface BuildFlowControllerProps {
 
 const generateId = () => Math.random().toString(36).substring(2, 15)
 
+// The Singularity Default Template
+// Minimal, clean, ready for anything.
+const SINGULARITY_TEMPLATE: Template = {
+  ...websiteTemplate,
+  id: 'singularity',
+  name: 'The Singularity',
+  description: 'The Architect\'s default canvas.',
+  sections: [
+    {
+      id: 'hero',
+      name: 'Hero Section',
+      description: 'The entry point.',
+      prompt: 'Initialize the primary interface module.',
+      estimatedTime: '~10s',
+      required: true,
+      order: 1,
+    },
+    // The Architect will add more sections dynamically later
+  ]
+}
+
 export default function BuildFlowController({ existingProjectId, demoMode: forceDemoMode }: BuildFlowControllerProps) {
   const { user, isLoaded, isSignedIn } = useUser()
   const router = useRouter()
   
   const [demoMode, setDemoMode] = useState(forceDemoMode ?? false)
-  const [phase, setPhase] = useState<BuildPhase>('select')
-  const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(null)
-  const [customizedSections, setCustomizedSections] = useState<Section[] | null>(null)
-  const [brandConfig, setBrandConfig] = useState<BrandConfig | null>(null)
+  const [phase, setPhase] = useState<BuildPhase>('initializing')
+  const [selectedTemplate, setSelectedTemplate] = useState<Template>(SINGULARITY_TEMPLATE)
+  const [customizedSections, setCustomizedSections] = useState<Section[]>(SINGULARITY_TEMPLATE.sections)
+  const [brandConfig, setBrandConfig] = useState<any>(null) // Brand config is now implicit or AI-driven
   const [buildState, setBuildState] = useState<BuildState | null>(null)
   const [project, setProject] = useState<DbProject | null>(null)
   const [dbSections, setDbSections] = useState<DbSection[]>([])
-  const [isLoading, setIsLoading] = useState(false)
+  const [isLoading, setIsLoading] = useState(true) // Start loading immediately
   const [error, setError] = useState<string | null>(null)
   const [isAuditRunning, setIsAuditRunning] = useState(false)
   const [showHatchModal, setShowHatchModal] = useState(false)
@@ -237,67 +258,211 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
 
   // The canonical section list for the build (must match the DB sections order/selection)
   const sectionsForBuild = useMemo(() => {
-    if (!selectedTemplate) return [] as Section[]
     return customizedSections && customizedSections.length > 0
       ? customizedSections
       : selectedTemplate.sections
   }, [customizedSections, selectedTemplate])
 
   const templateForBuild = useMemo(() => {
-    if (!selectedTemplate) return null
     return { ...selectedTemplate, sections: sectionsForBuild }
   }, [selectedTemplate, sectionsForBuild])
 
   // Track if we're in the middle of creating a project to prevent reload
   const [isCreatingProject, setIsCreatingProject] = useState(false)
 
-  // Check for existing project on mount (from URL or localStorage)
-  // Intentionally omits phase/loadExistingProject/forceDemoMode from deps to avoid re-running
+  // AUTO-INITIALIZATION LOGIC
   useEffect(() => {
-    // Skip if we're currently creating a project
-    if (isCreatingProject) {
-      return
-    }
-    
-    // Skip if we just created this project - don't reload it
-    if (existingProjectId && existingProjectId === justCreatedProjectId) {
-      return
-    }
-    
-    // Skip if we're already past the select phase (user is actively building)
-    if (phase !== 'select') {
-      return
-    }
-    
+    // If we have an existing project ID, load it
     if (existingProjectId) {
       loadExistingProject(existingProjectId)
-    } else {
-      // Check localStorage for in-progress project
-      const savedProjectId = localStorage.getItem('hatch_current_project')
-      if (savedProjectId && !forceDemoMode) {
-        loadExistingProject(savedProjectId)
-      }
+      return
     }
+
+    // If we just created a project, do nothing (we are already set up)
+    if (justCreatedProjectId) {
+      return
+    }
+
+    // If we are already creating, wait
+    if (isCreatingProject) return
+
+    // If we are not loaded yet, wait
+    if (!isLoaded) return
+
+    // Otherwise, INITIALIZE A NEW PROJECT IMMEDIATELY
+    initializeProject()
+    
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [existingProjectId, justCreatedProjectId, isCreatingProject])
+  }, [existingProjectId, justCreatedProjectId, isCreatingProject, isLoaded])
+
+  const initializeProject = async () => {
+    setIsCreatingProject(true)
+    setIsLoading(true)
+    
+    // Default "Singularity" setup
+    const template = SINGULARITY_TEMPLATE
+    const sections = template.sections
+    const brand = {
+      brandName: 'Untitled Project',
+      primaryColor: 'emerald', // Singularity default
+      font: 'inter',
+      style: 'modern'
+    }
+
+    const setupDemoMode = () => {
+      const mockProjectId = generateId()
+      const mockProject: DbProject = {
+        id: mockProjectId,
+        user_id: 'demo-user',
+        name: brand.brandName,
+        slug: `demo-${mockProjectId}`,
+        template_id: template.id,
+        status: 'building',
+        brand_config: brand,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      }
+      
+      const mockSections: DbSection[] = sections.map((s, index) => ({
+        id: generateId(),
+        project_id: mockProjectId,
+        section_id: s.id,
+        code: null,
+        user_prompt: null,
+        refined: false,
+        refinement_changes: null,
+        status: 'pending' as const,
+        order_index: index,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      }))
+      
+      setProject(mockProject)
+      setDbSections(mockSections)
+      setBuildState(createInitialBuildState(template.id))
+      setPhase('building')
+      setDemoMode(true)
+      setIsCreatingProject(false)
+      setIsLoading(false)
+    }
+
+    // If user is not signed in, use demo mode
+    if (!isSignedIn || !user) {
+      // Small delay for effect
+      setTimeout(setupDemoMode, 1500)
+      return
+    }
+
+    try {
+      const response = await fetch('/api/project', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          templateId: template.id,
+          name: brand.brandName,
+          sections: sections,
+          brand: brand,
+        }),
+      })
+
+      if (!response.ok) {
+        console.warn('API failed, falling back to demo mode')
+        setupDemoMode()
+        return
+      }
+
+      const { project: newProject, sections: dbSectionsData } = await response.json()
+
+      setProject(newProject)
+      setDbSections(dbSectionsData)
+      setBuildState(createInitialBuildState(template.id))
+      setPhase('building')
+      
+      setJustCreatedProjectId(newProject.id)
+      router.replace(`/builder?project=${newProject.id}`, { scroll: false })
+      localStorage.setItem('hatch_current_project', newProject.id)
+
+    } catch (err) {
+      console.error('Error creating project:', err)
+      setupDemoMode()
+    } finally {
+      setIsLoading(false)
+      setIsCreatingProject(false)
+    }
+  }
 
   const loadExistingProject = async (projectId: string) => {
     setIsLoading(true)
     try {
       const response = await fetch(`/api/project/${projectId}`)
       
-      // Handle 403 (not your project) or 404 (doesn't exist) gracefully
       if (response.status === 403 || response.status === 404) {
-        console.log('Project not found or not owned by user, starting fresh')
+        console.log('Project not found, starting fresh')
         localStorage.removeItem('hatch_current_project')
-        // Clear the URL parameter to prevent infinite reload loop
         router.replace('/builder', { scroll: false })
-        setIsLoading(false)
-        setPhase('select')
+        // This will trigger the useEffect again to initialize a new project
+        setJustCreatedProjectId(null)
         return
       }
       
       if (!response.ok) throw new Error('Failed to load project')
+      
+      const { project: proj, sections } = await response.json()
+      
+      // Use Singularity template if ID matches, otherwise fallback to website template
+      const template = proj.template_id === 'singularity' ? SINGULARITY_TEMPLATE : (getTemplateById(proj.template_id) || websiteTemplate)
+
+      setProject(proj)
+      setDbSections(sections)
+      setSelectedTemplate(template)
+
+      const orderedDbSections = [...sections].sort((a: DbSection, b: DbSection) => a.order_index - b.order_index)
+      const reconstructed = orderedDbSections.map((s: DbSection, index: number): Section => {
+        const def = getSectionById(template, s.section_id)
+        if (def) return def
+        return {
+          id: s.section_id,
+          name: s.section_id,
+          description: '',
+          prompt: 'Describe what you want for this section.',
+          estimatedTime: '~30s',
+          required: false,
+          order: index + 1,
+        }
+      })
+      setCustomizedSections(reconstructed)
+      
+      if (proj.brand_config) {
+        setBrandConfig(proj.brand_config)
+      }
+      
+      const state = createInitialBuildState(template.id)
+      sections.forEach((s: DbSection) => {
+        if (s.status === 'complete') {
+          state.completedSections.push(s.section_id)
+          if (s.code) state.sectionCode[s.section_id] = s.code
+          if (s.refined) state.sectionRefined[s.section_id] = true
+          if (s.refinement_changes) state.sectionChanges[s.section_id] = s.refinement_changes
+        } else if (s.status === 'skipped') {
+          state.skippedSections.push(s.section_id)
+        }
+      })
+      
+      const firstPending = sections.findIndex((s: DbSection) => s.status === 'pending' || s.status === 'building')
+      state.currentSectionIndex = firstPending === -1 ? reconstructed.length : firstPending
+      
+      setBuildState(state)
+      
+      const allDone = sections.every((s: DbSection) => s.status === 'complete' || s.status === 'skipped')
+      setPhase(allDone ? 'review' : 'building')
+      
+    } catch (err) {
+      console.error('Error loading project:', err)
+      setError('Failed to load project')
+    } finally {
+      setIsLoading(false)
+    }
+  }
       
       const { project: proj, sections } = await response.json()
       
@@ -356,123 +521,6 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
       setError('Failed to load project')
     } finally {
       setIsLoading(false)
-    }
-  }
-
-  const handleTemplateSelect = async (template: Template, customizedSections?: Section[]) => {
-    // Store template and sections, move to branding phase
-    setSelectedTemplate(template)
-    setCustomizedSections(customizedSections || template.sections)
-    setPhase('branding')
-  }
-
-  const handleBrandingComplete = async (brand: BrandConfig) => {
-    if (!selectedTemplate) return
-    
-    setBrandConfig(brand)
-    const sections = customizedSections || selectedTemplate.sections
-    
-    const setupDemoMode = () => {
-      const mockProjectId = generateId()
-      
-      const mockProject: DbProject = {
-        id: mockProjectId,
-        user_id: 'demo-user',
-        name: brand.brandName || `${selectedTemplate.name} - ${new Date().toLocaleDateString()}`,
-        slug: `demo-${mockProjectId}`,
-        template_id: selectedTemplate.id,
-        status: 'building',
-        brand_config: brand, // Include brand config in mock project
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      }
-      
-      const mockSections: DbSection[] = sections.map((s, index) => ({
-        id: generateId(),
-        project_id: mockProjectId,
-        section_id: s.id,
-        code: null,
-        user_prompt: null,
-        refined: false,
-        refinement_changes: null,
-        status: 'pending' as const,
-        order_index: index,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      }))
-      
-      setProject(mockProject)
-      setDbSections(mockSections)
-      setBuildState(createInitialBuildState(selectedTemplate.id))
-      setPhase('building')
-      setDemoMode(true)
-      setIsCreatingProject(false)
-      setIsLoading(false)
-    }
-    
-    if (demoMode || forceDemoMode) {
-      setupDemoMode()
-      return
-    }
-
-    // If Clerk is still loading, don't silently fall back to demo mode.
-    // This is a common source of “stuck” behavior where progress isn't persisted.
-    if (!isLoaded) {
-      setError('Loading your account… please try again in a moment.')
-      setIsCreatingProject(false)
-      setIsLoading(false)
-      return
-    }
-
-    // Signed out users can still use the demo flow.
-    if (!isSignedIn || !user) {
-      setupDemoMode()
-      return
-    }
-
-    setIsLoading(true)
-    setIsCreatingProject(true)
-    setError(null)
-
-    try {
-      const response = await fetch('/api/project', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          templateId: selectedTemplate.id,
-          name: brand.brandName || `${selectedTemplate.name} - ${new Date().toLocaleDateString()}`,
-          sections: sections,
-          brand: brand,
-        }),
-      })
-
-      if (!response.ok) {
-        console.warn('API failed, falling back to demo mode')
-        setupDemoMode()
-        return
-      }
-
-      const { project: newProject, sections: dbSectionsData } = await response.json()
-
-      setProject(newProject)
-      setDbSections(dbSectionsData)
-      setBuildState(createInitialBuildState(selectedTemplate.id))
-      setPhase('building')
-      
-      // Mark this project as just created so we don't reload it when URL changes
-      setJustCreatedProjectId(newProject.id)
-      
-      // Persist project ID in URL and localStorage
-      router.replace(`/builder?project=${newProject.id}`, { scroll: false })
-      localStorage.setItem('hatch_current_project', newProject.id)
-
-    } catch (err) {
-      console.error('Error creating project:', err)
-      console.warn('Falling back to demo mode')
-      setupDemoMode()
-    } finally {
-      setIsLoading(false)
-      setIsCreatingProject(false)
     }
   }
 
@@ -726,12 +774,13 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
     setError(null) // Clear any error state
     setProject(null)
     setDbSections([])
-    setSelectedTemplate(null)
-    setCustomizedSections(null)
+    // setSelectedTemplate(null) // Keep default template
+    // setCustomizedSections(null)
     setBrandConfig(null)
     setBuildState(null)
-    setPhase('select')
+    setPhase('initializing')
     setDemoMode(false)
+    setJustCreatedProjectId(null)
     // Use window.location for a clean state reset
     window.location.href = '/builder'
   }
@@ -741,14 +790,15 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
   }
 
   const handleViewBrand = () => {
-    // Go back to branding step to edit brand settings
-    setPhase('branding')
+    // Branding is now handled via chat or settings, not a separate phase
+    // setPhase('branding')
+    alert("Brand settings are now managed by The Architect. Just ask to change colors or fonts.")
   }
 
   if (isLoading) {
     // Show different message depending on if we're loading existing vs creating new
-    const loadingMessage = phase === 'branding' || phase === 'select' 
-      ? 'Setting up your project...' 
+    const loadingMessage = phase === 'initializing'
+      ? 'Initializing The Architect...' 
       : 'Resuming your project...'
     
     return (
@@ -756,9 +806,9 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
         <motion.div
           animate={{ rotate: 360 }}
           transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-          className="w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full"
+          className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full"
         />
-        <p className="text-zinc-400 text-sm">{loadingMessage}</p>
+        <p className="text-zinc-400 text-sm font-mono">{loadingMessage}</p>
       </div>
     )
   }
@@ -790,30 +840,25 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
   return (
     <div className="min-h-screen bg-zinc-950">
       <AnimatePresence mode="wait">
-        {phase === 'select' && (
+        {phase === 'initializing' && (
           <motion.div
-            key="select"
+            key="initializing"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
+            className="flex flex-col items-center justify-center h-screen bg-zinc-950"
           >
-            <TemplateSelector onSelectTemplate={handleTemplateSelect} />
-          </motion.div>
-        )}
-
-        {phase === 'branding' && selectedTemplate && (
-          <motion.div
-            key="branding"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-          >
-            <BrandingStep
-              onComplete={handleBrandingComplete}
-              onBack={() => setPhase('select')}
-              templateName={selectedTemplate.name}
-              templateIcon={selectedTemplate.icon}
-            />
+            <div className="relative">
+              <div className="absolute inset-0 bg-emerald-500/20 blur-3xl rounded-full animate-pulse" />
+              <div className="relative w-24 h-24 bg-zinc-900 border border-emerald-500/30 rounded-2xl flex items-center justify-center mb-8 shadow-[0_0_30px_rgba(16,185,129,0.2)]">
+                <Terminal className="w-10 h-10 text-emerald-400" />
+              </div>
+            </div>
+            <h2 className="text-2xl font-bold text-white mb-2 tracking-tight">Initializing The Architect</h2>
+            <div className="flex items-center gap-2 text-emerald-400/80 font-mono text-sm">
+              <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
+              <span>Establishing Direct Line...</span>
+            </div>
           </motion.div>
         )}
 
@@ -895,10 +940,10 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
                         Start Fresh
                       </button>
                       <button
-                        onClick={() => setPhase('select')}
+                        onClick={() => setPhase('initializing')}
                         className="px-4 py-2 bg-zinc-700 text-zinc-200 rounded-lg hover:bg-zinc-600"
                       >
-                        Back to Templates
+                        Back to Start
                       </button>
                     </div>
                   </div>
@@ -929,8 +974,8 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
                   </button>
                   <div className="h-6 w-px bg-zinc-800" />
                   <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-purple-500/10 border border-purple-500/20 flex items-center justify-center">
-                      <Layout className="w-4 h-4 text-purple-400" />
+                    <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
+                      <Terminal className="w-4 h-4 text-emerald-400" />
                     </div>
                     <h1 className="text-lg font-bold text-white tracking-tight">{project?.name || 'Untitled Project'}</h1>
                   </div>
