@@ -253,7 +253,7 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
   useEffect(() => {
     let timer: NodeJS.Timeout
     if (isLoading) {
-      timer = setTimeout(() => setShowReset(true), 8000) // 8 seconds
+      timer = setTimeout(() => setShowReset(true), 3000) // 3 seconds
     } else {
       setShowReset(false)
     }
@@ -853,6 +853,23 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
               <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
               <span>Establishing Direct Line...</span>
             </div>
+            
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 3 }}
+              className="mt-8"
+            >
+              <button 
+                onClick={() => {
+                  localStorage.removeItem('hatch_current_project')
+                  window.location.href = '/builder'
+                }}
+                className="text-xs text-zinc-500 hover:text-zinc-300 underline decoration-zinc-700 underline-offset-4 transition-colors"
+              >
+                Stuck? Start Over
+              </button>
+            </motion.div>
           </motion.div>
         )}
 
