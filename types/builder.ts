@@ -37,6 +37,8 @@ export interface Asset {
 export interface Project {
   id: string
   name: string
+  description?: string
+  status?: 'draft' | 'published' | 'building' | 'complete' | 'deployed'
   pages?: Page[] // Multi-page structure
   currentPageId?: string // Currently active page
   // Legacy single-page support
