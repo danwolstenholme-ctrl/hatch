@@ -533,7 +533,14 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
     }
   }
 
+  // Track loading state to prevent duplicate requests
+  const loadingProjectIdRef = useRef<string | null>(null)
+
   const loadExistingProject = async (projectId: string) => {
+    // Prevent duplicate loads
+    if (loadingProjectIdRef.current === projectId) return
+    loadingProjectIdRef.current = projectId
+
     setIsLoading(true)
     try {
       const response = await fetch(`/api/project/${projectId}`)
@@ -541,10 +548,15 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
       if (response.status === 403 || response.status === 404) {
         console.log('Project not found, starting fresh')
         localStorage.removeItem('hatch_current_project')
-        router.replace('/builder', { scroll: false })
-        // This will trigger the useEffect again to initialize a new project
+        
+        // Only redirect if we are not already at /builder (to avoid loop)
+        if (window.location.pathname !== '/builder' || window.location.search) {
+           router.replace('/builder', { scroll: false })
+        }
+        
         setJustCreatedProjectId(null)
-        setIsLoading(false) // Ensure loading is turned off so the new initialization can start fresh if needed, or at least UI updates
+        setIsLoading(false) 
+        loadingProjectIdRef.current = null
         return
       }
       
@@ -604,6 +616,7 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
       setError('Failed to load project')
     } finally {
       setIsLoading(false)
+      loadingProjectIdRef.current = null
     }
   }
 
