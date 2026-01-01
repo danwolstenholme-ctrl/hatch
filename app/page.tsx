@@ -1,6 +1,7 @@
 'use client'
 
 /* eslint-disable react/no-unescaped-entities */
+// Deploy trigger: 2026-01-02
 
 import { useEffect, useState, useRef, useSyncExternalStore, useMemo } from 'react'
 import Link from 'next/link'
