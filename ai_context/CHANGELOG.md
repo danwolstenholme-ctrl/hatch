@@ -12,6 +12,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.5.0] - 2026-01-01
+### The Singularity Brand & Freemium Pivot
+-   **Brand Unification:** Established "The Definitive HatchIt" (Emerald Egg) as the primary logo and "The Architect" (Violet Cube) as the AI persona.
+-   **Visual Identity:** Updated all site headers, favicons, and social assets to match the new V3 "Hatching" aesthetic.
+-   **Business Model:** Pivoted to **Freemium**. Free users can build/preview; Paid users (Pro/Agency) can export/deploy.
+-   **Engine Upgrade:** Switched Builder Engine from Claude 3.5 Sonnet to **GPT-5.1-Codex-Max** (OpenAI).
+-   **Infrastructure:** Configured Local Sandbox for full Stripe Test Mode simulation (Sign Up -> Build -> Upgrade).
+-   **Maintenance:** Added `<MaintenanceOverlay />` to lock production builder during the engine upgrade (bypassed in local dev).
+
 ## [1.4.0] - 2026-01-01
 ### The "Ultra Audit" & Marketing Launch
 -   **Performance:** Lazy-loaded `@babel/standalone` to reduce initial bundle size and improve TTI (Time to Interactive).

@@ -11,51 +11,85 @@ export default function ArchitectLogo({ className = "w-8 h-8", animated = true }
   return (
     <div className={`${className} relative flex items-center justify-center`}>
       <svg
-        viewBox="0 0 100 100"
+        viewBox="0 0 512 512"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
         className="w-full h-full"
       >
-        {/* The Structure - Hexagon/Cube */}
-        <motion.path
-          d="M50 10 L 85 30 L 85 70 L 50 90 L 15 70 L 15 30 Z"
-          stroke="currentColor"
-          strokeWidth="6"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          className="text-violet-500"
-          initial={animated ? { pathLength: 0, opacity: 0 } : undefined}
-          animate={animated ? { pathLength: 1, opacity: 1 } : undefined}
-          transition={{ duration: 1.5, ease: "easeInOut" }}
-        />
-        
-        {/* Internal Geometry - The Blueprint */}
-        <motion.path
-          d="M50 50 L 50 90 M 50 50 L 85 30 M 50 50 L 15 30"
-          stroke="currentColor"
-          strokeWidth="4"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          className="text-violet-300"
-          initial={animated ? { pathLength: 0, opacity: 0 } : undefined}
-          animate={animated ? { pathLength: 1, opacity: 1 } : undefined}
-          transition={{ duration: 1, delay: 0.5, ease: "easeOut" }}
-        />
+        <defs>
+          {/* The Architect Glow (Violet) */}
+          <filter id="glow-architect" x="-50%" y="-50%" width="200%" height="200%">
+            <feGaussianBlur stdDeviation="12" result="blur" />
+            <feComposite in="SourceGraphic" in2="blur" operator="over" />
+          </filter>
+          
+          {/* Glassy Face Gradients (Violet/Indigo) */}
+          <linearGradient id="face-left-arch" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stopColor="#4c1d95" stopOpacity="0.4"/> {/* Violet 900 */}
+            <stop offset="100%" stopColor="#2e1065" stopOpacity="0.8"/> {/* Violet 950 */}
+          </linearGradient>
+          
+          <linearGradient id="face-right-arch" x1="1" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#5b21b6" stopOpacity="0.4"/> {/* Violet 800 */}
+            <stop offset="100%" stopColor="#2e1065" stopOpacity="0.8"/> {/* Violet 950 */}
+          </linearGradient>
 
-        {/* The Eye - Central Node */}
-        <motion.circle
-          cx="50"
-          cy="50"
-          r="5"
-          className="fill-white"
-          initial={animated ? { scale: 0 } : undefined}
-          animate={animated ? { scale: [0, 1.2, 1] } : undefined}
-          transition={{ duration: 0.5, delay: 1.2 }}
-        />
+          {/* The "Energy" Gradient for the Stroke (Violet/Purple) */}
+          <linearGradient id="stroke-arch" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#a78bfa" /> {/* Violet 400 */}
+            <stop offset="100%" stopColor="#7c3aed" /> {/* Violet 600 */}
+          </linearGradient>
+        </defs>
+
+        <g transform="translate(256, 270) scale(1.15)">
+          
+          {/* THE CORE: The Architect's Mind */}
+          <motion.ellipse 
+            cx="0" cy="75" rx="22" ry="28" 
+            fill="white" 
+            filter="url(#glow-architect)"
+            initial={animated ? { opacity: 0.8, ry: 28 } : undefined}
+            animate={animated ? { opacity: [0.8, 1, 0.8], ry: [28, 30, 28] } : undefined}
+            transition={{ duration: 4, repeat: Infinity, ease: "easeInOut" }}
+          />
+          
+          {/* THE SHELL: The Cube Base */}
+          {/* Left Face */}
+          <path d="M0 0 L-86.6 50 L-86.6 150 L0 200 L0 0" fill="url(#face-left-arch)" stroke="url(#stroke-arch)" strokeWidth="6" strokeLinejoin="round" />
+          {/* Right Face */}
+          <path d="M0 0 L86.6 50 L86.6 150 L0 200 L0 0" fill="url(#face-right-arch)" stroke="url(#stroke-arch)" strokeWidth="6" strokeLinejoin="round" />
+          {/* Center Seam */}
+          <line x1="0" y1="0" x2="0" y2="200" stroke="url(#stroke-arch)" strokeWidth="6" />
+
+          {/* THE HATCH: The Lifting Lid */}
+          <motion.g transform="translate(0, -55)">
+            <motion.path 
+              d="M0 0 L86.6 -50 L0 -100 L-86.6 -50 Z" 
+              fill="#8b5cf6" 
+              fillOpacity="0.15" 
+              stroke="url(#stroke-arch)" 
+              strokeWidth="6" 
+              strokeLinejoin="round"
+              initial={animated ? { y: 0 } : undefined}
+              animate={animated ? { y: [0, -8, 0] } : undefined}
+              transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
+            />
+          </motion.g>
+          
+          {/* THE CONNECTION: The Spark */}
+          <motion.line 
+            x1="0" y1="0" x2="0" y2="-55" 
+            stroke="#a78bfa" 
+            strokeWidth="3" 
+            strokeDasharray="4 4" 
+            opacity="0.8"
+            initial={animated ? { strokeDashoffset: 8 } : undefined}
+            animate={animated ? { strokeDashoffset: 0 } : undefined}
+            transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
+          />
+
+        </g>
       </svg>
-      
-      {/* Glow Effect */}
-      <div className="absolute inset-0 bg-violet-500/20 blur-xl rounded-full -z-10" />
     </div>
   )
 }

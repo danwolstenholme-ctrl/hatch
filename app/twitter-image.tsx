@@ -90,7 +90,8 @@ export default async function Image() {
             </svg>
           </div>
 
-          {/* Title */}
+          {/* Title - REMOVED */}
+          {/* 
           <div
             style={{
               fontSize: '80px',
@@ -103,6 +104,7 @@ export default async function Image() {
           >
             HatchIt
           </div>
+          */}
 
           {/* Subtitle */}
           <div

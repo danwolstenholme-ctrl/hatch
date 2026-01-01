@@ -30,26 +30,26 @@ export interface PricingTier {
  * Current pricing configuration
  */
 export const PRICING_TIERS: Record<string, PricingTier> = {
-  initiate: {
+  free: {
     name: 'free',
     price: 0,
-    generationsPerDay: 5,
+    generationsPerDay: 10, // Increased from 5 to hook users
     architectRefinementsPerMonth: 0,
-    features: ['5 generations per day', 'Live preview', 'Basic templates', 'Community support'],
+    features: ['10 generations per day', 'Live preview', 'Basic templates', 'Community support'],
   },
-  architect: {
+  pro: {
     name: 'pro',
     price: 19,
     generationsPerDay: -1,
     architectRefinementsPerMonth: -1,
     features: ['Unlimited generations', 'Unlimited Architect refinements', 'Full code export', 'Custom domains', 'The Living Site (Evolution Engine)'],
   },
-  demiurge: {
+  agency: {
     name: 'agency',
-    price: 49,
+    price: 99,
     generationsPerDay: -1,
     architectRefinementsPerMonth: -1,
-    features: ['Everything in Pro', 'Unlimited AI refinements', 'Custom domains', 'Priority support', 'Early access to features'],
+    features: ['Everything in Pro', 'Commercial License', 'White-label exports', 'Priority Support', 'Team Features (Coming Soon)'],
   },
 }
 

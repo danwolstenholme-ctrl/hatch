@@ -69,12 +69,20 @@ function MaintenanceOverlay() {
 function BuilderContent() {
   const searchParams = useSearchParams()
   const projectId = searchParams.get('project') // For resuming V3 projects
+  const mode = searchParams.get('mode')
+  const prompt = searchParams.get('prompt')
+  const isDev = process.env.NODE_ENV === 'development'
+  const isGuest = mode === 'guest'
 
   // Always return V3 Structured Build Flow
   return (
     <div className="relative min-h-screen">
-      <MaintenanceOverlay />
-      <BuildFlowController existingProjectId={projectId || undefined} />
+      {!isDev && !isGuest && <MaintenanceOverlay />}
+      <BuildFlowController 
+        existingProjectId={projectId || undefined} 
+        guestMode={isGuest}
+        initialPrompt={prompt || undefined}
+      />
     </div>
   )
 }

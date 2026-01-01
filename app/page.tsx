@@ -5,6 +5,7 @@
 import { useEffect, useState, useRef, useSyncExternalStore, useMemo } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
+import { useRouter } from 'next/navigation'
 import { useUser } from '@clerk/nextjs'
 import { motion, useInView } from 'framer-motion'
 import { Cpu, Terminal, Layers, Shield, Zap, Code2, Globe, ArrowRight, CheckCircle2, Layout, Sparkles, Smartphone } from 'lucide-react'
@@ -110,41 +111,128 @@ function AnimatedCounter({ value, suffix = '' }: { value: number; suffix?: strin
 
 // System Status - shows technical initialization messages
 function SystemStatus() {
-  const statusMessages = [
-    { icon: <Terminal className="w-3 h-3" />, text: 'Initializing Architect core... to prepare your workspace.' },
-    { icon: <Layout className="w-3 h-3" />, text: 'Refining UI components... for mobile responsiveness.' },
-    { icon: <Shield className="w-3 h-3" />, text: 'Running security audit... to prevent vulnerabilities.' },
-    { icon: <Zap className="w-3 h-3" />, text: 'Optimizing assets... for 100/100 Lighthouse score.' },
-    { icon: <Code2 className="w-3 h-3" />, text: 'Generating React code... that you can export and own.' },
-    { icon: <Globe className="w-3 h-3" />, text: 'System ready. Waiting for your command.' },
-  ]
-  
-  const [currentIndex, setCurrentIndex] = useState(0)
-  const [isVisible, setIsVisible] = useState(true)
-  
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setIsVisible(false)
-      setTimeout(() => {
-        setCurrentIndex(prev => (prev + 1) % statusMessages.length)
-        setIsVisible(true)
-      }, 300)
-    }, 3000)
-    return () => clearInterval(interval)
-  }, [statusMessages.length])
-  
-  const current = statusMessages[currentIndex]
-  
+  const [prompt, setPrompt] = useState('')
+  const [isFocused, setIsFocused] = useState(false)
+  const router = useRouter()
+  const { isSignedIn } = useUser()
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!prompt.trim()) return
+    
+    const encodedPrompt = encodeURIComponent(prompt)
+    const targetUrl = `/builder?mode=guest&prompt=${encodedPrompt}`
+    
+    if (isSignedIn) {
+      router.push(targetUrl)
+    } else {
+      router.push(`/sign-up?redirect_url=${encodeURIComponent(targetUrl)}`)
+    }
+  }
+
   return (
-    <div className="flex items-center justify-center gap-2 mt-6">
+    <div className="w-full relative z-20">
       <motion.div
-        className="flex items-center gap-2 px-3 py-1.5 bg-emerald-500/5 border border-emerald-500/20 rounded-md"
-        initial={{ opacity: 0, y: 10 }}
-        animate={{ opacity: isVisible ? 1 : 0, y: isVisible ? 0 : -5 }}
-        transition={{ duration: 0.3 }}
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ delay: 0.2, duration: 0.5 }}
+        className={`relative rounded-2xl overflow-hidden transition-all duration-500 ${
+          isFocused 
+            ? 'bg-zinc-900/90 ring-1 ring-emerald-500/50 shadow-[0_0_50px_rgba(16,185,129,0.15)]' 
+            : 'bg-zinc-900/60 border border-zinc-800/80 hover:border-zinc-700'
+        }`}
       >
-        <span className="text-emerald-500 animate-pulse">{current.icon}</span>
-        <span className="text-xs font-mono text-emerald-400/90">{current.text}</span>
+        {/* Terminal Header */}
+        <div className="flex items-center justify-between px-4 py-3 bg-zinc-950/50 border-b border-zinc-800/50">
+          <div className="flex items-center gap-2">
+            <div className="flex gap-1.5">
+              <div className="w-2.5 h-2.5 rounded-full bg-red-500/20 border border-red-500/50"></div>
+              <div className="w-2.5 h-2.5 rounded-full bg-amber-500/20 border border-amber-500/50"></div>
+              <div className="w-2.5 h-2.5 rounded-full bg-emerald-500/20 border border-emerald-500/50 animate-pulse"></div>
+            </div>
+            <span className="ml-2 text-[10px] font-mono text-zinc-500 uppercase tracking-wider">Architect_Console_v4.0</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="flex h-1.5 w-1.5 rounded-full bg-emerald-500"></span>
+            <span className="text-[10px] font-mono text-emerald-500">ONLINE</span>
+          </div>
+        </div>
+
+        {/* Input Area */}
+        <form onSubmit={handleSubmit} className="p-1">
+          <div className="relative group">
+            <div className="absolute top-4 left-4 text-emerald-500/50 pointer-events-none">
+              <Terminal className="w-5 h-5" />
+            </div>
+            <textarea
+              value={prompt}
+              onChange={(e) => setPrompt(e.target.value)}
+              onFocus={() => setIsFocused(true)}
+              onBlur={() => setIsFocused(false)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault()
+                  handleSubmit(e)
+                }
+              }}
+              placeholder="Describe your vision... (e.g. 'A dark mode portfolio for a photographer with a gallery')"
+              className="w-full h-32 pl-12 pr-4 py-4 bg-transparent border-none outline-none text-zinc-100 placeholder-zinc-600 font-mono text-sm sm:text-base resize-none leading-relaxed"
+              autoComplete="off"
+              spellCheck="false"
+            />
+            
+            {/* Active Agents Indicators */}
+            <div className="absolute bottom-4 left-4 flex gap-2 pointer-events-none opacity-50">
+              <div className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-zinc-800/50 border border-zinc-700/50">
+                <Cpu className="w-3 h-3 text-violet-400" />
+                <span className="text-[9px] text-zinc-400 font-mono">GEMINI-PRO</span>
+              </div>
+              <div className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-zinc-800/50 border border-zinc-700/50">
+                <Zap className="w-3 h-3 text-amber-400" />
+                <span className="text-[9px] text-zinc-400 font-mono">CODEX-MAX</span>
+              </div>
+            </div>
+
+            {/* Submit Button */}
+            <div className="absolute bottom-3 right-3">
+              <button 
+                type="submit"
+                disabled={!prompt.trim()}
+                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all ${
+                  prompt.trim() 
+                    ? 'bg-emerald-500 text-zinc-950 hover:bg-emerald-400 hover:shadow-[0_0_20px_rgba(16,185,129,0.3)] transform hover:-translate-y-0.5' 
+                    : 'bg-zinc-800 text-zinc-600 cursor-not-allowed'
+                }`}
+              >
+                <span>Initialize</span>
+                <ArrowRight className="w-3 h-3" />
+              </button>
+            </div>
+          </div>
+        </form>
+      </motion.div>
+
+      {/* Quick Prompts */}
+      <motion.div 
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.5 }}
+        className="flex flex-wrap justify-end gap-2 mt-4 px-1"
+      >
+        <span className="text-[10px] text-zinc-600 font-mono py-1">TRY:</span>
+        {[
+          "Cyberpunk Portfolio",
+          "SaaS Landing Page",
+          "Coffee Shop"
+        ].map((suggestion, i) => (
+          <button
+            key={i}
+            onClick={() => setPrompt(suggestion)}
+            className="text-[10px] px-2.5 py-1 rounded-md bg-zinc-900/30 border border-zinc-800 text-zinc-500 hover:text-emerald-400 hover:border-emerald-500/30 hover:bg-zinc-900/80 transition-all"
+          >
+            {suggestion}
+          </button>
+        ))}
       </motion.div>
     </div>
   )
@@ -383,232 +471,88 @@ export default function Home() {
       {/* HERO - The main event */}
       <section className="relative px-4 sm:px-6 pt-6 pb-16 md:pt-16 md:pb-32">
         <div className="max-w-6xl mx-auto">
-          {/* Badge */}
-          <div className="flex justify-center mb-8">
-            <motion.div 
-              className="inline-flex items-center gap-2 px-3 sm:px-4 py-2 bg-zinc-900/80 border border-emerald-500/30 rounded-full shadow-[0_0_15px_rgba(16,185,129,0.2)] cursor-default group"
-              {...getAnimation(0, 20)}
-              whileHover={{ scale: 1.05, borderColor: 'rgba(16,185,129,0.6)' }}
-            >
-              <span className="flex h-2 w-2 flex-shrink-0">
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500 animate-pulse"></span>
-              </span>
-              <span className="text-xs sm:text-sm text-emerald-400 font-mono tracking-widest group-hover:text-emerald-300 transition-colors glitch-hover">SYSTEM_STATE: SINGULARITY</span>
-            </motion.div>
-          </div>
-
-          {/* Main headline */}
-          <div className="text-center mb-8">
-            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-8xl font-black leading-[0.95] sm:leading-[0.9] tracking-tighter mb-6">
-              <motion.span 
-                className="block"
-                style={{ willChange: 'transform, opacity' }}
-                initial={reducedMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.1, ease: [0.25, 0.1, 0.25, 1] }}
-                viewport={{ once: true }}
-              >
-                Don't just build.
-              </motion.span>
-              <motion.span 
-                className="block bg-gradient-to-r from-emerald-400 via-teal-400 to-cyan-400 bg-clip-text text-transparent pb-2"
-                style={{ willChange: 'transform, opacity' }}
-                initial={reducedMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.5, delay: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
-                viewport={{ once: true }}
-              >
-                Manifest.
-              </motion.span>
-            </h1>
-          </div>
-
-          {/* Subheadline */}
-          <motion.div 
-            className="text-center text-lg sm:text-xl md:text-2xl text-zinc-400 max-w-3xl mx-auto mb-8 leading-relaxed"
-            {...getAnimation(0.2, 20)}
-          >
-            <span>The first recursive AI Architect. It writes code, heals itself, and speaks your language. <span className="text-white font-medium">Welcome to the post-prompt era.</span></span>
-          </motion.div>
-
-          {/* CTAs */}
-          <motion.div 
-            className="flex flex-col sm:flex-row justify-center gap-4 mb-12"
-            {...getAnimation(0.3, 20)}
-            style={{ willChange: 'transform, opacity' }}
-          >
-            <motion.div
-              style={{ willChange: 'transform' }}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              transition={{ type: 'spring', stiffness: 400, damping: 17 }}
-            >
-              <Link href={isSignedIn ? "/builder" : "/sign-up"} className="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 rounded-xl font-bold text-lg flex items-center justify-center gap-2 transition-colors text-white shadow-[0_0_20px_rgba(16,185,129,0.2)]">
-                <Terminal className="w-5 h-5" />
-                <span>{isSignedIn ? 'Initialize Project' : 'Start Building Free'}</span>
-                <ArrowRight className="w-4 h-4" />
-              </Link>
-            </motion.div>
-            <motion.div
-              style={{ willChange: 'transform' }}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              transition={{ type: 'spring', stiffness: 400, damping: 17 }}
-            >
-              <Link href="/how-it-works" className="w-full sm:w-auto px-8 py-4 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 rounded-xl font-semibold text-lg transition-colors flex items-center justify-center gap-2">
-                <Layers className="w-5 h-5 text-zinc-400" />
-                <span>System Architecture</span>
-              </Link>
-            </motion.div>
-          </motion.div>
-
-          {/* Trust badges */}
-          <motion.div
-            className="flex flex-wrap justify-center gap-6 text-sm text-zinc-500 mb-16 font-mono"
-            {...getAnimation(0.4, 10)}
-          >
-            <div className="flex items-center gap-2">
-              <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-              <span>No credit card required</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-              <span>5 free generations/day</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-              <span>100% Code Ownership</span>
-            </div>
-          </motion.div>
-
-          {/* LIVE CODE DEMO */}
-          <motion.div 
-            className="relative max-w-5xl mx-auto"
-            initial={reducedMotion ? false : { opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.6, delay: 0.4, ease: [0.25, 0.1, 0.25, 1] }}
-          >
-            <div className="relative bg-zinc-950 border border-zinc-800 rounded-xl overflow-hidden shadow-2xl ring-1 ring-white/5">
-              {/* Browser chrome */}
-              <div className="bg-zinc-900/50 px-4 py-3 border-b border-zinc-800 flex items-center justify-between backdrop-blur-sm">
-                <div className="flex items-center gap-2">
-                  <div className="flex gap-1.5">
-                    <div className="w-3 h-3 rounded-full bg-zinc-700"></div>
-                    <div className="w-3 h-3 rounded-full bg-zinc-700"></div>
-                    <div className="w-3 h-3 rounded-full bg-zinc-700"></div>
-                  </div>
-                </div>
-                <div className="flex-1 mx-4">
-                  <div className="bg-zinc-950 rounded border border-zinc-800 px-4 py-1.5 text-xs text-zinc-400 max-w-md mx-auto flex items-center gap-2 font-mono">
-                    <Shield className="w-3 h-3 text-emerald-500" />
-                    hatchit.dev/builder
-                  </div>
-                </div>
-                <div className="text-xs text-zinc-500 font-mono">⌘K</div>
-              </div>
-              
-              {/* Split view */}
-              <div className="grid md:grid-cols-2">
-                {/* Code panel */}
-                <div className="bg-[#0d1117] p-3 sm:p-6 border-r border-zinc-800 h-[250px] sm:h-[400px] overflow-hidden relative group">
-                  <div className="absolute top-0 right-0 p-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <div className="px-2 py-1 bg-zinc-800 rounded text-[10px] text-zinc-400 font-mono">tsx</div>
-                  </div>
-                  <div className="flex items-center gap-2 mb-4 text-xs text-zinc-500 font-mono">
-                    <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
-                    <span>Architect Generating...</span>
-                  </div>
-                  <div className="text-emerald-400/90 font-mono text-xs leading-relaxed">
-                    <TypewriterCode code={demoCode} speed={25} />
-                  </div>
-                </div>
-                
-                {/* Preview panel */}
-                <div className="bg-zinc-950 p-4 sm:p-8 h-[250px] sm:h-[400px] flex flex-col relative overflow-hidden">
-                  {/* Grid Background */}
-                  <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]"></div>
-                  
-                  {/* Mock Interface */}
-                  <div className="relative z-10 h-full flex flex-col">
-                    {/* Header */}
-                    <div className="flex items-center justify-between mb-6 border-b border-zinc-800/50 pb-4">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20">
-                          <Zap className="w-4 h-4 text-emerald-500" />
-                        </div>
-                        <div>
-                          <div className="text-sm font-bold text-white">Neural Dashboard</div>
-                          <div className="text-[10px] text-emerald-500 font-mono">● SYSTEM_OPTIMAL</div>
-                        </div>
-                      </div>
-                      <div className="flex gap-2">
-                        <div className="w-20 h-2 bg-zinc-800 rounded-full overflow-hidden">
-                          <div className="h-full w-2/3 bg-emerald-500/50"></div>
-                        </div>
-                      </div>
-                    </div>
-
-                    {/* Content Grid */}
-                    <div className="grid grid-cols-2 gap-4 flex-1">
-                      {/* Card 1 */}
-                      <div className="bg-zinc-900/50 border border-zinc-800 rounded-lg p-4 flex flex-col justify-between group hover:border-emerald-500/30 transition-colors">
-                        <div className="flex justify-between items-start">
-                          <div className="w-8 h-8 rounded bg-zinc-800 flex items-center justify-center">
-                            <Layers className="w-4 h-4 text-zinc-400 group-hover:text-emerald-400 transition-colors" />
-                          </div>
-                          <span className="text-[10px] text-zinc-500 font-mono">LATENCY: 12ms</span>
-                        </div>
-                        <div>
-                          <div className="text-2xl font-bold text-white mb-1">98.4%</div>
-                          <div className="text-xs text-zinc-400">System Efficiency</div>
-                        </div>
-                      </div>
-
-                      {/* Card 2 */}
-                      <div className="bg-zinc-900/50 border border-zinc-800 rounded-lg p-4 flex flex-col justify-between group hover:border-emerald-500/30 transition-colors">
-                        <div className="flex justify-between items-start">
-                          <div className="w-8 h-8 rounded bg-zinc-800 flex items-center justify-center">
-                            <Shield className="w-4 h-4 text-zinc-400 group-hover:text-emerald-400 transition-colors" />
-                          </div>
-                          <span className="text-[10px] text-zinc-500 font-mono">SECURE</span>
-                        </div>
-                        <div>
-                          <div className="text-2xl font-bold text-white mb-1">Active</div>
-                          <div className="text-xs text-zinc-400">Self-Healing Protocol</div>
-                        </div>
-                      </div>
-
-                      {/* Bottom Bar */}
-                      <div className="col-span-2 bg-zinc-900/30 border border-zinc-800 rounded-lg p-3 flex items-center justify-between mt-auto">
-                        <div className="flex items-center gap-3">
-                          <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
-                          <span className="text-xs text-zinc-300">Awaiting input...</span>
-                        </div>
-                        <Link href={isSignedIn ? "/builder" : "/sign-up"} className="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded transition-colors">
-                          Initialize
-                        </Link>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              
-              {/* Status bar */}
-              <div className="bg-zinc-900/50 px-4 py-2 border-t border-zinc-800 flex items-center justify-between text-xs text-zinc-500 font-mono">
-                <div className="flex items-center gap-4">
-                  <span className="flex items-center gap-1.5">
-                    <CheckCircle2 className="w-3 h-3 text-emerald-500" />
-                    System Online
+          
+          <div className="grid lg:grid-cols-2 gap-12 items-center">
+            {/* LEFT COLUMN: Copy & Value Prop */}
+            <div className="text-left relative z-10">
+              {/* System Badge */}
+              <div className="flex justify-start mb-8">
+                <motion.div 
+                  initial={{ opacity: 0, y: -20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5 }}
+                  className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-zinc-900/50 border border-zinc-800 backdrop-blur-sm hover:border-emerald-500/50 transition-colors group cursor-default"
+                >
+                  <span className="flex h-2 w-2 flex-shrink-0">
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500 animate-pulse"></span>
                   </span>
-                  <span>React 19 + Tailwind 4</span>
-                </div>
-                <span>Auto-deploy enabled</span>
+                  <span className="text-xs sm:text-sm text-emerald-400 font-mono tracking-widest group-hover:text-emerald-300 transition-colors glitch-hover">SYSTEM_STATE: SINGULARITY</span>
+                </motion.div>
               </div>
+
+              {/* Main headline */}
+              <div className="mb-8">
+                <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-black leading-[0.95] tracking-tighter mb-6">
+                  <motion.span 
+                    className="block"
+                    style={{ willChange: 'transform, opacity' }}
+                    initial={reducedMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: 0.1, ease: [0.25, 0.1, 0.25, 1] }}
+                    viewport={{ once: true }}
+                  >
+                    Don't just build.
+                  </motion.span>
+                  <motion.span 
+                    className="block bg-gradient-to-r from-emerald-400 via-teal-400 to-cyan-400 bg-clip-text text-transparent pb-2"
+                    style={{ willChange: 'transform, opacity' }}
+                    initial={reducedMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 30 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.5, delay: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
+                    viewport={{ once: true }}
+                  >
+                    Manifest.
+                  </motion.span>
+                </h1>
+              </div>
+
+              {/* Subheadline */}
+              <motion.div 
+                className="text-lg sm:text-xl text-zinc-400 mb-8 leading-relaxed max-w-xl"
+                {...getAnimation(0.2, 20)}
+              >
+                <span>The first recursive AI Architect. It writes code, heals itself, and speaks your language. <span className="text-white font-medium">Welcome to the post-prompt era.</span></span>
+              </motion.div>
+
+              {/* Trust badges */}
+              <motion.div
+                className="flex flex-wrap gap-6 text-sm text-zinc-500 font-mono"
+                {...getAnimation(0.4, 10)}
+              >
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                  <span>No credit card required</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                  <span>5 free generations/day</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                  <span>100% Code Ownership</span>
+                </div>
+              </motion.div>
             </div>
-            
-            {/* System Status */}
-            <SystemStatus />
-          </motion.div>
+
+            {/* RIGHT COLUMN: Interactive Input */}
+            <div className="relative z-20">
+              {/* Decorative background glow */}
+              <div className="absolute -inset-4 bg-gradient-to-r from-emerald-500/10 to-teal-500/10 rounded-3xl blur-2xl opacity-50 pointer-events-none"></div>
+              
+              <SystemStatus />
+            </div>
+          </div>
+
         </div>
       </section>
 

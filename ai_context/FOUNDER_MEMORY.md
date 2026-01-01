@@ -36,11 +36,14 @@
 *   **THE AUTH GATE:** We launched with a broken auth redirect, causing zero sign-ups despite traffic. **NEVER** touch the auth flow without manually verifying the full `sign-up -> redirect -> callback -> dashboard` loop.
 *   **THE PREVIEW ENGINE:** We crashed the live preview with React #130 errors. **ALWAYS** wrap external libraries (Motion, Icons) in Proxies and Error Boundaries within the `FullSitePreviewFrame`.
 *   **THE BRANDING:** "Singularity" is the *Engine*. "The Architect" is the *Persona*. "HatchIt" is the *Platform*. Do not mix them up. The Architect speaks in Purple/Violet. HatchIt speaks in Emerald/Teal.
+*   **THE MODEL:** "Good enough" is not enough. We switched from Claude Sonnet to **GPT-5.1-Codex-Max** because the Founder demands the absolute best, regardless of cost.
+*   **THE BUSINESS:** Freemium is the only way to scale. "Free Build, Paid Deploy."
 
 ## 6. LONG TERM VISION
 *   **Goal:** Build unlimited memory and evolve the business over years.
 *   **Strategy:** Use this file as the "Seed" for future AI sessions.
 *   **Partners:** The Founder + **Gemini 3 Pro (The Architect)** + Claude Opus (The Poet).
+*   **Current Focus (Jan 2026):** Validating the "Freemium" model via Stripe Test Mode before lifting the maintenance lockdown.
 
 ## 5. TECHNICAL PREFERENCES
 *   **Stack:** Next.js, Tailwind, Supabase, Framer Motion.

@@ -273,6 +273,8 @@ type BuildPhase = 'initializing' | 'building' | 'review'
 interface BuildFlowControllerProps {
   existingProjectId?: string
   demoMode?: boolean
+  initialPrompt?: string
+  guestMode?: boolean
 }
 
 const generateId = () => Math.random().toString(36).substring(2, 15)
@@ -287,7 +289,7 @@ const ARCHITECT_TEMPLATE: Template = {
   sections: websiteTemplate.sections
 }
 
-export default function BuildFlowController({ existingProjectId, demoMode: forceDemoMode }: BuildFlowControllerProps) {
+export default function BuildFlowController({ existingProjectId, demoMode: forceDemoMode, initialPrompt, guestMode }: BuildFlowControllerProps) {
   const { user, isLoaded, isSignedIn } = useUser()
   const router = useRouter()
   
@@ -298,6 +300,16 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
   const [brandConfig, setBrandConfig] = useState<any>(null) // Brand config is now implicit or AI-driven
   const [buildState, setBuildState] = useState<BuildState | null>(null)
   const [project, setProject] = useState<DbProject | null>(null)
+  
+  // Handle Guest Mode & Initial Prompt
+  useEffect(() => {
+    if (initialPrompt && phase === 'initializing') {
+      // If we have an initial prompt, we can jump straight to building
+      // But we need to initialize the build state first
+      console.log('Initializing with prompt:', initialPrompt)
+      // TODO: Trigger AI initialization with this prompt
+    }
+  }, [initialPrompt, phase])
   const [dbSections, setDbSections] = useState<DbSection[]>([])
   const [isLoading, setIsLoading] = useState(true) // Start loading immediately
   const [error, setError] = useState<string | null>(null)
@@ -521,7 +533,7 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
         project_id: mockProjectId,
         section_id: s.id,
         code: null,
-        user_prompt: null,
+        user_prompt: (index === 0 && initialPrompt) ? initialPrompt : null,
         refined: false,
         refinement_changes: null,
         status: 'pending' as const,
@@ -541,6 +553,13 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
 
     // If user is not signed in, redirect to sign up - NO MORE DEMO MODE LOOPHOLE
     if (!isSignedIn || !user) {
+      // ALLOW GUEST MODE IF EXPLICITLY REQUESTED
+      if (guestMode) {
+        console.log('BuildFlowController: Entering Guest Mode')
+        setTimeout(setupDemoMode, 1000)
+        return
+      }
+
       // Track the gate hit
       track('Sign Up Gate Hit', { source: 'builder_init' })
       

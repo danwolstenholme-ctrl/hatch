@@ -58,17 +58,6 @@ export default function Navigation() {
                 <HatchLogo className="w-9 h-9" />
               )}
             </motion.div>
-            <span className="text-xl font-bold transition-all duration-300">
-              {pathname === '/builder' ? (
-                <>
-                  <span className="text-white">The</span><span className="bg-gradient-to-r from-violet-500 to-purple-500 bg-clip-text text-transparent ml-1">Architect</span>
-                </>
-              ) : (
-                <>
-                  <span className="text-white">Hatch</span><span className="bg-gradient-to-r from-emerald-500 to-teal-500 bg-clip-text text-transparent">It</span>
-                </>
-              )}
-            </span>
           </Link>
           
           {/* Desktop Nav Links */}
@@ -101,11 +90,10 @@ export default function Navigation() {
           {/* Auth & CTA */}
           <div className="flex items-center gap-2 sm:gap-3">
             <SignedOut>
-              <SignInButton mode="modal">
-                <button className="text-zinc-400 hover:text-white transition-colors text-sm font-medium hidden sm:block px-3 py-2">
-                  Sign In
-                </button>
-              </SignInButton>
+              {/* Hidden to focus on Hero interaction */}
+              {/* <Link href="/sign-up" className="text-zinc-400 hover:text-white transition-colors text-sm font-medium hidden sm:block px-3 py-2">
+                Sign In
+              </Link> */}
             </SignedOut>
             <SignedIn>
               <div className="flex items-center gap-2 sm:gap-3">
@@ -133,13 +121,16 @@ export default function Navigation() {
                 />
               </div>
             </SignedIn>
-            <Link 
-              href="/builder" 
-              className={`px-3 sm:px-4 py-1.5 sm:py-2 bg-gradient-to-r ${isPaidUser ? tierColor.gradient : 'from-emerald-600 to-teal-600'} hover:opacity-90 text-white rounded-lg font-medium text-xs sm:text-sm transition-all shadow-[0_0_15px_rgba(16,185,129,0.2)]`}
-            >
-              <span className="hidden sm:inline">{isPaidUser ? 'Open Interface' : 'Initialize'}</span>
-              <span className="sm:hidden">Init</span>
-            </Link>
+            {/* Hidden Initialize button for non-signed in users to focus on Hero */}
+            <SignedIn>
+              <Link 
+                href="/builder" 
+                className={`hidden sm:inline-block px-3 sm:px-4 py-1.5 sm:py-2 bg-gradient-to-r ${isPaidUser ? tierColor.gradient : 'from-emerald-600 to-teal-600'} hover:opacity-90 text-white rounded-lg font-medium text-xs sm:text-sm transition-all shadow-[0_0_15px_rgba(16,185,129,0.2)]`}
+              >
+                <span className="hidden sm:inline">{isPaidUser ? 'Open Interface' : 'Initialize'}</span>
+                <span className="sm:hidden">Init</span>
+              </Link>
+            </SignedIn>
             
             {/* Mobile Menu Button */}
             <button
@@ -192,7 +183,7 @@ export default function Navigation() {
                 <div className="flex flex-col">
                   <span className="font-bold text-white flex items-center gap-2">
                     <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-                    HatchIt
+                    <HatchLogo className="w-6 h-6" />
                   </span>
                   <span className="text-[10px] text-zinc-500 ml-4">Powered by <span className="text-violet-400">The Architect</span></span>
                 </div>

@@ -21,9 +21,6 @@ export default function Footer() {
           <div className="col-span-1 md:col-span-1">
             <Link href="/" className="flex items-center gap-2 mb-6 group">
               <HatchLogo className="w-8 h-8 group-hover:rotate-12 transition-transform duration-300" />
-              <span className="font-bold text-xl tracking-tight font-mono">
-                <span className="text-white">Hatch</span><span className="text-emerald-400">It</span>
-              </span>
             </Link>
             <p className="text-sm text-zinc-500 leading-relaxed mb-6">
               Build real websites with AI. <span className="text-white">The Architect</span> creates production-ready code you own.

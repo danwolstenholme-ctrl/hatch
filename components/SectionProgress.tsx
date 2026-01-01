@@ -51,12 +51,6 @@ const HatchLogoMenu = ({ progress, onGoHome, onStartOver, onViewBrand, brandConf
           <HatchLogo className="w-8 h-8" />
         </motion.div>
         
-        {/* Logo text */}
-        <span className="hidden sm:flex items-center text-base font-bold">
-          <span className="text-white">The</span>
-          <span className="bg-gradient-to-r from-purple-400 to-pink-400 bg-clip-text text-transparent ml-1">Architect</span>
-        </span>
-        
         {/* Progress indicator glow */}
         {progress > 0 && (
           <motion.div 
