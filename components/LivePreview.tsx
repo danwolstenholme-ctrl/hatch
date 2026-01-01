@@ -44,6 +44,37 @@ interface ElementInfo {
   }
 }
 
+const buildRouterStubs = (defaultPath: string) => `
+// Safe useRouter that works both inside and outside components
+const useRouter = (() => {
+  // Module-level singleton state for non-component usage
+  let _pathname = window.location.hash.slice(1) || "${defaultPath}";
+  const _push = (path) => { window.location.hash = path; _pathname = path; };
+  const _replace = (path) => { window.location.hash = path; _pathname = path; };
+  
+  // Listen for hash changes globally
+  window.addEventListener("hashchange", () => { _pathname = window.location.hash.slice(1) || "${defaultPath}"; });
+  
+  return () => {
+    // Try to use React state if we're inside a component, otherwise return static values
+    try {
+      const [currentPath, setCurrentPath] = useState(_pathname);
+      useEffect(() => {
+        const handleHashChange = () => setCurrentPath(window.location.hash.slice(1) || "${defaultPath}");
+        window.addEventListener("hashchange", handleHashChange);
+        return () => window.removeEventListener("hashchange", handleHashChange);
+      }, []);
+      return { push: _push, replace: _replace, pathname: currentPath, query: {}, asPath: currentPath };
+    } catch (e) {
+      // Not inside a component - return static router object
+      return { push: _push, replace: _replace, pathname: _pathname, query: {}, asPath: _pathname };
+    }
+  };
+})();
+const useSearchParams = () => { try { return new URLSearchParams(window.location.search); } catch(e) { return new URLSearchParams(); } };
+const usePathname = () => { try { return window.location.hash.slice(1) || "${defaultPath}"; } catch(e) { return "${defaultPath}"; } };
+`;
+
 function LivePreview({ code, pages, currentPageId, isLoading = false, loadingProgress, isPaid = false, assets = [], setShowHatchModal, inspectorMode = false, onElementSelect, onViewCode, onRegenerate, onQuickFix }: LivePreviewProps) {
   const [iframeLoaded, setIframeLoaded] = useState(false)
   const [previewError, setPreviewError] = useState<{ type: string; message: string } | null>(null)
@@ -448,6 +479,7 @@ export default function RootLayout({
       }
       
       const hooksDestructure = 'const { useState, useEffect, useMemo, useCallback, useRef } = React;'
+      const routerStubs = buildRouterStubs(currentPage.path)
 
       // Extract all Lucide imports to ensure they are available
       const allLucideImports = new Set<string>();
@@ -467,7 +499,11 @@ export default function RootLayout({
         });
       }
       
-      const iconAssignments = Array.from(allLucideImports).map(name => `const ${name} = window.LucideIcons.${name};`).join('\n');
+      const iconAssignments = Array.from(allLucideImports).map(name => {
+        if (name === 'Image') return 'var ImageIcon = window.LucideIcons.Image;';
+        if (name === 'Link') return 'var LinkIcon = window.LucideIcons.Link;';
+        return `var ${name} = window.LucideIcons.${name};`;
+      }).join('\n');
 
 
 
@@ -692,10 +728,20 @@ const GlassCard = ({ children, className }) => React.createElement('div', { clas
         '.preview-fallback-hint-text { color: #a1a1aa; font-size: 12px; }' +
         '</style>' +
         '</head><body>' +
-        '<div id="root"><div class="preview-loading"><div class="preview-loading-spinner"></div><div class="preview-loading-text">Genesis Engine Active...</div></div></div>' +
+        '<div id="root"><div class="preview-loading"><div class="preview-loading-spinner"></div><div class="preview-loading-text">Rendering preview...</div></div></div>' +
+        // Load React first and expose globally IMMEDIATELY (lucide needs this during init)
+        '<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>' +
+        '<script>window.React = React; window.react = React;</script>' +
+        '<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>' +
+        '<script>window.ReactDOM = ReactDOM; window["react-dom"] = ReactDOM;</script>' +
+        // Load Tailwind and configure IMMEDIATELY
+        '<script src="https://cdn.tailwindcss.com"></script>' +
+        '<script>if(typeof tailwind!=="undefined"){tailwind.config={theme:{extend:{}},darkMode:"class"};}</script>' +
+        // Now load framer-motion and lucide (they can find React on window)
+        '<script src="https://cdn.jsdelivr.net/npm/framer-motion@11/dist/framer-motion.js"></script>' +
+        '<script src="https://unpkg.com/lucide-react@0.294.0/dist/umd/lucide-react.js"></script>' +
+        '<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>' +
         '<script>' +
-        'window.DEPS_LOADED = { react: false, reactdom: false, tailwind: false, motion: false, lucide: false, babel: false };' +
-        'window.DEPS_TIMEOUT = null;' +
         'window.showFallback = function(reason) {' +
         '  document.getElementById("root").innerHTML = \'<div class="preview-fallback">\' +' +
         '    \'<div class="preview-fallback-badge"><div class="preview-fallback-badge-dot"></div><span class="preview-fallback-badge-text">Preview Mode</span></div>\' +' +
@@ -705,16 +751,6 @@ const GlassCard = ({ children, className }) => React.createElement('div', { clas
         '  \'</div>\';' +
         '};' +
         '</script>' +
-        // Load React
-        '<script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin onload="window.React=React;window.react=React;window.DEPS_LOADED.react=true;" onerror="showFallback()"></script>' +
-        '<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin onload="window.ReactDOM=ReactDOM;window.DEPS_LOADED.reactdom=true;" onerror="showFallback()"></script>' +
-        '<script>window.react = window.React; window["react-dom"] = window.ReactDOM;</script>' +
-        // Load Tailwind
-        '<script src="https://cdn.tailwindcss.com" crossorigin onload="window.DEPS_LOADED.tailwind=true;if(typeof tailwind!==\'undefined\'){tailwind.config={theme:{extend:{}},darkMode:\'class\'};}" onerror="showFallback()"></script>' +
-        // Load Framer Motion and Lucide
-        '<script src="https://cdn.jsdelivr.net/npm/framer-motion@11/dist/framer-motion.js" crossorigin onload="window.DEPS_LOADED.motion=true;" onerror="window.DEPS_LOADED.motion=true;"></script>' +
-        '<script src="https://unpkg.com/lucide-react@0.294.0/dist/umd/lucide-react.js" crossorigin onload="window.DEPS_LOADED.lucide=true;" onerror="window.DEPS_LOADED.lucide=true;"></script>' +
-        '<script src="https://unpkg.com/@babel/standalone/babel.min.js" crossorigin onload="window.DEPS_LOADED.babel=true;" onerror="showFallback()"></script>' +
         '<script>' +
         '// Setup globals with fallbacks\n' +
         '// FRAMER MOTION: ALWAYS use Proxy to ensure safe access\n' +
@@ -888,6 +924,7 @@ const GlassCard = ({ children, className }) => React.createElement('div', { clas
         '</script>' +
         '<script type="text/babel" data-presets="react,typescript">' +
         hooksDestructure + '\n' +
+        routerStubs + '\n' +
         themeConfig + '\n' +
         'const motion = window.motion;\n' +
         'const AnimatePresence = window.AnimatePresence;\n' +
@@ -897,20 +934,43 @@ const GlassCard = ({ children, className }) => React.createElement('div', { clas
         'const useTransform = window.useTransform;\n' +
         'const useSpring = window.useSpring;\n' +
         'const useMotionValue = window.useMotionValue;\n' +
-        '// Next.js router stub for preview\n' +
-        'const useRouter = () => {\n' +
-        '  const [currentPath, setCurrentPath] = useState(window.location.hash.slice(1) || "/");\n' +
-        '  useEffect(() => {\n' +
-        '    const handleHashChange = () => setCurrentPath(window.location.hash.slice(1) || "/");\n' +
-        '    window.addEventListener("hashchange", handleHashChange);\n' +
-        '    return () => window.removeEventListener("hashchange", handleHashChange);\n' +
-        '  }, []);\n' +
-        '  return { push: (path) => { window.location.hash = path; }, replace: (path) => { window.location.hash = path; }, pathname: currentPath, query: {}, asPath: currentPath };\n' +
+        '// Next.js module shims for Babel-evaluated code\n' +
+        'var NextImage = (props) => {\n' +
+        '  var { src, alt, className, style, fill, ...rest } = props;\n' +
+        '  var fillStyle = fill ? { position: "absolute", height: "100%", width: "100%", inset: 0, objectFit: "cover", ...style } : style;\n' +
+        '  return React.createElement("img", { src, alt: alt || "", className, style: fillStyle, ...rest });\n' +
         '};\n' +
-        'const useSearchParams = () => new URLSearchParams(window.location.search);\n' +
-        'const usePathname = () => window.location.hash.slice(1) || "/";\n' +
+        'var NextLink = ({ href, children, ...rest }) => React.createElement("a", { href, ...rest }, children);\n' +
+        'var Image = NextImage;\n' +
+        'var Link = NextLink;\n' +
+        'var Head = ({ children }) => null;\n' +
+        'var Script = (props) => null;\n' +
+        '// Common utility stubs\n' +
+        'var cn = (...args) => args.filter(Boolean).join(" ");\n' +
+        'var clsx = cn;\n' +
+        'var twMerge = (...args) => args.filter(Boolean).join(" ");\n' +
+        'var cva = (base, config) => (props) => base;\n' +
+        'var exports = {};\n' +
+        'var module = { exports };\n' +
+        'var require = (name) => {\n' +
+        '  if (name === "react") return React;\n' +
+        '  if (name === "react-dom") return ReactDOM;\n' +
+        '  if (name === "framer-motion") return window.Motion || window.motion || {};\n' +
+        '  if (name === "lucide-react") return window.LucideIcons || {};\n' +
+        '  if (name === "next/image") return NextImage;\n' +
+        '  if (name === "next/link") return NextLink;\n' +
+        '  if (name === "next/navigation") return { useRouter, usePathname, useSearchParams };\n' +
+        '  if (name === "next/head") return Head;\n' +
+        '  if (name === "next/script") return Script;\n' +
+        '  if (name.startsWith("next/font")) return { className: "", style: {} };\n' +
+        '  if (name === "clsx" || name === "classnames") return cn;\n' +
+        '  if (name === "tailwind-merge") return { twMerge: twMerge };\n' +
+        '  if (name === "class-variance-authority") return { cva: cva };\n' +
+        '  if (name.endsWith(".css") || name.endsWith(".scss") || name.endsWith(".sass")) return {};\n' +
+        '  return {};\n' +
+        '};\n' +
         '// Icons - access from window.LucideIcons which has safe fallbacks\n' +
-        'const LucideIcons = window.LucideIcons;\n' +
+        'var LucideIcons = window.LucideIcons;\n' +
         iconAssignments + '\n' +
         'try {\n' +
         '// Error Boundary class to catch render errors\n' +
@@ -985,6 +1045,7 @@ const GlassCard = ({ children, className }) => React.createElement('div', { clas
     }
 
     const hooksDestructure = 'const { useState, useEffect, useMemo, useCallback, useRef } = React;'
+  const routerStubs = buildRouterStubs('/')
 
     // Look for actual function components (arrow functions or function declarations)
     // Priority 1: Arrow function components: const Name = () => { or const Name = () => (
@@ -1072,7 +1133,19 @@ const GlassCard = ({ children, className }) => React.createElement('div', { clas
       '.error h2 { color: #fecaca; margin-bottom: 1rem; font-size: 1rem; font-weight: bold; }' +
       '</style>' +
       '</head><body>' +
-      '<div id="root"><div class="preview-loading"><div class="preview-loading-spinner"></div><div class="preview-loading-text">Genesis Engine Active...</div></div></div>' +
+      '<div id="root"><div class="preview-loading"><div class="preview-loading-spinner"></div><div class="preview-loading-text">Rendering preview...</div></div></div>' +
+      // Load React first and expose globally IMMEDIATELY (lucide needs this during init)
+      '<script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>' +
+      '<script>window.React = React; window.react = React;</script>' +
+      '<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>' +
+      '<script>window.ReactDOM = ReactDOM; window["react-dom"] = ReactDOM;</script>' +
+      // Load Tailwind and configure IMMEDIATELY
+      '<script src="https://cdn.tailwindcss.com"></script>' +
+      '<script>if(typeof tailwind!=="undefined"){tailwind.config={theme:{extend:{}},darkMode:"class"};}</script>' +
+      // Now load framer-motion and lucide (they can find React on window)
+      '<script src="https://cdn.jsdelivr.net/npm/framer-motion@11/dist/framer-motion.js"></script>' +
+      '<script src="https://unpkg.com/lucide-react@0.294.0/dist/umd/lucide-react.js"></script>' +
+      '<script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>' +
       '<script>' +
       'window.showFallback = function() {' +
       '  document.getElementById("root").innerHTML = \'<div class="preview-fallback">\' +' +
@@ -1083,16 +1156,6 @@ const GlassCard = ({ children, className }) => React.createElement('div', { clas
       '  \'</div>\';' +
       '};' +
       '</script>' +
-      // Load React
-      '<script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin onload="window.React=React;window.react=React;" onerror="showFallback()"></script>' +
-      '<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin onload="window.ReactDOM=ReactDOM;" onerror="showFallback()"></script>' +
-      '<script>window.react = window.React; window["react-dom"] = window.ReactDOM;</script>' +
-      // Load Tailwind
-      '<script src="https://cdn.tailwindcss.com" crossorigin onload="if(typeof tailwind!==\'undefined\'){tailwind.config={theme:{extend:{}},darkMode:\'class\'};}" onerror="showFallback()"></script>' +
-      // Load Framer Motion and Lucide (non-critical - fallbacks work)
-      '<script src="https://cdn.jsdelivr.net/npm/framer-motion@11/dist/framer-motion.js" crossorigin onerror="true"></script>' +
-      '<script src="https://unpkg.com/lucide-react@0.294.0/dist/umd/lucide-react.js" crossorigin onerror="true"></script>' +
-      '<script src="https://unpkg.com/@babel/standalone/babel.min.js" crossorigin onerror="showFallback()"></script>' +
       '<script>' +
       '// Expose motion and lucide icons as globals\n' +
       'window.motion = window.Motion?.motion || { div: "div", button: "button", a: "a", span: "span", p: "p", h1: "h1", h2: "h2", h3: "h3", section: "section", main: "main", nav: "nav", ul: "ul", li: "li", img: "img", input: "input", form: "form", label: "label", textarea: "textarea", header: "header", footer: "footer", article: "article", aside: "aside" };\n' +
@@ -1225,6 +1288,7 @@ const GlassCard = ({ children, className }) => React.createElement('div', { clas
       '</script>' +
       '<script type="text/babel" data-presets="react,typescript">' +
       hooksDestructure + '\n' +
+      routerStubs + '\n' +
       // Single-page theme config (same as multi-page)
       `// Design tokens from Wolsten Studios config/theme.ts
 const colors = {
@@ -1259,16 +1323,6 @@ const fadeInUp = { initial: { opacity: 0, y: 20 }, animate: { opacity: 1, y: 0 }
 const fadeInLeft = { initial: { opacity: 0, x: -20 }, animate: { opacity: 1, x: 0 } };
 const fadeIn = { initial: { opacity: 0 }, animate: { opacity: 1 } };
 const scaleIn = { initial: { opacity: 0, scale: 0.95 }, animate: { opacity: 1, scale: 1 } };
-const useRouter = () => {
-  const [currentPath, setCurrentPath] = React.useState(window.location.hash.slice(1) || '/');
-  React.useEffect(() => {
-    const handleHashChange = () => setCurrentPath(window.location.hash.slice(1) || '/');
-    window.addEventListener('hashchange', handleHashChange);
-    return () => window.removeEventListener('hashchange', handleHashChange);
-  }, []);
-  const navigate = (path) => { window.location.hash = path; };
-  return { push: navigate, replace: navigate, pathname: currentPath, query: {}, asPath: currentPath, currentPath, navigate };
-};
 const Navigation = () => null;
 const Footer = () => null;
 const GlassCard = ({ children, className }) => React.createElement('div', { className, style: effects.glass }, children);
@@ -1286,11 +1340,43 @@ const SectionHeader = ({ eyebrow, title, description }) => React.createElement('
       'const useTransform = window.useTransform;\n' +
       'const useSpring = window.useSpring;\n' +
       'const useMotionValue = window.useMotionValue;\n' +
-      '// Next.js navigation stubs for single-page mode\n' +
-      'const useSearchParams = () => new URLSearchParams(window.location.search);\n' +
-      'const usePathname = () => window.location.hash.slice(1) || "/";\n' +
+      '// Next.js module shims for Babel-evaluated code\n' +
+      'var NextImage = (props) => {\n' +
+      '  var { src, alt, className, style, fill, ...rest } = props;\n' +
+      '  var fillStyle = fill ? { position: "absolute", height: "100%", width: "100%", inset: 0, objectFit: "cover", ...style } : style;\n' +
+      '  return React.createElement("img", { src, alt: alt || "", className, style: fillStyle, ...rest });\n' +
+      '};\n' +
+      'var NextLink = ({ href, children, ...rest }) => React.createElement("a", { href, ...rest }, children);\n' +
+      'var Image = NextImage;\n' +
+      'var Link = NextLink;\n' +
+      'var Head = ({ children }) => null;\n' +
+      'var Script = (props) => null;\n' +
+      '// Common utility stubs\n' +
+      'var cn = (...args) => args.filter(Boolean).join(" ");\n' +
+      'var clsx = cn;\n' +
+      'var twMerge = (...args) => args.filter(Boolean).join(" ");\n' +
+      'var cva = (base, config) => (props) => base;\n' +
+      'var exports = {};\n' +
+      'var module = { exports };\n' +
+      'var require = (name) => {\n' +
+      '  if (name === "react") return React;\n' +
+      '  if (name === "react-dom") return ReactDOM;\n' +
+      '  if (name === "framer-motion") return window.Motion || window.motion || {};\n' +
+      '  if (name === "lucide-react") return window.LucideIcons || {};\n' +
+      '  if (name === "next/image") return NextImage;\n' +
+      '  if (name === "next/link") return NextLink;\n' +
+      '  if (name === "next/navigation") return { useRouter, usePathname, useSearchParams };\n' +
+      '  if (name === "next/head") return Head;\n' +
+      '  if (name === "next/script") return Script;\n' +
+      '  if (name.startsWith("next/font")) return { className: "", style: {} };\n' +
+      '  if (name === "clsx" || name === "classnames") return cn;\n' +
+      '  if (name === "tailwind-merge") return { twMerge: twMerge };\n' +
+      '  if (name === "class-variance-authority") return { cva: cva };\n' +
+      '  if (name.endsWith(".css") || name.endsWith(".scss") || name.endsWith(".sass")) return {};\n' +
+      '  return {};\n' +
+      '};\n' +
       '// Icons - access from window.LucideIcons which has safe fallbacks\n' +
-      'const LucideIcons = window.LucideIcons;\n' +
+      'var LucideIcons = window.LucideIcons;\n' +
       '// ErrorBoundary class for single-page mode\n' +
       'class ErrorBoundary extends React.Component {\n' +
       '  constructor(props) { super(props); this.state = { hasError: false, error: null }; }\n' +

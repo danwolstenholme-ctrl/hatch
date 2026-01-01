@@ -131,7 +131,12 @@ function FullSitePreviewFrame({ sections, deviceView }: { sections: { id: string
     // 4. Construct the script
     // We explicitly destructure the used icons from window.LucideIcons
     const lucideDestructuring = allLucideImports.size > 0 
-      ? `const { ${Array.from(allLucideImports).join(', ')} } = window.LucideIcons;` 
+      ? `var _icons = window.LucideIcons || {};
+${Array.from(allLucideImports).map((name) => {
+  if (name === 'Image') return 'var ImageIcon = _icons.Image;';
+  if (name === 'Link') return 'var LinkIcon = _icons.Link;';
+  return 'var ' + name + ' = _icons.' + name + ';';
+}).join('\n')}`
       : '';
 
     const fullScript = `
@@ -146,15 +151,14 @@ function FullSitePreviewFrame({ sections, deviceView }: { sections: { id: string
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script src="https://cdn.tailwindcss.com"></script>
-  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
-  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
-  <script>
-    window.react = window.React;
-    window['react-dom'] = window.ReactDOM;
-  </script>
-  <!-- Use specific UMD versions -->
-  <script src="https://unpkg.com/framer-motion@10.16.4/dist/framer-motion.js" crossorigin></script>
-  <script src="https://unpkg.com/lucide-react@0.294.0/dist/umd/lucide-react.js" crossorigin></script>
+  <!-- Load React first and expose globally IMMEDIATELY -->
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script>window.React = React; window.react = React;</script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script>window.ReactDOM = ReactDOM; window['react-dom'] = ReactDOM;</script>
+  <!-- Now load framer-motion and lucide (they can find React on window) -->
+  <script src="https://unpkg.com/framer-motion@10.16.4/dist/framer-motion.js"></script>
+  <script src="https://unpkg.com/lucide-react@0.294.0/dist/umd/lucide-react.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <script>
     tailwind.config = {
@@ -218,24 +222,93 @@ function FullSitePreviewFrame({ sections, deviceView }: { sections: { id: string
 </head>
 <body>
   <div id="root"></div>
-  <script type="text/babel" data-presets="react">
+  <script type="text/babel" data-presets="react,typescript">
     // Global imports
     const { useState, useEffect, useRef, useMemo, useCallback } = React;
     const { motion, AnimatePresence } = window;
     
-    // Next.js Mocks
-    const Image = (props) => {
-      const { src, alt, width, height, className, style, fill, priority, quality, placeholder, blurDataURL, loader, unoptimized, ...rest } = props;
-      const fillStyle = fill ? { position: 'absolute', height: '100%', width: '100%', inset: 0, objectFit: 'cover', ...style } : style;
+    // Next.js Mocks - using var to allow redeclaration by AI code
+    var Image = (props) => {
+      var { src, alt, width, height, className, style, fill, priority, quality, placeholder, blurDataURL, loader, unoptimized, ...rest } = props;
+      var fillStyle = fill ? { position: 'absolute', height: '100%', width: '100%', inset: 0, objectFit: 'cover', ...style } : style;
       return <img src={src} alt={alt || ''} className={className} style={fillStyle} {...rest} />;
     };
-    const Link = ({ href, children, ...props }) => <a href={href} {...props}>{children}</a>;
-    const useRouter = () => ({
-      push: (url) => console.log('Navigate to:', url),
-      replace: (url) => console.log('Replace with:', url),
-      prefetch: () => {},
-      back: () => console.log('Go back'),
-    });
+    var Link = ({ href, children, ...props }) => <a href={href} {...props}>{children}</a>;
+    var Head = ({ children }) => null;
+    var Script = (props) => null;
+    const getPath = () => window.location.hash?.slice(1) || '/';
+    const usePathname = () => { try { return getPath(); } catch(e) { return '/'; } };
+    const useSearchParams = () => { try { return new URLSearchParams(window.location.search); } catch(e) { return new URLSearchParams(); } };
+    const useParams = () => { try { return { ...Object.fromEntries(new URLSearchParams(window.location.search)) }; } catch(e) { return {}; } };
+    
+    // Safe useRouter that works both inside and outside components
+    const useRouter = (() => {
+      let _pathname = getPath();
+      const _push = (url) => { window.location.hash = url; _pathname = url; };
+      const _replace = (url) => { window.location.hash = url; _pathname = url; };
+      window.addEventListener('hashchange', () => { _pathname = getPath(); });
+      
+      return () => {
+        try {
+          const [pathname, setPathname] = useState(_pathname);
+          useEffect(() => {
+            const onHashChange = () => setPathname(getPath());
+            window.addEventListener('hashchange', onHashChange);
+            return () => window.removeEventListener('hashchange', onHashChange);
+          }, []);
+          return {
+            push: _push,
+            replace: _replace,
+            prefetch: async () => {},
+            back: () => window.history.back(),
+            refresh: () => window.location.reload(),
+            pathname,
+            asPath: pathname,
+            query: Object.fromEntries(new URLSearchParams(window.location.search)),
+          };
+        } catch (e) {
+          // Not inside a component - return static router object
+          return {
+            push: _push,
+            replace: _replace,
+            prefetch: async () => {},
+            back: () => window.history.back(),
+            refresh: () => window.location.reload(),
+            pathname: _pathname,
+            asPath: _pathname,
+            query: Object.fromEntries(new URLSearchParams(window.location.search)),
+          };
+        }
+      };
+    })();
+
+    // Next.js module shims for Babel-evaluated code
+    var NextImage = Image;
+    var NextLink = Link;
+    // Common utility stubs
+    var cn = (...args) => args.filter(Boolean).join(' ');
+    var clsx = cn;
+    var twMerge = (...args) => args.filter(Boolean).join(' ');
+    var cva = (base, config) => (props) => base;
+    var exports = {};
+    var module = { exports };
+    var require = (name) => {
+      if (name === 'react') return React;
+      if (name === 'react-dom') return ReactDOM;
+      if (name === 'framer-motion') return window.Motion || window.motion || window['framer-motion'] || {};
+      if (name === 'lucide-react') return window.LucideIcons || {};
+      if (name === 'next/image') return NextImage;
+      if (name === 'next/link') return NextLink;
+      if (name === 'next/navigation') return { useRouter, usePathname, useSearchParams, useParams };
+      if (name === 'next/head') return ({ children }) => null;
+      if (name === 'next/script') return (props) => null;
+      if (name.startsWith('next/font')) return { className: '', style: {} };
+      if (name === 'clsx' || name === 'classnames') return cn;
+      if (name === 'tailwind-merge') return { twMerge };
+      if (name === 'class-variance-authority') return { cva };
+      if (name.endsWith('.css') || name.endsWith('.scss') || name.endsWith('.sass')) return {};
+      return {};
+    };
 
     // We do NOT use Object.assign for icons anymore, we use destructuring in the generated code.
     

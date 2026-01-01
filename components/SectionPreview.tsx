@@ -80,6 +80,20 @@ export default function SectionPreview({ code, darkMode = true, onRuntimeError, 
       transformError = err.message
     }
 
+    if (transformError) {
+      const errorHtml = `<!DOCTYPE html>
+<html><body style="background:#0b0b0f;color:#f87171;font-family:ui-monospace,monospace;padding:24px;">
+  <div style="max-width:640px;margin:0 auto;border:1px solid #3f3f46;border-radius:12px;padding:16px;background:#111827;">
+    <h3 style="margin:0 0 8px;font-size:16px;color:#fca5a5;">Transform Error</h3>
+    <p style="margin:0 0 12px;font-size:13px;line-height:1.6;color:#e5e7eb;">${transformError}</p>
+    <p style="margin:0;font-size:12px;color:#9ca3af;">Update the request or regenerate to continue.</p>
+  </div>
+  <script>window.parent?.postMessage({type:'preview-error',message:${JSON.stringify(transformError)}},'*');</script>
+</body></html>`
+      if (isMounted) setSrcDoc(errorHtml)
+      return
+    }
+
     const hooksDestructure = `const { useState, useEffect, useMemo, useCallback, useRef, Fragment } = React;`
 
     const html = `<!DOCTYPE html>
@@ -123,15 +137,15 @@ export default function SectionPreview({ code, darkMode = true, onRuntimeError, 
 <body class="${darkMode ? 'dark' : ''}">
   <div id="root"></div>
   
-  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
-  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
-  <script>
-    // Shim for UMD modules that expect lowercase 'react'
-    window.react = window.React;
-    window['react-dom'] = window.ReactDOM;
-  </script>
-  <script src="https://cdn.jsdelivr.net/npm/framer-motion@11/dist/framer-motion.js" crossorigin></script>
-  <script src="https://unpkg.com/lucide-react@0.294.0/dist/umd/lucide-react.js" crossorigin></script>
+  <!-- Load React first and expose globally IMMEDIATELY -->
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script>window.React = React; window.react = React;</script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script>window.ReactDOM = ReactDOM; window['react-dom'] = ReactDOM;</script>
+  
+  <!-- Now load framer-motion and lucide (they can find React on window) -->
+  <script src="https://cdn.jsdelivr.net/npm/framer-motion@11/dist/framer-motion.js"></script>
+  <script src="https://unpkg.com/lucide-react@0.294.0/dist/umd/lucide-react.js"></script>
   
   <script>
     // Ensure Motion is defined before we try to use it
@@ -266,17 +280,57 @@ export default function SectionPreview({ code, darkMode = true, onRuntimeError, 
     // Mock CommonJS Environment for Babel Output
     var exports = {};
     var module = { exports: exports };
+    
+    // Next.js component stubs
+    var NextImage = function(props) {
+      var src = props.src, alt = props.alt, className = props.className, style = props.style, fill = props.fill;
+      var fillStyle = fill ? Object.assign({ position: 'absolute', height: '100%', width: '100%', inset: 0, objectFit: 'cover' }, style) : style;
+      return React.createElement('img', { src: src, alt: alt || '', className: className, style: fillStyle });
+    };
+    var NextLink = function(props) {
+      return React.createElement('a', { href: props.href, className: props.className }, props.children);
+    };
+    var Image = NextImage;
+    var Link = NextLink;
+    var Head = function() { return null; };
+    var Script = function() { return null; };
+    
+    // Next.js navigation hooks
+    var useRouter = function() {
+      return { push: function(url) { window.location.hash = url; }, replace: function(url) { window.location.hash = url; }, pathname: '/', query: {}, asPath: '/' };
+    };
+    var usePathname = function() { return '/'; };
+    var useSearchParams = function() { return new URLSearchParams(); };
+    
+    // Utility stubs
+    var cn = function() { return Array.prototype.slice.call(arguments).filter(Boolean).join(' '); };
+    var clsx = cn;
+    var twMerge = cn;
+    var cva = function(base) { return function() { return base; }; };
+    
     var require = function(name) {
       if (name === 'react') return React;
       if (name === 'react-dom') return ReactDOM;
-      if (name === 'framer-motion') return window.Motion;
+      if (name === 'framer-motion') return window.Motion || window.motion || {};
       if (name === 'lucide-react') return window.LucideIcons;
+      if (name === 'next/image') return NextImage;
+      if (name === 'next/link') return NextLink;
+      if (name === 'next/navigation') return { useRouter: useRouter, usePathname: usePathname, useSearchParams: useSearchParams };
+      if (name === 'next/head') return Head;
+      if (name === 'next/script') return Script;
+      if (name.indexOf('next/font') === 0) return { className: '', style: {} };
+      if (name === 'clsx' || name === 'classnames') return cn;
+      if (name === 'tailwind-merge') return { twMerge: twMerge };
+      if (name === 'class-variance-authority') return { cva: cva };
+      if (name.endsWith('.css') || name.endsWith('.scss') || name.endsWith('.sass')) return {};
       return window[name] || {};
     };
 
     ${hooksDestructure}
     
-    const { Menu, X, ChevronRight, ChevronLeft, ChevronDown, ChevronUp, ArrowRight, ArrowLeft, Check, CheckCircle, CheckCircle2, Star, Heart, Mail, Phone, MapPin, Github, Twitter, Linkedin, Instagram, Facebook, Youtube, ExternalLink, Search, User, Users, Settings, Home, Plus, Minus, Edit, Trash, Copy, Download, Upload, Share, Send, Bell, Calendar, Clock, Globe, Lock, Unlock, Eye, EyeOff, Filter, Grid, List, MoreHorizontal, MoreVertical, RefreshCw, RotateCcw, Save, Zap, Award, Target, TrendingUp, BarChart, PieChart, Activity, Layers, Box, Package, Cpu, Database, Server, Cloud, Code, Terminal, FileText, Folder, Image, Video, Music, Headphones, Mic, Camera, Bookmark, Tag, AlertCircle, Info, HelpCircle, Loader, Link, MessageCircle, Building, Briefcase, Shield } = window.LucideIcons || {};
+    // Lucide icons - using var to avoid redeclaration errors with Image/Link
+    var _icons = window.LucideIcons || {};
+    var Menu = _icons.Menu, X = _icons.X, ChevronRight = _icons.ChevronRight, ChevronLeft = _icons.ChevronLeft, ChevronDown = _icons.ChevronDown, ChevronUp = _icons.ChevronUp, ArrowRight = _icons.ArrowRight, ArrowLeft = _icons.ArrowLeft, Check = _icons.Check, CheckCircle = _icons.CheckCircle, CheckCircle2 = _icons.CheckCircle2, Star = _icons.Star, Heart = _icons.Heart, Mail = _icons.Mail, Phone = _icons.Phone, MapPin = _icons.MapPin, Github = _icons.Github, Twitter = _icons.Twitter, Linkedin = _icons.Linkedin, Instagram = _icons.Instagram, Facebook = _icons.Facebook, Youtube = _icons.Youtube, ExternalLink = _icons.ExternalLink, Search = _icons.Search, User = _icons.User, Users = _icons.Users, Settings = _icons.Settings, Home = _icons.Home, Plus = _icons.Plus, Minus = _icons.Minus, Edit = _icons.Edit, Trash = _icons.Trash, Copy = _icons.Copy, Download = _icons.Download, Upload = _icons.Upload, Share = _icons.Share, Send = _icons.Send, Bell = _icons.Bell, Calendar = _icons.Calendar, Clock = _icons.Clock, Globe = _icons.Globe, Lock = _icons.Lock, Unlock = _icons.Unlock, Eye = _icons.Eye, EyeOff = _icons.EyeOff, Filter = _icons.Filter, Grid = _icons.Grid, List = _icons.List, MoreHorizontal = _icons.MoreHorizontal, MoreVertical = _icons.MoreVertical, RefreshCw = _icons.RefreshCw, RotateCcw = _icons.RotateCcw, Save = _icons.Save, Zap = _icons.Zap, Award = _icons.Award, Target = _icons.Target, TrendingUp = _icons.TrendingUp, BarChart = _icons.BarChart, PieChart = _icons.PieChart, Activity = _icons.Activity, Layers = _icons.Layers, Box = _icons.Box, Package = _icons.Package, Cpu = _icons.Cpu, Database = _icons.Database, Server = _icons.Server, Cloud = _icons.Cloud, Code = _icons.Code, Terminal = _icons.Terminal, FileText = _icons.FileText, Folder = _icons.Folder, ImageIcon = _icons.Image, Video = _icons.Video, Music = _icons.Music, Headphones = _icons.Headphones, Mic = _icons.Mic, Camera = _icons.Camera, Bookmark = _icons.Bookmark, Tag = _icons.Tag, AlertCircle = _icons.AlertCircle, Info = _icons.Info, HelpCircle = _icons.HelpCircle, Loader = _icons.Loader, LinkIcon = _icons.Link, MessageCircle = _icons.MessageCircle, Building = _icons.Building, Briefcase = _icons.Briefcase, Shield = _icons.Shield;
     
     try {
       // Inject Transformed Code

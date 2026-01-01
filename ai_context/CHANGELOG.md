@@ -21,6 +21,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 -   **Infrastructure:** Configured Local Sandbox for full Stripe Test Mode simulation (Sign Up -> Build -> Upgrade).
 -   **Maintenance:** Added `<MaintenanceOverlay />` to lock production builder during the engine upgrade (bypassed in local dev).
 
+## [1.5.1] - 2026-01-01
+### Preview Stability Hardening
+- **SectionPreview** now uses Babel for transformation and injects full Next.js/Framer/Lucide stubs with `var` to avoid redeclaration crashes.
+- **LivePreview** and **BuildFlowController** stubs synchronized: added `useRouter`/navigation stubs, head/script/font stubs, CSS import no-ops, and synchronous script exposure to prevent race conditions.
+- Added **CODEX_TASK_PREVIEW_STABILITY.md** to codify required stub coverage and error-handling rules for preview engines.
+
 ## [1.4.0] - 2026-01-01
 ### The "Ultra Audit" & Marketing Launch
 -   **Performance:** Lazy-loaded `@babel/standalone` to reduce initial bundle size and improve TTI (Time to Interactive).
