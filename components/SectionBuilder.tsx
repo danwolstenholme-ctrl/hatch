@@ -341,6 +341,22 @@ export default function SectionBuilder({
   const [isExplaining, setIsExplaining] = useState(false)
   const [isDreaming, setIsDreaming] = useState(false)
   
+  // Ghost Logic
+  const { subscription } = useSubscription()
+  const [showGhost, setShowGhost] = useState(false)
+  
+  useEffect(() => {
+    const visits = parseInt(localStorage.getItem('hatch_builder_visits') || '0')
+    const isAgency = subscription?.tier === 'agency'
+    const isNewUser = visits < 5 
+    
+    if (!isAgency && isNewUser) {
+      setShowGhost(true)
+    }
+    
+    localStorage.setItem('hatch_builder_visits', (visits + 1).toString())
+  }, [subscription])
+  
   // Dynamic placeholder effect
   const [placeholderIndex, setPlaceholderIndex] = useState(0)
   const [placeholderText, setPlaceholderText] = useState('')
@@ -1875,6 +1891,35 @@ export default function SectionBuilder({
           )}
         </div>
       </div>
+
+      {/* Persistent Ghost for New Users */}
+      <AnimatePresence>
+        {showGhost && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.8 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.8 }}
+            className="fixed bottom-6 right-6 z-50 pointer-events-none hidden md:block"
+          >
+             <div className="relative">
+                {/* Speech Bubble */}
+                <motion.div 
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 1 }}
+                  className="absolute bottom-full right-0 mb-4 w-48 bg-zinc-900 border border-emerald-500/30 p-3 rounded-xl rounded-br-none shadow-xl"
+                >
+                   <p className="text-xs text-zinc-300">
+                      I'm here to help you build. Just ask if you need anything.
+                   </p>
+                </motion.div>
+                <div className="pointer-events-auto cursor-pointer hover:scale-110 transition-transform" onClick={() => setShowPromptHelper(true)}>
+                    <HatchCharacter state="idle" size="md" />
+                </div>
+             </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   )
 }

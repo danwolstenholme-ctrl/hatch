@@ -145,6 +145,15 @@
 			"label": "commit-dependency-fix",
 			"type": "shell",
 			"command": "git add package.json package-lock.json && git commit -m \"fix: add @next/third-parties dependency\""
+		},
+		{
+			"label": "commit-ghost-changes",
+			"type": "shell",
+			"command": "git add . && git commit -m \"feat: optimize HatchCharacter visibility - builder-only, conditional on tier/visits\"",
+			"args": [],
+			"isBackground": false,
+			"problemMatcher": [],
+			"group": "build"
 		}
 	]
 }

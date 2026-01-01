@@ -312,7 +312,6 @@ export default function BrandingStep({ onComplete, onBack, templateName, templat
             >
               ←
             </button>
-            <div className="hidden sm:block"><HatchCharacter state="excited" size="sm" /></div>
             <div className="flex items-center gap-2 sm:gap-3">
               <span className="text-2xl sm:text-3xl">{templateIcon}</span>
               <div>

@@ -344,10 +344,6 @@ export default function TemplateSelector({ onSelectTemplate }: TemplateSelectorP
             className="w-full max-w-5xl relative z-10"
           >
             <div className="text-center mb-8 md:mb-10">
-              <div className="mb-3 md:mb-4">
-                <div className="hidden md:block"><HatchCharacter state="excited" size="lg" /></div>
-                <div className="md:hidden"><HatchCharacter state="excited" size="md" /></div>
-              </div>
               <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-3 md:mb-4 px-2">
                 Initialize Project Sequence
               </h1>

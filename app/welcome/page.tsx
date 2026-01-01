@@ -5,7 +5,6 @@ import { useUser } from '@clerk/nextjs'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { track } from '@vercel/analytics'
-import HatchCharacter from '@/components/HatchCharacter'
 import { AccountSubscription } from '@/types/subscriptions'
 import { useSubscription } from '@/contexts/SubscriptionContext'
 
