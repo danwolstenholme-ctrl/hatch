@@ -121,13 +121,8 @@ function SystemStatus() {
     if (!prompt.trim()) return
     
     const encodedPrompt = encodeURIComponent(prompt)
-    const targetUrl = `/builder?mode=guest&prompt=${encodedPrompt}`
-    
-    if (isSignedIn) {
-      router.push(targetUrl)
-    } else {
-      router.push(`/sign-up?redirect_url=${encodeURIComponent(targetUrl)}`)
-    }
+    // Direct to builder in guest mode - BuildFlowController handles the gate
+    router.push(`/builder?mode=guest&prompt=${encodedPrompt}`)
   }
 
   return (
