@@ -506,17 +506,11 @@ const PageComponent${idx} = (() => {
     ${page.cleanedCode}
     // Return the component
     if (typeof ${page.componentName} === "function") return ${page.componentName};
-    if (typeof ${page.componentName} === "object" && ${page.componentName} !== null) return ${page.componentName};
     if (typeof Component === "function") return Component;
-    if (typeof Component === "object" && Component !== null) return Component;
     if (typeof App === "function") return App;
-    if (typeof App === "object" && App !== null) return App;
     if (typeof Page === "function") return Page;
-    if (typeof Page === "object" && Page !== null) return Page;
     if (typeof Home === "function") return Home;
-    if (typeof Home === "object" && Home !== null) return Home;
     if (typeof Main === "function") return Main;
-    if (typeof Main === "object" && Main !== null) return Main;
     return () => <div className="p-8 text-center text-zinc-500">No component found</div>;
   } catch (e) {
     console.error("Error in page ${page.path}:", e);
@@ -657,7 +651,7 @@ const GlassCard = ({ children, className }) => React.createElement('div', { clas
         '<script src="https://cdn.tailwindcss.com" crossorigin onload="window.DEPS_LOADED.tailwind=true;if(typeof tailwind!==\'undefined\'){tailwind.config={theme:{extend:{}},darkMode:\'class\'};}" onerror="showFallback()"></script>' +
         // Load Framer Motion and Lucide
         '<script src="https://cdn.jsdelivr.net/npm/framer-motion@11/dist/framer-motion.js" crossorigin onload="window.DEPS_LOADED.motion=true;" onerror="window.DEPS_LOADED.motion=true;"></script>' +
-        '<script src="https://unpkg.com/lucide-react@0.344.0/dist/umd/lucide-react.js" crossorigin onload="window.DEPS_LOADED.lucide=true;" onerror="window.DEPS_LOADED.lucide=true;"></script>' +
+        '<script src="https://unpkg.com/lucide-react@0.294.0/dist/umd/lucide-react.js" crossorigin onload="window.DEPS_LOADED.lucide=true;" onerror="window.DEPS_LOADED.lucide=true;"></script>' +
         '<script src="https://unpkg.com/@babel/standalone/babel.min.js" crossorigin onload="window.DEPS_LOADED.babel=true;" onerror="showFallback()"></script>' +
         '<script>' +
         '// Setup globals with fallbacks\n' +
@@ -669,7 +663,7 @@ const GlassCard = ({ children, className }) => React.createElement('div', { clas
         'window.useTransform = window.Motion?.useTransform || function(v, i, o) { return typeof v === "number" ? v : 0; };\n' +
         'window.useSpring = window.Motion?.useSpring || function(v) { return typeof v === "number" ? v : 0; };\n' +
         'window.useMotionValue = window.Motion?.useMotionValue || function(v) { return { get: function() { return v; }, set: function() {}, onChange: function(){} }; };\n' +
-        'window.LucideIcons = window.lucideReact || window.lucide || {};\n' +
+        'window.LucideIcons = window.lucideReact || {};\n' +
         'window.LucideIcons = new Proxy(window.LucideIcons, { get: function(target, prop) { if (prop in target) return target[prop]; return function() { return null; }; } });\n' +
         '</script>' +
         // Inspector script - handles element selection when inspector mode is enabled
