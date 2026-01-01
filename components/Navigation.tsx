@@ -122,15 +122,7 @@ export default function Navigation() {
               </div>
             </SignedIn>
             {/* Hidden Initialize button for non-signed in users to focus on Hero */}
-            <SignedIn>
-              <Link 
-                href="/builder" 
-                className={`hidden sm:inline-block px-3 sm:px-4 py-1.5 sm:py-2 bg-gradient-to-r ${isPaidUser ? tierColor.gradient : 'from-emerald-600 to-teal-600'} hover:opacity-90 text-white rounded-lg font-medium text-xs sm:text-sm transition-all shadow-[0_0_15px_rgba(16,185,129,0.2)]`}
-              >
-                <span className="hidden sm:inline">{isPaidUser ? 'Open Interface' : 'Initialize'}</span>
-                <span className="sm:hidden">Init</span>
-              </Link>
-            </SignedIn>
+
             
             {/* Mobile Menu Button */}
             <button

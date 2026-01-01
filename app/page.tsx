@@ -811,26 +811,26 @@ export default function Home() {
 
           <div className="grid md:grid-cols-3 gap-6">
             {/* Starter ($9) */}
-            <div className="p-8 bg-zinc-900/50 border border-zinc-800 rounded-xl hover:border-amber-500/30 transition-colors group">
-              <div className="text-sm text-amber-500 mb-2 font-mono">INITIATE</div>
+            <div className="p-8 bg-zinc-900/50 border border-zinc-800 rounded-xl hover:border-lime-500/30 transition-colors group">
+              <div className="text-sm text-lime-500 mb-2 font-mono">SEEDLING</div>
               <h3 className="text-2xl font-bold mb-1 text-white">Starter</h3>
               <div className="flex items-baseline gap-2 mb-2">
                 <span className="text-4xl font-bold font-mono text-white">$9</span>
                 <span className="text-zinc-500">/month</span>
               </div>
-              <div className="text-zinc-500 text-sm mb-6">Entry level access</div>
+              <div className="text-zinc-500 text-sm mb-6">Perfect for side projects</div>
               <ul className="space-y-3 mb-8">
                 {[
-                  { text: '20 generations per day', included: true },
+                  { text: '3 Active Projects', included: true },
+                  { text: 'Unlimited AI Generations', included: true },
                   { text: 'Download Source Code', included: true },
-                  { text: '1 Active Project', included: true },
-                  { text: 'Standard Support', included: true },
-                  { text: 'Custom Domain Deploy', included: false },
+                  { text: 'Deploy to hatchitsites.dev', included: true },
+                  { text: 'Custom Domain', included: false },
                   { text: 'Remove Branding', included: false },
                 ].map((item, i) => (
                   <li key={i} className={`flex items-center gap-2 text-sm ${item.included ? 'text-zinc-300' : 'text-zinc-700'}`}>
                     {item.included ? (
-                      <CheckCircle2 className="w-4 h-4 text-amber-500 flex-shrink-0" />
+                      <CheckCircle2 className="w-4 h-4 text-lime-500 flex-shrink-0" />
                     ) : (
                       <div className="w-4 h-4 rounded-full border border-zinc-800 flex-shrink-0" />
                     )}
@@ -840,9 +840,9 @@ export default function Home() {
               </ul>
               <PricingButton 
                 tier="lite" 
-                className="block w-full py-3 text-center bg-zinc-800 hover:bg-amber-600 hover:text-white text-zinc-300 rounded-lg font-semibold transition-all"
+                className="block w-full py-3 text-center bg-zinc-800 hover:bg-lime-600 hover:text-white text-zinc-300 rounded-lg font-semibold transition-all"
               >
-                Initialize Starter
+                Start Building
               </PricingButton>
             </div>
 

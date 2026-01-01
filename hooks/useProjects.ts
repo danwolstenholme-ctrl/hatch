@@ -186,14 +186,19 @@ export function useProjects(): UseProjectsReturn {
   }, [currentProjectId])
   
   const createProjectAction = useCallback(() => {
-    if (!isPaidUser && projects.length >= 1) {
+    // Tier-based project limits
+    // accountSubscription?.tier is 'lite' | 'pro' | 'agency' or undefined (free)
+    const tier = accountSubscription?.tier
+    const projectLimit = !tier ? 1 : tier === 'lite' ? 3 : Infinity
+    
+    if (projects.length >= projectLimit) {
       return false // Blocked by paywall
     }
     const newProject = createNewProject()
     setProjects(prev => [newProject, ...prev])
     setCurrentProjectId(newProject.id)
     return true
-  }, [isPaidUser, projects.length])
+  }, [accountSubscription?.tier, projects.length])
   
   const switchProject = useCallback((id: string) => {
     if (id === currentProjectId) return
