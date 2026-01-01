@@ -193,7 +193,7 @@ function SystemStatus() {
 }
 
 // Pricing button that handles auth + checkout
-function PricingButton({ tier, className, children }: { tier: 'pro' | 'agency', className: string, children: React.ReactNode }) {
+function PricingButton({ tier, className, children }: { tier: 'lite' | 'pro' | 'agency', className: string, children: React.ReactNode }) {
   const { isSignedIn } = useUser()
   const [isLoading, setIsLoading] = useState(false)
   
@@ -455,7 +455,7 @@ export default function Home() {
                     transition={{ duration: 0.5, delay: 0.1, ease: [0.25, 0.1, 0.25, 1] }}
                     viewport={{ once: true }}
                   >
-                    Don't just build.
+                    Code is dead.
                   </motion.span>
                   <motion.span 
                     className="block bg-gradient-to-r from-emerald-400 via-teal-400 to-cyan-400 bg-clip-text text-transparent pb-2"
@@ -465,7 +465,7 @@ export default function Home() {
                     transition={{ duration: 0.5, delay: 0.2, ease: [0.25, 0.1, 0.25, 1] }}
                     viewport={{ once: true }}
                   >
-                    Manifest.
+                    Long live the Architect.
                   </motion.span>
                 </h1>
               </div>
@@ -475,7 +475,7 @@ export default function Home() {
                 className="text-lg sm:text-xl text-zinc-400 mb-8 leading-relaxed max-w-xl"
                 {...getAnimation(0.2, 20)}
               >
-                <span>The first recursive AI Architect. It writes code, heals itself, and speaks your language. <span className="text-white font-medium">Welcome to the post-prompt era.</span></span>
+                <span>We built the first recursive AI that doesn't just write code—it understands intent. <span className="text-white font-medium">Stop prompting. Start architecting.</span></span>
               </motion.div>
 
               {/* Trust badges */}
@@ -484,16 +484,16 @@ export default function Home() {
                 {...getAnimation(0.4, 10)}
               >
                 <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-                  <span>No credit card required</span>
+                  <Shield className="w-4 h-4 text-emerald-500" />
+                  <span>Sovereign Code</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-                  <span>5 free generations/day</span>
+                  <Zap className="w-4 h-4 text-emerald-500" />
+                  <span>Neural Speed</span>
                 </div>
                 <div className="flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-                  <span>100% Code Ownership</span>
+                  <Terminal className="w-4 h-4 text-emerald-500" />
+                  <span>Architect Control</span>
                 </div>
               </motion.div>
             </div>
@@ -525,6 +525,52 @@ export default function Home() {
           </div>
         </div>
       </Section>
+
+      {/* THE STACK */}
+      <Section className="px-6 py-24">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-4xl sm:text-5xl font-bold mb-4">Real code. Real ownership.</h2>
+            <p className="text-xl text-zinc-400 max-w-2xl mx-auto">Not proprietary lock-in. Standard React + Tailwind you can take anywhere.</p>
+          </div>
+
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {[
+              { name: 'React 19', icon: <Code2 className="w-6 h-6" />, desc: 'Latest React' },
+              { name: 'Tailwind CSS', icon: <Layout className="w-6 h-6" />, desc: 'Utility-first' },
+              { name: 'TypeScript', icon: <Terminal className="w-6 h-6" />, desc: 'Type-safe' },
+              { name: 'Responsive', icon: <Smartphone className="w-6 h-6" />, desc: 'Mobile-first' },
+              { name: 'Accessible', icon: <CheckCircle2 className="w-6 h-6" />, desc: 'WCAG ready' },
+              { name: 'SEO Ready', icon: <Globe className="w-6 h-6" />, desc: 'Optimized' },
+              { name: 'Fast', icon: <Zap className="w-6 h-6" />, desc: 'Performance' },
+              { name: 'Yours', icon: <Shield className="w-6 h-6" />, desc: '100% ownership' },
+            ].map((tech, i) => (
+              <motion.div 
+                key={i} 
+                className="p-4 bg-zinc-900/50 border border-zinc-800 rounded-xl text-center hover:border-emerald-500/30 transition-colors gpu-accelerate"
+                style={{ willChange: 'transform, opacity' }}
+                initial={{ opacity: 0, scale: 0.8 }}
+                whileInView={{ opacity: 1, scale: 1 }}
+                viewport={{ once: true }}
+                transition={{ duration: 0.4, delay: i * 0.05, ease: [0.25, 0.1, 0.25, 1] }}
+                whileHover={{ scale: 1.05, y: -4 }}
+              >
+                <motion.div 
+                  className="w-12 h-12 mx-auto bg-zinc-800 rounded-lg flex items-center justify-center mb-3 text-zinc-400"
+                  style={{ willChange: 'transform' }}
+                  whileHover={{ scale: 1.1, color: '#10b981' }}
+                  transition={{ type: 'spring', stiffness: 400, damping: 10 }}
+                >
+                  {tech.icon}
+                </motion.div>
+                <div className="font-medium text-sm">{tech.name}</div>
+                <div className="text-xs text-zinc-600 font-mono mt-1">{tech.desc}</div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </Section>
+
       {/* WHAT IS HATCHIT - Quick explainer */}
       <Section className="px-6 py-24">
         <div className="max-w-6xl mx-auto">
@@ -712,50 +758,7 @@ export default function Home() {
         </div>
       </Section>
 
-      {/* THE STACK */}
-      <Section className="px-6 py-24">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-4xl sm:text-5xl font-bold mb-4">Real code. Real ownership.</h2>
-            <p className="text-xl text-zinc-400 max-w-2xl mx-auto">Not proprietary lock-in. Standard React + Tailwind you can take anywhere.</p>
-          </div>
 
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {[
-              { name: 'React 19', icon: <Code2 className="w-6 h-6" />, desc: 'Latest React' },
-              { name: 'Tailwind CSS', icon: <Layout className="w-6 h-6" />, desc: 'Utility-first' },
-              { name: 'TypeScript', icon: <Terminal className="w-6 h-6" />, desc: 'Type-safe' },
-              { name: 'Responsive', icon: <Smartphone className="w-6 h-6" />, desc: 'Mobile-first' },
-              { name: 'Accessible', icon: <CheckCircle2 className="w-6 h-6" />, desc: 'WCAG ready' },
-              { name: 'SEO Ready', icon: <Globe className="w-6 h-6" />, desc: 'Optimized' },
-              { name: 'Fast', icon: <Zap className="w-6 h-6" />, desc: 'Performance' },
-              { name: 'Yours', icon: <Shield className="w-6 h-6" />, desc: '100% ownership' },
-            ].map((tech, i) => (
-              <motion.div 
-                key={i} 
-                className="p-4 bg-zinc-900/50 border border-zinc-800 rounded-xl text-center hover:border-emerald-500/30 transition-colors gpu-accelerate"
-                style={{ willChange: 'transform, opacity' }}
-                initial={{ opacity: 0, scale: 0.8 }}
-                whileInView={{ opacity: 1, scale: 1 }}
-                viewport={{ once: true }}
-                transition={{ duration: 0.4, delay: i * 0.05, ease: [0.25, 0.1, 0.25, 1] }}
-                whileHover={{ scale: 1.05, y: -4 }}
-              >
-                <motion.div 
-                  className="w-12 h-12 mx-auto bg-zinc-800 rounded-lg flex items-center justify-center mb-3 text-zinc-400"
-                  style={{ willChange: 'transform' }}
-                  whileHover={{ scale: 1.1, color: '#10b981' }}
-                  transition={{ type: 'spring', stiffness: 400, damping: 10 }}
-                >
-                  {tech.icon}
-                </motion.div>
-                <div className="font-medium text-sm">{tech.name}</div>
-                <div className="text-xs text-zinc-600 font-mono mt-1">{tech.desc}</div>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </Section>
 
       {/* STATS */}
       <Section className="px-6 py-16 bg-zinc-900/30 border-y border-zinc-800/50">
@@ -787,97 +790,104 @@ export default function Home() {
           </div>
 
           <div className="grid md:grid-cols-3 gap-6">
-            {/* Free */}
-            <div className="p-8 bg-zinc-900/50 border border-zinc-800 rounded-xl">
-              <div className="text-sm text-zinc-500 mb-2 font-mono">For exploring</div>
-              <h3 className="text-2xl font-bold mb-1">Free</h3>
-              <div className="text-4xl font-bold mb-2 font-mono">$0</div>
-              <div className="text-zinc-500 text-sm mb-6">forever</div>
+            {/* Starter ($9) */}
+            <div className="p-8 bg-zinc-900/50 border border-zinc-800 rounded-xl hover:border-amber-500/30 transition-colors group">
+              <div className="text-sm text-amber-500 mb-2 font-mono">INITIATE</div>
+              <h3 className="text-2xl font-bold mb-1 text-white">Starter</h3>
+              <div className="flex items-baseline gap-2 mb-2">
+                <span className="text-4xl font-bold font-mono text-white">$9</span>
+                <span className="text-zinc-500">/month</span>
+              </div>
+              <div className="text-zinc-500 text-sm mb-6">Entry level access</div>
               <ul className="space-y-3 mb-8">
                 {[
-                  { text: '5 generations per day', included: true },
-                  { text: 'AI builds', included: true },
-                  { text: 'Live preview', included: true },
-                  { text: 'AI refinements', included: false },
-                  { text: 'Deploy to web', included: false },
-                  { text: 'Code export', included: false },
+                  { text: '20 generations per day', included: true },
+                  { text: 'Download Source Code', included: true },
+                  { text: '1 Active Project', included: true },
+                  { text: 'Standard Support', included: true },
+                  { text: 'Custom Domain Deploy', included: false },
+                  { text: 'Remove Branding', included: false },
                 ].map((item, i) => (
-                  <li key={i} className={`flex items-center gap-2 text-sm ${item.included ? 'text-zinc-400' : 'text-zinc-600'}`}>
+                  <li key={i} className={`flex items-center gap-2 text-sm ${item.included ? 'text-zinc-300' : 'text-zinc-700'}`}>
                     {item.included ? (
-                      <CheckCircle2 className="w-4 h-4 text-emerald-500 flex-shrink-0" />
+                      <CheckCircle2 className="w-4 h-4 text-amber-500 flex-shrink-0" />
                     ) : (
-                      <div className="w-4 h-4 rounded-full border border-zinc-700 flex-shrink-0" />
+                      <div className="w-4 h-4 rounded-full border border-zinc-800 flex-shrink-0" />
                     )}
                     {item.text}
                   </li>
                 ))}
               </ul>
-              <Link href={isSignedIn ? "/builder" : "/sign-up"} className="block w-full py-3 text-center bg-zinc-800 hover:bg-zinc-700 rounded-lg font-semibold transition-colors">Start Free</Link>
-            </div>
-
-            {/* Pro */}
-            <div className="relative p-8 bg-gradient-to-br from-teal-900/10 to-cyan-900/10 border border-teal-500/30 rounded-xl overflow-hidden">
-              <div className="absolute top-0 right-0 px-3 py-1 bg-gradient-to-r from-teal-600 to-cyan-600 text-xs font-semibold rounded-bl-xl text-white font-mono">POPULAR</div>
-              <div className="flex items-center gap-2 text-sm text-teal-400 mb-2 font-mono"><span>💠</span><span>For shipping projects</span></div>
-              <h3 className="text-2xl font-bold mb-1">Pro</h3>
-              <div className="flex items-baseline gap-2 mb-2">
-                <span className="text-4xl font-bold font-mono">$19</span>
-                <span className="text-zinc-500">/month</span>
-              </div>
-              <div className="text-zinc-400 text-sm mb-6">per account</div>
-              <ul className="space-y-3 mb-8">
-                {[
-                  'Unlimited AI builds',
-                  '30 AI refinements/mo',
-                  'Deploy to hatchitsites.dev',
-                  'Code export (ZIP)',
-                  'Version history',
-                  'Cloud sync',
-                ].map((item, i) => (
-                  <li key={i} className="flex items-center gap-2 text-sm text-zinc-300">
-                    <CheckCircle2 className="w-4 h-4 text-teal-400 flex-shrink-0" />
-                    {item}
-                  </li>
-                ))}
-              </ul>
               <PricingButton 
-                tier="pro" 
-                className="block w-full py-3 text-center bg-gradient-to-r from-teal-600 to-cyan-600 hover:from-teal-500 hover:to-cyan-500 rounded-lg font-semibold transition-all disabled:opacity-50 text-white shadow-[0_0_20px_rgba(20,184,166,0.2)]"
+                tier="lite" 
+                className="block w-full py-3 text-center bg-zinc-800 hover:bg-amber-600 hover:text-white text-zinc-300 rounded-lg font-semibold transition-all"
               >
-                Get Pro
+                Initialize Starter
               </PricingButton>
             </div>
 
-            {/* Agency */}
-            <div className="relative p-8 bg-gradient-to-br from-emerald-900/10 to-teal-900/10 border border-emerald-500/30 rounded-xl overflow-hidden">
-              <div className="absolute top-0 right-0 px-3 py-1 bg-gradient-to-r from-emerald-500 to-teal-500 text-xs font-semibold text-white rounded-bl-xl font-mono">UNLIMITED</div>
-              <div className="flex items-center gap-2 text-sm text-emerald-300 mb-2 font-mono"><span>⚡</span><span>For power users</span></div>
-              <h3 className="text-2xl font-bold mb-1">Agency</h3>
+            {/* Pro ($29) */}
+            <div className="relative p-8 bg-zinc-900 border border-emerald-500/50 rounded-xl overflow-hidden shadow-[0_0_50px_rgba(16,185,129,0.1)] transform md:-translate-y-4">
+              <div className="absolute top-0 right-0 px-3 py-1 bg-emerald-600 text-xs font-semibold rounded-bl-xl text-white font-mono">ARCHITECT CHOICE</div>
+              <div className="flex items-center gap-2 text-sm text-emerald-400 mb-2 font-mono"><span>⚡</span><span>FULL POWER</span></div>
+              <h3 className="text-2xl font-bold mb-1 text-white">Pro</h3>
               <div className="flex items-baseline gap-2 mb-2">
-                <span className="text-4xl font-bold font-mono">$49</span>
+                <span className="text-4xl font-bold font-mono text-white">$29</span>
                 <span className="text-zinc-500">/month</span>
               </div>
-              <div className="text-zinc-400 text-sm mb-6">per account</div>
+              <div className="text-zinc-400 text-sm mb-6">Most popular</div>
               <ul className="space-y-3 mb-8">
                 {[
-                  'Everything in Pro',
-                  'Unlimited AI refinements',
-                  'Custom domains',
-                  'Priority support',
-                  'Early access to features',
-                  'Dedicated onboarding',
+                  'Unlimited Generations',
+                  'Unlimited AI Refinements',
+                  'Deploy to Custom Domain',
+                  'Remove HatchIt Branding',
+                  'Priority Code Export',
+                  'The Living Site Engine',
                 ].map((item, i) => (
-                  <li key={i} className="flex items-center gap-2 text-sm text-zinc-300">
+                  <li key={i} className="flex items-center gap-2 text-sm text-white">
                     <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0" />
                     {item}
                   </li>
                 ))}
               </ul>
               <PricingButton 
-                tier="agency" 
-                className="block w-full py-3 text-center bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-white rounded-lg font-semibold transition-all disabled:opacity-50 shadow-[0_0_20px_rgba(16,185,129,0.2)]"
+                tier="pro" 
+                className="block w-full py-3 text-center bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg font-semibold transition-all shadow-[0_0_20px_rgba(16,185,129,0.3)]"
               >
-                Get Agency
+                Become an Architect
+              </PricingButton>
+            </div>
+
+            {/* Agency ($99) */}
+            <div className="relative p-8 bg-zinc-900/50 border border-zinc-800 rounded-xl hover:border-violet-500/30 transition-colors group">
+              <div className="text-sm text-violet-500 mb-2 font-mono">EMPIRE</div>
+              <h3 className="text-2xl font-bold mb-1 text-white">Agency</h3>
+              <div className="flex items-baseline gap-2 mb-2">
+                <span className="text-4xl font-bold font-mono text-white">$99</span>
+                <span className="text-zinc-500">/month</span>
+              </div>
+              <div className="text-zinc-500 text-sm mb-6">For teams & scale</div>
+              <ul className="space-y-3 mb-8">
+                {[
+                  'Everything in Pro',
+                  'Commercial License',
+                  'Priority 24/7 Support',
+                  'Multiple Projects',
+                  'Team Seats (Coming Soon)',
+                  'White Label Options',
+                ].map((item, i) => (
+                  <li key={i} className="flex items-center gap-2 text-sm text-zinc-300">
+                    <CheckCircle2 className="w-4 h-4 text-violet-500 flex-shrink-0" />
+                    {item}
+                  </li>
+                ))}
+              </ul>
+              <PricingButton 
+                tier="agency" 
+                className="block w-full py-3 text-center bg-zinc-800 hover:bg-violet-600 hover:text-white text-zinc-300 rounded-lg font-semibold transition-all"
+              >
+                Initialize Agency
               </PricingButton>
             </div>
           </div>
@@ -896,14 +906,15 @@ export default function Home() {
             <div className="absolute bottom-4 right-4 text-emerald-500/20">
               <Cpu className="w-12 h-12" />
             </div>
-            <div className="relative">
+            
+            <div className="relative z-10">
               <h2 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-6">Ready to initialize?</h2>
               <p className="text-xl text-zinc-300 mb-8 max-w-2xl mx-auto">Your next project is one prompt away. Initialize the system.</p>
               <Link href={isSignedIn ? "/builder" : "/sign-up"} className="inline-flex items-center gap-2 px-10 py-5 bg-emerald-500 hover:bg-emerald-400 text-zinc-950 rounded-lg font-bold text-xl transition-all md:hover:scale-105 active:scale-95 shadow-[0_0_30px_rgba(16,185,129,0.3)]">
                 <Terminal className="w-6 h-6" />
-                {isSignedIn ? 'Initialize System' : 'Create Free Account'}
+                {isSignedIn ? 'Initialize System' : 'Initialize Architect'}
               </Link>
-              <p className="text-sm text-zinc-500 mt-4 font-mono">No credit card • Free tier available</p>
+              <p className="text-sm text-zinc-500 mt-4 font-mono">System Online • v9.0 • Ready</p>
             </div>
           </div>
         </div>

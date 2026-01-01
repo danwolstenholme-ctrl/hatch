@@ -486,10 +486,7 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
     return user?.publicMetadata?.accountSubscription as AccountSubscription | null
   }, [user?.publicMetadata?.accountSubscription])
 
-  // Check if user has an active account subscription (Pro or Agency)
-  const isPaidUser = useMemo(() => {
-    return accountSubscription?.status === 'active'
-  }, [accountSubscription])
+
 
   const isProUser = useMemo(() => {
     return accountSubscription?.status === 'active' && (accountSubscription.tier === 'pro' || accountSubscription.tier === 'agency')
