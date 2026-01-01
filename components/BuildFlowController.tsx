@@ -915,7 +915,8 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
     if (!buildState) return
     
     // HARD LOCK: Check guest/free interaction limit (1 section max)
-    if ((demoMode || !isPaidUser) && guestInteractionCount >= 1) {
+    // BUT: Paid users bypass this even in demo mode
+    if (!isPaidUser && (demoMode || guestInteractionCount >= 1)) {
       setHatchModalReason('guest_lock')
       setShowHatchModal(true)
       return
