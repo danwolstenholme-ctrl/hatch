@@ -77,6 +77,11 @@ function FullSitePreviewFrame({ code, deviceView }: { code: string; deviceView: 
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script>
+    // Shim for UMD modules that expect lowercase 'react'
+    window.react = window.React;
+    window['react-dom'] = window.ReactDOM;
+  </script>
   <script src="https://unpkg.com/lucide@latest"></script>
   <script src="https://unpkg.com/lucide-react@latest"></script>
   <script>

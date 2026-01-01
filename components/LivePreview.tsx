@@ -646,6 +646,7 @@ const GlassCard = ({ children, className }) => React.createElement('div', { clas
         // Load React
         '<script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin onload="window.React=React;window.react=React;window.DEPS_LOADED.react=true;" onerror="showFallback()"></script>' +
         '<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin onload="window.ReactDOM=ReactDOM;window.DEPS_LOADED.reactdom=true;" onerror="showFallback()"></script>' +
+        '<script>window.react = window.React; window["react-dom"] = window.ReactDOM;</script>' +
         // Load Tailwind
         '<script src="https://cdn.tailwindcss.com" crossorigin onload="window.DEPS_LOADED.tailwind=true;if(typeof tailwind!==\'undefined\'){tailwind.config={theme:{extend:{}},darkMode:\'class\'};}" onerror="showFallback()"></script>' +
         // Load Framer Motion and Lucide
@@ -904,6 +905,7 @@ const GlassCard = ({ children, className }) => React.createElement('div', { clas
       // Load React
       '<script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin onload="window.React=React;window.react=React;" onerror="showFallback()"></script>' +
       '<script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin onload="window.ReactDOM=ReactDOM;" onerror="showFallback()"></script>' +
+      '<script>window.react = window.React; window["react-dom"] = window.ReactDOM;</script>' +
       // Load Tailwind
       '<script src="https://cdn.tailwindcss.com" crossorigin onload="if(typeof tailwind!==\'undefined\'){tailwind.config={theme:{extend:{}},darkMode:\'class\'};}" onerror="showFallback()"></script>' +
       // Load Framer Motion and Lucide (non-critical - fallbacks work)

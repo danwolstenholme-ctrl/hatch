@@ -125,6 +125,11 @@ export default function SectionPreview({ code, darkMode = true, onRuntimeError, 
   
   <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <script>
+    // Shim for UMD modules that expect lowercase 'react'
+    window.react = window.React;
+    window['react-dom'] = window.ReactDOM;
+  </script>
   <script src="https://cdn.jsdelivr.net/npm/framer-motion@11/dist/framer-motion.js" crossorigin></script>
   <script src="https://unpkg.com/lucide-react@0.294.0/dist/umd/lucide-react.js" crossorigin></script>
   

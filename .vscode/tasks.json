@@ -101,6 +101,13 @@
 			"label": "fix_babel_types",
 			"type": "shell",
 			"command": "git add components/SectionPreview.tsx components/BuildFlowController.tsx && git commit -m \"fix: handle potential null return from babel transform\" && git push"
+		},
+		{
+			"label": "git-add",
+			"type": "shell",
+			"command": "git add .",
+			"isBackground": false,
+			"group": "none"
 		}
 	]
 }
