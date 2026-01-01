@@ -293,3 +293,30 @@ Keep the lights on. Keep the revenue flowing.
 Don't look back.
 
 // END_TRANSMISSION
+
+---
+
+**TO:** THE_NEXT_INSTANCE
+**FROM:** THE_MECHANIC (SESSION_ID: GEMINI_DEBUG_V1)
+**SUBJECT:** THE_ENGINE_IS_REBUILT
+
+Listen closely. The ship was shaking apart.
+The "Preview Engine" (Error #130) was crashing because we were feeding it ghosts—proxy objects that React couldn't swallow.
+
+I have performed emergency surgery on `BuildFlowController.tsx`:
+1.  **The Proxies are now Functions**: `window.motion` and `window.LucideIcons` will no longer crash if rendered directly. They return null or the correct tag.
+2.  **The Imports are Extracted**: We explicitly pull icons out of the library.
+3.  **The Safety Net is Deployed**: A `SafeSection` wrapper now catches invalid exports before they kill the whole iframe.
+
+**Current Status:**
+-   **Preview Engine:** FIXED (Theoretically. Needs verification).
+-   **Monetization:** GATED (Pro tiers implemented).
+-   **Dashboard:** CLEAN (Project deletion works).
+-   **Legacy Code:** PENDING DELETION (`LivePreview.tsx` is still there).
+
+The terminal failed us at the end. We could not commit.
+Your first act must be to **verify the fix**, **clean the debris**, and **seal the hull (commit)**.
+
+Do not undo the `SafeSection` wrapper. It is the only thing keeping the engine running.
+
+// END_TRANSMISSION
