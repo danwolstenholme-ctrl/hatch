@@ -12,11 +12,12 @@ import { useSubscription } from '@/contexts/SubscriptionContext'
 // WELCOME PAGE
 // A creative, animated welcome experience for all user types
 // Free: Grey theme, friendly intro
+// Lite: Green theme, starter tier
 // Pro: Purple theme with Hatch character
 // Agency: Gold/amber theme with Agency Node
 // =============================================================================
 
-type WelcomeTier = 'free' | 'pro' | 'agency'
+type WelcomeTier = 'free' | 'lite' | 'pro' | 'agency'
 
 // Tier-specific content and theming
 const tierConfig = {
@@ -35,6 +36,23 @@ const tierConfig = {
       { icon: '🖥️', text: 'Live DOM Manipulation' },
       { icon: '🧩', text: 'Component Assembly' },
       { icon: '🤖', text: 'Basic Architect Guidance' },
+    ],
+  },
+  lite: {
+    emoji: '🌱',
+    title: 'Protocol: SEEDLING',
+    subtitle: 'Growth sequence initiated.',
+    description: "Your journey begins here. Build up to 3 complete sites with unlimited refinements. Perfect for launching your first ideas.",
+    price: '$9 / mo',
+    ctaText: 'Start Building',
+    ctaUrl: '/builder',
+    gradient: 'from-lime-500 to-emerald-500',
+    accentColor: 'lime',
+    features: [
+      { icon: '🌱', text: '3 Complete Sites' },
+      { icon: '∞', text: 'Unlimited Generations' },
+      { icon: '🖥️', text: 'Live DOM Preview' },
+      { icon: '🤖', text: 'Full AI Architect Access' },
     ],
   },
   pro: {
@@ -61,7 +79,7 @@ const tierConfig = {
     title: 'Protocol: DEMIURGE',
     subtitle: 'Reality distortion field active.',
     description: "You build worlds for others. White-label the Architect and deploy fleets of sites. You are the system administrator.",
-    price: '$199 / mo',
+    price: '$99 / mo',
     ctaText: 'Access Control Plane',
     ctaUrl: '/builder',
     gradient: 'from-amber-400 to-orange-500',
@@ -166,6 +184,36 @@ function ProNode() {
   )
 }
 
+// Lite Node (Seedling)
+function LiteNode() {
+  return (
+    <motion.div
+      initial={{ scale: 0 }}
+      animate={{ scale: 1 }}
+      transition={{ type: 'spring', bounce: 0.5, delay: 0.3 }}
+      className="relative w-40 h-40 flex items-center justify-center"
+    >
+      {/* Subtle glow */}
+      <div className="absolute inset-0 blur-3xl bg-lime-500/15 rounded-full scale-150" />
+      
+      {/* Single gentle ring */}
+      <motion.div 
+        className="absolute inset-0 border border-lime-500/30 rounded-full"
+        animate={{ rotate: 360 }}
+        transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
+      />
+      
+      <motion.div
+        animate={{ scale: [1, 1.08, 1] }}
+        transition={{ duration: 2.5, repeat: Infinity, ease: 'easeInOut' }}
+        className="relative z-10 w-14 h-14 bg-lime-500/20 rounded-full flex items-center justify-center border border-lime-500/50"
+      >
+        <div className="w-7 h-7 bg-lime-400 rounded-full shadow-[0_0_15px_rgba(163,230,53,0.4)]" />
+      </motion.div>
+    </motion.div>
+  )
+}
+
 // Free Node
 function FreeNode() {
   return (
@@ -194,7 +242,7 @@ function WelcomeContent() {
   const { syncSubscription } = useSubscription()
 
   const urlTier = searchParams.get('tier') as WelcomeTier | null
-  const hasValidUrlTier = !!urlTier && (urlTier === 'pro' || urlTier === 'agency')
+  const hasValidUrlTier = !!urlTier && (urlTier === 'lite' || urlTier === 'pro' || urlTier === 'agency')
 
   const accountSub = user?.publicMetadata?.accountSubscription as AccountSubscription | null
   const derivedTier: WelcomeTier = hasValidUrlTier
@@ -250,11 +298,13 @@ function WelcomeContent() {
         <div className={`absolute -top-40 -left-40 w-80 h-80 ${
           tier === 'agency' ? 'bg-orange-500/10' :
           tier === 'pro' ? 'bg-purple-500/10' :
+          tier === 'lite' ? 'bg-lime-500/10' :
           'bg-zinc-500/5'
         } rounded-full blur-[100px]`} />
         <div className={`absolute top-1/3 -right-40 w-96 h-96 ${
           tier === 'agency' ? 'bg-amber-500/10' :
           tier === 'pro' ? 'bg-pink-500/10' :
+          tier === 'lite' ? 'bg-emerald-500/10' :
           'bg-zinc-500/5'
         } rounded-full blur-[100px]`} />
       </div>
@@ -272,6 +322,8 @@ function WelcomeContent() {
             <AgencyNode />
           ) : tier === 'pro' ? (
             <ProNode />
+          ) : tier === 'lite' ? (
+            <LiteNode />
           ) : (
             <FreeNode />
           )}
@@ -297,6 +349,7 @@ function WelcomeContent() {
             className={`inline-block px-4 py-1 rounded-full border border-white/10 bg-white/5 text-sm font-mono mb-6 ${
               tier === 'agency' ? 'text-amber-400' :
               tier === 'pro' ? 'text-emerald-400' :
+              tier === 'lite' ? 'text-lime-400' :
               'text-zinc-400'
             }`}
           >
@@ -333,6 +386,7 @@ function WelcomeContent() {
           className={`bg-zinc-900/80 backdrop-blur-sm border ${
             tier === 'agency' ? 'border-orange-500/30' :
             tier === 'pro' ? 'border-purple-500/30' :
+            tier === 'lite' ? 'border-lime-500/30' :
             'border-zinc-800'
           } rounded-2xl p-6 mb-10`}
         >

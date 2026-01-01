@@ -71,8 +71,8 @@ export function SubscriptionBadge({ showRenewal = true, compact = false }: { sho
 
   if (!isPaidUser) return null
 
-  const tierEmoji = tier === 'agency' ? '⚡' : '�'
-  const tierName = tier === 'agency' ? 'Agency' : 'Pro'
+  const tierEmoji = tier === 'agency' ? '⚡' : tier === 'pro' ? '🐣' : tier === 'lite' ? '🌱' : '🥚'
+  const tierName = tier === 'agency' ? 'Agency' : tier === 'pro' ? 'Pro' : tier === 'lite' ? 'Starter' : 'Free'
 
   if (compact) {
     return (
@@ -122,7 +122,7 @@ export function RenewalTimer({ className = '' }: { className?: string }) {
   if (!isPaidUser || daysUntilRenewal === null) return null
 
   const isUrgent = daysUntilRenewal <= 3
-  const tierEmoji = tier === 'agency' ? '⚡' : '🐣'
+  const tierEmoji = tier === 'agency' ? '⚡' : tier === 'pro' ? '🐣' : tier === 'lite' ? '🌱' : '🥚'
 
   return (
     <AnimatePresence>
@@ -166,9 +166,9 @@ export function SubscriptionStatusCard() {
     isSyncing 
   } = useSubscription()
 
-  const tierEmoji = tier === 'agency' ? '⚡' : tier === 'pro' ? '�' : '🥚'
-  const tierName = tier === 'agency' ? 'Agency' : tier === 'pro' ? 'Pro' : 'Free'
-  const price = tier === 'agency' ? '$49' : tier === 'pro' ? '$19' : '$0'
+  const tierEmoji = tier === 'agency' ? '⚡' : tier === 'pro' ? '🐣' : tier === 'lite' ? '🌱' : '🥚'
+  const tierName = tier === 'agency' ? 'Agency' : tier === 'pro' ? 'Pro' : tier === 'lite' ? 'Starter' : 'Free'
+  const price = tier === 'agency' ? '$99' : tier === 'pro' ? '$29' : tier === 'lite' ? '$9' : '$0'
 
   return (
     <div className={`p-6 rounded-2xl ${tierColor.bgSubtle} border ${tierColor.border}`}>
