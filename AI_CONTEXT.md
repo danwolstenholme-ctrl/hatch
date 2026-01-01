@@ -15,17 +15,23 @@ The user has been instructed to add these. **Do not proceed with code changes un
 ### Business Logic
 - `FREE_DAILY_LIMIT`: `5`
 - `PRO_ARCHITECT_MONTHLY_LIMIT`: `30`
+- `NEXT_PUBLIC_APP_URL`: `https://your-production-url.com` (Used for Stripe redirects)
 
 ### Stripe (CRITICAL)
 - `STRIPE_PRO_PRICE_ID`: `price_...` (From Stripe Dashboard)
 - `STRIPE_AGENCY_PRICE_ID`: `price_...` (From Stripe Dashboard)
+- `STRIPE_SECRET_KEY`: `sk_...` (From Stripe Dashboard)
 
 ### Infrastructure (CRITICAL)
 - `GEMINI_API_KEY`: `AIza...` (For Audit/Logo generation)
+- `ANTHROPIC_API_KEY`: `sk-ant...` (For Surgical Edits/Refinements)
 - `CLERK_WEBHOOK_SECRET`: `whsec_...` (For User Sync)
+- `CLERK_SECRET_KEY`: `sk_...` (From Clerk Dashboard)
+- `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`: `pk_...` (From Clerk Dashboard)
 - `SUPABASE_SERVICE_ROLE_KEY`: `ey...` (For DB Writes)
 - `NEXT_PUBLIC_SUPABASE_URL`: `https://...`
 - `NEXT_PUBLIC_SUPABASE_ANON_KEY`: `ey...`
+- `VERCEL_TOKEN`: (For Domain Management API)
 
 ## 3. Recent Technical Changes
 - **`components/BuildFlowController.tsx`**: Modified to inject `const Image = ...` and `const Link = ...` into the preview iframe. This allows the AI to generate `next/image` code without breaking the preview.
