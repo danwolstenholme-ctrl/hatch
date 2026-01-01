@@ -6,7 +6,7 @@ import { getUserDNA } from '@/lib/db/chronosphere'
 import { StyleDNA } from '@/lib/supabase'
 
 // =============================================================================
-// GEMINI 2.0 FLASH - THE ARCHITECT (BUILDER MODE)
+// CLAUDE 3.5 SONNET - THE ARCHITECT (BUILDER MODE)
 // "The Genesis Engine"
 // =============================================================================
 
@@ -36,6 +36,18 @@ function buildSystemPrompt(
   styleDNA: StyleDNA | null,
   sectionPromptHint?: string
 ): string {
+  // Handle sparse/lazy inputs
+  const isSparseInput = userPrompt.length < 15 || ['test', 'testing', 'demo', 'example', 'sample'].some(w => userPrompt.toLowerCase().includes(w));
+  const sparseInstruction = isSparseInput 
+    ? `\n## CRITICAL: SPARSE INPUT DETECTED
+The user provided a very minimal prompt ("${userPrompt}"). 
+DO NOT just print "${userPrompt}" on the screen.
+Instead, HALLUCINATE a premium, high-fidelity example for this section type.
+- Use realistic placeholder copy (e.g. for a SaaS, Agency, or Tech product).
+- Make it look expensive and production-ready.
+- Ignore the specific text "${userPrompt}" and treat it as "Build me a great example".`
+    : '';
+
   const componentName = sectionName
     .split(/[\s-_]+/)
     .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
@@ -150,6 +162,7 @@ ${brandInstructions}
 ${chronosphereContext}
 ${previousContext}
 ${forbiddenInstruction}
+${sparseInstruction}
 
 ## OUTPUT FORMAT
 Return a JSON object with two fields:
@@ -178,8 +191,12 @@ export async function POST(request: NextRequest) {
     //   return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     // }
 
-    if (!genai) {
-      return NextResponse.json({ error: 'Gemini API key not configured' }, { status: 500 })
+    // if (!genai) {
+    //   return NextResponse.json({ error: 'Gemini API key not configured' }, { status: 500 })
+    // }
+    
+    if (!process.env.ANTHROPIC_API_KEY) {
+       return NextResponse.json({ error: 'Anthropic API key not configured' }, { status: 500 })
     }
 
     let dbUser = null
@@ -245,46 +262,48 @@ export async function POST(request: NextRequest) {
       sectionPromptHint
     )
 
-    // Call Gemini 2.0 Flash
-    const response = await genai.models.generateContent({
-      model: 'gemini-2.0-flash-001',
-      config: {
-        responseMimeType: 'application/json',
+    // Call Claude 3.5 Sonnet (Anthropic)
+    // Switched from Gemini 2.0 Flash for better reasoning on sparse inputs
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': process.env.ANTHROPIC_API_KEY || '',
+        'anthropic-version': '2023-06-01'
       },
-      contents: [
-        {
-          role: 'user',
-          parts: [
-            { text: systemPrompt },
-            { text: `Build this section: ${userPrompt}` }
-          ]
-        }
-      ]
+      body: JSON.stringify({
+        model: 'claude-3-5-sonnet-20240620',
+        max_tokens: 8192,
+        system: systemPrompt,
+        messages: [
+          { role: 'user', content: `Build this section: ${userPrompt}` }
+        ]
+      })
     })
 
-    let responseText = ''
-    // Handle different SDK response structures (@google/genai vs @google/generative-ai)
-    const anyResponse = response as any
-    if (anyResponse.text && typeof anyResponse.text === 'function') {
-      responseText = anyResponse.text()
-    } else if (typeof anyResponse.text === 'string') {
-      responseText = anyResponse.text
-    } else if (anyResponse.response && typeof anyResponse.response.text === 'function') {
-      responseText = anyResponse.response.text()
+    if (!response.ok) {
+      const errorText = await response.text()
+      console.error('Anthropic API Error:', errorText)
+      throw new Error(`Anthropic API Error: ${response.statusText}`)
     }
+
+    const data = await response.json()
+    const responseText = data.content[0].text
     
-    console.log('Gemini Raw Response:', responseText.slice(0, 500))
+    console.log('Claude Raw Response:', responseText.slice(0, 500))
 
     // Try to parse as JSON
     let generatedCode = ''
     let reasoning = ''
     
     try {
-      const parsed = JSON.parse(responseText)
+      // Clean up potential markdown code blocks around the JSON
+      const cleanJson = responseText.replace(/```json\n|\n```/g, '').trim()
+      const parsed = JSON.parse(cleanJson)
       generatedCode = parsed.code || ''
       reasoning = parsed.reasoning || ''
     } catch (e) {
-      console.error('Failed to parse Gemini JSON:', e)
+      console.error('Failed to parse Claude JSON:', e)
       
       // Strategy 2: Extract JSON from markdown blocks
       const jsonMatch = responseText.match(/```json\n([\s\S]*?)\n```/) || responseText.match(/\{[\s\S]*\}/)
@@ -304,7 +323,7 @@ export async function POST(request: NextRequest) {
         const codeMatch = responseText.match(/```(?:tsx|jsx|javascript|typescript)?\n([\s\S]*?)```/)
         if (codeMatch) {
           generatedCode = codeMatch[1]
-          reasoning = "Generated by Gemini (JSON parse failed, extracted code)."
+          reasoning = "Generated by Claude (JSON parse failed, extracted code)."
         } else if (responseText.includes('export default function') || responseText.includes('import React')) {
            generatedCode = responseText
            reasoning = "Raw output."
@@ -321,7 +340,7 @@ export async function POST(request: NextRequest) {
       success: true, 
       code: generatedCode,
       reasoning: reasoning,
-      model: 'gemini-2.0-flash-001'
+      model: 'claude-3-5-sonnet-20240620'
     })
 
   } catch (error) {

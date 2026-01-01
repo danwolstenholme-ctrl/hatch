@@ -154,6 +154,15 @@
 			"isBackground": false,
 			"problemMatcher": [],
 			"group": "build"
+		},
+		{
+			"label": "commit-sonnet-switch",
+			"type": "shell",
+			"command": "git add . && git commit -m \"fix: switch builder to Claude 3.5 Sonnet and handle sparse inputs\"",
+			"args": [],
+			"isBackground": false,
+			"problemMatcher": [],
+			"group": "build"
 		}
 	]
 }
