@@ -49,29 +49,54 @@ import { AccountSubscription } from '@/types/subscriptions'
 // Renders all assembled sections in an iframe - simplified for reliability
 // =============================================================================
 
-function FullSitePreviewFrame({ code, deviceView }: { code: string; deviceView: 'mobile' | 'tablet' | 'desktop' }) {
+function FullSitePreviewFrame({ sections, deviceView }: { sections: { id: string, code: string }[]; deviceView: 'mobile' | 'tablet' | 'desktop' }) {
   const [srcDoc, setSrcDoc] = useState('')
 
   useEffect(() => {
-    if (!code) {
+    if (!sections || sections.length === 0) {
       setSrcDoc('');
       return;
     }
 
-    // Wrap the raw JSX sections in a simple page structure
-    // No Babel transformation - just render as static HTML with Tailwind
-    const wrappedCode = code
-      // Remove any 'use client' directives
-      .replace(/'use client'/g, '')
-      .replace(/"use client"/g, '')
-      // Remove import statements
-      .replace(/import\s+.*?from\s+['"][^'"]+['"];?\s*/g, '')
-      // Remove export statements but keep the content
-      .replace(/export\s+default\s+function\s+\w+\s*\([^)]*\)\s*{/g, '')
-      // Clean up function wrappers - just get the JSX
-      .replace(/^\s*function\s+\w+\s*\([^)]*\)\s*{\s*return\s*\(/gm, '')
-      .replace(/^\s*\);\s*}\s*$/gm, '')
-      .replace(/^\s*}\s*$/gm, '')
+    // Prepare the code for each section
+    const processedSections = sections.map((section, index) => {
+      // We need to turn "export default function Name() {...}" into "const Section_Index = function Name() {...}"
+      // And strip imports
+      let code = section.code
+        .replace(/'use client';?/g, '')
+        .replace(/"use client";?/g, '')
+        .replace(/import\s+.*?from\s+['"][^'"]+['"];?\s*/g, '');
+
+      // Replace export default function with a variable assignment
+      // Regex to find "export default function [Name](...)"
+      code = code.replace(/export\s+default\s+function\s+(\w+)?/g, (match, name) => {
+        return `const Section_${index} = function ${name || ''}`;
+      });
+      
+      // If it was just "export default () =>", handle that too
+      code = code.replace(/export\s+default\s+/g, `const Section_${index} = `);
+
+      return code;
+    });
+
+    const appComponent = `
+      function App() {
+        return (
+          <div className="min-h-screen bg-zinc-950 text-white">
+            ${sections.map((_, i) => `<Section_${i} />`).join('\n            ')}
+          </div>
+        );
+      }
+
+      const root = ReactDOM.createRoot(document.getElementById('root'));
+      root.render(<App />);
+    `;
+
+    const fullScript = `
+      ${processedSections.join('\n\n')}
+      
+      ${appComponent}
+    `;
 
     const html = `<!DOCTYPE html>
 <html class="dark">
@@ -79,52 +104,74 @@ function FullSitePreviewFrame({ code, deviceView }: { code: string; deviceView: 
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <script>
+    window.react = window.React;
+    window['react-dom'] = window.ReactDOM;
+  </script>
+  <script src="https://cdn.jsdelivr.net/npm/framer-motion@11/dist/framer-motion.js" crossorigin></script>
+  <script src="https://unpkg.com/lucide-react@0.294.0/dist/umd/lucide-react.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <script>
     tailwind.config = {
       darkMode: 'class',
       theme: {
         extend: {
           colors: {
-            zinc: {
-              950: '#09090b',
-              900: '#18181b',
-              800: '#27272a',
-              700: '#3f3f46',
-              600: '#52525b',
-              500: '#71717a',
-              400: '#a1a1aa',
-              300: '#d4d4d8',
-              200: '#e4e4e7',
-              100: '#f4f4f5',
-            }
+            zinc: { 950: '#09090b', 900: '#18181b', 800: '#27272a', 700: '#3f3f46', 600: '#52525b', 500: '#71717a', 400: '#a1a1aa', 300: '#d4d4d8', 200: '#e4e4e7', 100: '#f4f4f5' }
           }
         }
       }
     }
+    
+    // Robust Proxies
+    window.motion = window.Motion?.motion || new Proxy({}, { get: (t, p) => p });
+    window.AnimatePresence = window.Motion?.AnimatePresence || function(p) { return p.children; };
+    
+    window.LucideIcons = window.lucideReact || {};
+    window.LucideIcons = new Proxy(window.LucideIcons, {
+      get: (target, prop) => {
+        if (prop in target) return target[prop];
+        return function DummyIcon(props) { return null; };
+      }
+    });
+    
+    // Inject globals
+    window.React = React;
+    window.ReactDOM = ReactDOM;
   </script>
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    html, body { min-height: 100%; width: 100%; background: #09090b; color: #fff; font-family: system-ui, -apple-system, sans-serif; }
-    /* Basic icon placeholder */
-    [data-icon] { display: inline-flex; align-items: center; justify-content: center; width: 1.5em; height: 1.5em; background: rgba(255,255,255,0.1); border-radius: 4px; }
+    body { background: #09090b; color: #fff; }
+    /* Hide scrollbar for cleaner preview */
+    ::-webkit-scrollbar { width: 0px; background: transparent; }
   </style>
 </head>
 <body>
-  <main class="min-h-screen bg-zinc-950 text-white">
-    ${wrappedCode}
-  </main>
+  <div id="root"></div>
+  <script type="text/babel" data-presets="react">
+    // Global imports for the eval'd code
+    const { useState, useEffect, useRef, useMemo, useCallback } = React;
+    const { motion, AnimatePresence } = window;
+    
+    // Inject all Lucide icons
+    Object.assign(window, window.LucideIcons);
+
+    ${fullScript}
+  </script>
 </body>
-</html>`
+</html>`;
 
     setSrcDoc(html);
-  }, [code])
+  }, [sections])
 
   return (
-    <div className={`w-full h-full bg-zinc-950 transition-all duration-300 mx-auto ${
+    <div className={\`w-full h-full bg-zinc-950 transition-all duration-300 mx-auto \${
       deviceView === 'mobile' ? 'max-w-[375px] border-x border-zinc-800' : 
       deviceView === 'tablet' ? 'max-w-[768px] border-x border-zinc-800' : 
       'max-w-full'
-    }`}>
+    }\`}>
       <iframe
         title="Preview"
         srcDoc={srcDoc}
@@ -718,6 +765,19 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
     return completedSections.join('\n\n')
   }, [buildState, sectionsForBuild])
 
+  // Prepare sections for the preview frame (array format for Babel processing)
+  const previewSections = useMemo(() => {
+    if (!buildState) return []
+    
+    return sectionsForBuild
+      .filter(s => buildState.completedSections.includes(s.id))
+      .map(s => ({
+        id: s.id,
+        code: buildState.sectionCode[s.id]
+      }))
+      .filter(s => !!s.code)
+  }, [buildState, sectionsForBuild])
+
   const handleDeploy = async () => {
     if (!project || !assembledCode || isDeploying) return
     
@@ -1309,7 +1369,7 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
                       </div>
                     )}
                     <FullSitePreviewFrame 
-                      code={assembledCode} 
+                      sections={previewSections} 
                       deviceView={reviewDeviceView}
                     />
                   </motion.div>

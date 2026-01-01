@@ -134,7 +134,11 @@ export default function SectionPreview({ code, darkMode = true, onRuntimeError, 
   <script src="https://unpkg.com/lucide-react@0.294.0/dist/umd/lucide-react.js" crossorigin></script>
   
   <script>
-    window.motion = window.Motion?.motion || { div: 'div', span: 'span', button: 'button', a: 'a', p: 'p', h1: 'h1', h2: 'h2', h3: 'h3', section: 'section', nav: 'nav', ul: 'ul', li: 'li', img: 'img', form: 'form', input: 'input' };
+    // Ensure Motion is defined before we try to use it
+    window.motion = window.Motion?.motion || new Proxy({}, {
+      get: (target, prop) => prop // Return string for tag name if Motion fails
+    });
+    
     window.AnimatePresence = window.Motion?.AnimatePresence || function(p) { return p.children; };
     window.useInView = window.Motion?.useInView || function() { return true; };
     window.useScroll = window.Motion?.useScroll || function() { return { scrollY: 0, scrollYProgress: 0 }; };
@@ -144,10 +148,12 @@ export default function SectionPreview({ code, darkMode = true, onRuntimeError, 
     window.useAnimation = window.Motion?.useAnimation || function() { return { start: () => {}, stop: () => {} }; };
     
     // Robust Lucide Icons Proxy
+    // Fix for React #130: Ensure we return a valid component (function or string), never an object/undefined
     window.LucideIcons = window.lucideReact || {};
     window.LucideIcons = new Proxy(window.LucideIcons, {
       get: (target, prop) => {
         if (prop in target) return target[prop];
+        // Return a dummy component that renders nothing but doesn't crash
         return function DummyIcon(props) { return null; };
       }
     });

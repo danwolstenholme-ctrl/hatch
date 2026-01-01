@@ -1237,7 +1237,7 @@ export default function SectionBuilder({
           {/* Smart Suggestions - scrollable row */}
           {stage === 'input' && (
             <div className="mt-2 flex flex-nowrap gap-1.5 overflow-x-auto pb-1 scrollbar-none -mx-1 px-1">
-              {getSuggestions(section.id).slice(0, 4).map((suggestion) => (
+              {getSuggestions(section.id).slice(0, tier === 'free' ? 2 : 4).map((suggestion) => (
                 <button
                   key={suggestion}
                   onClick={() => setPrompt(prev => prev ? `${prev} ${suggestion}` : suggestion)}
@@ -1246,6 +1246,15 @@ export default function SectionBuilder({
                   + {suggestion}
                 </button>
               ))}
+              {tier === 'free' && (
+                 <button
+                  onClick={onShowHatchModal}
+                  className="px-2.5 py-1 rounded-full bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/20 text-[10px] text-amber-400 hover:text-amber-300 transition-all whitespace-nowrap flex-shrink-0 flex items-center gap-1"
+                >
+                  <Sparkles className="w-3 h-3" />
+                  <span>Unlock Pro Suggestions</span>
+                </button>
+              )}
             </div>
           )}
 
@@ -1403,7 +1412,15 @@ export default function SectionBuilder({
                     
                     <div className="mt-2 space-y-2 animate-in fade-in slide-in-from-top-2 duration-200">
                       {/* Quick Refine Input */}
-                      <div className="flex gap-1.5">
+                      <div className="flex gap-1.5 relative">
+                        {tier === 'free' && (
+                          <div className="absolute inset-0 bg-zinc-950/80 backdrop-blur-[1px] z-10 flex items-center justify-center rounded-lg border border-zinc-800/50">
+                            <button onClick={onShowHatchModal} className="flex items-center gap-1.5 text-xs text-amber-400 font-medium hover:text-amber-300 transition-colors">
+                              <span className="text-sm">🔒</span>
+                              <span>Unlock Refinement</span>
+                            </button>
+                          </div>
+                        )}
                         <input
                           type="text"
                           value={refinePrompt}
