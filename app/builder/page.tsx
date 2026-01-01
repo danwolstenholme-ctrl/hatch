@@ -105,7 +105,6 @@ function BuilderContent() {
   // Always return V3 Structured Build Flow
   return (
     <div className="relative min-h-screen">
-      {!isDev && !isGuest && <MaintenanceOverlay />}
       <BuildFlowController 
         existingProjectId={projectId || undefined} 
         guestMode={isGuest}
