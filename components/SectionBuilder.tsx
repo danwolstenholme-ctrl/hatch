@@ -1164,26 +1164,6 @@ export default function SectionBuilder({
         flex-col min-h-0 max-h-full overflow-hidden relative transition-all duration-300 
         border-r-0 md:border-r border-zinc-800/50 bg-zinc-950
       `}>
-        {/* Section Header - Compact */}
-        <div className="p-3 lg:p-4 border-b border-zinc-800/50 flex-shrink-0 bg-zinc-950">
-          <div className="flex items-center justify-between mb-2">
-            <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
-                <Terminal className="w-4 h-4 text-emerald-400" />
-              </div>
-              <div>
-                <h2 className="text-base font-bold text-white tracking-tight">{section.name}</h2>
-                <p className="text-[10px] text-emerald-400/70 font-mono">The Architect is ready</p>
-              </div>
-            </div>
-            <div className="px-2 py-0.5 rounded bg-zinc-900 border border-zinc-800 text-[10px] text-zinc-500 font-mono">
-              {section.estimatedTime}
-            </div>
-          </div>
-          
-          <p className="text-xs text-zinc-500 leading-relaxed line-clamp-2">{section.description}</p>
-        </div>
-
         {/* Input Area - More compact */}
         <div className="flex-1 p-3 lg:p-4 flex flex-col min-h-0 overflow-auto">
           <div className="flex items-center justify-between mb-1.5">
