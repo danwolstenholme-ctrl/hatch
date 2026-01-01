@@ -66,7 +66,30 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <ClerkProvider>
+    <ClerkProvider
+      appearance={{
+        baseTheme: undefined,
+        elements: {
+          rootBox: 'font-sans',
+          card: 'bg-zinc-900 border border-emerald-900/50 shadow-[0_0_50px_rgba(16,185,129,0.1)]',
+          headerTitle: 'text-white',
+          headerSubtitle: 'text-zinc-400',
+          formButtonPrimary: 'bg-emerald-600 hover:bg-emerald-500 text-white',
+          formFieldInput: 'bg-zinc-900 border-zinc-800 focus:border-emerald-500 text-white',
+          formFieldLabel: 'text-zinc-400',
+          footerActionLink: 'text-emerald-500 hover:text-emerald-400',
+          identityPreviewText: 'text-zinc-300',
+          formFieldInputShowPasswordButton: 'text-zinc-400 hover:text-white',
+          socialButtonsBlockButton: 'bg-zinc-800 border-zinc-700 text-white hover:bg-zinc-700',
+          socialButtonsBlockButtonText: 'text-white',
+          dividerLine: 'bg-zinc-800',
+          dividerText: 'text-zinc-500',
+          formFieldLabelRow: 'text-zinc-400',
+          footer: 'text-zinc-400',
+          footerActionText: 'text-zinc-400',
+        }
+      }}
+    >
       <html lang="en">
         <body>
           <SubscriptionProvider>
