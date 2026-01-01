@@ -107,8 +107,8 @@ function SystemStatus() {
         transition={{ delay: 0.2, duration: 0.5 }}
         className={`relative rounded-xl overflow-hidden transition-all duration-500 ${
           isFocused 
-            ? 'bg-black/90 ring-2 ring-emerald-500 shadow-[0_0_100px_rgba(16,185,129,0.3)]' 
-            : 'bg-black/80 border border-zinc-800 hover:border-zinc-700'
+            ? 'bg-black/90 ring-1 ring-emerald-500 shadow-neon-strong' 
+            : 'bg-black/80 border border-zinc-800 hover:border-emerald-500/30 hover:shadow-neon'
         }`}
       >
         {/* Terminal Header */}
@@ -363,12 +363,17 @@ export default function Home() {
   }
   
   return (
-    <div className="min-h-screen bg-zinc-950 text-white relative">
+    <div className="min-h-screen bg-zinc-950 text-white relative selection:bg-emerald-500/30 overflow-x-hidden">
+      {/* GRID BACKGROUND - The Foundation */}
+      <div className="absolute inset-0 bg-grid-white/[0.02] bg-[size:50px_50px] pointer-events-none" />
+      <div className="absolute inset-0 bg-gradient-to-b from-zinc-950 via-transparent to-zinc-950 pointer-events-none" />
+      
       <FloatingNodes />
       
-      {/* Subtle gradient orb */}
+      {/* GLOW ORBS - The Atmosphere */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -left-40 w-80 h-80 bg-purple-500/10 rounded-full blur-[100px] opacity-50 md:opacity-100" />
+        <div className="absolute -top-40 -left-40 w-96 h-96 bg-purple-500/20 rounded-full blur-[128px] opacity-50 md:opacity-70 animate-pulse-slow" />
+        <div className="absolute top-1/3 right-0 w-96 h-96 bg-emerald-500/10 rounded-full blur-[128px] opacity-30 md:opacity-50 animate-pulse-slow" />
       </div>
       
       {/* GPU-accelerated animations */}
