@@ -3,7 +3,13 @@
 import { motion } from 'framer-motion'
 import { Terminal, Zap, Shield, Cpu, Layout } from 'lucide-react'
 
+import { notFound } from 'next/navigation'
+
 export default function BrandPage() {
+  return notFound()
+}
+
+function DeadCode() {
   return (
     <div className="min-h-screen bg-zinc-950 text-white p-12 font-sans">
       <div className="max-w-5xl mx-auto space-y-20">

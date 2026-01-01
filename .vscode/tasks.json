@@ -108,6 +108,13 @@
 			"command": "git add .",
 			"isBackground": false,
 			"group": "none"
+		},
+		{
+			"label": "remove-internal-pages",
+			"type": "shell",
+			"command": "rm app/campaign/page.tsx app/brand/page.tsx",
+			"isBackground": false,
+			"group": "clean"
 		}
 	]
 }
