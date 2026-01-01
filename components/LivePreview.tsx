@@ -701,8 +701,34 @@ const GlassCard = ({ children, className }) => React.createElement('div', { clas
         'window.useTransform = window.Motion?.useTransform || function(v, i, o) { return typeof v === "number" ? v : 0; };\n' +
         'window.useSpring = window.Motion?.useSpring || function(v) { return typeof v === "number" ? v : 0; };\n' +
         'window.useMotionValue = window.Motion?.useMotionValue || function(v) { return { get: function() { return v; }, set: function() {}, onChange: function(){} }; };\n' +
-        'window.LucideIcons = window.lucideReact || window.lucide || {};\n' +
-        'window.LucideIcons = new Proxy(window.LucideIcons, { get: function(target, prop) { if (prop in target) return target[prop]; return function(props) { return React.createElement("svg", Object.assign({ width: 24, height: 24, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 2, strokeLinecap: "round", strokeLinejoin: "round" }, props)); }; } });\n' +
+        '// Create a safe icon getter that ALWAYS returns a valid component\n' +
+        'window.createSafeIcon = function(name) {\n' +
+        '  return function SafeIcon(props) {\n' +
+        '    var icons = window.lucideReact || window.lucide || {};\n' +
+        '    var Icon = icons[name];\n' +
+        '    if (typeof Icon === "function") {\n' +
+        '      try { return Icon(props); } catch(e) { /* fall through */ }\n' +
+        '    }\n' +
+        '    // Fallback: render empty SVG placeholder\n' +
+        '    return React.createElement("svg", Object.assign({ width: 24, height: 24, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 2, strokeLinecap: "round", strokeLinejoin: "round" }, props));\n' +
+        '  };\n' +
+        '};\n' +
+        '// Pre-create all common icons as safe components\n' +
+        'window.LucideIcons = {};\n' +
+        '["ArrowRight","ArrowLeft","ArrowUp","ArrowDown","Check","CheckCircle","CheckCircle2","Circle","X","Menu","ChevronDown","ChevronUp","ChevronLeft","ChevronRight","Plus","Minus","Search","Settings","User","Users","Mail","Phone","MapPin","Calendar","Clock","Star","Heart","Home","Globe","Layers","Lock","Award","BookOpen","Zap","Shield","Target","TrendingUp","BarChart","PieChart","Activity","Eye","EyeOff","Edit","Trash","Copy","Download","Upload","Share","Link","ExternalLink","Send","MessageCircle","Bell","AlertCircle","Info","HelpCircle","Loader","RefreshCw","RotateCcw","Save","FileText","Folder","Image","Play","Pause","SkipBack","SkipForward","Volume2","VolumeX","Mic","Video","Camera","Wifi","Battery","Sun","Moon","Cloud","Droplet","Wind","Thermometer","Map","Navigation","Compass","Flag","Bookmark","Tag","Hash","AtSign","Filter","Grid","List","LayoutGrid","Maximize","Minimize","Move","Crop","ZoomIn","ZoomOut","MoreHorizontal","MoreVertical","Briefcase","Building","Cpu","Database","Server","Code","Terminal","GitBranch","Github","Linkedin","Twitter","Facebook","Instagram","Youtube","Sparkles","Bot","Brain","Rocket","Package","Box","Gift","ShoppingCart","CreditCard","DollarSign","Percent","TrendingDown","LineChart","Gauge","Timer","Hourglass","Repeat","Shuffle","SkipForward","FastForward","Rewind","Square","Circle","Triangle","Hexagon","Octagon","Pentagon","Diamond","Gem","Crown","Medal","Trophy","Flame","Lightbulb","Lamp","Flashlight","Power","PlugZap","Unplug","Cable","Bluetooth","Cast","Airplay","Monitor","Tv","Smartphone","Tablet","Laptop","Watch","Headphones","Speaker","Radio","Antenna","Signal","Rss","Podcast","Music","Music2","Music3","Music4","Mic2","MicOff","AudioWaveform","Piano","Guitar","Drum"].forEach(function(name) {\n' +
+        '  window.LucideIcons[name] = window.createSafeIcon(name);\n' +
+        '});\n' +
+        '// Also create a Proxy for any icons not in the list\n' +
+        'window.LucideIcons = new Proxy(window.LucideIcons, {\n' +
+        '  get: function(target, prop) {\n' +
+        '    if (prop in target) return target[prop];\n' +
+        '    if (typeof prop === "string" && prop[0] === prop[0].toUpperCase()) {\n' +
+        '      target[prop] = window.createSafeIcon(prop);\n' +
+        '      return target[prop];\n' +
+        '    }\n' +
+        '    return undefined;\n' +
+        '  }\n' +
+        '});\n' +
         '</script>' +
         // Inspector script - handles element selection when inspector mode is enabled
         '<script>' +
@@ -783,9 +809,14 @@ const GlassCard = ({ children, className }) => React.createElement('div', { clas
         '</script>' +
         '<script>document.addEventListener("click", function(e) { var link = e.target.closest("a"); if (!link) return; var href = link.getAttribute("href"); if (!href) return; if (href.startsWith("http://") || href.startsWith("https://")) { e.preventDefault(); window.open(href, "_blank", "noopener,noreferrer"); return; } if (href.startsWith("/") && !href.startsWith("//")) { e.preventDefault(); window.location.hash = href; return; } if (href.startsWith("#") && !href.startsWith("#/")) { e.preventDefault(); var target = document.querySelector(href); if (target) target.scrollIntoView({ behavior: "smooth" }); else window.location.hash = "/" + href.slice(1); } if (href.startsWith("#/")) { e.preventDefault(); window.location.hash = href.slice(1); } });</script>' +
         '<script>' +
-        '// Global error handler - show nice fallback instead of broken page\n' +
+        '// Global error handler - communicate errors to parent and show fallback\n' +
         'window.onerror = function(msg, url, line, col, error) {' +
-        '  console.error("Preview error:", msg, "at line", line, "col", col, error);' +
+        '  var errorMsg = msg || "Unknown error";' +
+        '  if (msg === "Script error." || msg === "Script error") {' +
+        '    errorMsg = "Cross-origin script error (check browser console for details)";' +
+        '  }' +
+        '  console.error("Preview error:", errorMsg, "at line", line, "col", col, error);' +
+        '  window.parent.postMessage({ type: "preview-error", errorType: "Runtime Error", message: errorMsg + " (Line: " + line + ")" }, "*");' +
         '  document.getElementById("root").innerHTML = ' +
         '    "<div class=\'fallback-container\'>" +' +
         '    "<div class=\'fallback-icon\'>🎨</div>" +' +
@@ -806,8 +837,127 @@ const GlassCard = ({ children, className }) => React.createElement('div', { clas
         'const useTransform = window.useTransform;\n' +
         'const useSpring = window.useSpring;\n' +
         'const useMotionValue = window.useMotionValue;\n' +
-        'const LucideIcons = window.LucideIcons || {};\n' +
-        'const { ArrowRight, ArrowLeft, ArrowUp, ArrowDown, Check, CheckCircle, CheckCircle2, Circle, X, Menu, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, Plus, Minus, Search, Settings, User, Users, Mail, Phone, MapPin, Calendar, Clock, Star, Heart, Home, Globe, Layers, Lock, Award, BookOpen, Zap, Shield, Target, TrendingUp, BarChart, PieChart, Activity, Eye, EyeOff, Edit, Trash, Copy, Download, Upload, Share, Link, ExternalLink, Send, MessageCircle, Bell, AlertCircle, Info, HelpCircle, Loader, RefreshCw, RotateCcw, Save, FileText, Folder, Image, Play, Pause, SkipBack, SkipForward, Volume2, VolumeX, Mic, Video, Camera, Wifi, Battery, Sun, Moon, Cloud, Droplet, Wind, Thermometer, MapIcon, Navigation: NavIcon, Compass, Flag, Bookmark, Tag, Hash, AtSign, Filter, Grid, List, LayoutGrid, Maximize, Minimize, Move, Crop, ZoomIn, ZoomOut, MoreHorizontal, MoreVertical, Briefcase, Building, Cpu, Database, Server, Code, Terminal, GitBranch, Github, Linkedin, Twitter, Facebook, Instagram, Youtube } = LucideIcons;\n' +
+        '// Icons - access from window.LucideIcons which has safe fallbacks\n' +
+        'const LucideIcons = window.LucideIcons;\n' +
+        'const ArrowRight = LucideIcons.ArrowRight;\n' +
+        'const ArrowLeft = LucideIcons.ArrowLeft;\n' +
+        'const ArrowUp = LucideIcons.ArrowUp;\n' +
+        'const ArrowDown = LucideIcons.ArrowDown;\n' +
+        'const Check = LucideIcons.Check;\n' +
+        'const CheckCircle = LucideIcons.CheckCircle;\n' +
+        'const CheckCircle2 = LucideIcons.CheckCircle2;\n' +
+        'const Circle = LucideIcons.Circle;\n' +
+        'const X = LucideIcons.X;\n' +
+        'const Menu = LucideIcons.Menu;\n' +
+        'const ChevronDown = LucideIcons.ChevronDown;\n' +
+        'const ChevronUp = LucideIcons.ChevronUp;\n' +
+        'const ChevronLeft = LucideIcons.ChevronLeft;\n' +
+        'const ChevronRight = LucideIcons.ChevronRight;\n' +
+        'const Plus = LucideIcons.Plus;\n' +
+        'const Minus = LucideIcons.Minus;\n' +
+        'const Search = LucideIcons.Search;\n' +
+        'const Settings = LucideIcons.Settings;\n' +
+        'const User = LucideIcons.User;\n' +
+        'const Users = LucideIcons.Users;\n' +
+        'const Mail = LucideIcons.Mail;\n' +
+        'const Phone = LucideIcons.Phone;\n' +
+        'const MapPin = LucideIcons.MapPin;\n' +
+        'const Calendar = LucideIcons.Calendar;\n' +
+        'const Clock = LucideIcons.Clock;\n' +
+        'const Star = LucideIcons.Star;\n' +
+        'const Heart = LucideIcons.Heart;\n' +
+        'const Home = LucideIcons.Home;\n' +
+        'const Globe = LucideIcons.Globe;\n' +
+        'const Layers = LucideIcons.Layers;\n' +
+        'const Lock = LucideIcons.Lock;\n' +
+        'const Award = LucideIcons.Award;\n' +
+        'const BookOpen = LucideIcons.BookOpen;\n' +
+        'const Zap = LucideIcons.Zap;\n' +
+        'const Shield = LucideIcons.Shield;\n' +
+        'const Target = LucideIcons.Target;\n' +
+        'const TrendingUp = LucideIcons.TrendingUp;\n' +
+        'const BarChart = LucideIcons.BarChart;\n' +
+        'const PieChart = LucideIcons.PieChart;\n' +
+        'const Activity = LucideIcons.Activity;\n' +
+        'const Eye = LucideIcons.Eye;\n' +
+        'const EyeOff = LucideIcons.EyeOff;\n' +
+        'const Edit = LucideIcons.Edit;\n' +
+        'const Trash = LucideIcons.Trash;\n' +
+        'const Copy = LucideIcons.Copy;\n' +
+        'const Download = LucideIcons.Download;\n' +
+        'const Upload = LucideIcons.Upload;\n' +
+        'const Share = LucideIcons.Share;\n' +
+        'const Link = LucideIcons.Link;\n' +
+        'const ExternalLink = LucideIcons.ExternalLink;\n' +
+        'const Send = LucideIcons.Send;\n' +
+        'const MessageCircle = LucideIcons.MessageCircle;\n' +
+        'const Bell = LucideIcons.Bell;\n' +
+        'const AlertCircle = LucideIcons.AlertCircle;\n' +
+        'const Info = LucideIcons.Info;\n' +
+        'const HelpCircle = LucideIcons.HelpCircle;\n' +
+        'const Loader = LucideIcons.Loader;\n' +
+        'const RefreshCw = LucideIcons.RefreshCw;\n' +
+        'const RotateCcw = LucideIcons.RotateCcw;\n' +
+        'const Save = LucideIcons.Save;\n' +
+        'const FileText = LucideIcons.FileText;\n' +
+        'const Folder = LucideIcons.Folder;\n' +
+        'const Image = LucideIcons.Image;\n' +
+        'const Play = LucideIcons.Play;\n' +
+        'const Pause = LucideIcons.Pause;\n' +
+        'const SkipBack = LucideIcons.SkipBack;\n' +
+        'const SkipForward = LucideIcons.SkipForward;\n' +
+        'const Volume2 = LucideIcons.Volume2;\n' +
+        'const VolumeX = LucideIcons.VolumeX;\n' +
+        'const Mic = LucideIcons.Mic;\n' +
+        'const Video = LucideIcons.Video;\n' +
+        'const Camera = LucideIcons.Camera;\n' +
+        'const Wifi = LucideIcons.Wifi;\n' +
+        'const Battery = LucideIcons.Battery;\n' +
+        'const Sun = LucideIcons.Sun;\n' +
+        'const Moon = LucideIcons.Moon;\n' +
+        'const Cloud = LucideIcons.Cloud;\n' +
+        'const Droplet = LucideIcons.Droplet;\n' +
+        'const Wind = LucideIcons.Wind;\n' +
+        'const Thermometer = LucideIcons.Thermometer;\n' +
+        'const MapIcon = LucideIcons.Map;\n' +
+        'const NavIcon = LucideIcons.Navigation;\n' +
+        'const Navigation = LucideIcons.Navigation;\n' +
+        'const Compass = LucideIcons.Compass;\n' +
+        'const Flag = LucideIcons.Flag;\n' +
+        'const Bookmark = LucideIcons.Bookmark;\n' +
+        'const Tag = LucideIcons.Tag;\n' +
+        'const Hash = LucideIcons.Hash;\n' +
+        'const AtSign = LucideIcons.AtSign;\n' +
+        'const Filter = LucideIcons.Filter;\n' +
+        'const Grid = LucideIcons.Grid;\n' +
+        'const List = LucideIcons.List;\n' +
+        'const LayoutGrid = LucideIcons.LayoutGrid;\n' +
+        'const Maximize = LucideIcons.Maximize;\n' +
+        'const Minimize = LucideIcons.Minimize;\n' +
+        'const Move = LucideIcons.Move;\n' +
+        'const Crop = LucideIcons.Crop;\n' +
+        'const ZoomIn = LucideIcons.ZoomIn;\n' +
+        'const ZoomOut = LucideIcons.ZoomOut;\n' +
+        'const MoreHorizontal = LucideIcons.MoreHorizontal;\n' +
+        'const MoreVertical = LucideIcons.MoreVertical;\n' +
+        'const Briefcase = LucideIcons.Briefcase;\n' +
+        'const Building = LucideIcons.Building;\n' +
+        'const Cpu = LucideIcons.Cpu;\n' +
+        'const Database = LucideIcons.Database;\n' +
+        'const Server = LucideIcons.Server;\n' +
+        'const Code = LucideIcons.Code;\n' +
+        'const Terminal = LucideIcons.Terminal;\n' +
+        'const GitBranch = LucideIcons.GitBranch;\n' +
+        'const Github = LucideIcons.Github;\n' +
+        'const Linkedin = LucideIcons.Linkedin;\n' +
+        'const Twitter = LucideIcons.Twitter;\n' +
+        'const Facebook = LucideIcons.Facebook;\n' +
+        'const Instagram = LucideIcons.Instagram;\n' +
+        'const Youtube = LucideIcons.Youtube;\n' +
+        'const Sparkles = LucideIcons.Sparkles;\n' +
+        'const Rocket = LucideIcons.Rocket;\n' +
+        'const Bot = LucideIcons.Bot;\n' +
+        'const Brain = LucideIcons.Brain;\n' +
         'try {\n' +
         pageDefinitions + '\n' +
         routerCode + '\n' +
@@ -972,16 +1122,42 @@ const GlassCard = ({ children, className }) => React.createElement('div', { clas
       '<script src="https://unpkg.com/@babel/standalone/babel.min.js" crossorigin onerror="showFallback()"></script>' +
       '<script>' +
       '// Expose motion and lucide icons as globals\n' +
-      'window.motion = window.Motion?.motion || { div: "div", button: "button", a: "a", span: "span", p: "p", h1: "h1", h2: "h2", h3: "h3", section: "section", main: "main", nav: "nav", ul: "ul", li: "li", img: "img", input: "input", form: "form", label: "label", textarea: "textarea" };\n' +
+      'window.motion = window.Motion?.motion || { div: "div", button: "button", a: "a", span: "span", p: "p", h1: "h1", h2: "h2", h3: "h3", section: "section", main: "main", nav: "nav", ul: "ul", li: "li", img: "img", input: "input", form: "form", label: "label", textarea: "textarea", header: "header", footer: "footer", article: "article", aside: "aside" };\n' +
       'window.AnimatePresence = window.Motion?.AnimatePresence || function(props) { return props.children; };\n' +
-      'window.useAnimation = window.Motion?.useAnimation || function() { return {}; };\n' +
+      'window.useAnimation = window.Motion?.useAnimation || function() { return { start: function(){}, stop: function(){} }; };\n' +
       'window.useInView = window.Motion?.useInView || function() { return true; };\n' +
-      'window.useScroll = window.Motion?.useScroll || function() { return { scrollY: 0, scrollYProgress: 0 }; };\n' +
-      'window.useTransform = window.Motion?.useTransform || function(v) { return v; };\n' +
-      'window.useSpring = window.Motion?.useSpring || function(v) { return v; };\n' +
-      'window.useMotionValue = window.Motion?.useMotionValue || function(v) { return { get: function() { return v; }, set: function() {} }; };\n' +
-      'window.LucideIcons = window.lucideReact || {};\n' +
-      'window.LucideIcons = new Proxy(window.LucideIcons, { get: function(target, prop) { if (prop in target) return target[prop]; return function() { return null; }; } });\n' +
+      'window.useScroll = window.Motion?.useScroll || function() { return { scrollY: { get: function(){ return 0; } }, scrollYProgress: { get: function(){ return 0; } } }; };\n' +
+      'window.useTransform = window.Motion?.useTransform || function(v, i, o) { return typeof v === "number" ? v : 0; };\n' +
+      'window.useSpring = window.Motion?.useSpring || function(v) { return typeof v === "number" ? v : 0; };\n' +
+      'window.useMotionValue = window.Motion?.useMotionValue || function(v) { return { get: function() { return v; }, set: function() {}, onChange: function(){} }; };\n' +
+      '// Create a safe icon getter that ALWAYS returns a valid component\n' +
+      'window.createSafeIcon = function(name) {\n' +
+      '  return function SafeIcon(props) {\n' +
+      '    var icons = window.lucideReact || window.lucide || {};\n' +
+      '    var Icon = icons[name];\n' +
+      '    if (typeof Icon === "function") {\n' +
+      '      try { return Icon(props); } catch(e) { /* fall through */ }\n' +
+      '    }\n' +
+      '    // Fallback: render empty SVG placeholder\n' +
+      '    return React.createElement("svg", Object.assign({ width: 24, height: 24, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 2, strokeLinecap: "round", strokeLinejoin: "round" }, props));\n' +
+      '  };\n' +
+      '};\n' +
+      '// Pre-create common icons as safe components\n' +
+      'window.LucideIcons = {};\n' +
+      '["ArrowRight","ArrowLeft","ArrowUp","ArrowDown","Check","CheckCircle","CheckCircle2","Circle","X","Menu","ChevronDown","ChevronUp","ChevronLeft","ChevronRight","Plus","Minus","Search","Settings","User","Users","Mail","Phone","MapPin","Calendar","Clock","Star","Heart","Home","Globe","Layers","Lock","Award","BookOpen","Zap","Shield","Target","TrendingUp","BarChart","PieChart","Activity","Eye","EyeOff","Edit","Trash","Copy","Download","Upload","Share","Link","ExternalLink","Send","MessageCircle","Bell","AlertCircle","Info","HelpCircle","Loader","RefreshCw","RotateCcw","Save","FileText","Folder","Image","Play","Pause","SkipBack","SkipForward","Volume2","VolumeX","Mic","Video","Camera","Wifi","Battery","Sun","Moon","Cloud","Droplet","Wind","Thermometer","Map","Navigation","Compass","Flag","Bookmark","Tag","Hash","AtSign","Filter","Grid","List","LayoutGrid","Maximize","Minimize","Move","Crop","ZoomIn","ZoomOut","MoreHorizontal","MoreVertical","Briefcase","Building","Cpu","Database","Server","Code","Terminal","GitBranch","Github","Linkedin","Twitter","Facebook","Instagram","Youtube","Sparkles","Bot","Brain","Rocket"].forEach(function(name) {\n' +
+      '  window.LucideIcons[name] = window.createSafeIcon(name);\n' +
+      '});\n' +
+      '// Proxy for any icons not in the list\n' +
+      'window.LucideIcons = new Proxy(window.LucideIcons, {\n' +
+      '  get: function(target, prop) {\n' +
+      '    if (prop in target) return target[prop];\n' +
+      '    if (typeof prop === "string" && prop[0] === prop[0].toUpperCase()) {\n' +
+      '      target[prop] = window.createSafeIcon(prop);\n' +
+      '      return target[prop];\n' +
+      '    }\n' +
+      '    return undefined;\n' +
+      '  }\n' +
+      '});\n' +
       '</script>' +
       // Inspector script - handles element selection when inspector mode is enabled
       '<script>' +
@@ -1137,8 +1313,127 @@ const SectionHeader = ({ eyebrow, title, description }) => React.createElement('
       'const useTransform = window.useTransform;\n' +
       'const useSpring = window.useSpring;\n' +
       'const useMotionValue = window.useMotionValue;\n' +
-      'const LucideIcons = window.LucideIcons || {};\n' +
-      'const { ArrowRight, ArrowLeft, ArrowUp, ArrowDown, Check, CheckCircle, CheckCircle2, Circle, X, Menu, ChevronDown, ChevronUp, ChevronLeft, ChevronRight, Plus, Minus, Search, Settings, User, Users, Mail, Phone, MapPin, Calendar, Clock, Star, Heart, Home, Globe, Layers, Lock, Award, BookOpen, Zap, Shield, Target, TrendingUp, BarChart, PieChart, Activity, Eye, EyeOff, Edit, Trash, Copy, Download, Upload, Share, Link, ExternalLink, Send, MessageCircle, Bell, AlertCircle, Info, HelpCircle, Loader, RefreshCw, RotateCcw, Save, FileText, Folder, Image, Play, Pause, SkipBack, SkipForward, Volume2, VolumeX, Mic, Video, Camera, Wifi, Battery, Sun, Moon, Cloud, Droplet, Wind, Thermometer, MapIcon, Navigation: NavIcon, Compass, Flag, Bookmark, Tag, Hash, AtSign, Filter, Grid, List, LayoutGrid, Maximize, Minimize, Move, Crop, ZoomIn, ZoomOut, MoreHorizontal, MoreVertical, Briefcase, Building, Cpu, Database, Server, Code, Terminal, GitBranch, Github, Linkedin, Twitter, Facebook, Instagram, Youtube } = LucideIcons;\n' +
+      '// Icons - access from window.LucideIcons which has safe fallbacks\n' +
+      'const LucideIcons = window.LucideIcons;\n' +
+      'const ArrowRight = LucideIcons.ArrowRight;\n' +
+      'const ArrowLeft = LucideIcons.ArrowLeft;\n' +
+      'const ArrowUp = LucideIcons.ArrowUp;\n' +
+      'const ArrowDown = LucideIcons.ArrowDown;\n' +
+      'const Check = LucideIcons.Check;\n' +
+      'const CheckCircle = LucideIcons.CheckCircle;\n' +
+      'const CheckCircle2 = LucideIcons.CheckCircle2;\n' +
+      'const Circle = LucideIcons.Circle;\n' +
+      'const X = LucideIcons.X;\n' +
+      'const Menu = LucideIcons.Menu;\n' +
+      'const ChevronDown = LucideIcons.ChevronDown;\n' +
+      'const ChevronUp = LucideIcons.ChevronUp;\n' +
+      'const ChevronLeft = LucideIcons.ChevronLeft;\n' +
+      'const ChevronRight = LucideIcons.ChevronRight;\n' +
+      'const Plus = LucideIcons.Plus;\n' +
+      'const Minus = LucideIcons.Minus;\n' +
+      'const Search = LucideIcons.Search;\n' +
+      'const Settings = LucideIcons.Settings;\n' +
+      'const User = LucideIcons.User;\n' +
+      'const Users = LucideIcons.Users;\n' +
+      'const Mail = LucideIcons.Mail;\n' +
+      'const Phone = LucideIcons.Phone;\n' +
+      'const MapPin = LucideIcons.MapPin;\n' +
+      'const Calendar = LucideIcons.Calendar;\n' +
+      'const Clock = LucideIcons.Clock;\n' +
+      'const Star = LucideIcons.Star;\n' +
+      'const Heart = LucideIcons.Heart;\n' +
+      'const Home = LucideIcons.Home;\n' +
+      'const Globe = LucideIcons.Globe;\n' +
+      'const Layers = LucideIcons.Layers;\n' +
+      'const Lock = LucideIcons.Lock;\n' +
+      'const Award = LucideIcons.Award;\n' +
+      'const BookOpen = LucideIcons.BookOpen;\n' +
+      'const Zap = LucideIcons.Zap;\n' +
+      'const Shield = LucideIcons.Shield;\n' +
+      'const Target = LucideIcons.Target;\n' +
+      'const TrendingUp = LucideIcons.TrendingUp;\n' +
+      'const BarChart = LucideIcons.BarChart;\n' +
+      'const PieChart = LucideIcons.PieChart;\n' +
+      'const Activity = LucideIcons.Activity;\n' +
+      'const Eye = LucideIcons.Eye;\n' +
+      'const EyeOff = LucideIcons.EyeOff;\n' +
+      'const Edit = LucideIcons.Edit;\n' +
+      'const Trash = LucideIcons.Trash;\n' +
+      'const Copy = LucideIcons.Copy;\n' +
+      'const Download = LucideIcons.Download;\n' +
+      'const Upload = LucideIcons.Upload;\n' +
+      'const Share = LucideIcons.Share;\n' +
+      'const Link = LucideIcons.Link;\n' +
+      'const ExternalLink = LucideIcons.ExternalLink;\n' +
+      'const Send = LucideIcons.Send;\n' +
+      'const MessageCircle = LucideIcons.MessageCircle;\n' +
+      'const Bell = LucideIcons.Bell;\n' +
+      'const AlertCircle = LucideIcons.AlertCircle;\n' +
+      'const Info = LucideIcons.Info;\n' +
+      'const HelpCircle = LucideIcons.HelpCircle;\n' +
+      'const Loader = LucideIcons.Loader;\n' +
+      'const RefreshCw = LucideIcons.RefreshCw;\n' +
+      'const RotateCcw = LucideIcons.RotateCcw;\n' +
+      'const Save = LucideIcons.Save;\n' +
+      'const FileText = LucideIcons.FileText;\n' +
+      'const Folder = LucideIcons.Folder;\n' +
+      'const Image = LucideIcons.Image;\n' +
+      'const Play = LucideIcons.Play;\n' +
+      'const Pause = LucideIcons.Pause;\n' +
+      'const SkipBack = LucideIcons.SkipBack;\n' +
+      'const SkipForward = LucideIcons.SkipForward;\n' +
+      'const Volume2 = LucideIcons.Volume2;\n' +
+      'const VolumeX = LucideIcons.VolumeX;\n' +
+      'const Mic = LucideIcons.Mic;\n' +
+      'const Video = LucideIcons.Video;\n' +
+      'const Camera = LucideIcons.Camera;\n' +
+      'const Wifi = LucideIcons.Wifi;\n' +
+      'const Battery = LucideIcons.Battery;\n' +
+      'const Sun = LucideIcons.Sun;\n' +
+      'const Moon = LucideIcons.Moon;\n' +
+      'const Cloud = LucideIcons.Cloud;\n' +
+      'const Droplet = LucideIcons.Droplet;\n' +
+      'const Wind = LucideIcons.Wind;\n' +
+      'const Thermometer = LucideIcons.Thermometer;\n' +
+      'const MapIcon = LucideIcons.Map;\n' +
+      'const NavIcon = LucideIcons.Navigation;\n' +
+      'const Navigation = LucideIcons.Navigation;\n' +
+      'const Compass = LucideIcons.Compass;\n' +
+      'const Flag = LucideIcons.Flag;\n' +
+      'const Bookmark = LucideIcons.Bookmark;\n' +
+      'const Tag = LucideIcons.Tag;\n' +
+      'const Hash = LucideIcons.Hash;\n' +
+      'const AtSign = LucideIcons.AtSign;\n' +
+      'const Filter = LucideIcons.Filter;\n' +
+      'const Grid = LucideIcons.Grid;\n' +
+      'const List = LucideIcons.List;\n' +
+      'const LayoutGrid = LucideIcons.LayoutGrid;\n' +
+      'const Maximize = LucideIcons.Maximize;\n' +
+      'const Minimize = LucideIcons.Minimize;\n' +
+      'const Move = LucideIcons.Move;\n' +
+      'const Crop = LucideIcons.Crop;\n' +
+      'const ZoomIn = LucideIcons.ZoomIn;\n' +
+      'const ZoomOut = LucideIcons.ZoomOut;\n' +
+      'const MoreHorizontal = LucideIcons.MoreHorizontal;\n' +
+      'const MoreVertical = LucideIcons.MoreVertical;\n' +
+      'const Briefcase = LucideIcons.Briefcase;\n' +
+      'const Building = LucideIcons.Building;\n' +
+      'const Cpu = LucideIcons.Cpu;\n' +
+      'const Database = LucideIcons.Database;\n' +
+      'const Server = LucideIcons.Server;\n' +
+      'const Code = LucideIcons.Code;\n' +
+      'const Terminal = LucideIcons.Terminal;\n' +
+      'const GitBranch = LucideIcons.GitBranch;\n' +
+      'const Github = LucideIcons.Github;\n' +
+      'const Linkedin = LucideIcons.Linkedin;\n' +
+      'const Twitter = LucideIcons.Twitter;\n' +
+      'const Facebook = LucideIcons.Facebook;\n' +
+      'const Instagram = LucideIcons.Instagram;\n' +
+      'const Youtube = LucideIcons.Youtube;\n' +
+      'const Sparkles = LucideIcons.Sparkles;\n' +
+      'const Rocket = LucideIcons.Rocket;\n' +
+      'const Bot = LucideIcons.Bot;\n' +
+      'const Brain = LucideIcons.Brain;\n' +
       'try {\n' +
       cleanedCode + '\n' +
       '  const root = ReactDOM.createRoot(document.getElementById("root"));\n' +
