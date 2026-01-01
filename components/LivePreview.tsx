@@ -554,6 +554,8 @@ export default function RootLayout({
           .replace(/(\(\s*\w+):\s*(?:string|number|boolean|any|void|never|unknown)(?:\[\])?(?=[,)])/g, '$1')
           .replace(/,(\s*\w+):\s*(?:string|number|boolean|any|void|never|unknown)(?:\[\])?(?=[,)])/g, ',$1')
           .replace(/\):\s*[A-Za-z][A-Za-z0-9\[\]<>|&\s,']*(?=\s*[{=])/g, ')')
+          // Handle anonymous default exports by giving them a name
+          .replace(/export\s+default\s+function\s*\(/g, 'function Default(')
           .replace(/export\s+default\s+/g, '')
           .replace(/export\s+/g, '')
           .replace(/React\.useState/g, 'useState')
