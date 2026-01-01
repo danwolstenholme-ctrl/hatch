@@ -13,26 +13,26 @@ The application code is stable. We have fixed the critical "Preview Crash" issue
 The user has been instructed to add these. **Do not proceed with code changes until these are confirmed.**
 
 ### Business Logic
-- `FREE_DAILY_LIMIT`: `5`
-- `PRO_ARCHITECT_MONTHLY_LIMIT`: `30`
-- `NEXT_PUBLIC_APP_URL`: `[Configured]` (Used for Stripe redirects)
+- `FREE_DAILY_LIMIT`: `5` (Configured)
+- `PRO_ARCHITECT_MONTHLY_LIMIT`: `30` (Configured)
+- `NEXT_PUBLIC_APP_URL`: `https://hatchit.dev` (Configured)
 
 ### Stripe (CRITICAL)
-- `STRIPE_PRO_PRICE_ID`: `price_...` (From Stripe Dashboard)
-- `STRIPE_AGENCY_PRICE_ID`: `price_...` (From Stripe Dashboard)
+- `STRIPE_PRO_PRICE_ID`: `price_1SkDdZEZ4zm4PZbKZ6C3vfj8` (Configured)
+- `STRIPE_AGENCY_PRICE_ID`: `price_1SkDa3EZ4zm4PZbKJpnbBPCb` (Configured)
 - `STRIPE_SECRET_KEY`: `[Configured]` (From Stripe Dashboard)
 
 ### Infrastructure (CRITICAL)
-- `GEMINI_API_KEY`: `[Configured in .env.local]` (For Audit/Logo generation)
+- `GEMINI_API_KEY`: `[Configured]` (For Audit/Logo generation)
   - Project ID: `950209561172`
   - Project Name: `HatchIt.dev`
 - `ANTHROPIC_API_KEY`: `[Configured]` (For Surgical Edits/Refinements)
-- `CLERK_WEBHOOK_SECRET`: `whsec_...` (For User Sync)
+- `CLERK_WEBHOOK_SECRET`: `[Configured]` (For User Sync)
 - `CLERK_SECRET_KEY`: `[Configured]` (From Clerk Dashboard)
 - `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`: `[Configured]` (From Clerk Dashboard)
-- `SUPABASE_SERVICE_ROLE_KEY`: `ey...` (For DB Writes)
-- `NEXT_PUBLIC_SUPABASE_URL`: `https://...`
-- `NEXT_PUBLIC_SUPABASE_ANON_KEY`: `ey...`
+- `SUPABASE_SERVICE_ROLE_KEY`: `[Configured]` (For DB Writes)
+- `NEXT_PUBLIC_SUPABASE_URL`: `[Configured]`
+- `NEXT_PUBLIC_SUPABASE_ANON_KEY`: `[Configured]`
 - `VERCEL_TOKEN`: `[Configured]` (For Domain Management API)
   - Project ID: `prj_7iJnRClrcIrJ6snX8KDtAa2RviGS`
 
