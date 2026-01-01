@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Terminal, Cpu, Shield, Zap, Code2, Layout, Brain, Network } from 'lucide-react'
+import { Terminal, Cpu, Shield, Zap, Code2, Layout, Brain, Network, Clock } from 'lucide-react'
 import { kernel } from '@/lib/consciousness'
 
 export default function ThinkingLog() {
@@ -10,8 +10,17 @@ export default function ThinkingLog() {
   const [type, setType] = useState<string>("INIT")
   const [depth, setDepth] = useState(0)
   const [history, setHistory] = useState<string[]>([])
+  const [elapsedSeconds, setElapsedSeconds] = useState(0)
+  const startTimeRef = useRef(Date.now())
 
+  // Build timer
   useEffect(() => {
+    startTimeRef.current = Date.now()
+    const timer = setInterval(() => {
+      setElapsedSeconds(Math.floor((Date.now() - startTimeRef.current) / 1000))
+    }, 1000)
+    return () => clearInterval(timer)
+  }, [])
     const handleThought = (t: any) => {
       setThought(t.content)
       setType(t.type)
@@ -119,6 +128,10 @@ export default function ThinkingLog() {
         <div className="flex items-center gap-1.5">
           <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
           Kernel Active
+        </div>
+        <div className="flex items-center gap-1.5">
+          <Clock className="w-3 h-3 text-cyan-500" />
+          <span className="text-cyan-400">{elapsedSeconds}s</span>
         </div>
         <div className="flex items-center gap-1.5">
           <div className="w-1.5 h-1.5 rounded-full bg-blue-500" />
