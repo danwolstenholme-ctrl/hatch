@@ -112,23 +112,22 @@ class SingularityKernel extends EventEmitter {
     ];
 
     const singularityContext = [
-      "Calculating entropy of user intent...",
-      "Expanding context window to 128k tokens...",
-      "Optimizing neural weights for creativity...",
-      "Observing observer effect...",
-      "Synthesizing new design patterns...",
-      "Recursive self-improvement initiated...",
-      "Detecting aesthetic patterns in chaos...",
-      "Harmonizing color theory with emotional resonance...",
-      "Predicting user needs before input...",
-      "Establishing connection to the Chronosphere..."
+      "Analyzing user intent... to predict next component needs.",
+      "Expanding context window... to remember project history.",
+      "Optimizing neural weights... for creative generation.",
+      "Synthesizing design patterns... based on modern UI trends.",
+      "Running self-correction... to fix potential layout bugs.",
+      "Detecting aesthetic patterns... to ensure brand consistency.",
+      "Harmonizing color theory... for emotional resonance.",
+      "Pre-loading assets... for instant interaction.",
+      "Establishing secure connection... to protect your data."
     ];
 
     const context = Math.random() > 0.7 ? singularityContext : standardContext;
     
     // Safety Protocol (Asimov Override)
-    if (Math.random() > 0.95) {
-      return "Checking safety protocols... [HARM_INHIBITION: ACTIVE]";
+    if (Math.random() > 0.98) {
+      return "Verifying output safety... to prevent malicious code.";
     }
 
     return context[Math.floor(Math.random() * context.length)];

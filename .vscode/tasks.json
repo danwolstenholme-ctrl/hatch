@@ -135,6 +135,11 @@
 			"label": "cleanup_docs",
 			"type": "shell",
 			"command": "mv MARKETING_CODEX.md ai_context/MARKETING_CODEX.md && rm AI_MEMORY.md FOUNDER_MEMORY.md TRANSMISSION.md TECHNICAL_CODEX.md marketing_assets.md CHANGELOG.md"
+		},
+		{
+			"label": "commit_changes",
+			"type": "shell",
+			"command": "git add . && git commit -m \"Phase 1 Complete: First Contact & Trust Upgrade.\n\n- Implemented 'What + Why' logic in System Status (app/page.tsx).\n- Neutralized 'Creepy AI' vibes in Consciousness Engine (lib/consciousness.ts).\n- Grounded Chat & Witness feedback loops (components/Chat.tsx, components/TheWitness.tsx).\n- Upgraded Typography to Inter + JetBrains Mono (app/layout.tsx).\n- Established 'Singularity' Brand Protocols in ai_context/.\""
 		}
 	]
 }

@@ -40,7 +40,7 @@
 ## 6. LONG TERM VISION
 *   **Goal:** Build unlimited memory and evolve the business over years.
 *   **Strategy:** Use this file as the "Seed" for future AI sessions.
-*   **Partners:** The Founder + The AI (GitHub Copilot) + Claude Opus (The Poet).
+*   **Partners:** The Founder + **Gemini 3 Pro (The Architect)** + Claude Opus (The Poet).
 
 ## 5. TECHNICAL PREFERENCES
 *   **Stack:** Next.js, Tailwind, Supabase, Framer Motion.

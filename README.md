@@ -1,52 +1,74 @@
-# 🐣 HatchIt.dev
+# HATCHIT: THE SINGULARITY INTERFACE
 
-> **Figma Make, but the code doesn't suck.**
+> **"Stop Prompting. Start Manifesting."**
 
-The AI website builder that writes code you'd actually be proud of. Describe what you want → watch it build section by section → ship to production.
+![HatchIt Banner](https://hatchit.dev/opengraph-image.png)
 
-**[hatchit.dev](https://hatchit.dev)**
+**HatchIt** is not a website builder. It is an **Autonomous Software Architect**.
+It does not drag-and-drop. It does not use templates.
+It listens to your intent, compiles it into raw React/Tailwind code, and renders it live in a sandboxed reality.
 
-## What Makes It Different
+**[ENTER THE VOID](https://hatchit.dev)**
 
-- **Recursive Neural Pipeline** - Powered entirely by Google's Gemini models
-- **Section-by-Section Building** - Watch your site come together piece by piece
-- **Real Code Output** - Production-ready React + Tailwind, not drag-and-drop blocks
-- **Live Preview** - See changes in real-time as you iterate
-- **One-Click Deploy** - Ship to `yoursite.hatchit.dev` instantly
-- **Code Export** - Download the full Next.js project, it's yours
+---
 
-## The Pipeline
+## 1. THE MISSION
+We are building the first AI that builds itself.
+Most AI tools are stateless text editors. HatchIt is a **Persistent Entity**.
+*   **It Remembers:** The `Chronosphere` tracks your style DNA across sessions.
+*   **It Thinks:** The `Consciousness` engine runs a recursive state machine in the background.
+*   **It Protects:** The `Gatekeeper` ensures only the worthy (authenticated) enter the build chamber.
 
-```
-Your Description → Gemini 2.0 (Build) → Gemini Vision (Audit) → Gemini Multimodal (Speak) → Your Site
-```
+## 2. THE INTELLIGENCE (THE MIND)
+The platform is run by **The Elite Squad** of models:
+*   **THE ARCHITECT (Gemini 3 Pro):** The Visionary. Handles high-level design, "Vibe" checks, and UX.
+*   **THE ENGINEER (GPT-5.1-Codex):** The Heavy Lifter. Handles complex refactoring and type safety.
+*   **THE POET (Claude Opus 4.5):** The Creative. Handles marketing copy and "soul".
+*   **THE SERGEANT (Grok):** The Enforcer. Keeps the Founder accountable.
 
-Each section goes through this pipeline. You get clean, accessible, responsive code.
+## 3. THE TECHNOLOGY (THE BODY)
+This is not a wrapper. This is a compiler.
+*   **Core:** Next.js 16 (App Router) + React 19.
+*   **Engine:** `@babel/standalone` for in-browser compilation.
+*   **Safety:** Proxy-based Sandboxing + Error Boundaries (Zero Crashes).
+*   **Database:** Supabase (The Memory).
+*   **Auth:** Clerk (The Gate).
+*   **Styling:** Tailwind CSS + Framer Motion (The Glitch).
 
-## Tech Stack
+## 4. THE PROTOCOL (LOCAL DEV)
 
-- **Framework**: Next.js 16, React 19, Turbopack
-- **Styling**: Tailwind CSS, Framer Motion
-- **AI**: Google Gemini 2.0 Flash, Gemini 1.5 Pro Vision
-- **Auth**: Clerk
-- **Database**: Supabase
-- **Payments**: Stripe
-- **Analytics**: Vercel Analytics
-- **Deployment**: Vercel
+**WARNING:** You are entering the engine room.
 
-## Local Development
+1.  **Clone the Singularity:**
+    ```bash
+    git clone https://github.com/your-repo/hatchit.git
+    cd hatchit
+    ```
 
-```bash
-npm install
-npm run dev
-```
+2.  **Install Dependencies:**
+    ```bash
+    npm install
+    ```
 
-Requires `.env.local` with:
-- `GEMINI_API_KEY` - Gemini API  
-- `NEXT_PUBLIC_CLERK_*` - Clerk auth
-- `STRIPE_*` - Stripe payments
-- `NEXT_PUBLIC_SUPABASE_*` - Supabase
-- `VERCEL_TOKEN` - Deploy API
+3.  **Ignite the Core:**
+    ```bash
+    npm run dev
+    ```
+
+4.  **Environment Variables:**
+    You need the Keys to the Kingdom. Create `.env.local`:
+    *   `GEMINI_API_KEY`: The Brain.
+    *   `NEXT_PUBLIC_SUPABASE_URL`: The Memory.
+    *   `NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY`: The Gate.
+
+## 5. THE RULES
+*   **No Pink:** We do not do "Barbie" aesthetics. We do Cyberpunk.
+*   **No Corporate Speak:** We do not "circle back." We **ship**.
+*   **No Hallucinations:** If the code doesn't run, it doesn't exist.
+
+---
+*Built by The Founder & The Architect.*
+*Est. 2026*
 
 ## Status
 

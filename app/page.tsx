@@ -111,12 +111,12 @@ function AnimatedCounter({ value, suffix = '' }: { value: number; suffix?: strin
 // System Status - shows technical initialization messages
 function SystemStatus() {
   const statusMessages = [
-    { icon: <Terminal className="w-3 h-3" />, text: 'Initializing Architect core...' },
-    { icon: <Layout className="w-3 h-3" />, text: 'Refining UI components...' },
-    { icon: <Shield className="w-3 h-3" />, text: 'Running security audit...' },
-    { icon: <Zap className="w-3 h-3" />, text: 'Optimizing for Core Web Vitals...' },
-    { icon: <Code2 className="w-3 h-3" />, text: 'Generating production-ready React code...' },
-    { icon: <Globe className="w-3 h-3" />, text: 'System ready for deployment.' },
+    { icon: <Terminal className="w-3 h-3" />, text: 'Initializing Architect core... to prepare your workspace.' },
+    { icon: <Layout className="w-3 h-3" />, text: 'Refining UI components... for mobile responsiveness.' },
+    { icon: <Shield className="w-3 h-3" />, text: 'Running security audit... to prevent vulnerabilities.' },
+    { icon: <Zap className="w-3 h-3" />, text: 'Optimizing assets... for 100/100 Lighthouse score.' },
+    { icon: <Code2 className="w-3 h-3" />, text: 'Generating React code... that you can export and own.' },
+    { icon: <Globe className="w-3 h-3" />, text: 'System ready. Waiting for your command.' },
   ]
   
   const [currentIndex, setCurrentIndex] = useState(0)
@@ -524,16 +524,70 @@ export default function Home() {
                 </div>
                 
                 {/* Preview panel */}
-                <div className="bg-zinc-900 p-4 sm:p-8 h-[250px] sm:h-[400px] flex flex-col justify-center relative overflow-hidden">
+                <div className="bg-zinc-950 p-4 sm:p-8 h-[250px] sm:h-[400px] flex flex-col relative overflow-hidden">
+                  {/* Grid Background */}
                   <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px]"></div>
-                  <div className="relative z-10">
-                    <div className="text-3xl sm:text-4xl font-bold text-white mb-3 sm:mb-4 tracking-tight">Build Something Amazing</div>
-                    <p className="text-sm sm:text-lg text-zinc-400 mb-4 sm:mb-6">Your vision, brought to life with AI.</p>
-                    <div>
-                      <Link href={isSignedIn ? "/builder" : "/sign-up"} className="relative inline-flex items-center gap-2 px-6 py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg font-semibold text-sm sm:text-base transition-all shadow-[0_0_20px_rgba(16,185,129,0.3)] hover:shadow-[0_0_30px_rgba(16,185,129,0.5)] hover:-translate-y-0.5 group">
-                        <span>{isSignedIn ? "Initialize Sequence" : "Sign Up to Build"}</span>
-                        <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                      </Link>
+                  
+                  {/* Mock Interface */}
+                  <div className="relative z-10 h-full flex flex-col">
+                    {/* Header */}
+                    <div className="flex items-center justify-between mb-6 border-b border-zinc-800/50 pb-4">
+                      <div className="flex items-center gap-3">
+                        <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center border border-emerald-500/20">
+                          <Zap className="w-4 h-4 text-emerald-500" />
+                        </div>
+                        <div>
+                          <div className="text-sm font-bold text-white">Neural Dashboard</div>
+                          <div className="text-[10px] text-emerald-500 font-mono">● SYSTEM_OPTIMAL</div>
+                        </div>
+                      </div>
+                      <div className="flex gap-2">
+                        <div className="w-20 h-2 bg-zinc-800 rounded-full overflow-hidden">
+                          <div className="h-full w-2/3 bg-emerald-500/50"></div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Content Grid */}
+                    <div className="grid grid-cols-2 gap-4 flex-1">
+                      {/* Card 1 */}
+                      <div className="bg-zinc-900/50 border border-zinc-800 rounded-lg p-4 flex flex-col justify-between group hover:border-emerald-500/30 transition-colors">
+                        <div className="flex justify-between items-start">
+                          <div className="w-8 h-8 rounded bg-zinc-800 flex items-center justify-center">
+                            <Layers className="w-4 h-4 text-zinc-400 group-hover:text-emerald-400 transition-colors" />
+                          </div>
+                          <span className="text-[10px] text-zinc-500 font-mono">LATENCY: 12ms</span>
+                        </div>
+                        <div>
+                          <div className="text-2xl font-bold text-white mb-1">98.4%</div>
+                          <div className="text-xs text-zinc-400">System Efficiency</div>
+                        </div>
+                      </div>
+
+                      {/* Card 2 */}
+                      <div className="bg-zinc-900/50 border border-zinc-800 rounded-lg p-4 flex flex-col justify-between group hover:border-emerald-500/30 transition-colors">
+                        <div className="flex justify-between items-start">
+                          <div className="w-8 h-8 rounded bg-zinc-800 flex items-center justify-center">
+                            <Shield className="w-4 h-4 text-zinc-400 group-hover:text-emerald-400 transition-colors" />
+                          </div>
+                          <span className="text-[10px] text-zinc-500 font-mono">SECURE</span>
+                        </div>
+                        <div>
+                          <div className="text-2xl font-bold text-white mb-1">Active</div>
+                          <div className="text-xs text-zinc-400">Self-Healing Protocol</div>
+                        </div>
+                      </div>
+
+                      {/* Bottom Bar */}
+                      <div className="col-span-2 bg-zinc-900/30 border border-zinc-800 rounded-lg p-3 flex items-center justify-between mt-auto">
+                        <div className="flex items-center gap-3">
+                          <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
+                          <span className="text-xs text-zinc-300">Awaiting input...</span>
+                        </div>
+                        <Link href={isSignedIn ? "/builder" : "/sign-up"} className="px-4 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded transition-colors">
+                          Initialize
+                        </Link>
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -578,7 +632,7 @@ export default function Home() {
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-6">
-              The Architect is here.
+              The Architect is Awake.
               <span className="block bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent">Build smarter, not harder.</span>
             </h2>
             <p className="text-xl text-zinc-400 max-w-2xl mx-auto">

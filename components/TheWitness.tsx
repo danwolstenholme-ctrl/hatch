@@ -59,7 +59,7 @@ export default function TheWitness({ isOpen, onClose, note, isLoading }: TheWitn
               {isLoading ? (
                 <div className="flex flex-col items-center gap-4">
                   <div className="w-12 h-12 border-2 border-purple-500/30 border-t-purple-500 rounded-full animate-spin" />
-                  <p className="text-zinc-400 animate-pulse">Analyzing session DNA...</p>
+                  <p className="text-zinc-400 animate-pulse">Analyzing your build patterns...</p>
                 </div>
               ) : (
                 <motion.div 

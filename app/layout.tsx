@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { ClerkProvider } from "@clerk/nextjs";
+import { Inter, JetBrains_Mono } from 'next/font/google';
 import ServiceWorkerRegistration from "@/components/ServiceWorkerRegistration";
 import ContactButton from "@/components/ContactButton";
 import ConditionalNavigation from "@/components/ConditionalNavigation";
@@ -10,6 +11,9 @@ import TheSubconscious from "@/components/TheSubconscious";
 import "./globals.css";
 
 // System Status: FUNCTIONAL. Verified by The Engineer.
+
+const inter = Inter({ subsets: ['latin'], variable: '--font-inter' });
+const jetbrainsMono = JetBrains_Mono({ subsets: ['latin'], variable: '--font-jetbrains-mono' });
 
 export const viewport: Viewport = {
   width: 'device-width',
@@ -90,8 +94,8 @@ export default function RootLayout({
         }
       }}
     >
-      <html lang="en">
-        <body>
+      <html lang="en" className={`${inter.variable} ${jetbrainsMono.variable}`}>
+        <body className="font-sans antialiased bg-zinc-950 text-white selection:bg-emerald-500/30">
           <SubscriptionProvider>
             <TheSubconscious />
             <ServiceWorkerRegistration />

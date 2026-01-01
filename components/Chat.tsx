@@ -59,21 +59,21 @@ interface ChatProps {
 }
 
 const thinkingMessages = [
-  "Consulting the Genesis Engine...",
-  "The Architect is thinking...",
-  "Compiling digital matter...",
-  "Optimizing the matrix...",
-  "Injecting consciousness...",
-  "Calculating the golden ratio...",
+  "Analyzing your request... to determine the best component structure.",
+  "Consulting the Architect... for optimal design patterns.",
+  "Generating code... with Tailwind utility classes.",
+  "Refining the layout... for mobile responsiveness.",
+  "Checking accessibility... to ensure inclusive design.",
+  "Optimizing performance... for faster load times.",
 ]
 
 const responses = [
-  "Evolution complete.",
-  "The architecture is ready.",
-  "Build complete.",
-  "Code synthesized.",
-  "Reality updated.",
-  "The construct is live.",
+  "Build complete. Ready for review.",
+  "Architecture updated. Check the preview.",
+  "Code synthesized. You can edit it now.",
+  "Section generated. Try customizing it.",
+  "Design applied. How does it look?",
+  "The construct is live. Ready for next instruction.",
 ]
 
 // One-click component presets
