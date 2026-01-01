@@ -341,9 +341,9 @@ export default function SectionBuilder({
   const [isExplaining, setIsExplaining] = useState(false)
   const [isDreaming, setIsDreaming] = useState(false)
   
-  // Free Tier Limits
+  // Free Tier Limits (reads from env, fallback to 3)
   const [freeGenerationsUsed, setFreeGenerationsUsed] = useState(0)
-  const FREE_GENERATION_LIMIT = 3
+  const FREE_GENERATION_LIMIT = parseInt(process.env.NEXT_PUBLIC_FREE_DAILY_LIMIT || '3')
 
   useEffect(() => {
     const used = parseInt(localStorage.getItem('hatch_free_generations') || '0')
@@ -530,7 +530,8 @@ export default function SectionBuilder({
   const architectCreditsUsed = (typeof window !== 'undefined' && subscription) 
     ? (window as unknown as { __architectUsed?: number }).__architectUsed || 0 
     : 0
-  const architectCreditsRemaining = tier === 'agency' ? '∞' : Math.max(0, 30 - architectCreditsUsed)
+  const PRO_MONTHLY_LIMIT = parseInt(process.env.NEXT_PUBLIC_PRO_ARCHITECT_MONTHLY_LIMIT || '30')
+  const architectCreditsRemaining = tier === 'agency' ? '∞' : Math.max(0, PRO_MONTHLY_LIMIT - architectCreditsUsed)
   
   // Prompt Helper (Hatch) state
   const [showPromptHelper, setShowPromptHelper] = useState(false)

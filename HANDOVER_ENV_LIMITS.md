@@ -50,25 +50,23 @@ The application exposes two critical webhook endpoints that must be configured i
 
 ---
 
-## 3. Rate Limits (CRITICAL NOTICE)
-**Current Status:** The application currently uses **HARDCODED** limits in the code. The environment variables for limits are **IGNORED**.
+## 3. Rate Limits (FIXED ✅)
+**Current Status:** Limits now read from environment variables.
 
-### The Reality (Code vs. Env)
-| Tier | Actual Limit (Hardcoded) | Env Variable (Currently Ignored) | Location |
-|------|--------------------------|----------------------------------|----------|
-| **Free** | **3 Total Generations** | `FREE_DAILY_LIMIT` | `components/SectionBuilder.tsx` |
-| **Pro** | **30 Generations** | `PRO_ARCHITECT_MONTHLY_LIMIT` | `components/SectionBuilder.tsx` |
-| **Agency** | **Infinite** | N/A | `components/SectionBuilder.tsx` |
+### Env Variables (Must have `NEXT_PUBLIC_` prefix!)
+| Tier | Limit | Env Variable | Location |
+|------|-------|--------------|----------|
+| **Free** | 5 | `NEXT_PUBLIC_FREE_DAILY_LIMIT` | `components/SectionBuilder.tsx` |
+| **Pro** | 30 | `NEXT_PUBLIC_PRO_ARCHITECT_MONTHLY_LIMIT` | `components/SectionBuilder.tsx` |
+| **Agency** | ∞ | N/A | `components/SectionBuilder.tsx` |
 
-### The "Gotcha"
-- The Free limit is currently a "Total Lifetime Limit" stored in `localStorage` (`hatch_free_generations`), NOT a daily limit.
-- Changing `PRO_ARCHITECT_MONTHLY_LIMIT` in Vercel will have **NO EFFECT** until the code is updated.
+### Note
+- Free limit is still "Total Lifetime" stored in `localStorage` (`hatch_free_generations`), NOT daily reset.
+- To make it daily, would need DB tracking per user.
 
 ---
 
-## 4. Next Steps for Junior Model
-1.  **Verify Keys:** Ensure `ANTHROPIC_API_KEY` is live in Vercel.
-2.  **Wire Up Limits:** The immediate technical debt is to replace the hardcoded values in `components/SectionBuilder.tsx` with:
-    - `process.env.NEXT_PUBLIC_FREE_DAILY_LIMIT`
-    - `process.env.NEXT_PUBLIC_PRO_ARCHITECT_MONTHLY_LIMIT`
-3.  **Fix Free Tier Logic:** Decide if "Free" should be "Daily" (requires DB tracking) or "Total" (localStorage is fine for MVP). Currently, it is "Total".
+## 4. Vercel Action Required
+Rename these env vars in Vercel (add `NEXT_PUBLIC_` prefix):
+- `FREE_DAILY_LIMIT` → `NEXT_PUBLIC_FREE_DAILY_LIMIT`
+- `PRO_ARCHITECT_MONTHLY_LIMIT` → `NEXT_PUBLIC_PRO_ARCHITECT_MONTHLY_LIMIT`

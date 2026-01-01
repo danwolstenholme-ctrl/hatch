@@ -272,7 +272,7 @@ export async function POST(request: NextRequest) {
         'anthropic-version': '2023-06-01'
       },
       body: JSON.stringify({
-        model: 'claude-3-5-sonnet-20240620',
+        model: 'claude-3-5-sonnet-latest',
         max_tokens: 8192,
         system: systemPrompt,
         messages: [
