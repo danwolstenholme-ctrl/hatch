@@ -1821,10 +1821,10 @@ export default function SectionBuilder({
                   )}
                 </button>
                 {stage === 'complete' && (
-                  <>
-                    <span className="text-emerald-400 text-xs">⚡ Architect</span>
-                    {refined && <span className="text-violet-400 text-xs">+ ✨ Polished</span>}
-                  </>
+                  <div className="flex items-center gap-1 px-2 py-1 bg-zinc-800 rounded border border-zinc-700" title="Built by The Architect">
+                    <span className="text-emerald-400 text-xs font-mono">⚡ Architect</span>
+                    {refined && <span className="text-violet-400 text-xs font-mono">+ ✨ Polished</span>}
+                  </div>
                 )}
               </>
             )}

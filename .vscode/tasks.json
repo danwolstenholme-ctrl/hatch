@@ -199,6 +199,22 @@
 			"isBackground": false,
 			"problemMatcher": [],
 			"group": "build"
+		},
+		{
+			"label": "commit-ux-polish",
+			"type": "shell",
+			"command": "git add . && git commit -m \"fix: UX polish - Reddit socials, Welcome Modal, Ghost logic, and Homepage CTA\"",
+			"args": [],
+			"isBackground": false,
+			"group": "build"
+		},
+		{
+			"label": "commit-ux-polish-retry",
+			"type": "shell",
+			"command": "git add . && git commit -m \"fix: UX polish - Reddit socials, Welcome Modal, Ghost logic, and Homepage CTA\"",
+			"args": [],
+			"isBackground": false,
+			"group": "build"
 		}
 	]
 }

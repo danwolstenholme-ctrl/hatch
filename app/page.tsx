@@ -931,7 +931,7 @@ export default function Home() {
             <div className="relative z-10">
               <h2 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-6">Ready to initialize?</h2>
               <p className="text-xl text-zinc-300 mb-8 max-w-2xl mx-auto">Your next project is one prompt away. Initialize the system.</p>
-              <Link href={isSignedIn ? "/builder" : "/sign-up"} className="inline-flex items-center gap-2 px-10 py-5 bg-emerald-500 hover:bg-emerald-400 text-zinc-950 rounded-lg font-bold text-xl transition-all md:hover:scale-105 active:scale-95 shadow-[0_0_30px_rgba(16,185,129,0.3)]">
+              <Link href="/builder?mode=guest" className="inline-flex items-center gap-2 px-10 py-5 bg-emerald-500 hover:bg-emerald-400 text-zinc-950 rounded-lg font-bold text-xl transition-all md:hover:scale-105 active:scale-95 shadow-[0_0_30px_rgba(16,185,129,0.3)]">
                 <Terminal className="w-6 h-6" />
                 {isSignedIn ? 'Initialize System' : 'Initialize Architect'}
               </Link>
@@ -945,8 +945,8 @@ export default function Home() {
       <section className="px-6 py-16 border-t border-zinc-800 bg-zinc-950">
         <div className="max-w-4xl mx-auto text-center">
           <p className="text-zinc-500 mb-4">Built by developers, for developers.</p>
-          <a href="https://x.com/HatchItD" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-emerald-400 hover:text-emerald-300 transition-colors font-mono text-sm">
-            <span>Follow the build on X</span>
+          <a href="https://www.reddit.com/r/HatchIt/" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-emerald-400 hover:text-emerald-300 transition-colors font-mono text-sm">
+            <span>Join the community on Reddit</span>
             <ArrowRight className="w-4 h-4" />
           </a>
         </div>

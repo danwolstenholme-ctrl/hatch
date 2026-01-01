@@ -52,6 +52,9 @@ export default function TheSubconscious() {
 
   // Ghost AI Logic (Active when idle)
   useEffect(() => {
+    // Only run on home page or demo mode
+    if (window.location.pathname !== '/' && !window.location.search.includes('mode=demo')) return
+    
     if (!isIdle) return
 
     const scan = () => {
