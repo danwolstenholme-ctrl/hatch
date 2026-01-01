@@ -7,7 +7,7 @@
  * Stored in Clerk publicMetadata.accountSubscription
  */
 export interface AccountSubscription {
-  tier: 'pro' | 'agency'
+  tier: 'lite' | 'pro' | 'agency'
   stripeSubscriptionId: string
   stripeCustomerId: string
   status: 'active' | 'canceled' | 'past_due'
@@ -19,7 +19,7 @@ export interface AccountSubscription {
  * Pricing tier configuration
  */
 export interface PricingTier {
-  name: 'free' | 'pro' | 'agency'
+  name: 'free' | 'lite' | 'pro' | 'agency'
   price: number // USD per month
   generationsPerDay: number // -1 for unlimited
   architectRefinementsPerMonth: number // -1 for unlimited
@@ -37,19 +37,26 @@ export const PRICING_TIERS: Record<string, PricingTier> = {
     architectRefinementsPerMonth: 0,
     features: ['10 generations per day', 'Live preview', 'Basic templates', 'Community support'],
   },
+  lite: {
+    name: 'lite',
+    price: 9,
+    generationsPerDay: 20,
+    architectRefinementsPerMonth: 5,
+    features: ['20 generations per day', '1 Active Project', 'Basic Code Download', 'No Custom Domain'],
+  },
   pro: {
     name: 'pro',
-    price: 19,
+    price: 29,
     generationsPerDay: -1,
     architectRefinementsPerMonth: -1,
-    features: ['Unlimited generations', 'Unlimited Architect refinements', 'Full code export', 'Custom domains', 'The Living Site (Evolution Engine)'],
+    features: ['Unlimited generations', 'Unlimited Architect refinements', 'Full code export', 'Custom domains', 'Remove HatchIt Branding', 'The Living Site (Evolution Engine)'],
   },
   agency: {
     name: 'agency',
     price: 99,
     generationsPerDay: -1,
     architectRefinementsPerMonth: -1,
-    features: ['Everything in Pro', 'Commercial License', 'White-label exports', 'Priority Support', 'Team Features (Coming Soon)'],
+    features: ['Everything in Pro', 'Commercial License', 'Priority Support', 'Team Features (Coming Soon)'],
   },
 }
 

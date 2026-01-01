@@ -42,6 +42,7 @@ export default function Footer() {
               <li><Link href="/features" className="hover:text-emerald-400 transition-colors">Features</Link></li>
               <li><Link href="/how-it-works" className="hover:text-emerald-400 transition-colors">How It Works</Link></li>
               <li><Link href="/roadmap" className="hover:text-emerald-400 transition-colors">Roadmap</Link></li>
+              <li><Link href="/changelog" className="hover:text-emerald-400 transition-colors">Changelog</Link></li>
             </ul>
           </div>
           

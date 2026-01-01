@@ -193,14 +193,14 @@ function SystemStatus() {
               <button 
                 type="submit"
                 disabled={!prompt.trim()}
-                className={`flex items-center gap-2 px-4 py-2 rounded-lg text-xs font-bold uppercase tracking-wider transition-all ${
+                className={`flex items-center gap-2 px-6 py-3 rounded-xl text-sm font-bold uppercase tracking-wider transition-all shadow-lg ${
                   prompt.trim() 
-                    ? 'bg-emerald-500 text-zinc-950 hover:bg-emerald-400 hover:shadow-[0_0_20px_rgba(16,185,129,0.3)] transform hover:-translate-y-0.5' 
+                    ? 'bg-emerald-500 text-zinc-950 hover:bg-emerald-400 hover:shadow-[0_0_30px_rgba(16,185,129,0.4)] transform hover:-translate-y-0.5 active:scale-95' 
                     : 'bg-zinc-800 text-zinc-600 cursor-not-allowed'
                 }`}
               >
                 <span>Initialize</span>
-                <ArrowRight className="w-3 h-3" />
+                <ArrowRight className="w-4 h-4" />
               </button>
             </div>
           </div>

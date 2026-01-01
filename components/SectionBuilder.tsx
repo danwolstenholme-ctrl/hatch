@@ -936,6 +936,12 @@ export default function SectionBuilder({
   }
 
   const handleUserRefine = async () => {
+    // Check if user has subscription (Free tier cannot refine)
+    if (tier === 'free') {
+      onShowHatchModal?.()
+      return
+    }
+
     if (!refinePrompt.trim() || !generatedCode) {
       setError('Please describe what changes you want')
       return

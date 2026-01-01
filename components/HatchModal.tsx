@@ -73,7 +73,7 @@ export default function HatchModal({ isOpen, onClose, reason, projectSlug = '', 
 
   const { title, description, icon } = messages[reason]
 
-  const handleHatch = async () => {
+  const handleHatch = async (selectedTier: 'pro' | 'lite' = 'pro') => {
     // If not signed in, prompt to sign in first
     if (!isSignedIn) {
       onClose()
@@ -94,12 +94,12 @@ export default function HatchModal({ isOpen, onClose, reason, projectSlug = '', 
     
     setIsLoading(true)
     setError(null)
-    track('Hatch Started', { reason, projectSlug })
+    track('Hatch Started', { reason, projectSlug, tier: selectedTier })
     try {
       const response = await fetch('/api/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tier: 'pro' }),
+        body: JSON.stringify({ tier: selectedTier }),
       })
 
       if (response.status === 401) {
@@ -192,33 +192,80 @@ export default function HatchModal({ isOpen, onClose, reason, projectSlug = '', 
             </div>
           </div>
         ) : (
-          <div className="bg-gradient-to-br from-zinc-800/50 to-zinc-900 border border-teal-500/30 rounded-xl p-6 mb-6 ring-1 ring-teal-500/20 relative overflow-hidden">
-            <div className="flex items-center justify-center gap-2 mb-2">
-              <span className="text-2xl">💠</span>
-              <span className="text-xl font-bold bg-gradient-to-r from-teal-400 to-cyan-400 bg-clip-text text-transparent">Pro Account</span>
-            </div>
-            
-            {/* Price */}
-            <div className="flex items-baseline justify-center gap-2 mb-1">
-              <span className="text-4xl font-bold text-white">$19</span>
-              <span className="text-zinc-400">/month</span>
-            </div>
-            <p className="text-zinc-400 text-sm text-center mb-4">Unlock everything for all your projects</p>
-            
-            <div className="space-y-2">
-              {[
-                'Unlimited AI builds',
-                '30 AI refinements/mo',
-                'Deploy to hatchitsites.dev',
-                'Download clean code',
-                'Version history',
-                'Cloud sync',
-              ].map((feature, i) => (
-                <div key={i} className="flex items-center gap-2 text-sm text-zinc-300">
-                  <span className="text-teal-400">✓</span>
-                  {feature}
+          <div className="space-y-4 mb-6">
+            {/* PRO TIER (Highlighted) */}
+            <div className="bg-gradient-to-br from-zinc-800/50 to-zinc-900 border border-teal-500/30 rounded-xl p-5 ring-1 ring-teal-500/20 relative overflow-hidden">
+              <div className="absolute top-0 right-0 bg-teal-500 text-zinc-950 text-[10px] font-bold px-2 py-1 rounded-bl-lg">
+                RECOMMENDED
+              </div>
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <span className="text-xl">💠</span>
+                  <span className="text-lg font-bold bg-gradient-to-r from-teal-400 to-cyan-400 bg-clip-text text-transparent">Pro Architect</span>
                 </div>
-              ))}
+                <div className="text-right">
+                  <div className="text-2xl font-bold text-white">$29</div>
+                  <div className="text-[10px] text-zinc-400">/month</div>
+                </div>
+              </div>
+              
+              <div className="space-y-1.5 mb-4">
+                {[
+                  'Unlimited AI builds',
+                  'Unlimited AI refinements',
+                  'Deploy to custom domain',
+                  'Full code export',
+                  'Remove HatchIt Branding',
+                ].map((feature, i) => (
+                  <div key={i} className="flex items-center gap-2 text-xs text-zinc-300">
+                    <span className="text-teal-400">✓</span>
+                    {feature}
+                  </div>
+                ))}
+              </div>
+
+              <button
+                onClick={() => handleHatch('pro')}
+                disabled={isLoading || isSyncing}
+                className="w-full py-2.5 rounded-lg bg-gradient-to-r from-teal-600 to-cyan-600 hover:from-teal-500 hover:to-cyan-500 text-white text-sm font-semibold shadow-lg shadow-teal-500/20 transition-all active:scale-95"
+              >
+                {isLoading ? 'Processing...' : 'Get Pro Access'}
+              </button>
+            </div>
+
+            {/* LITE TIER */}
+            <div className="bg-zinc-900/50 border border-zinc-800 rounded-xl p-4 hover:border-zinc-700 transition-colors">
+              <div className="flex items-center justify-between mb-2">
+                <div className="flex items-center gap-2">
+                  <span className="text-lg">🌱</span>
+                  <span className="text-base font-bold text-zinc-300">Starter Pack</span>
+                </div>
+                <div className="text-right">
+                  <div className="text-xl font-bold text-white">$9</div>
+                  <div className="text-[10px] text-zinc-400">/month</div>
+                </div>
+              </div>
+              
+              <div className="space-y-1.5 mb-4">
+                {[
+                  '1 Active Project',
+                  'Basic Code Download',
+                  'No Custom Domain',
+                ].map((feature, i) => (
+                  <div key={i} className="flex items-center gap-2 text-xs text-zinc-400">
+                    <span className="text-zinc-500">✓</span>
+                    {feature}
+                  </div>
+                ))}
+              </div>
+
+              <button
+                onClick={() => handleHatch('lite')}
+                disabled={isLoading || isSyncing}
+                className="w-full py-2 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-xs font-medium transition-all"
+              >
+                Select Starter
+              </button>
             </div>
           </div>
         )}
@@ -252,43 +299,30 @@ export default function HatchModal({ isOpen, onClose, reason, projectSlug = '', 
           </motion.div>
         )}
 
-        {!isPaidUser && (
+        {!isPaidUser && reason === 'guest_lock' && (
           <>
             <motion.button
               onClick={() => {
-                if (reason === 'guest_lock') {
-                  // Redirect to sign up with return URL
-                  const currentParams = window.location.search
-                  const returnUrl = '/builder' + currentParams
-                  router.push(`/sign-up?redirect_url=${encodeURIComponent(returnUrl)}`)
-                } else {
-                  handleHatch()
-                }
+                // Redirect to sign up with return URL
+                const currentParams = window.location.search
+                const returnUrl = '/builder' + currentParams
+                router.push(`/sign-up?redirect_url=${encodeURIComponent(returnUrl)}`)
               }}
               disabled={isLoading || isSyncing}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
-              className={`w-full py-4 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 shadow-lg ${
-                reason === 'guest_lock'
-                  ? 'bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 shadow-emerald-500/25 hover:shadow-emerald-500/40'
-                  : 'bg-gradient-to-r from-teal-600 to-cyan-600 hover:from-teal-500 hover:to-cyan-500 shadow-teal-500/25 hover:shadow-teal-500/40'
-              } disabled:opacity-50 text-white`}
+              className="w-full py-4 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 shadow-lg bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 shadow-emerald-500/25 hover:shadow-emerald-500/40 disabled:opacity-50 text-white"
             >
-              {isLoading ? 'Loading...' : isSyncing ? 'Syncing...' : reason === 'guest_lock' ? (
+              {isLoading ? 'Loading...' : isSyncing ? 'Syncing...' : (
                 <>
                   <span>💾</span>
                   <span>Create Free Account</span>
-                </>
-              ) : (
-                <>
-                  <span>💠</span>
-                  <span>Get Pro — $19/mo</span>
                 </>
               )}
             </motion.button>
 
             <p className="text-zinc-600 text-xs text-center mt-4">
-              {reason === 'guest_lock' ? 'Save your progress and continue building.' : 'Cancel anytime. Your code is always yours.'}
+              Save your progress and continue building.
             </p>
           </>
         )}

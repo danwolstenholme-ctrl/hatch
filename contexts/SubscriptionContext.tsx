@@ -7,7 +7,7 @@ import { AccountSubscription } from '@/types/subscriptions'
 interface SubscriptionContextValue {
   // Subscription data
   subscription: AccountSubscription | null
-  tier: 'free' | 'pro' | 'agency'
+  tier: 'free' | 'lite' | 'pro' | 'agency'
   isPaidUser: boolean
   isProUser: boolean
   isAgencyUser: boolean
@@ -44,6 +44,14 @@ const proColors = {
   text: 'text-teal-400',
   glow: 'shadow-teal-500/30',
   bgSubtle: 'bg-teal-500/10',
+}
+
+const liteColors = {
+  gradient: 'from-amber-500 to-orange-500',
+  border: 'border-amber-500/50',
+  text: 'text-amber-400',
+  glow: 'shadow-amber-500/30',
+  bgSubtle: 'bg-amber-500/10',
 }
 
 const agencyColors = {
@@ -94,6 +102,7 @@ export function SubscriptionProvider({ children }: { children: ReactNode }) {
   const tierColor = useMemo(() => {
     if (tier === 'agency') return agencyColors
     if (tier === 'pro') return proColors
+    if (tier === 'lite') return liteColors
     return defaultColors
   }, [tier])
 

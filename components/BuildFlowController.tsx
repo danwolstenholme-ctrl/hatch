@@ -489,6 +489,10 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
     return accountSubscription?.status === 'active'
   }, [accountSubscription])
 
+  const isProUser = useMemo(() => {
+    return accountSubscription?.status === 'active' && (accountSubscription.tier === 'pro' || accountSubscription.tier === 'agency')
+  }, [accountSubscription])
+
   // Check if project is paid (hatched) - now based on account subscription
   const isPaid = isPaidUser
 
@@ -968,8 +972,9 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
   const handleDeploy = async () => {
     if (!project || !assembledCode || isDeploying) return
     
-    // Check if user has subscription
-    if (!isPaidUser) {
+    // Check if user has subscription (Must be Pro or Agency to deploy)
+    if (!isProUser) {
+      setHatchModalReason('deploy')
       setShowHatchModal(true)
       return
     }
