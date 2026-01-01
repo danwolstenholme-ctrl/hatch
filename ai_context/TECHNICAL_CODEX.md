@@ -51,6 +51,18 @@
     *   `DbSection`: Individual parts of a page (Hero, Features, etc.). Stores `code` and `refinement_changes`.
     *   `DbBuild`: Snapshots of the full site code.
 
+### E. The Preview Engine (`components/SectionPreview.tsx` & `components/LivePreview.tsx`)
+*   **Role:** Renders AI-generated React code in a safe iframe environment.
+*   **Mechanism:**
+    *   **Cleaning Pipeline:** Strips Markdown artifacts (` ```tsx `, ` ``` `) and `"use client"` directives before compilation.
+    *   **Compilation:** Uses `@babel/standalone` to transform JSX/TSX to JavaScript.
+    *   **Component Detection:** Robust fallback strategy to find the entry component:
+        1.  `module.exports.default` (Standard)
+        2.  Named exports (e.g., `export function Hero`)
+        3.  Global function declarations (e.g., `function HeroSection`)
+    *   **Anonymous Export Handling:** Automatically names anonymous default exports (`export default function()`) to prevent syntax errors.
+*   **Safety:** Runs in a sandboxed iframe with `allow-scripts`.
+
 ## 2. API ROUTES & LOGIC
 
 ### A. Generation (`app/api/build-section/route.ts`)

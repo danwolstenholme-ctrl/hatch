@@ -12,6 +12,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.6.1] - 2026-01-02
+### Preview Engine Stability Upgrade
+**Theme:** Robust handling of AI-generated code artifacts to prevent "Transform Error" crashes.
+
+### Fixes
+- **Markdown Stripping:** `SectionPreview` and `LivePreview` now automatically strip ` ```tsx ` and ` ``` ` blocks from AI output before compilation.
+- **Anonymous Export Handling:** Automatically names anonymous default exports (`export default function()`) to prevent Babel syntax errors.
+- **Component Detection:** Added fallback logic to find React components in global scope if standard exports fail.
+- **Dependency Pinning:** Pinned generated projects (Deploy/Export) to Next.js 14.1.0 and React 18.2.0 for Vercel stability.
+
+### Files Changed
+- `components/SectionPreview.tsx`: Added code cleaning pipeline and component detection fallback.
+- `components/LivePreview.tsx`: Added code cleaning, anonymous export handling, and improved error reporting.
+- `app/api/deploy/route.ts`: Pinned dependencies to stable versions.
+- `app/api/export/route.ts`: Pinned dependencies to stable versions.
+- `generation_limits.test.ts`: Added unit tests for generation limits.
+
 ## [1.6.0] - 2026-01-02
 ### The Launch Day Blitz (18-Hour Session)
 **Theme:** Complete end-to-end UX audit, tier solidification, and deployment pipeline fixes.
