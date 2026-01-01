@@ -231,7 +231,7 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
           
           // Update template with onboarding data
           const newTemplate: Template = {
-            ...SINGULARITY_TEMPLATE,
+            ...ARCHITECT_TEMPLATE,
             name: onboardingData.brandName || 'New Entity',
             description: onboardingData.description || 'A new digital presence.',
           }
@@ -495,8 +495,8 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
       
       const { project: proj, sections } = await response.json()
       
-      // Use Singularity template if ID matches, otherwise fallback to website template
-      const template = proj.template_id === 'singularity' ? SINGULARITY_TEMPLATE : (getTemplateById(proj.template_id) || websiteTemplate)
+      // Use Architect template if ID matches, otherwise fallback to website template
+      const template = (proj.template_id === 'singularity' || proj.template_id === 'architect') ? ARCHITECT_TEMPLATE : (getTemplateById(proj.template_id) || websiteTemplate)
 
       setProject(proj)
       setDbSections(sections)
@@ -879,7 +879,7 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
                   setIsLoading(false)
                   setDemoMode(true)
                   setPhase('building')
-                  setBuildState(createInitialBuildState(SINGULARITY_TEMPLATE.id))
+                  setBuildState(createInitialBuildState(ARCHITECT_TEMPLATE.id))
                 }}
                 className="px-4 py-2 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 rounded text-xs text-zinc-400 hover:text-white transition-colors"
               >
