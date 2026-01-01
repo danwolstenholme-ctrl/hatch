@@ -1,7 +1,8 @@
 'use client'
 
-import { Suspense } from 'react'
-import { useSearchParams } from 'next/navigation'
+import { Suspense, useEffect } from 'react'
+import { useSearchParams, useRouter } from 'next/navigation'
+import { useUser } from '@clerk/nextjs'
 import { motion } from 'framer-motion'
 import { Sparkles, Construction, Zap } from 'lucide-react'
 import BuildFlowController from '@/components/BuildFlowController'
@@ -68,11 +69,38 @@ function MaintenanceOverlay() {
 
 function BuilderContent() {
   const searchParams = useSearchParams()
+  const router = useRouter()
+  const { isSignedIn, isLoaded } = useUser()
   const projectId = searchParams.get('project') // For resuming V3 projects
   const mode = searchParams.get('mode')
   const prompt = searchParams.get('prompt')
+  const upgrade = searchParams.get('upgrade') // Tier to upgrade to after sign-in
   const isDev = process.env.NODE_ENV === 'development'
   const isGuest = mode === 'guest'
+
+  // Handle upgrade param - redirect to checkout after sign-in
+  useEffect(() => {
+    if (isLoaded && isSignedIn && upgrade && ['lite', 'pro', 'agency'].includes(upgrade)) {
+      // Clear the upgrade param from URL
+      const newUrl = new URL(window.location.href)
+      newUrl.searchParams.delete('upgrade')
+      window.history.replaceState({}, '', newUrl.toString())
+      
+      // Trigger checkout
+      fetch('/api/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tier: upgrade })
+      })
+        .then(res => res.json())
+        .then(data => {
+          if (data.url) {
+            window.location.href = data.url
+          }
+        })
+        .catch(err => console.error('Checkout redirect failed:', err))
+    }
+  }, [isLoaded, isSignedIn, upgrade])
 
   // Always return V3 Structured Build Flow
   return (

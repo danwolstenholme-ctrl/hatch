@@ -544,6 +544,72 @@ export default function Home() {
         </div>
       </Section>
 
+      {/* INTERACTIVE CTA - The Hook */}
+      <Section className="px-6 py-16 md:py-24 relative overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-b from-zinc-950 via-emerald-950/20 to-zinc-950 pointer-events-none" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-emerald-500/10 via-transparent to-transparent pointer-events-none" />
+        
+        <div className="max-w-4xl mx-auto relative z-10">
+          <motion.div
+            initial={{ opacity: 0, y: 40 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ duration: 0.6 }}
+            className="text-center"
+          >
+            {/* Glowing badge */}
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/30 mb-8">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+              </span>
+              <span className="text-emerald-400 text-sm font-mono">LIVE DEMO AVAILABLE</span>
+            </div>
+
+            <h2 className="text-4xl sm:text-5xl md:text-6xl font-black mb-6 leading-tight">
+              <span className="text-white">See it work.</span>
+              <br />
+              <span className="bg-gradient-to-r from-emerald-400 via-teal-400 to-cyan-400 bg-clip-text text-transparent">Right now.</span>
+            </h2>
+            
+            <p className="text-xl text-zinc-400 mb-10 max-w-2xl mx-auto">
+              No signup. No credit card. Just type what you want and watch The Architect build it in real-time.
+            </p>
+
+            {/* Big glowing CTA */}
+            <Link href="/builder?mode=guest">
+              <motion.div
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className="inline-flex items-center gap-3 px-10 py-5 bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-500 rounded-2xl font-bold text-xl text-white shadow-[0_0_60px_rgba(16,185,129,0.4)] hover:shadow-[0_0_80px_rgba(16,185,129,0.6)] transition-all cursor-pointer group"
+              >
+                <Terminal className="w-6 h-6" />
+                <span>Try The Builder Free</span>
+                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+              </motion.div>
+            </Link>
+
+            {/* Social proof micro-stat */}
+            <div className="mt-8 flex items-center justify-center gap-6 text-sm text-zinc-500">
+              <div className="flex items-center gap-2">
+                <Zap className="w-4 h-4 text-emerald-500" />
+                <span>~30 second builds</span>
+              </div>
+              <div className="w-px h-4 bg-zinc-800" />
+              <div className="flex items-center gap-2">
+                <Code2 className="w-4 h-4 text-emerald-500" />
+                <span>Real React code</span>
+              </div>
+              <div className="w-px h-4 bg-zinc-800 hidden sm:block" />
+              <div className="hidden sm:flex items-center gap-2">
+                <Shield className="w-4 h-4 text-emerald-500" />
+                <span>Your code, forever</span>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      </Section>
+
       {/* WHAT IS HATCHIT - Quick explainer */}
       <Section className="px-6 py-24">
         <div className="max-w-6xl mx-auto">

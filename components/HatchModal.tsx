@@ -50,9 +50,9 @@ export default function HatchModal({ isOpen, onClose, reason, projectSlug = '', 
       icon: "🐣"
     },
     guest_lock: {
-      title: "Trial Simulation Complete",
-      description: "The Architect has paused your session. Initialize full access ($9) to continue building.",
-      icon: "🔒"
+      title: "You've built something real.",
+      description: "Your project is ready. Unlock it for just $9/month.",
+      icon: "🚀"
     },
     code_access: {
       title: "Unlock your code",
@@ -74,13 +74,12 @@ export default function HatchModal({ isOpen, onClose, reason, projectSlug = '', 
   const { title, description, icon } = messages[reason]
 
   const handleHatch = async (selectedTier: 'pro' | 'lite' = 'pro') => {
-    // If not signed in, prompt to sign in first
+    // If not signed in, redirect to sign-up with upgrade param so checkout happens after
     if (!isSignedIn) {
       onClose()
-      openSignIn({
-        afterSignInUrl: window.location.href,
-        afterSignUpUrl: window.location.href,
-      })
+      const currentUrl = new URL(window.location.href)
+      currentUrl.searchParams.set('upgrade', selectedTier)
+      router.push(`/sign-up?redirect_url=${encodeURIComponent(currentUrl.toString())}`)
       return
     }
 
@@ -175,21 +174,65 @@ export default function HatchModal({ isOpen, onClose, reason, projectSlug = '', 
 
         {/* What's included */}
         {reason === 'guest_lock' ? (
-          <div className="bg-zinc-800/30 border border-zinc-700 rounded-xl p-6 mb-6">
-            <h3 className="text-sm font-semibold text-zinc-300 mb-3 text-center">Create a free account to:</h3>
-            <div className="space-y-2">
-              {[
-                'Save your project permanently',
-                'Continue building more sections',
-                'Access your dashboard',
-                'Deploy your site'
-              ].map((feature, i) => (
-                <div key={i} className="flex items-center gap-2 text-sm text-zinc-400">
-                  <span className="text-emerald-500">✓</span>
-                  {feature}
+          <div className="space-y-4 mb-6">
+            {/* STARTER - THE HERO for guest conversion */}
+            <div className="bg-gradient-to-br from-amber-500/10 to-orange-500/5 border border-amber-500/30 rounded-xl p-5 ring-1 ring-amber-500/20 relative overflow-hidden">
+              <div className="absolute top-0 right-0 bg-amber-500 text-zinc-950 text-[10px] font-bold px-2 py-1 rounded-bl-lg">
+                BEST VALUE
+              </div>
+              <div className="flex items-center justify-between mb-3">
+                <div className="flex items-center gap-2">
+                  <span className="text-xl">⚡</span>
+                  <span className="text-lg font-bold text-amber-400">Starter</span>
                 </div>
-              ))}
+                <div className="text-right">
+                  <div className="text-3xl font-bold text-white">$9</div>
+                  <div className="text-[10px] text-zinc-400">/month</div>
+                </div>
+              </div>
+              
+              <div className="space-y-2 mb-4">
+                {[
+                  'Download your code right now',
+                  '20 AI generations per day',
+                  'Keep building unlimited sections',
+                  'Cancel anytime',
+                ].map((feature, i) => (
+                  <div key={i} className="flex items-center gap-2 text-sm text-zinc-300">
+                    <span className="text-amber-400">✓</span>
+                    {feature}
+                  </div>
+                ))}
+              </div>
+
+              <button
+                onClick={() => handleHatch('lite')}
+                disabled={isLoading || isSyncing}
+                className="w-full py-3 rounded-lg bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-zinc-950 font-bold shadow-lg shadow-amber-500/20 transition-all active:scale-95"
+              >
+                {isLoading ? 'Processing...' : 'Unlock for $9/month'}
+              </button>
             </div>
+
+            {/* Separator */}
+            <div className="flex items-center gap-3">
+              <div className="flex-1 h-px bg-zinc-800"></div>
+              <span className="text-xs text-zinc-600">or</span>
+              <div className="flex-1 h-px bg-zinc-800"></div>
+            </div>
+
+            {/* Free option (secondary) */}
+            <button
+              onClick={() => {
+                const currentParams = window.location.search
+                const returnUrl = '/builder' + currentParams
+                router.push(`/sign-up?redirect_url=${encodeURIComponent(returnUrl)}`)
+              }}
+              disabled={isLoading || isSyncing}
+              className="w-full py-3 rounded-lg bg-zinc-800/50 hover:bg-zinc-800 border border-zinc-700 text-zinc-400 hover:text-zinc-300 text-sm font-medium transition-all"
+            >
+              Continue with free account (limited)
+            </button>
           </div>
         ) : (
           <div className="space-y-4 mb-6">
@@ -297,34 +340,6 @@ export default function HatchModal({ isOpen, onClose, reason, projectSlug = '', 
               Got it
             </button>
           </motion.div>
-        )}
-
-        {!isPaidUser && reason === 'guest_lock' && (
-          <>
-            <motion.button
-              onClick={() => {
-                // Redirect to sign up with return URL
-                const currentParams = window.location.search
-                const returnUrl = '/builder' + currentParams
-                router.push(`/sign-up?redirect_url=${encodeURIComponent(returnUrl)}`)
-              }}
-              disabled={isLoading || isSyncing}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              className="w-full py-4 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 shadow-lg bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 shadow-emerald-500/25 hover:shadow-emerald-500/40 disabled:opacity-50 text-white"
-            >
-              {isLoading ? 'Loading...' : isSyncing ? 'Syncing...' : (
-                <>
-                  <span>💾</span>
-                  <span>Create Free Account</span>
-                </>
-              )}
-            </motion.button>
-
-            <p className="text-zinc-600 text-xs text-center mt-4">
-              Save your progress and continue building.
-            </p>
-          </>
         )}
 
         {/* Sync button for users who paid but it didn't register */}
