@@ -53,7 +53,7 @@ export async function GET() {
         tier = 'agency'
       } else if (priceId === process.env.STRIPE_PRO_PRICE_ID) {
         tier = 'pro'
-      } else if (priceId === 'price_1SkqTUEZ4zm4PZbKcGNWbftQ' || priceId === process.env.STRIPE_LITE_PRICE_ID) {
+      } else if (priceId === process.env.STRIPE_LITE_PRICE_ID) {
         tier = 'lite'
       } else {
         tier = (sub.metadata?.tier as 'lite' | 'pro' | 'agency') || 'pro'

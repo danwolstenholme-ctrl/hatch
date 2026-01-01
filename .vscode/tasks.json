@@ -190,6 +190,15 @@
 			"isBackground": false,
 			"problemMatcher": [],
 			"group": "build"
+		},
+		{
+			"label": "commit-env-refactor",
+			"type": "shell",
+			"command": "git add . && git commit -m \"refactor: use STRIPE_LITE_PRICE_ID env var instead of hardcoded string\"",
+			"args": [],
+			"isBackground": false,
+			"problemMatcher": [],
+			"group": "build"
 		}
 	]
 }

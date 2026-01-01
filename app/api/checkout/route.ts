@@ -15,7 +15,7 @@ const getStripe = () => {
 
 // Price IDs for each tier
 const PRICE_IDS = {
-  lite: 'price_1SkqTUEZ4zm4PZbKcGNWbftQ',    // $9/mo
+  lite: process.env.STRIPE_LITE_PRICE_ID,    // $9/mo
   pro: process.env.STRIPE_PRO_PRICE_ID,      // $29/mo
   agency: process.env.STRIPE_AGENCY_PRICE_ID, // $99/mo
 } as const
