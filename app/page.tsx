@@ -443,9 +443,9 @@ export default function Home() {
               whileTap={{ scale: 0.98 }}
               transition={{ type: 'spring', stiffness: 400, damping: 17 }}
             >
-              <Link href="/builder" className="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 rounded-xl font-bold text-lg flex items-center justify-center gap-2 transition-colors text-white shadow-[0_0_20px_rgba(16,185,129,0.2)]">
+              <Link href={isSignedIn ? "/builder" : "/sign-up"} className="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 rounded-xl font-bold text-lg flex items-center justify-center gap-2 transition-colors text-white shadow-[0_0_20px_rgba(16,185,129,0.2)]">
                 <Terminal className="w-5 h-5" />
-                <span>Initialize Project</span>
+                <span>{isSignedIn ? "Initialize Project" : "Start Building Free"}</span>
                 <ArrowRight className="w-4 h-4" />
               </Link>
             </motion.div>
@@ -860,7 +860,7 @@ export default function Home() {
                   </li>
                 ))}
               </ul>
-              <Link href="/builder" className="block w-full py-3 text-center bg-zinc-800 hover:bg-zinc-700 rounded-lg font-semibold transition-colors">Start Free</Link>
+              <Link href={isSignedIn ? "/builder" : "/sign-up"} className="block w-full py-3 text-center bg-zinc-800 hover:bg-zinc-700 rounded-lg font-semibold transition-colors">Start Free</Link>
             </div>
 
             {/* Pro */}
@@ -947,11 +947,11 @@ export default function Home() {
             <div className="relative">
               <h2 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-6">Ready to initialize?</h2>
               <p className="text-xl text-zinc-300 mb-8 max-w-2xl mx-auto">Your next project is one prompt away. Initialize the system.</p>
-              <Link href="/builder" className="inline-flex items-center gap-2 px-10 py-5 bg-emerald-500 hover:bg-emerald-400 text-zinc-950 rounded-lg font-bold text-xl transition-all md:hover:scale-105 active:scale-95 shadow-[0_0_30px_rgba(16,185,129,0.3)]">
+              <Link href={isSignedIn ? "/builder" : "/sign-up"} className="inline-flex items-center gap-2 px-10 py-5 bg-emerald-500 hover:bg-emerald-400 text-zinc-950 rounded-lg font-bold text-xl transition-all md:hover:scale-105 active:scale-95 shadow-[0_0_30px_rgba(16,185,129,0.3)]">
                 <Terminal className="w-6 h-6" />
-                Initialize System
+                {isSignedIn ? "Initialize System" : "Create Free Account"}
               </Link>
-              <p className="text-sm text-zinc-500 mt-4 font-mono">No credit card • No signup required to try</p>
+              <p className="text-sm text-zinc-500 mt-4 font-mono">No credit card required • Free tier available</p>
             </div>
           </div>
         </div>

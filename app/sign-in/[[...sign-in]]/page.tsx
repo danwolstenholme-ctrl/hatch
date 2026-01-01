@@ -1,6 +1,12 @@
+'use client'
+
 import { SignIn } from '@clerk/nextjs'
+import { useSearchParams } from 'next/navigation'
 
 export default function SignInPage() {
+  const searchParams = useSearchParams()
+  const redirectUrl = searchParams.get('redirect_url') || '/builder'
+  
   return (
     <div className="min-h-screen bg-black flex flex-col items-center justify-center relative overflow-hidden">
       {/* Matrix/Grid Background */}
@@ -16,7 +22,7 @@ export default function SignInPage() {
         <p className="text-emerald-500/60 font-mono text-sm mt-2">The Architect is waiting.</p>
       </div>
 
-      <SignIn afterSignInUrl="/builder" appearance={{
+      <SignIn forceRedirectUrl={redirectUrl} appearance={{
         elements: {
           rootBox: 'relative z-10',
           card: 'bg-zinc-900 border border-emerald-900/50 shadow-[0_0_50px_rgba(16,185,129,0.1)]',

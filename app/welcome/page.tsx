@@ -4,6 +4,7 @@ import { useEffect, useRef, Suspense } from 'react'
 import { useUser } from '@clerk/nextjs'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { motion } from 'framer-motion'
+import { track } from '@vercel/analytics'
 import HatchCharacter from '@/components/HatchCharacter'
 import { AccountSubscription } from '@/types/subscriptions'
 import { useSubscription } from '@/contexts/SubscriptionContext'
@@ -211,6 +212,23 @@ function WelcomeContent() {
     syncSubscription()
     hasTriggeredSyncRef.current = true
   }, [hasValidUrlTier, isLoaded, syncSubscription])
+
+  // Track new user sign-up completion
+  const hasTrackedSignup = useRef(false)
+  useEffect(() => {
+    if (!isLoaded || !user || hasTrackedSignup.current) return
+    // Only track if user was created recently (within last 5 minutes) - indicates fresh signup
+    const createdAt = user.createdAt ? new Date(user.createdAt).getTime() : 0
+    const now = Date.now()
+    const fiveMinutes = 5 * 60 * 1000
+    if (now - createdAt < fiveMinutes) {
+      track('Sign Up Completed', { 
+        tier: derivedTier,
+        source: 'welcome_page'
+      })
+    }
+    hasTrackedSignup.current = true
+  }, [isLoaded, user, derivedTier])
 
   const config = tierConfig[derivedTier]
 
