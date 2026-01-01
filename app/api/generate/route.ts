@@ -432,28 +432,29 @@ export async function POST(request: NextRequest) {
     
     
     try {
-      const surgicalResponse = await fetch('https://api.anthropic.com/v1/messages', {
+      const surgicalResponse = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'x-api-key': process.env.ANTHROPIC_API_KEY || '',
-          'anthropic-version': '2023-06-01'
+          'Authorization': `Bearer ${process.env.OPENAI_API_KEY || ''}`
         },
         body: JSON.stringify({
-          model: 'claude-sonnet-4-20250514',  // Sonnet for builds
-          max_tokens: 2000, // Much smaller - we only need the diff
-          system: surgicalEditPrompt,
-          messages: [{
-            role: 'user',
-            content: `CURRENT CODE:\n\`\`\`jsx\n${currentCode}\n\`\`\`\n\nEDIT REQUEST: ${prompt}`
-          }]
+          model: 'gpt-5.1-codex-max',  // The God Model
+          max_tokens: 2000,
+          messages: [
+            { role: 'system', content: surgicalEditPrompt },
+            {
+              role: 'user',
+              content: `CURRENT CODE:\n\`\`\`jsx\n${currentCode}\n\`\`\`\n\nEDIT REQUEST: ${prompt}`
+            }
+          ]
         })
       })
 
       const surgicalData = await surgicalResponse.json()
       
-      if (surgicalData.content && surgicalData.content[0]) {
-        const surgicalText = surgicalData.content[0].text
+      if (surgicalData.choices && surgicalData.choices[0]?.message?.content) {
+        const surgicalText = surgicalData.choices[0].message.content
         
         // Parse find/replace blocks
         const findReplacePattern = /---FIND---\s*([\s\S]*?)\s*---REPLACE---\s*([\s\S]*?)\s*---END---/g
@@ -552,18 +553,19 @@ export async function POST(request: NextRequest) {
   
   try {
     
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'x-api-key': process.env.ANTHROPIC_API_KEY || '',
-        'anthropic-version': '2023-06-01'
+        'Authorization': `Bearer ${process.env.OPENAI_API_KEY || ''}`
       },
       body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',  // Sonnet for builds
+        model: 'gpt-5.1-codex-max',  // The God Model
         max_tokens: 32000,
-        system: systemPrompt,
-        messages
+        messages: [
+          { role: 'system', content: systemPrompt },
+          ...messages
+        ]
       })
     })
 
@@ -572,9 +574,9 @@ export async function POST(request: NextRequest) {
     // Log response for debugging
     
     
-    // Handle Anthropic API errors
+    // Handle OpenAI API errors
     if (!response.ok || data.error) {
-      console.error('Anthropic API error:', data.error || response.statusText)
+      console.error('OpenAI API error:', data.error || response.statusText)
       const errorMessage = data.error?.message || data.error || 'AI service error'
       return NextResponse.json({ 
         error: `Generation failed: ${errorMessage}` 
@@ -582,7 +584,7 @@ export async function POST(request: NextRequest) {
     }
     
     // Check if response was truncated due to token limit
-    if (data.stop_reason === 'max_tokens') {
+    if (data.choices && data.choices[0]?.finish_reason === 'length') {
       console.error('Response truncated due to max_tokens')
       return NextResponse.json({ 
         error: 'Response was too long. Please try a simpler prompt or break your request into smaller parts.',
@@ -590,8 +592,8 @@ export async function POST(request: NextRequest) {
       }, { status: 400 })
     }
     
-    if (data.content && data.content[0]) {
-      const fullResponse = data.content[0].text
+    if (data.choices && data.choices[0]?.message?.content) {
+      const fullResponse = data.choices[0].message.content
       let message = ''
       let code = ''
       let suggestions: string[] = []
