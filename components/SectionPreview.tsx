@@ -65,17 +65,26 @@ export default function SectionPreview({ code, darkMode = true, onRuntimeError, 
         return;
       }
 
+      // Clean the code to remove markdown artifacts and "use client" directive
+      const cleanCode = code
+        .replace(/```tsx/g, '')
+        .replace(/```typescript/g, '')
+        .replace(/```/g, '')
+        .replace(/'use client'/g, '')
+        .replace(/"use client"/g, '')
+        .trim();
+
       // Use Babel to transform the code safely (No more Regex!)
       let transformedCode = ''
-    let transformError = null
+      let transformError = null
 
-    try {
-      const Babel = await import('@babel/standalone');
-      transformedCode = Babel.transform(code, {
-        presets: ['env', 'react', 'typescript'],
-        filename: 'section.tsx',
-      }).code || ''
-    } catch (err: any) {
+      try {
+        const Babel = await import('@babel/standalone');
+        transformedCode = Babel.transform(cleanCode, {
+          presets: ['env', 'react', 'typescript'],
+          filename: 'section.tsx',
+        }).code || ''
+      } catch (err: any) {
       console.error('Babel Transform Error:', err)
       transformError = err.message
     }
@@ -355,7 +364,11 @@ export default function SectionPreview({ code, darkMode = true, onRuntimeError, 
       
       // 3. Fallback: Check for global function declarations
       if (!ComponentToRender) {
-         const commonNames = ['GeneratedSection', 'Component', 'Hero', 'Features', 'App'];
+         const commonNames = [
+           'GeneratedSection', 'Component', 'App', 'Section',
+           'Hero', 'Features', 'Testimonials', 'Contact', 'Pricing', 'Faq', 'Footer', 'Header',
+           'HeroSection', 'FeaturesSection', 'TestimonialsSection', 'ContactSection', 'PricingSection', 'FaqSection', 'FooterSection', 'HeaderSection'
+         ];
          for (const name of commonNames) {
            if (typeof window[name] === 'function') {
              ComponentToRender = window[name];

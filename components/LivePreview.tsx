@@ -535,6 +535,10 @@ export default function RootLayout({
         }
 
         const cleanedCode = page.code
+          // Remove markdown artifacts
+          .replace(/```tsx/g, '')
+          .replace(/```typescript/g, '')
+          .replace(/```/g, '')
           // Remove all import statements (default, named, side-effect, multi-line)
           .replace(/import\s+(?:[\s\S]*?)\s+from\s*['"][^'"]+['"]\s*;?/g, '')
           .replace(/import\s*['"][^'"]+['"]\s*;?/g, '')
