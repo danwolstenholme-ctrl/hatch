@@ -23,7 +23,9 @@ The user has been instructed to add these. **Do not proceed with code changes un
 - `STRIPE_SECRET_KEY`: `sk_...` (From Stripe Dashboard)
 
 ### Infrastructure (CRITICAL)
-- `GEMINI_API_KEY`: `AIza...` (For Audit/Logo generation)
+- `GEMINI_API_KEY`: `[Configured in .env.local]` (For Audit/Logo generation)
+  - Project ID: `950209561172`
+  - Project Name: `HatchIt.dev`
 - `ANTHROPIC_API_KEY`: `sk-ant...` (For Surgical Edits/Refinements)
 - `CLERK_WEBHOOK_SECRET`: `whsec_...` (For User Sync)
 - `CLERK_SECRET_KEY`: `sk_...` (From Clerk Dashboard)
