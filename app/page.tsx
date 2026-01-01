@@ -184,8 +184,9 @@ function PricingButton({ tier, className, children }: { tier: 'lite' | 'pro' | '
     e.preventDefault()
     
     if (!isSignedIn) {
-      // Redirect to sign in, then back to builder with upgrade param
-      window.location.href = `/sign-in?redirect_url=/builder?upgrade=${tier}`
+      // Redirect to sign-up (not sign-in) with properly encoded redirect URL
+      const redirectUrl = encodeURIComponent(`/builder?upgrade=${tier}`)
+      window.location.href = `/sign-up?redirect_url=${redirectUrl}`
       return
     }
     
