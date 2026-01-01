@@ -12,6 +12,46 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
+## [1.6.0] - 2026-01-02
+### The Launch Day Blitz (18-Hour Session)
+**Theme:** Complete end-to-end UX audit, tier solidification, and deployment pipeline fixes.
+
+### Critical Deployment Fixes
+- **Deploy Code Wrapper**: Now auto-extracts Lucide icons with regex, includes `useState`, `useEffect`, `useRef`, `AnimatePresence`, and all framer-motion imports.
+- **Export API**: Added `framer-motion` and `lucide-react` to package.json dependencies. Auto-extracts Lucide icon imports from code.
+- **Build Fix**: Deployed sites no longer crash from missing imports.
+
+### Tier Structure Solidification
+| Tier | Price | Generations | Projects | Refinements | Deploy |
+|------|-------|-------------|----------|-------------|--------|
+| Free | $0 | 3 total | 1 | ❌ | ❌ |
+| Starter | $9/mo | Unlimited | 3 | 5/mo | ✅ |
+| Pro | $29/mo | Unlimited | ∞ | 30/mo | ✅ |
+| Agency | $99/mo | Unlimited | ∞ | ∞ | ✅ |
+
+### Files Changed
+- `components/BuildFlowController.tsx`: Deploy wrapper with proper imports, Lucide extraction
+- `app/api/deploy/route.ts`: Error message "$9/mo required", accepts lite/pro/agency
+- `app/api/export/route.ts`: Includes framer-motion, lucide-react deps, icon extraction
+- `app/api/refine-section/route.ts`: Lite tier gets 5 refinements/month
+- `types/subscriptions.ts`: Corrected Lite tier config (unlimited gens, 3 projects)
+- `components/HatchModal.tsx`: All messaging tier-agnostic, removed "Pro" references
+- `components/SectionBuilder.tsx`: Fixed FREE_GENERATION_LIMIT to 3
+- `hooks/useProjects.ts`: Tier-based project limits (free=1, lite=3, pro/agency=∞)
+- `app/page.tsx`: Fixed pricing button URL encoding, Starter tier features
+- `components/Navigation.tsx`: Removed "Open Interface" button
+- `app/welcome/page.tsx`: Free tier "3 Starter Generations", LiteNode component
+- `app/faq/page.tsx`: Updated pricing info
+
+### Marketing
+- Created Reddit ad SVG (4:3 format) for $9/mo campaign
+- Reddit Ads running: €0.18 CPC, 0.35% CTR
+
+### AI Model
+- Switched to Claude Sonnet 4 (`claude-sonnet-4-20250514`) for code generation
+
+---
+
 ## [1.5.0] - 2026-01-01
 ### The Singularity Brand & Freemium Pivot
 -   **Brand Unification:** Established "The Definitive HatchIt" (Emerald Egg) as the primary logo and "The Architect" (Violet Cube) as the AI persona.

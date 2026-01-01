@@ -32,7 +32,7 @@ const tierConfig = {
     gradient: 'from-zinc-600 to-zinc-400',
     accentColor: 'zinc',
     features: [
-      { icon: '👁️', text: '3 Starter Generations' },
+      { icon: '👁️', text: '5 Free Generations' },
       { icon: '🖥️', text: 'Live DOM Manipulation' },
       { icon: '🧩', text: 'Component Assembly' },
       { icon: '🤖', text: 'Basic Architect Guidance' },

@@ -940,13 +940,8 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
   const handleNextSection = () => {
     if (!buildState) return
     
-    // HARD LOCK: Check guest/free interaction limit (1 section max)
-    // BUT: Paid users bypass this even in demo mode
-    if (!isPaidUser && (demoMode || guestInteractionCount >= 1)) {
-      setHatchModalReason('guest_lock')
-      setShowHatchModal(true)
-      return
-    }
+    // LET THEM BUILD! Only lock deploy/download/export, not building itself.
+    // Free users can complete all sections and see the full preview.
     
     const nextIndex = buildState.currentSectionIndex + 1
     

@@ -341,9 +341,10 @@ export default function SectionBuilder({
   const [isExplaining, setIsExplaining] = useState(false)
   const [isDreaming, setIsDreaming] = useState(false)
   
-  // Free Tier Limits: 3 generations to start (shows value, triggers upgrade)
+  // Free Tier Limits: 5 generations = enough to complete a basic site
+  // After they see the full site, THEN we lock deploy/download
   const [freeGenerationsUsed, setFreeGenerationsUsed] = useState(0)
-  const FREE_GENERATION_LIMIT = 3
+  const FREE_GENERATION_LIMIT = 5
 
   useEffect(() => {
     const used = parseInt(localStorage.getItem('hatch_free_generations') || '0')

@@ -58,7 +58,7 @@ export default function FAQPage() {
     questions: [
       {
         q: 'What are the resource costs?',
-        a: 'System access is tiered. Free Tier grants 3 starter generations. Starter Tier ($9/mo) unlocks unlimited generation for up to 3 sites. Pro Tier ($29/mo) grants unlimited generation, full deployment, and code export. Agency Tier ($99/mo) adds white-label capabilities and priority support.',
+        a: 'System access is tiered. Free Tier grants 5 generations to complete your site. Starter Tier ($9/mo) unlocks unlimited generation and deploy for up to 3 sites. Pro Tier ($29/mo) grants unlimited everything. Agency Tier ($99/mo) adds white-label capabilities and priority support.',
       },
       {
         q: 'Is there a trial protocol?',
