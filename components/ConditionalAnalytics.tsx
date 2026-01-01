@@ -1,6 +1,7 @@
 'use client'
 
 import { Analytics } from '@vercel/analytics/next'
+import { GoogleAnalytics } from '@next/third-parties/google'
 import { useSyncExternalStore } from 'react'
 
 type AnalyticsEligibilityState =
@@ -83,5 +84,10 @@ export default function ConditionalAnalytics() {
     return null
   }
 
-  return <Analytics />
+  return (
+    <>
+      <Analytics />
+      {process.env.NEXT_PUBLIC_GA_ID && <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID} />}
+    </>
+  )
 }

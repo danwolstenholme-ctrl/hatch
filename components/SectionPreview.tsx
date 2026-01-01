@@ -55,65 +55,34 @@ export default function SectionPreview({ code, darkMode = true, onRuntimeError, 
     return () => window.removeEventListener('message', handleMessage)
   }, [onRuntimeError, onElementSelect, onScreenshotCaptured])
 
-  const srcDoc = useMemo(() => {
-    if (!code) return ''
+  const [srcDoc, setSrcDoc] = useState('')
 
-    // Use ONLY the current section code for preview
-    const codeToRender = code
+  useEffect(() => {
+    let isMounted = true;
+    const generate = async () => {
+      if (!code) {
+        if (isMounted) setSrcDoc('');
+        return;
+      }
+
+      // Use Babel to transform the code safely (No more Regex!)
+      let transformedCode = ''
+    let transformError = null
+
+    try {
+      const Babel = await import('@babel/standalone');
+      transformedCode = Babel.transform(code, {
+        presets: ['env', 'react', 'typescript'],
+        filename: 'section.tsx',
+      }).code
+    } catch (err: any) {
+      console.error('Babel Transform Error:', err)
+      transformError = err.message
+    }
 
     const hooksDestructure = `const { useState, useEffect, useMemo, useCallback, useRef, Fragment } = React;`
 
-    // Clean code for browser execution
-    let cleanedCode = codeToRender
-      // Remove imports
-      .replace(/import\s+.*?from\s+['"].*?['"]\s*;?/g, '')
-      // Remove export default and named exports
-      .replace(/export\s+default\s+/g, '')
-      .replace(/export\s+(const|function|class|let|var)\s+/g, '$1 ')
-      // Fix React.* usage
-      .replace(/React\.useState/g, 'useState')
-      .replace(/React\.useEffect/g, 'useEffect')
-      .replace(/React\.useMemo/g, 'useMemo')
-      .replace(/React\.useCallback/g, 'useCallback')
-      .replace(/React\.useRef/g, 'useRef')
-      .replace(/React\.Fragment/g, 'Fragment')
-    
-    // Auto-wrap raw JSX in a function component
-    const trimmedCode = cleanedCode.trim()
-    if (trimmedCode.startsWith('<') || trimmedCode.startsWith('{/*')) {
-      cleanedCode = `function GeneratedSection() {\n  return (\n${trimmedCode}\n  )\n}`
-    }
-
-    // Detect component names from the code
-    const componentRegex = /(?:function|const|let|var)\s+([A-Z][a-zA-Z0-9]*)(?:\s*[=:(]|\s*:)/g
-    const matches = [...codeToRender.matchAll(componentRegex)]
-    const componentNames = matches.map(m => m[1])
-    
-    const potentialComponents = [...new Set([
-      ...componentNames,
-      'GeneratedSection',
-      'Component',
-      'HeroSection',
-      'Hero',
-      'FeaturesSection',
-      'Features',
-      'AboutSection',
-      'About',
-      'ContactSection',
-      'Contact',
-      'CTASection',
-      'CTA',
-      'Footer',
-      'Header',
-      'Nav',
-      'Navbar',
-      'Section',
-      'Page',
-      'App',
-      'Main'
-    ])]
-
-    return `<!DOCTYPE html>
+    const html = `<!DOCTYPE html>
 <html>
 <head>
   <meta charset="UTF-8">
@@ -156,7 +125,6 @@ export default function SectionPreview({ code, darkMode = true, onRuntimeError, 
   
   <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js" crossorigin></script>
   <script src="https://cdn.jsdelivr.net/npm/framer-motion@11/dist/framer-motion.js" crossorigin></script>
   <script src="https://unpkg.com/lucide-react@0.294.0/dist/umd/lucide-react.js" crossorigin></script>
   
@@ -283,48 +251,70 @@ export default function SectionPreview({ code, darkMode = true, onRuntimeError, 
     }
   </script>
   
-  <script type="text/babel" data-presets="react,typescript">
+  <script>
+    // Mock CommonJS Environment for Babel Output
+    var exports = {};
+    var module = { exports: exports };
+    var require = function(name) {
+      if (name === 'react') return React;
+      if (name === 'react-dom') return ReactDOM;
+      if (name === 'framer-motion') return window.Motion;
+      if (name === 'lucide-react') return window.LucideIcons;
+      return window[name] || {};
+    };
+
     ${hooksDestructure}
-    
-    const motion = window.motion;
-    const AnimatePresence = window.AnimatePresence;
-    const useInView = window.useInView;
-    const useScroll = window.useScroll;
-    const useTransform = window.useTransform;
-    const useMotionValue = window.useMotionValue;
-    const useSpring = window.useSpring;
-    const useAnimation = window.useAnimation;
     
     const { Menu, X, ChevronRight, ChevronLeft, ChevronDown, ChevronUp, ArrowRight, ArrowLeft, Check, CheckCircle, CheckCircle2, Star, Heart, Mail, Phone, MapPin, Github, Twitter, Linkedin, Instagram, Facebook, Youtube, ExternalLink, Search, User, Users, Settings, Home, Plus, Minus, Edit, Trash, Copy, Download, Upload, Share, Send, Bell, Calendar, Clock, Globe, Lock, Unlock, Eye, EyeOff, Filter, Grid, List, MoreHorizontal, MoreVertical, RefreshCw, RotateCcw, Save, Zap, Award, Target, TrendingUp, BarChart, PieChart, Activity, Layers, Box, Package, Cpu, Database, Server, Cloud, Code, Terminal, FileText, Folder, Image, Video, Music, Headphones, Mic, Camera, Bookmark, Tag, AlertCircle, Info, HelpCircle, Loader, Link, MessageCircle, Building, Briefcase, Shield } = window.LucideIcons || {};
     
-    ${cleanedCode}
-    
     try {
+      // Inject Transformed Code
+      ${transformedCode}
+      
       const root = ReactDOM.createRoot(document.getElementById('root'));
-      const potentialComponents = ${JSON.stringify(potentialComponents)};
       let ComponentToRender = null;
       
-      for (const name of potentialComponents) {
-        try {
-          const comp = eval(name);
-          if (typeof comp === 'function') {
-            ComponentToRender = comp;
+      // 1. Try Default Export
+      if (module.exports && module.exports.default) {
+        ComponentToRender = module.exports.default;
+      } 
+      // 2. Try Named Exports (First Capitalized Function)
+      else if (module.exports) {
+        for (const key in module.exports) {
+          if (typeof module.exports[key] === 'function' && /^[A-Z]/.test(key)) {
+            ComponentToRender = module.exports[key];
             break;
           }
-        } catch (e) {}
+        }
       }
       
+      // 3. Fallback: Check for global function declarations
+      if (!ComponentToRender) {
+         const commonNames = ['GeneratedSection', 'Component', 'Hero', 'Features', 'App'];
+         for (const name of commonNames) {
+           if (typeof window[name] === 'function') {
+             ComponentToRender = window[name];
+             break;
+           }
+         }
+      }
+
       if (ComponentToRender) {
-        root.render(<ComponentToRender />);
+        root.render(React.createElement(ComponentToRender));
       } else {
-        throw new Error('No valid React component found. Detected: ' + potentialComponents.slice(0, 5).join(', '));
+        throw new Error('No valid React component found in exports.');
       }
     } catch (err) {
+      console.error(err);
       document.getElementById('root').innerHTML = '<div class="error-display">Render Error: ' + err.message + '</div>';
     }
   </script>
 </body>
 </html>`
+      if (isMounted) setSrcDoc(html);
+    }
+    generate();
+    return () => { isMounted = false; }
   }, [code, darkMode, inspectorMode])
 
   if (!code) {

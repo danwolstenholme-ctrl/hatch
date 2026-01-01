@@ -42,7 +42,6 @@ import { chronosphere } from '@/lib/chronosphere'
 import { Template, Section, getTemplateById, getSectionById, createInitialBuildState, BuildState, websiteTemplate } from '@/lib/templates'
 import { DbProject, DbSection, DbBrandConfig } from '@/lib/supabase'
 import { AccountSubscription } from '@/types/subscriptions'
-import * as Babel from '@babel/standalone'
 
 // =============================================================================
 // FULL SITE PREVIEW FRAME
@@ -50,20 +49,27 @@ import * as Babel from '@babel/standalone'
 // =============================================================================
 
 function FullSitePreviewFrame({ code, deviceView }: { code: string; deviceView: 'mobile' | 'tablet' | 'desktop' }) {
-  const srcDoc = useMemo(() => {
-    if (!code) return ''
+  const [srcDoc, setSrcDoc] = useState('')
 
-    try {
-      // Use Babel to transform the code safely
-      const transformed = Babel.transform(code, {
-        presets: ['react'],
-        filename: 'preview.tsx',
-      }).code
+  useEffect(() => {
+    const generate = async () => {
+      if (!code) {
+        setSrcDoc('');
+        return;
+      }
+
+      try {
+        // Use Babel to transform the code safely
+        const Babel = await import('@babel/standalone');
+        const transformed = Babel.transform(code, {
+          presets: ['react'],
+          filename: 'preview.tsx',
+        }).code
 
       // Extract the component name (assuming it's the default export or the last function)
       // For now, we wrap it to ensure it renders
       
-      return `<!DOCTYPE html>
+      const html = `<!DOCTYPE html>
 <html>
 <head>
   <meta charset="UTF-8">
@@ -172,9 +178,12 @@ function FullSitePreviewFrame({ code, deviceView }: { code: string; deviceView: 
   </script>
 </body>
 </html>`
+      setSrcDoc(html);
     } catch (err: any) {
-      return `<html><body><pre style="color: red; padding: 20px;">Transpilation Error: ${err.message}</pre></body></html>`
+      setSrcDoc(`<html><body><pre style="color: red; padding: 20px;">Transpilation Error: ${err.message}</pre></body></html>`);
     }
+  };
+  generate();
   }, [code])
 
   return (

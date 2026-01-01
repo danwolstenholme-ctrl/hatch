@@ -21,15 +21,10 @@ export default function TheSubconscious() {
   const [targetElement, setTargetElement] = useState<{ rect: DOMRect, tag: string, text: string } | null>(null)
   const [thought, setThought] = useState("")
   const [isScanning, setIsScanning] = useState(false)
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 })
 
   // Track real mouse for "The Presence" effect
   useEffect(() => {
     const handleActivity = (e?: Event) => {
-      if (e?.type === 'mousemove') {
-        const mouseEvent = e as MouseEvent
-        setMousePos({ x: mouseEvent.clientX, y: mouseEvent.clientY })
-      }
       // Reset idle timer
       setIsIdle(false)
       setTargetElement(null)

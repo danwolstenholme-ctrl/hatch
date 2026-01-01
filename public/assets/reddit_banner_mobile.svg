@@ -1,0 +1,52 @@
+<svg width="1080" height="128" viewBox="0 0 1080 128" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="1080" height="128" fill="#09090B"/>
+  
+  <!-- Grid Pattern -->
+  <defs>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M40 0V40" stroke="#27272A" stroke-width="1" stroke-opacity="0.3"/>
+      <path d="M0 40H40" stroke="#27272A" stroke-width="1" stroke-opacity="0.3"/>
+    </pattern>
+    <linearGradient id="logo-gradient" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#10B981"/>
+      <stop offset="100%" stop-color="#14B8A6"/>
+    </linearGradient>
+  </defs>
+  
+  <rect width="1080" height="128" fill="url(#grid)"/>
+
+  <!-- Abstract Code Lines (Background Decoration) - Adjusted for 1080px width -->
+  <g opacity="0.2">
+    <rect x="50" y="30" width="200" height="6" rx="3" fill="#3F3F46"/>
+    <rect x="50" y="50" width="140" height="6" rx="3" fill="#3F3F46"/>
+    
+    <!-- Moved closer to center for 1080px width -->
+    <rect x="850" y="80" width="180" height="6" rx="3" fill="#10B981"/>
+    <rect x="890" y="100" width="140" height="6" rx="3" fill="#3F3F46"/>
+  </g>
+
+  <!-- Center Content Group (Scaled Down for Mobile Height) -->
+  <!-- Centered at x=540 (half of 1080), y=64. Scaled to 0.6 to fit comfortably -->
+  <g transform="translate(540, 64) scale(0.6)">
+      
+      <!-- Logo Icon (Left of Text) -->
+      <g transform="translate(-180, -50) scale(0.8)">
+        <path d="M50 10 L 85 30 L 85 70 L 50 90 L 15 70 L 15 30 Z"
+              stroke="#10B981" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        <path d="M50 50 L 50 90 M 50 50 L 85 30 M 50 50 L 15 30"
+              stroke="#34D399" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        <circle cx="50" cy="50" r="5" fill="white"/>
+      </g>
+
+      <!-- Wordmark -->
+      <text x="-80" y="15" font-family="sans-serif" font-weight="bold" font-size="64" text-anchor="start">
+        <tspan fill="#FFFFFF">Hatch</tspan><tspan fill="url(#logo-gradient)">It</tspan>
+      </text>
+      
+      <!-- Tagline -->
+      <text x="0" y="65" font-family="monospace" font-size="16" fill="#A1A1AA" text-anchor="middle" letter-spacing="0.2em">
+        THE SINGULARITY INTERFACE
+      </text>
+  </g>
+</svg>

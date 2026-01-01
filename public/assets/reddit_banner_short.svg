@@ -1,0 +1,55 @@
+<svg width="1280" height="192" viewBox="0 0 1280 192" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="1280" height="192" fill="#09090B"/>
+  
+  <!-- Grid Pattern -->
+  <defs>
+    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+      <path d="M40 0V40" stroke="#27272A" stroke-width="1" stroke-opacity="0.3"/>
+      <path d="M0 40H40" stroke="#27272A" stroke-width="1" stroke-opacity="0.3"/>
+    </pattern>
+    <linearGradient id="logo-gradient" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0%" stop-color="#10B981"/>
+      <stop offset="100%" stop-color="#14B8A6"/>
+    </linearGradient>
+  </defs>
+  
+  <rect width="1280" height="192" fill="url(#grid)"/>
+
+  <!-- Abstract Code Lines (Background Decoration) -->
+  <g opacity="0.2">
+    <rect x="50" y="40" width="200" height="6" rx="3" fill="#3F3F46"/>
+    <rect x="50" y="60" width="140" height="6" rx="3" fill="#3F3F46"/>
+    
+    <rect x="1050" y="120" width="180" height="6" rx="3" fill="#10B981"/>
+    <rect x="1090" y="140" width="140" height="6" rx="3" fill="#3F3F46"/>
+  </g>
+
+  <!-- Center Content Group (Scaled Down for Shorter Height) -->
+  <g transform="translate(640, 96) scale(0.7)">
+      
+      <!-- Logo Icon (Left of Text) -->
+      <g transform="translate(-180, -50) scale(0.8)">
+        <path d="M50 10 L 85 30 L 85 70 L 50 90 L 15 70 L 15 30 Z"
+              stroke="#10B981" stroke-width="6" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        <path d="M50 50 L 50 90 M 50 50 L 85 30 M 50 50 L 15 30"
+              stroke="#34D399" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        <circle cx="50" cy="50" r="5" fill="white"/>
+      </g>
+
+      <!-- Wordmark -->
+      <text x="-80" y="15" font-family="sans-serif" font-weight="bold" font-size="64" text-anchor="start">
+        <tspan fill="#FFFFFF">Hatch</tspan><tspan fill="url(#logo-gradient)">It</tspan>
+      </text>
+      
+      <!-- Tagline -->
+      <text x="0" y="65" font-family="monospace" font-size="16" fill="#A1A1AA" text-anchor="middle" letter-spacing="0.2em">
+        THE SINGULARITY INTERFACE
+      </text>
+  </g>
+
+  <!-- Glitch Accents -->
+  <rect x="0" y="0" width="1280" height="2" fill="#10B981" opacity="0.5"/>
+  <rect x="0" y="190" width="1280" height="2" fill="#D946EF" opacity="0.5"/>
+
+</svg>

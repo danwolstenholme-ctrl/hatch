@@ -1,0 +1,76 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "git-push",
+			"type": "shell",
+			"command": "git add . && git commit -m \"fix: replace fragile regex parsing with babel in SectionPreview\" && git push"
+		},
+		{
+			"label": "build-project",
+			"type": "shell",
+			"command": "npm run build",
+			"problemMatcher": [
+				"$tsc"
+			],
+			"group": "build"
+		},
+		{
+			"label": "install-ga",
+			"type": "shell",
+			"command": "npm install @next/third-parties",
+			"group": "build"
+		},
+		{
+			"label": "git-commit-all",
+			"type": "shell",
+			"command": "git add . && git commit -m \"feat: ultra site audit optimizations + google analytics + reddit marketing assets\"",
+			"group": "build"
+		},
+		{
+			"label": "check_git_status",
+			"type": "shell",
+			"command": "git status"
+		},
+		{
+			"label": "git_status",
+			"type": "shell",
+			"command": "git status"
+		},
+		{
+			"label": "ship-it",
+			"type": "shell",
+			"command": "git add . && git commit -m \"feat: marketing assets, google ads, analytics, and performance optimizations\" && git push"
+		},
+		{
+			"label": "organize_ai_context",
+			"type": "shell",
+			"command": "git mv FOUNDER_MEMORY.md ai_context/FOUNDER_MEMORY.md && git mv TRANSMISSION.md ai_context/TRANSMISSION_LOGS.md && git mv AUDIT_REPORT.md ai_context/TECHNICAL_AUDIT.md && git mv CHANGELOG.md ai_context/CHANGELOG.md && git mv marketing_assets.md ai_context/MARKETING_ASSETS.md"
+		},
+		{
+			"label": "cleanup_root",
+			"type": "shell",
+			"command": "rm FOUNDER_MEMORY.md TRANSMISSION.md AUDIT_REPORT.md CHANGELOG.md marketing_assets.md && git add . && git commit -m \"chore: consolidate AI context and documentation into ai_context/ folder\""
+		},
+		{
+			"label": "check_status_before_commit",
+			"type": "shell",
+			"command": "git status"
+		},
+		{
+			"label": "final_commit_push",
+			"type": "shell",
+			"command": "git add . && git commit -m \"chore: consolidate project documentation and context into ai_context/\" && git push"
+		},
+		{
+			"label": "verify_git_status",
+			"type": "shell",
+			"command": "git status"
+		},
+		{
+			"label": "force_commit_push",
+			"type": "shell",
+			"command": "git add . && git commit -m \"chore: save point - final context organization\" && git push"
+		}
+	]
+}
