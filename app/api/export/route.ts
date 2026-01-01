@@ -109,25 +109,26 @@ export async function POST(req: NextRequest) {
         lint: 'eslint'
       },
       dependencies: {
-        next: '16.1.1',
-        react: '19.2.3',
-        'react-dom': '19.2.3',
+        next: '14.1.0',
+        react: '18.2.0',
+        'react-dom': '18.2.0',
         'framer-motion': '^11.0.0',
         'lucide-react': '^0.300.0'
       },
       devDependencies: {
-        '@tailwindcss/postcss': '^4',
         '@types/node': '^20',
-        '@types/react': '^19',
-        '@types/react-dom': '^19',
-        tailwindcss: '^4',
+        '@types/react': '^18',
+        '@types/react-dom': '^18',
+        tailwindcss: '^3.4.0',
+        postcss: '^8.4.0',
+        autoprefixer: '^10.4.0',
         typescript: '^5'
       }
     }, null, 2),
 
     'tsconfig.json': JSON.stringify({
       compilerOptions: {
-        target: 'ES2017',
+        target: 'es5',
         lib: ['dom', 'dom.iterable', 'esnext'],
         allowJs: true,
         skipLibCheck: true,
@@ -147,23 +148,38 @@ export async function POST(req: NextRequest) {
       exclude: ['node_modules']
     }, null, 2),
 
-    'postcss.config.mjs': `const config = {
+    'postcss.config.js': `module.exports = {
   plugins: {
-    "@tailwindcss/postcss": {},
+    tailwindcss: {},
+    autoprefixer: {},
   },
-};
-export default config;`,
+}`,
 
-    'next.config.ts': `import type { NextConfig } from "next";
-const nextConfig: NextConfig = {};
-export default nextConfig;`,
+    'next.config.js': `/** @type {import('next').NextConfig} */
+const nextConfig = {}
+module.exports = nextConfig`,
 
-    'app/globals.css': `@import "tailwindcss";
+    'app/globals.css': `@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
 html, body {
   height: 100%;
   width: 100%;
   margin: 0;
+}`,
+
+    'tailwind.config.js': `/** @type {import('tailwindcss').Config} */
+module.exports = {
+  content: [
+    './pages/**/*.{js,ts,jsx,tsx,mdx}',
+    './components/**/*.{js,ts,jsx,tsx,mdx}',
+    './app/**/*.{js,ts,jsx,tsx,mdx}',
+  ],
+  theme: {
+    extend: {},
+  },
+  plugins: [],
 }`,
 
     'app/layout.tsx': `import type { Metadata } from "next";
@@ -176,9 +192,9 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
   children,
-}: Readonly<{
+}: {
   children: React.ReactNode;
-}>) {
+}) {
   return (
     <html lang="en">
       <body>{children}</body>
