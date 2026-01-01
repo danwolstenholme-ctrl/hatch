@@ -640,6 +640,17 @@ const GlassCard = ({ children, className }) => React.createElement('div', { clas
 
       const html = '<!DOCTYPE html>' +
         '<html><head>' +
+        '<script>' +
+        '  window.onerror = function(msg, url, line, col, error) {' +
+        '    console.error("[Preview Global Error]", msg, error);' +
+        '    window.parent.postMessage({ type: "preview-error", errorType: "Runtime Error", message: msg + " (Line " + line + ")" }, "*");' +
+        '    return false;' +
+        '  };' +
+        '  window.addEventListener("unhandledrejection", function(event) {' +
+        '    console.error("[Preview Promise Error]", event.reason);' +
+        '    window.parent.postMessage({ type: "preview-error", errorType: "Async Error", message: event.reason ? event.reason.message : "Unknown Async Error" }, "*");' +
+        '  });' +
+        '</script>' +
         '<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">' +
         '<style>' +
         '* { margin: 0; padding: 0; box-sizing: border-box; }' +
@@ -736,8 +747,19 @@ const GlassCard = ({ children, className }) => React.createElement('div', { clas
         '    var icons = window.lucideReact || window.lucide || {};\n' +
         '    var Icon = icons[name];\n' +
         '    if (typeof Icon === "function") {\n' +
-        '      try { return Icon(props); } catch(e) { /* fall through */ }\n' +
+        '      try { return React.createElement(Icon, props); } catch(e) { /* fall through */ }\n' +
         '    }\n' +
+        '    // Fallback SVG if icon missing\n' +
+        '    return React.createElement("svg", Object.assign({}, props, { width: 24, height: 24, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 2 }), \n' +
+        '      React.createElement("rect", { x: 2, y: 2, width: 20, height: 20, rx: 2 }));\n' +
+        '  };\n' +
+        '};\n' +
+        '// Proxy for Lucide icons\n' +
+        'window.LucideIcons = new Proxy({}, {\n' +
+        '  get: function(target, name) {\n' +
+        '    return window.createSafeIcon(name);\n' +
+        '  }\n' +
+        '});\n' +
         '    return React.createElement("svg", Object.assign({ width: 24, height: 24, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", strokeWidth: 2, strokeLinecap: "round", strokeLinejoin: "round" }, props || {}));\n' +
         '  };\n' +
         '};\n' +
