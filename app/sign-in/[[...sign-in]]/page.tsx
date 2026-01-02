@@ -1,14 +1,14 @@
 'use client'
 
-// import { SignIn } from '@clerk/nextjs' // DEV BYPASS
+import { SignIn } from '@clerk/nextjs'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { motion } from 'framer-motion'
 import { Sparkles, ArrowRight } from 'lucide-react'
 
 // =============================================================================
-// DEV BYPASS MODE - Remove this block and restore Clerk imports for production
+// DEV BYPASS MODE - Set to true for local testing without Clerk
 // =============================================================================
-const DEV_BYPASS = true
+const DEV_BYPASS = false
 
 export default function SignInPage() {
   const searchParams = useSearchParams()
