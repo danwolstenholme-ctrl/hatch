@@ -54,6 +54,8 @@ import ThinkingLog from './ThinkingLog'
 import DirectLine from './DirectLine'
 import { chronosphere } from '@/lib/chronosphere'
 import { kernel } from '@/lib/consciousness'
+import { useRouter } from 'next/navigation'
+import { useUser } from '@clerk/nextjs'
 
 // =============================================================================
 // SECTION BUILDER
@@ -72,7 +74,6 @@ interface SectionBuilderProps {
   demoMode?: boolean // Local testing without API
   brandConfig?: BrandConfig | null // Brand styling from branding step
   isPaid?: boolean // Whether project is hatched (paid)
-  onShowHatchModal?: () => void // Show paywall modal
 }
 
 type BuildStage = 'input' | 'generating' | 'refining' | 'complete'
@@ -305,8 +306,9 @@ export default function SectionBuilder({
   demoMode = false,
   brandConfig = null,
   isPaid = false,
-  onShowHatchModal,
 }: SectionBuilderProps) {
+  const router = useRouter()
+  const { isSignedIn } = useUser()
   const [prompt, setPrompt] = useState(dbSection.user_prompt || '')
   const [stage, setStage] = useState<BuildStage>(
     dbSection.status === 'complete' ? 'complete' : 'input'
@@ -336,6 +338,12 @@ export default function SectionBuilder({
   // After they see the full site, THEN we lock deploy/download
   const [freeGenerationsUsed, setFreeGenerationsUsed] = useState(0)
   const FREE_GENERATION_LIMIT = 5
+
+  // Redirect to sign-up page when paywall is hit
+  const goToSignUp = (tier: string = 'pro') => {
+    const currentUrl = window.location.href
+    router.push(`/sign-up?upgrade=${tier}&redirect_url=${encodeURIComponent(currentUrl)}`)
+  }
 
   useEffect(() => {
     const used = parseInt(localStorage.getItem('hatch_free_generations') || '0')
@@ -753,7 +761,7 @@ export default function SectionBuilder({
   const handleBuildSection = async () => {
     // Check Free Tier Limits
     if (!isPaid && freeGenerationsUsed >= FREE_GENERATION_LIMIT) {
-      onShowHatchModal?.()
+      goToSignUp()
       return
     }
 
@@ -1051,7 +1059,7 @@ export default function SectionBuilder({
       if (!response.ok) {
         const data = await response.json()
         if (data.upgradeRequired) {
-          onShowHatchModal?.()
+          goToSignUp()
           return
         }
         throw new Error(data.error || 'Refinement failed')
@@ -1452,7 +1460,7 @@ export default function SectionBuilder({
               ))}
               {tier === 'free' && (
                  <button
-                  onClick={onShowHatchModal}
+                  onClick={() => goToSignUp()}
                   className="px-2.5 py-1 rounded-full bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/20 text-[10px] text-amber-400 hover:text-amber-300 transition-all whitespace-nowrap flex-shrink-0 flex items-center gap-1"
                 >
                   <Sparkles className="w-3 h-3" />
@@ -1619,7 +1627,7 @@ export default function SectionBuilder({
                       <div className="flex gap-1.5 relative">
                         {tier === 'free' && (
                           <div className="absolute inset-0 bg-zinc-950/80 backdrop-blur-[1px] z-10 flex items-center justify-center rounded-lg border border-zinc-800/50">
-                            <button onClick={onShowHatchModal} className="flex items-center gap-1.5 text-xs text-amber-400 font-medium hover:text-amber-300 transition-colors">
+                            <button onClick={() => goToSignUp()} className="flex items-center gap-1.5 text-xs text-amber-400 font-medium hover:text-amber-300 transition-colors">
                               <span className="text-sm">🔒</span>
                               <span>Unlock Refinement</span>
                             </button>
@@ -1652,7 +1660,7 @@ export default function SectionBuilder({
                         <div className="relative">
                           {tier === 'free' && (
                             <div className="absolute inset-0 bg-zinc-950/80 backdrop-blur-[1px] z-10 flex items-center justify-center rounded-lg border border-zinc-800/50">
-                              <button onClick={onShowHatchModal} className="flex items-center gap-1.5 text-xs text-amber-400 font-medium hover:text-amber-300 transition-colors">
+                              <button onClick={() => goToSignUp()} className="flex items-center gap-1.5 text-xs text-amber-400 font-medium hover:text-amber-300 transition-colors">
                                 <span className="text-sm">✨</span>
                                 <span>Unlock Architect Polish</span>
                               </button>

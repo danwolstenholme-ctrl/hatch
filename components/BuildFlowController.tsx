@@ -1468,7 +1468,6 @@ export default function GeneratedPage() {
                   demoMode={demoMode}
                   brandConfig={brandConfig}
                   isPaid={isPaid}
-                  onShowHatchModal={() => setShowHatchModal(true)}
                 />
               )}
 
