@@ -27,7 +27,7 @@
     "stripe": "^20.1.0"
   },
   "devDependencies": {
-    "@tailwindcss/postcss": "^4",
+    "@tailwindcss/postcss": "4.1.18",
     "@types/babel__standalone": "^7.1.9",
     "@types/jest": "^30.0.0",
     "@types/node": "^20",
@@ -38,7 +38,7 @@
     "eslint-config-next": "16.1.1",
     "jest": "^30.2.0",
     "sharp": "^0.34.5",
-    "tailwindcss": "^4",
+    "tailwindcss": "4.1.18",
     "ts-jest": "^29.4.6",
     "typescript": "^5"
   }
