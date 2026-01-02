@@ -46,13 +46,13 @@ export default function ProjectsPage() {
   }
 
   return (
-    <div className="p-8 max-w-7xl mx-auto">
+    <div className="p-4 sm:p-6 md:p-8 max-w-7xl mx-auto">
       {/* Header with tier info */}
-      <div className="flex items-center justify-between mb-8">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-3xl font-bold text-white mb-2">Projects</h1>
-          <div className="flex items-center gap-3">
-            <p className="text-zinc-400">Manage your digital entities.</p>
+          <h1 className="text-2xl sm:text-3xl font-bold text-white mb-2">Projects</h1>
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+            <p className="text-zinc-400 text-sm sm:text-base">Manage your digital entities.</p>
             
             {/* Project counter */}
             <div className="flex items-center gap-2 px-3 py-1 bg-zinc-900 border border-zinc-800 rounded-full">
@@ -64,7 +64,7 @@ export default function ProjectsPage() {
           </div>
         </div>
         
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3">
           {/* Tier badge */}
           <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full border`}
                style={{ 
@@ -109,29 +109,29 @@ export default function ProjectsPage() {
       </div>
 
       {projects.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-20 border border-dashed border-zinc-800 rounded-xl bg-zinc-900/20">
-          <div className="w-16 h-16 bg-zinc-800/50 rounded-full flex items-center justify-center mb-4">
-            <Box className="w-8 h-8 text-zinc-600" />
+        <div className="flex flex-col items-center justify-center py-12 sm:py-20 border border-dashed border-zinc-800 rounded-xl bg-zinc-900/20 px-4">
+          <div className="w-14 h-14 sm:w-16 sm:h-16 bg-zinc-800/50 rounded-full flex items-center justify-center mb-4">
+            <Box className="w-7 h-7 sm:w-8 sm:h-8 text-zinc-600" />
           </div>
-          <h3 className="text-xl font-semibold text-white mb-2">No projects yet</h3>
-          <p className="text-zinc-400 mb-6 max-w-md text-center">
+          <h3 className="text-lg sm:text-xl font-semibold text-white mb-2 text-center">No projects yet</h3>
+          <p className="text-zinc-400 mb-6 max-w-md text-center text-sm sm:text-base">
             Initialize your first digital entity to begin building.
           </p>
           <button
             onClick={handleCreate}
-            className="flex items-center gap-2 px-6 py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg font-medium transition-colors"
+            className="flex items-center gap-2 px-5 sm:px-6 py-2.5 sm:py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg font-medium transition-colors text-sm sm:text-base"
           >
             <Plus className="w-4 h-4" />
             Initialize Project
           </button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
           {projects.map((project) => (
             <Link
               key={project.id}
               href={`/builder?project=${project.id}`}
-              className="group relative block p-6 bg-zinc-900/50 border border-zinc-800 hover:border-emerald-500/50 rounded-xl transition-all hover:bg-zinc-900 hover:shadow-[0_0_20px_rgba(16,185,129,0.1)]"
+              className="group relative block p-4 sm:p-6 bg-zinc-900/50 border border-zinc-800 hover:border-emerald-500/50 rounded-xl transition-all hover:bg-zinc-900 hover:shadow-[0_0_20px_rgba(16,185,129,0.1)]"
             >
               {/* Delete button */}
               <button

@@ -117,7 +117,7 @@ function SignUpContent() {
               onClick={() => handleSelectTier(tier.name)}
               className={`relative p-6 rounded-2xl border text-left transition-all group cursor-pointer ${
                 tier.highlight 
-                  ? 'bg-zinc-800/80 border-emerald-500/50 shadow-xl shadow-emerald-500/10 scale-105' 
+                  ? 'bg-zinc-800/80 border-emerald-500/50 shadow-xl shadow-emerald-500/10 md:scale-105' 
                   : selectedTier?.toLowerCase() === tier.name.toLowerCase()
                   ? 'bg-zinc-800/60 border-violet-500/50 hover:border-violet-400'
                   : 'bg-zinc-900/50 border-zinc-800 hover:border-zinc-600 hover:bg-zinc-800/40'
