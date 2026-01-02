@@ -11,7 +11,7 @@ import { X, MessageSquare, Heart, Bug, Mail, ArrowRight } from 'lucide-react'
 // =============================================================================
 
 interface WelcomeModalProps {
-  trigger?: 'auto' | 'manual' | 'guest'
+  trigger?: 'auto' | 'manual' | 'guest' | 'post-demo'
   isOpen?: boolean
   onClose?: () => void
 }
@@ -22,7 +22,7 @@ export default function WelcomeModal({ trigger = 'auto', isOpen: externalIsOpen,
 
   useEffect(() => {
     // If controlled externally, use that state
-    if (trigger === 'manual') {
+    if (trigger === 'manual' || trigger === 'post-demo') {
       setIsOpen(externalIsOpen ?? false)
       return
     }

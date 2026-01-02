@@ -1,216 +1,146 @@
-'use client'
+"use client"
 
-import { useEffect, useRef, Suspense } from 'react'
-import { useUser } from '@clerk/nextjs'
-import { useRouter, useSearchParams } from 'next/navigation'
-import { motion } from 'framer-motion'
-import { track } from '@vercel/analytics'
-import { AccountSubscription } from '@/types/subscriptions'
-import { useSubscription } from '@/contexts/SubscriptionContext'
+import { useEffect, useMemo, useRef } from "react"
+import { useUser } from "@clerk/nextjs"
+import { useRouter, useSearchParams } from "next/navigation"
+import { motion } from "framer-motion"
+import { track } from "@vercel/analytics"
+import { useSubscription } from "@/contexts/SubscriptionContext"
 
-// =============================================================================
-// WELCOME PAGE
-// A creative, animated welcome experience for all user types
-// Free: Grey theme, friendly intro
-// Lite: Lime/green theme, starter tier
-// Pro: Emerald/teal theme with Hatch character
-// Agency: Gold/amber theme with Agency Node
-// =============================================================================
+type WelcomeTier = "lite" | "pro" | "agency"
 
-type WelcomeTier = 'lite' | 'pro' | 'agency'
-
-  ? (urlTier as WelcomeTier)
-const tierConfig = {
+const TIER_CONFIG: Record<WelcomeTier, {
+  title: string
+  subtitle: string
+  description: string
+  price: string
+  gradient: string
+  accent: string
+}> = {
   lite: {
-    emoji: '🌱',
-    title: 'Protocol: SEEDLING',
-    subtitle: 'Growth sequence initiated.',
-    description: "Your journey begins here. Build up to 3 active projects with unlimited generations and 5 AI polishes per month. Perfect for launching first ideas.",
-    price: '$9 / mo',
-    ctaText: 'Start Building',
-    ctaUrl: '/builder',
-    gradient: 'from-lime-500 to-emerald-500',
-    accentColor: 'lime',
-    features: [
-      { icon: '🌱', text: '3 Complete Sites' },
-      { icon: '∞', text: 'Unlimited Generations' },
-      { icon: '🎯', text: '5 AI Polishes / mo' },
-      { icon: '🖥️', text: 'Live DOM Preview' },
-      { icon: '🤖', text: 'Full AI Architect Access' },
-    ],
+    title: "Protocol: SEEDLING",
+    subtitle: "Growth sequence initiated.",
+    description: "Launch up to 3 active projects. Unlimited generations. 5 polishes/mo.",
+    price: "$9/mo",
+    gradient: "from-lime-400 to-emerald-400",
+    accent: "text-lime-400",
   },
   pro: {
-    emoji: '🧠',
     title: "Protocol: ARCHITECT",
-    subtitle: 'Full neural link established.',
-    description: "You are now one with the system. Create, deploy, and manifest with unlimited generations and ~30 AI polishes per month.",
-    price: '$29 / mo',
-    ctaText: 'Start Building',
-    ctaUrl: '/builder',
-    gradient: 'from-emerald-500 to-teal-500',
-    accentColor: 'emerald',
-    features: [
-      { icon: '∞', text: 'Unlimited Neural Generations' },
-      { icon: '🎯', text: '~30 AI Polishes / mo' },
-      { icon: '🚀', text: 'Direct-to-Edge Deployment' },
-      { icon: '💾', text: 'Full Source Export' },
-      { icon: '🌐', text: 'Custom Domain Binding' },
-      { icon: '🎨', text: 'Deep Style Injection' },
-      { icon: '⚡', text: 'Priority Kernel Access' },
-    ],
+    subtitle: "Full neural link established.",
+    description: "Unlimited generations, ~30 polishes/mo, deploy and export anywhere.",
+    price: "$29/mo",
+    gradient: "from-emerald-400 to-teal-400",
+    accent: "text-emerald-400",
   },
   agency: {
-    emoji: '🔮',
-    title: 'Protocol: DEMIURGE',
-    subtitle: 'Reality distortion field active.',
-    description: "You build worlds for others. White-label the Architect and deploy fleets of sites. You are the system administrator.",
-function AgencyNode() {
-        className="absolute inset-4 border-2 border-amber-500/50 rounded-full border-dashed"
-      >
-            left: "50%",
-
-      {/* Subtle glow */}
-      className="relative w-40 h-40 flex items-center justify-center"
+    title: "Protocol: DEMIURGE",
+    subtitle: "Reality distortion field active.",
+    description: "White-label, priority support, and fleet deployment for teams.",
+    price: "$99/mo",
+    gradient: "from-amber-400 to-orange-400",
+    accent: "text-amber-400",
+  },
 }
-  const derivedTier: WelcomeTier = hasValidUrlTier
-  return (
-    <div className="min-h-screen bg-zinc-950 flex items-center justify-center">
-      // Removed
-    </div>
-  }, [hasValidUrlTier, isLoaded, syncSubscription])
 
-  // Track new user sign-up completion
-  const hasTrackedSignup = useRef(false)
+export default function WelcomePage() {
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const { user, isLoaded } = useUser()
+  const { syncSubscription } = useSubscription()
+
+  const urlTier = (searchParams.get("tier") || "pro").toLowerCase()
+  const tier: WelcomeTier = ["lite", "pro", "agency"].includes(urlTier) ? (urlTier as WelcomeTier) : "pro"
+
+  // Sync subscription once on mount
   useEffect(() => {
-    if (!isLoaded || !user || hasTrackedSignup.current) return
-    // Only track if user was created recently (within last 5 minutes) - indicates fresh signup
-    const createdAt = user.createdAt ? new Date(user.createdAt).getTime() : 0
-    const now = Date.now()
-    const fiveMinutes = 5 * 60 * 1000
-    if (now - createdAt < fiveMinutes) {
-      track('Sign Up Completed', { 
-        tier: derivedTier,
-        source: 'welcome_page'
-      })
-    }
-    hasTrackedSignup.current = true
-  }, [isLoaded, user, derivedTier])
+    syncSubscription().catch(() => {})
+  }, [syncSubscription])
 
-  const config = tierConfig[derivedTier]
+  // Track fresh signups (created within 5 minutes)
+  const hasTracked = useRef(false)
+  useEffect(() => {
+    if (!isLoaded || !user || hasTracked.current) return
+    const createdAt = user.createdAt ? new Date(user.createdAt).getTime() : 0
+    const fresh = Date.now() - createdAt < 5 * 60 * 1000
+    if (fresh) {
+      track("Sign Up Completed", { tier, source: "welcome" })
+    }
+    hasTracked.current = true
+  }, [isLoaded, user, tier])
+
+  const config = useMemo(() => TIER_CONFIG[tier], [tier])
 
   if (!isLoaded) {
     return (
       <div className="min-h-screen bg-zinc-950 flex items-center justify-center">
-        <motion.div
-          animate={{ rotate: 360 }}
-          transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-          className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full"
-        />
+        <div className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin" />
       </div>
     )
   }
 
   return (
-    <div className="min-h-screen bg-zinc-950 flex flex-col items-center justify-center relative overflow-hidden px-4">
-      {/* Background effects - subtle, matching site aesthetic */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className={`absolute -top-40 -left-40 w-80 h-80 ${
-          tier === 'agency' ? 'bg-orange-500/10' :
-          tier === 'pro' ? 'bg-emerald-500/10' :
-          tier === 'lite' ? 'bg-lime-500/10' :
-          'bg-zinc-500/5'
-        } rounded-full blur-[100px]`} />
-        <div className={`absolute top-1/3 -right-40 w-96 h-96 ${
-          tier === 'agency' ? 'bg-amber-500/10' :
-          tier === 'pro' ? 'bg-teal-500/10' :
-          tier === 'lite' ? 'bg-emerald-500/10' :
-          'bg-zinc-500/5'
-        } rounded-full blur-[100px]`} />
-      </div>
+    <div className="min-h-screen bg-zinc-950 text-white relative overflow-hidden">
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(16,185,129,0.12),transparent_45%),radial-gradient(circle_at_80%_20%,rgba(6,182,212,0.1),transparent_45%),radial-gradient(circle_at_50%_80%,rgba(245,158,11,0.08),transparent_45%)]" />
 
-      {/* Main content */}
-      <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-        className="relative z-10 text-center max-w-2xl"
-      >
-        {/* Character/Icon */}
-        <div className="mb-8 flex justify-center">
-          {tier === 'agency' ? (
-            <AgencyNode />
-          ) : tier === 'pro' ? (
-            <ProNode />
-          ) : (
-            <LiteNode />
-          )}
-        </div>
-
-        {/* Title */}
-        <motion.h1
-          initial={{ opacity: 0, y: 20 }}
+      <div className="relative z-10 max-w-4xl mx-auto px-6 py-20 flex flex-col items-center text-center gap-8">
+        <motion.div
+          initial={{ opacity: 0, y: 16 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="text-4xl md:text-5xl font-bold text-white mb-4"
+          transition={{ duration: 0.4 }}
+          className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 border border-white/10 text-xs font-mono text-emerald-300"
+        >
+          SYSTEM: ACCESS GRANTED
+        </motion.div>
+
+        <motion.h1
+          initial={{ opacity: 0, y: 16 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.05, duration: 0.45 }}
+          className="text-4xl sm:text-5xl font-black leading-tight"
         >
           {config.title}
         </motion.h1>
 
-        {/* Price Tag (New) */}
-        {/* @ts-ignore */}
-        {config.price && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ delay: 0.3 }}
-            className={`inline-block px-4 py-1 rounded-full border border-white/10 bg-white/5 text-sm font-mono mb-6 ${
-              tier === 'agency' ? 'text-amber-400' :
-              tier === 'pro' ? 'text-emerald-400' :
-              tier === 'lite' ? 'text-lime-400' :
-              'text-zinc-400'
-            }`}
-          >
-            {/* @ts-ignore */}
-            {config.price}
-          </motion.div>
-        )}
-
-        {/* Subtitle with gradient */}
         <motion.p
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className={`text-xl md:text-2xl font-medium bg-gradient-to-r ${config.gradient} bg-clip-text text-transparent mb-6`}
+          transition={{ delay: 0.1, duration: 0.45 }}
+          className={`text-lg sm:text-xl bg-gradient-to-r ${config.gradient} bg-clip-text text-transparent`}
         >
           {config.subtitle}
         </motion.p>
 
-        {/* Description */}
         <motion.p
-          initial={{ opacity: 0, y: 20 }}
+          initial={{ opacity: 0, y: 12 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.4 }}
-          className="text-zinc-400 text-lg mb-10 max-w-md mx-auto"
+          transition={{ delay: 0.15, duration: 0.45 }}
+          className="text-zinc-400 max-w-2xl"
         >
           {config.description}
         </motion.p>
 
-        {/* Features */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.5 }}
-          className={`bg-zinc-900/80 backdrop-blur-sm border ${
-            tier === 'agency' ? 'border-orange-500/30' :
-            tier === 'pro' ? 'border-emerald-500/30' :
-            tier === 'lite' ? 'border-lime-500/30' :
-            'border-zinc-800'
-          } rounded-2xl p-6 mb-10`}
+          initial={{ opacity: 0, scale: 0.95 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ delay: 0.2, duration: 0.4 }}
+          className="px-4 py-2 rounded-full border border-white/10 bg-white/5 text-sm font-mono text-white/80"
         >
-          <div className="grid grid-cols-2 gap-4">
-            import { redirect } from 'next/navigation'
+          {config.price}
+        </motion.div>
 
-            export default function WelcomePage() {
-              redirect('/builder?mode=guest')
-            }
-                transition={{ delay: 0.6 + i * 0.1 }}
+        <motion.button
+          initial={{ opacity: 0, y: 12 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.25, duration: 0.4 }}
+          onClick={() => router.push("/builder")}
+          className="inline-flex items-center gap-2 px-6 py-3 rounded-lg bg-emerald-500 text-black font-semibold hover:bg-emerald-400 transition-colors"
+        >
+          Enter the Builder
+        </motion.button>
+
+        <div className="text-xs text-zinc-500 font-mono">Tier: <span className={config.accent}>{tier.toUpperCase()}</span></div>
+      </div>
+    </div>
+  )
+}

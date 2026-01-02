@@ -2146,7 +2146,7 @@ export default function GeneratedPage() {
 
       {/* First-time welcome modal after completing a build */}
       <WelcomeModal 
-        trigger="post-demo"
+        trigger="auto"
         isOpen={showWelcome}
         onClose={closeWelcome}
       />
