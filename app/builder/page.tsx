@@ -20,53 +20,59 @@ function BuilderContent() {
   const { user, isSignedIn, isLoaded } = useUser()
   const projectId = searchParams.get('project')
   const upgrade = searchParams.get('upgrade')
-  const mode = searchParams.get('mode') // 'guest' for demo mode
-  const initialPrompt = searchParams.get('prompt')
   const [isRedirecting, setIsRedirecting] = useState(false)
 
   // Get subscription from Clerk metadata
   const subscription = user?.publicMetadata?.accountSubscription as AccountSubscription | null
   const hasActiveSubscription = subscription?.status === 'active'
-  
-  // Guest mode = unsigned user trying builder from homepage
-  const isGuestMode = mode === 'guest' || !isSignedIn
 
-  // Handle upgrade param - redirect to Stripe checkout (only for signed-in users)
+  // Handle upgrade param OR no subscription - redirect to Stripe checkout
   useEffect(() => {
     if (!isLoaded) return
     
-    // If signed in with upgrade param, handle checkout
-    if (isSignedIn) {
-      const pendingTier = upgrade || (typeof window !== 'undefined' ? localStorage.getItem('pendingUpgradeTier') : null)
-      
-      if (pendingTier && ['lite', 'pro', 'agency'].includes(pendingTier)) {
-        setIsRedirecting(true)
-        
-        // Clear both URL param and localStorage
-        const newUrl = new URL(window.location.href)
-        newUrl.searchParams.delete('upgrade')
-        window.history.replaceState({}, '', newUrl.toString())
-        localStorage.removeItem('pendingUpgradeTier')
-        
-        // Trigger checkout
-        fetch('/api/checkout', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ tier: pendingTier })
-        })
-          .then(res => res.json())
-          .then(data => {
-            if (data.url) {
-              window.location.href = data.url
-            }
-          })
-          .catch(err => {
-            console.error('Checkout redirect failed:', err)
-            setIsRedirecting(false)
-          })
-      }
+    // Not signed in? Go to sign-up
+    if (!isSignedIn) {
+      router.push('/sign-up')
+      return
     }
-  }, [isLoaded, isSignedIn, upgrade])
+
+    // Check URL param first, then localStorage fallback (for OAuth flows)
+    const pendingTier = upgrade || (typeof window !== 'undefined' ? localStorage.getItem('pendingUpgradeTier') : null)
+    
+    // Has a pending tier to checkout
+    if (pendingTier && ['lite', 'pro', 'agency'].includes(pendingTier)) {
+      setIsRedirecting(true)
+      
+      // Clear both URL param and localStorage
+      const newUrl = new URL(window.location.href)
+      newUrl.searchParams.delete('upgrade')
+      window.history.replaceState({}, '', newUrl.toString())
+      localStorage.removeItem('pendingUpgradeTier')
+      
+      // Trigger checkout
+      fetch('/api/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tier: pendingTier })
+      })
+        .then(res => res.json())
+        .then(data => {
+          if (data.url) {
+            window.location.href = data.url
+          }
+        })
+        .catch(err => {
+          console.error('Checkout redirect failed:', err)
+          setIsRedirecting(false)
+        })
+      return
+    }
+
+    // Signed in but NO active subscription and NO pending checkout - block and redirect
+    if (!hasActiveSubscription && !pendingTier) {
+      router.push('/sign-up')
+    }
+  }, [isLoaded, isSignedIn, upgrade, hasActiveSubscription, router])
 
   // Loading state
   if (!isLoaded || isRedirecting) {
@@ -86,13 +92,45 @@ function BuilderContent() {
     )
   }
 
-  // ALLOW EVERYONE INTO BUILDER - paywall is on deploy/export, not entry
+  // Not signed in - redirect handled above, show nothing
+  if (!isSignedIn) {
+    return null
+  }
+
+  // Signed in but no subscription - BLOCKED
+  if (!hasActiveSubscription) {
+    return (
+      <div className="min-h-screen bg-zinc-950 flex items-center justify-center p-4">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="max-w-md w-full bg-zinc-900 border border-zinc-800 rounded-2xl p-8 text-center"
+        >
+          <div className="w-16 h-16 bg-zinc-800 rounded-full flex items-center justify-center mx-auto mb-6">
+            <Lock className="w-8 h-8 text-zinc-500" />
+          </div>
+          <h1 className="text-2xl font-bold text-white mb-2">Subscription Required</h1>
+          <p className="text-zinc-400 mb-6">
+            Choose a plan to unlock the builder and start creating.
+          </p>
+          <button
+            onClick={() => router.push('/sign-up')}
+            className="w-full py-3 bg-emerald-500 hover:bg-emerald-400 text-black font-semibold rounded-xl transition-colors flex items-center justify-center gap-2"
+          >
+            <CreditCard className="w-4 h-4" />
+            View Plans
+            <ArrowRight className="w-4 h-4" />
+          </button>
+        </motion.div>
+      </div>
+    )
+  }
+
+  // HAS ACTIVE SUBSCRIPTION - show builder
   return (
     <div className="relative min-h-screen">
       <BuildFlowController 
-        existingProjectId={projectId || undefined}
-        guestMode={isGuestMode}
-        initialPrompt={initialPrompt || undefined}
+        existingProjectId={projectId || undefined} 
       />
     </div>
   )
