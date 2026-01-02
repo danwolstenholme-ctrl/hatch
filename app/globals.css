@@ -39,6 +39,10 @@ html, body {
   background-color: #09090b;
   /* Prevent browser swipe-back/forward gestures on horizontal swipe */
   overscroll-behavior-x: none;
+  /* Force vertical scrolling to stay enabled and smooth on mobile */
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* Reduce animations on mobile for better performance */

@@ -343,6 +343,11 @@ export default function SectionBuilder({
   const [dreamsUsed, setDreamsUsed] = useState(0)
   const [guestLocked, setGuestLocked] = useState(false)
   const [guestLockReason, setGuestLockReason] = useState<string | null>(null)
+  const { subscription, tier } = useSubscription()
+  const isPaidTier = tier === 'lite' || tier === 'pro' || tier === 'agency'
+  const isGuest = !isPaid && !isPaidTier
+  const canGuestPolish = isPaid || isPaidTier || GUEST_REFINEMENT_LIMIT < 0 || guestRefinementsUsed < GUEST_REFINEMENT_LIMIT
+  const isLocked = guestLocked && isGuest
   const autoBuildRanRef = useRef(false)
 
   // Redirect to sign-up page when paywall is hit
@@ -406,11 +411,6 @@ export default function SectionBuilder({
     setMobileTab('preview')
   }
 
-  const { subscription, tier } = useSubscription()
-  const isPaidTier = tier === 'lite' || tier === 'pro' || tier === 'agency'
-  const isGuest = !isPaid && !isPaidTier
-  const canGuestPolish = isPaid || isPaidTier || GUEST_REFINEMENT_LIMIT < 0 || guestRefinementsUsed < GUEST_REFINEMENT_LIMIT
-  
   // Dynamic placeholder effect
   const [placeholderIndex, setPlaceholderIndex] = useState(0)
   const [placeholderText, setPlaceholderText] = useState('')
@@ -834,7 +834,7 @@ export default function SectionBuilder({
 
   const handleBuildSection = async (options?: { skipGuestCredit?: boolean }) => {
     const skipGuestCredit = options?.skipGuestCredit
-    if (guestLocked) {
+    if (isLocked) {
       setMobileTab('preview')
       return
     }
@@ -998,7 +998,7 @@ export default function SectionBuilder({
   }
 
   const handleUserRefine = async () => {
-    if (guestLocked) {
+    if (isLocked) {
       setMobileTab('preview')
       return
     }
@@ -1125,7 +1125,7 @@ export default function SectionBuilder({
   // Handle opt-in Architect polish (not automatic anymore)
   const handleArchitectPolish = async () => {
     if (!generatedCode || isArchitectPolishing) return
-    if (!canGuestPolish) {
+    if (!canGuestPolish || isLocked) {
       const reason = 'Guest polish limit reached: unlock Architect for unlimited refinements.'
       setGuestLocked(true)
       setGuestLockReason(reason)
@@ -1441,6 +1441,17 @@ export default function SectionBuilder({
 
   return (
     <div className="flex-1 flex flex-col md:flex-row min-h-0 max-h-full overflow-hidden bg-zinc-950">
+      {isLocked && (
+        <div className="w-full bg-emerald-500/10 border-b border-emerald-500/30 text-emerald-200 text-sm px-4 py-3 flex items-center justify-between z-30">
+          <span className="font-medium">Guest trial complete: preview is unlocked, edits are disabled.</span>
+          <button
+            onClick={() => goToSignUp('pro')}
+            className="ml-3 px-3 py-1.5 rounded-lg bg-emerald-500 text-black text-sm font-semibold hover:bg-emerald-400 transition-colors"
+          >
+            Unlock builder
+          </button>
+        </div>
+      )}
       {/* Mobile Tab Switcher - Modern Segmented Control */}
       <div className="flex md:hidden border-b border-zinc-800/50 bg-zinc-950 p-2">
         <div className="flex w-full bg-zinc-900/70 rounded-xl p-1 border border-emerald-500/20 shadow-[0_8px_30px_rgba(16,185,129,0.08)]">
@@ -1511,10 +1522,10 @@ export default function SectionBuilder({
               onKeyDown={(e) => {
                 if (e.key === 'Enter' && !e.shiftKey) {
                   e.preventDefault()
-                  if (prompt.trim()) handleBuildSection()
+                    if (!isLocked && prompt.trim()) handleBuildSection()
                 }
               }}
-              disabled={stage !== 'input'}
+                disabled={stage !== 'input' || isLocked}
               placeholder={placeholderText}
               className="relative w-full min-h-[120px] bg-zinc-900/80 border border-zinc-800 rounded-xl p-3 text-sm font-mono text-zinc-200 placeholder-zinc-600 focus:outline-none focus:ring-0 focus:border-purple-500/50 disabled:opacity-50 resize-none transition-all"
             />
@@ -1566,7 +1577,7 @@ export default function SectionBuilder({
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
                   onClick={() => handleBuildSection()}
-                  disabled={!prompt.trim()}
+                  disabled={!prompt.trim() || isLocked}
                   className="w-full py-3 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-semibold disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-[0_0_20px_rgba(16,185,129,0.3)] active:scale-[0.98] transition-all flex items-center justify-center gap-2 group text-sm"
                 >
                   <Terminal className="w-4 h-4 group-hover:rotate-12 transition-transform" />
@@ -1715,7 +1726,13 @@ export default function SectionBuilder({
                         />
                         <button
                           onClick={handleUserRefine}
-                          disabled={!refinePrompt.trim() || isUserRefining || (!isPaid && !isPaidTier && GUEST_REFINEMENT_LIMIT >= 0 && guestRefinementsUsed >= GUEST_REFINEMENT_LIMIT)}
+                          disabled={
+                            isLocked ||
+                            !refinePrompt.trim() ||
+                            isUserRefining ||
+                            (!isPaid && !isPaidTier && GUEST_REFINEMENT_LIMIT >= 0 && guestRefinementsUsed >= GUEST_REFINEMENT_LIMIT)
+                          }
+                          aria-disabled={isLocked}
                           className="px-3 py-2 rounded-lg bg-emerald-600/80 border border-emerald-500/40 text-white text-xs font-semibold hover:bg-emerald-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5 shadow-[0_0_14px_rgba(16,185,129,0.25)]"
                         >
                           {isUserRefining ? (
@@ -1731,7 +1748,7 @@ export default function SectionBuilder({
                         <div className="space-y-1">
                           <button
                             onClick={handleArchitectPolish}
-                            disabled={isArchitectPolishing || (!isPaid && !isPaidTier && GUEST_REFINEMENT_LIMIT >= 0 && guestRefinementsUsed >= GUEST_REFINEMENT_LIMIT)}
+                            disabled={isArchitectPolishing || isLocked || (!isPaid && !isPaidTier && GUEST_REFINEMENT_LIMIT >= 0 && guestRefinementsUsed >= GUEST_REFINEMENT_LIMIT)}
                             className="w-full py-2 bg-violet-500/10 hover:bg-violet-500/20 border border-violet-500/30 text-violet-300 text-xs font-medium rounded-lg transition-all flex items-center justify-center gap-1.5 disabled:opacity-60 disabled:cursor-not-allowed"
                           >
                             <Sparkles className="w-3 h-3" />
@@ -2015,17 +2032,13 @@ export default function SectionBuilder({
             </div>
           )}
 
-          {guestLocked && isGuest && (
-            <div className="absolute inset-0 bg-zinc-950/90 backdrop-blur-sm flex flex-col items-center justify-center gap-3 text-center px-6 border border-emerald-500/20 rounded-lg">
-              <p className="text-emerald-300 text-sm font-semibold">Guest quota reached</p>
-              <p className="text-xs text-zinc-400 max-w-sm">
-                {guestLockReason || 'You used all 3 builds, 3 polishes, and 3 dreams. Unlock the full builder to keep shipping and export code.'}
-              </p>
+          {isLocked && (
+            <div className="absolute top-3 right-3 z-20">
               <button
                 onClick={() => goToSignUp('pro')}
-                className="px-4 py-2 rounded-lg bg-emerald-500 text-black font-semibold text-sm hover:bg-emerald-400 transition-colors"
+                className="px-3 py-2 rounded-lg bg-emerald-600 text-black text-xs font-semibold shadow-lg shadow-emerald-900/30 hover:bg-emerald-500 transition-colors"
               >
-                Unlock the Builder
+                Unlock builder
               </button>
             </div>
           )}

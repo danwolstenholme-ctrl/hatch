@@ -652,7 +652,8 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
     }
 
     const hasSeenWelcome = localStorage.getItem(WELCOME_SEEN_KEY)
-    const shouldShowFirstContact = !hasSeenWelcome && !existingProjectId
+    // For guests, always show First Contact on fresh load; signed-in users respect the seen flag
+    const shouldShowFirstContact = (!existingProjectId && (!hasSeenWelcome || !isSignedIn))
 
     if (shouldShowFirstContact) {
       console.log('BuildFlowController: Showing First Contact experience')
