@@ -7,6 +7,7 @@ import { motion } from 'framer-motion'
 import { Lock, CreditCard, ArrowRight } from 'lucide-react'
 import BuildFlowController from '@/components/BuildFlowController'
 import TheDream from '@/components/TheDream'
+import TheSubconscious from '@/components/TheSubconscious'
 import { AccountSubscription } from '@/types/subscriptions'
 
 // =============================================================================
@@ -191,6 +192,7 @@ export default function Home() {
       </div>
     }>
       <TheDream />
+      <TheSubconscious />
       <BuilderContent />
     </Suspense>
   )
