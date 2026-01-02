@@ -1453,10 +1453,6 @@ export default function GeneratedPage() {
               buildState={buildState}
               onSectionClick={handleSectionClick}
               onSkip={handleSkipSection}
-              onGoHome={handleGoHome}
-              onStartOver={handleStartFresh}
-              onViewBrand={handleViewBrand}
-              brandConfig={brandConfig}
             />
 
             <div className="flex-1 flex min-h-0 overflow-hidden">

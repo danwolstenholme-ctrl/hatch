@@ -129,8 +129,8 @@ function SystemStatus() {
         <div className="flex items-center justify-between px-4 py-2.5 bg-zinc-900/80 border-b border-zinc-800">
           <div className="flex items-center gap-3">
             <div className="flex gap-1.5">
-              <div className="w-3 h-3 rounded-full bg-red-500 hover:bg-red-400 transition-colors cursor-pointer"></div>
-              <div className="w-3 h-3 rounded-full bg-amber-500 hover:bg-amber-400 transition-colors cursor-pointer"></div>
+              <div className="w-3 h-3 rounded-full bg-red-500/80 hover:bg-red-400 transition-colors cursor-pointer"></div>
+              <div className="w-3 h-3 rounded-full bg-amber-500/80 hover:bg-amber-400 transition-colors cursor-pointer"></div>
               <div className="w-3 h-3 rounded-full bg-emerald-500 hover:bg-emerald-400 transition-colors cursor-pointer shadow-[0_0_8px_rgba(16,185,129,0.6)]"></div>
             </div>
             <div className="hidden sm:flex items-center gap-2 px-3 py-1 bg-zinc-800/50 rounded-md">
@@ -139,10 +139,15 @@ function SystemStatus() {
             </div>
           </div>
           <div className="flex items-center gap-3">
-            <span className="text-[10px] font-mono text-zinc-500 hidden sm:inline">FREE TRIAL</span>
+            <div className="hidden sm:flex items-center gap-1.5 px-2 py-0.5 bg-emerald-500/10 rounded border border-emerald-500/20">
+              <span className="text-[10px] font-mono text-emerald-400">NO SIGNUP</span>
+            </div>
             <div className="flex items-center gap-1.5">
-              <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.8)]"></div>
-              <span className="text-xs font-mono text-emerald-400">ONLINE</span>
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+              </span>
+              <span className="text-xs font-mono text-emerald-400">READY</span>
             </div>
           </div>
         </div>
@@ -185,25 +190,35 @@ function SystemStatus() {
               
               {/* Bottom bar with button */}
               <div className="flex items-center justify-between px-3 sm:px-4 py-3 border-t border-zinc-800/50 bg-zinc-900/30">
-                <div className="flex items-center gap-2 text-xs text-zinc-500">
-                  <Zap className="w-3.5 h-3.5 text-emerald-500" />
-                  <span className="hidden sm:inline">~30s build time</span>
-                  <span className="sm:hidden">~30s</span>
+                <div className="flex items-center gap-4 text-xs text-zinc-500">
+                  <div className="flex items-center gap-2">
+                    <Zap className="w-3.5 h-3.5 text-emerald-500" />
+                    <span className="hidden sm:inline">~30s build time</span>
+                    <span className="sm:hidden">~30s</span>
+                  </div>
+                  <div className="hidden sm:flex items-center gap-1.5 text-zinc-600">
+                    <kbd className="px-1.5 py-0.5 bg-zinc-800 rounded text-[10px] font-mono">⌘</kbd>
+                    <span>+</span>
+                    <kbd className="px-1.5 py-0.5 bg-zinc-800 rounded text-[10px] font-mono">↵</kbd>
+                  </div>
                 </div>
                 
                 <button
                   type="submit"
                   disabled={!prompt.trim() || isLoading}
-                  className="bg-emerald-600 hover:bg-emerald-500 disabled:bg-zinc-800 disabled:text-zinc-500 text-white px-5 sm:px-6 py-2.5 rounded-lg font-semibold text-sm transition-all disabled:cursor-not-allowed flex items-center gap-2 group shadow-[0_0_20px_rgba(16,185,129,0.3)] hover:shadow-[0_0_30px_rgba(16,185,129,0.5)] disabled:shadow-none"
+                  className="bg-emerald-600 hover:bg-emerald-500 disabled:bg-zinc-800 disabled:text-zinc-500 text-white px-5 sm:px-6 py-2.5 rounded-lg font-semibold text-sm transition-all disabled:cursor-not-allowed flex items-center gap-2 group shadow-[0_0_20px_rgba(16,185,129,0.3)] hover:shadow-[0_0_30px_rgba(16,185,129,0.5)] disabled:shadow-none relative overflow-hidden"
                 >
                   {isLoading ? (
                     <>
-                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                      <span>Building...</span>
+                      <div className="absolute inset-0 bg-gradient-to-r from-emerald-600 via-teal-500 to-emerald-600 animate-shimmer" style={{ backgroundSize: '200% 100%' }} />
+                      <span className="relative flex items-center gap-2">
+                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                        <span>Initializing...</span>
+                      </span>
                     </>
                   ) : (
                     <>
-                      <Sparkles className="w-4 h-4" />
+                      <Sparkles className="w-4 h-4 group-hover:rotate-12 transition-transform" />
                       <span>Generate Site</span>
                       <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                     </>
@@ -216,15 +231,17 @@ function SystemStatus() {
           {/* Quick Examples */}
           <div className="mt-4">
             <div className="flex items-center gap-2 mb-2.5">
-              <span className="text-xs text-zinc-500 font-medium">Quick start:</span>
+              <Sparkles className="w-3 h-3 text-emerald-500/70" />
+              <span className="text-xs text-zinc-500 font-medium">Try an example:</span>
             </div>
             <div className="flex flex-wrap gap-2">
               {EXAMPLE_PROMPTS.map((example, i) => (
                 <button
                   key={i}
                   onClick={() => handleExampleClick(example.prompt)}
-                  className="px-3 py-1.5 text-xs font-medium bg-zinc-800/50 hover:bg-zinc-800 border border-zinc-700/50 hover:border-emerald-500/30 rounded-lg text-zinc-400 hover:text-emerald-400 transition-all"
+                  className="group px-3 py-1.5 text-xs font-medium bg-zinc-800/50 hover:bg-emerald-500/10 border border-zinc-700/50 hover:border-emerald-500/40 rounded-lg text-zinc-400 hover:text-emerald-400 transition-all flex items-center gap-1.5"
                 >
+                  <span className="w-1 h-1 rounded-full bg-zinc-600 group-hover:bg-emerald-500 transition-colors" />
                   {example.label}
                 </button>
               ))}
@@ -250,14 +267,14 @@ function SystemStatus() {
 function PricingButton({ tier, className, children }: { tier: 'lite' | 'pro' | 'agency', className: string, children: React.ReactNode }) {
   const { isSignedIn } = useUser()
   const [isLoading, setIsLoading] = useState(false)
+  const router = useRouter()
   
   const handleClick = async (e: React.MouseEvent) => {
     e.preventDefault()
     
     if (!isSignedIn) {
-      // Redirect to sign-up (not sign-in) with properly encoded redirect URL
-      const redirectUrl = encodeURIComponent(`/builder?upgrade=${tier}`)
-      window.location.href = `/sign-up?redirect_url=${redirectUrl}`
+      // Go to builder with upgrade param - let them try first, then prompt signup
+      router.push(`/builder?mode=guest&upgrade=${tier}`)
       return
     }
     
@@ -271,7 +288,7 @@ function PricingButton({ tier, className, children }: { tier: 'lite' | 'pro' | '
       })
       
       if (res.status === 401) {
-        window.location.href = `/sign-in?redirect_url=${encodeURIComponent(window.location.href)}`
+        router.push(`/builder?upgrade=${tier}`)
         return
       }
 
@@ -484,6 +501,13 @@ export default function Home() {
           animation: glitch 0.3s cubic-bezier(.25, .46, .45, .94) both infinite;
           color: #34d399;
         }
+        @keyframes shimmer {
+          0% { background-position: 200% 0; }
+          100% { background-position: -200% 0; }
+        }
+        .animate-shimmer {
+          animation: shimmer 1.5s ease-in-out infinite;
+        }
       `}</style>
 
       {/* HERO - The main event */}
@@ -544,20 +568,20 @@ export default function Home() {
 
               {/* Trust badges */}
               <motion.div
-                className="flex flex-wrap gap-6 text-sm text-zinc-500 font-mono"
+                className="flex flex-wrap gap-4 sm:gap-6 text-sm text-zinc-500 font-mono"
                 {...getAnimation(0.4, 10)}
               >
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 px-3 py-1.5 bg-zinc-900/50 rounded-lg border border-zinc-800">
                   <Shield className="w-4 h-4 text-emerald-500" />
-                  <span>Sovereign Code</span>
+                  <span>Your Code</span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Zap className="w-4 h-4 text-emerald-500" />
-                  <span>Neural Speed</span>
+                <div className="flex items-center gap-2 px-3 py-1.5 bg-zinc-900/50 rounded-lg border border-zinc-800">
+                  <Zap className="w-4 h-4 text-amber-500" />
+                  <span>30s Builds</span>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Terminal className="w-4 h-4 text-emerald-500" />
-                  <span>Architect Control</span>
+                <div className="flex items-center gap-2 px-3 py-1.5 bg-zinc-900/50 rounded-lg border border-zinc-800">
+                  <Globe className="w-4 h-4 text-cyan-500" />
+                  <span>Free to Try</span>
                 </div>
               </motion.div>
             </div>
@@ -667,20 +691,20 @@ export default function Home() {
             </Link>
 
             {/* Social proof micro-stat */}
-            <div className="mt-8 flex items-center justify-center gap-6 text-sm text-zinc-500">
+            <div className="mt-8 flex flex-wrap items-center justify-center gap-4 sm:gap-6 text-sm text-zinc-500">
               <div className="flex items-center gap-2">
-                <Zap className="w-4 h-4 text-emerald-500" />
-                <span>~30 second builds</span>
+                <Zap className="w-4 h-4 text-amber-500" />
+                <span>~30s builds</span>
               </div>
               <div className="w-px h-4 bg-zinc-800" />
               <div className="flex items-center gap-2">
-                <Code2 className="w-4 h-4 text-emerald-500" />
-                <span>Real React code</span>
+                <Code2 className="w-4 h-4 text-cyan-500" />
+                <span>Real React</span>
               </div>
               <div className="w-px h-4 bg-zinc-800 hidden sm:block" />
               <div className="hidden sm:flex items-center gap-2">
-                <Shield className="w-4 h-4 text-emerald-500" />
-                <span>Your code, forever</span>
+                <Shield className="w-4 h-4 text-violet-500" />
+                <span>100% yours</span>
               </div>
             </div>
           </motion.div>
@@ -1020,11 +1044,22 @@ export default function Home() {
       {/* FOLLOW - Simple CTA */}
       <section className="px-6 py-16 border-t border-zinc-800 bg-zinc-950">
         <div className="max-w-4xl mx-auto text-center">
-          <p className="text-zinc-500 mb-4">Built by developers, for developers.</p>
-          <a href="https://www.reddit.com/r/HatchIt/" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 text-emerald-400 hover:text-emerald-300 transition-colors font-mono text-sm">
-            <span>Join the community on Reddit</span>
-            <ArrowRight className="w-4 h-4" />
-          </a>
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-zinc-900/50 rounded-full border border-zinc-800 mb-6">
+            <span className="text-zinc-500 text-sm">🚀</span>
+            <span className="text-zinc-400 text-sm">We're just getting started</span>
+          </div>
+          <p className="text-zinc-500 mb-6">Built by developers, for developers. We ship updates daily.</p>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <a href="https://www.reddit.com/r/HatchIt/" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-5 py-2.5 bg-orange-500/10 hover:bg-orange-500/20 border border-orange-500/30 rounded-lg text-orange-400 hover:text-orange-300 transition-all font-medium text-sm group">
+              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0zm5.01 4.744c.688 0 1.25.561 1.25 1.249a1.25 1.25 0 0 1-2.498.056l-2.597-.547-.8 3.747c1.824.07 3.48.632 4.674 1.488.308-.309.73-.491 1.207-.491.968 0 1.754.786 1.754 1.754 0 .716-.435 1.333-1.01 1.614a3.111 3.111 0 0 1 .042.52c0 2.694-3.13 4.87-7.004 4.87-3.874 0-7.004-2.176-7.004-4.87 0-.183.015-.366.043-.534A1.748 1.748 0 0 1 4.028 12c0-.968.786-1.754 1.754-1.754.463 0 .898.196 1.207.49 1.207-.883 2.878-1.43 4.744-1.487l.885-4.182a.342.342 0 0 1 .14-.197.35.35 0 0 1 .238-.042l2.906.617a1.214 1.214 0 0 1 1.108-.701zM9.25 12C8.561 12 8 12.562 8 13.25c0 .687.561 1.248 1.25 1.248.687 0 1.248-.561 1.248-1.249 0-.688-.561-1.249-1.249-1.249zm5.5 0c-.687 0-1.248.561-1.248 1.25 0 .687.561 1.248 1.249 1.248.688 0 1.249-.561 1.249-1.249 0-.687-.562-1.249-1.25-1.249zm-5.466 3.99a.327.327 0 0 0-.231.094.33.33 0 0 0 0 .463c.842.842 2.484.913 2.961.913.477 0 2.105-.056 2.961-.913a.361.361 0 0 0 .029-.463.33.33 0 0 0-.464 0c-.547.533-1.684.73-2.512.73-.828 0-1.979-.196-2.512-.73a.326.326 0 0 0-.232-.095z"/></svg>
+              <span>Join r/HatchIt</span>
+              <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+            </a>
+            <Link href="/roadmap" className="inline-flex items-center gap-2 px-5 py-2.5 bg-zinc-800/50 hover:bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-400 hover:text-white transition-all font-medium text-sm">
+              <Layers className="w-4 h-4" />
+              <span>View Roadmap</span>
+            </Link>
+          </div>
         </div>
       </section>
 

@@ -1182,6 +1182,248 @@ export default function SectionBuilder({
     generatedCode.toLowerCase().includes('contact form') ||
     generatedCode.toLowerCase().includes('type="email"')
 
+  // Immersive Input State - before any code is generated
+  const isInitialState = stage === 'input' && !generatedCode
+
+  // IMMERSIVE INITIAL STATE - Full canvas input experience
+  if (isInitialState) {
+    return (
+      <div className="flex-1 flex flex-col items-center justify-center min-h-0 bg-zinc-950 relative overflow-hidden">
+        {/* Subtle background glow */}
+        <div className="absolute inset-0 pointer-events-none">
+          <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-emerald-500/5 rounded-full blur-[120px]" />
+        </div>
+
+        {/* Main content */}
+        <div className="relative z-10 w-full max-w-2xl mx-auto px-6">
+          {/* Section label */}
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-center mb-8"
+          >
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-zinc-900/50 border border-zinc-800 mb-4">
+              <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+              <span className="text-xs font-mono text-zinc-400">Building {section.name}</span>
+            </div>
+            <h2 className="text-2xl sm:text-3xl font-bold text-white mb-2">
+              {section.name}
+            </h2>
+            <p className="text-zinc-500 text-sm max-w-md mx-auto">
+              {section.description}
+            </p>
+          </motion.div>
+
+          {/* Large input area */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="relative group"
+          >
+            {/* Glow effect */}
+            <div className="absolute -inset-1 bg-gradient-to-r from-emerald-500/20 via-teal-500/20 to-emerald-500/20 rounded-2xl opacity-0 group-focus-within:opacity-100 blur-xl transition-opacity duration-500" />
+            
+            <div className="relative bg-zinc-900/80 backdrop-blur-sm border border-zinc-800 group-focus-within:border-emerald-500/50 rounded-2xl overflow-hidden transition-all">
+              <textarea
+                ref={textareaRef}
+                value={prompt}
+                onChange={(e) => setPrompt(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && !e.shiftKey) {
+                    e.preventDefault()
+                    if (prompt.trim()) handleBuildSection()
+                  }
+                }}
+                placeholder={placeholderText}
+                autoFocus
+                className="w-full min-h-[180px] bg-transparent p-5 text-base sm:text-lg text-white placeholder-zinc-600 focus:outline-none resize-none font-mono leading-relaxed"
+              />
+              
+              {/* Bottom bar */}
+              <div className="flex items-center justify-between px-4 py-3 border-t border-zinc-800/50 bg-zinc-950/50">
+                <div className="flex items-center gap-4">
+                  {/* Voice input */}
+                  <DirectLine 
+                    context={{ stage, prompt, selectedElement: null }}
+                    onAction={(action, value) => {
+                      if (action === 'update_prompt') {
+                        setPrompt(prev => prev ? `${prev} ${value}` : value)
+                      }
+                    }}
+                  />
+                  {/* Architect helper */}
+                  <button 
+                    onClick={() => initializePromptHelper()}
+                    className="flex items-center gap-1.5 text-xs text-emerald-400 hover:text-emerald-300 transition-colors"
+                  >
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                    Ask Architect
+                  </button>
+                </div>
+                
+                <div className="flex items-center gap-2 text-xs text-zinc-600">
+                  <kbd className="hidden sm:inline px-1.5 py-0.5 bg-zinc-800 rounded text-[10px] font-mono">⌘↵</kbd>
+                  <span className="hidden sm:inline">to build</span>
+                </div>
+              </div>
+            </div>
+          </motion.div>
+
+          {/* Suggestions */}
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2 }}
+            className="mt-4 flex flex-wrap justify-center gap-2"
+          >
+            {getSuggestions(section.id).map((suggestion) => (
+              <button
+                key={suggestion}
+                onClick={() => setPrompt(prev => prev ? `${prev} ${suggestion}` : suggestion)}
+                className="px-3 py-1.5 rounded-full bg-zinc-900/50 border border-zinc-800 text-xs text-zinc-400 hover:text-white hover:border-zinc-700 transition-all"
+              >
+                + {suggestion}
+              </button>
+            ))}
+          </motion.div>
+
+          {/* Error */}
+          {error && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="mt-4 text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg px-4 py-3 text-center"
+            >
+              {error}
+            </motion.div>
+          )}
+
+          {/* Build button */}
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3 }}
+            className="mt-6"
+          >
+            <button
+              onClick={handleBuildSection}
+              disabled={!prompt.trim()}
+              className="w-full py-4 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-semibold text-base disabled:opacity-40 disabled:cursor-not-allowed hover:shadow-[0_0_30px_rgba(16,185,129,0.3)] active:scale-[0.98] transition-all flex items-center justify-center gap-3 group"
+            >
+              <Terminal className="w-5 h-5 group-hover:rotate-12 transition-transform" />
+              <span>Build This Section</span>
+            </button>
+          </motion.div>
+
+          {/* Free credits indicator */}
+          {!isPaid && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.4 }}
+              className="mt-4 text-center"
+            >
+              <span className={`text-xs ${freeGenerationsUsed >= FREE_GENERATION_LIMIT ? 'text-red-400' : 'text-zinc-500'}`}>
+                {Math.max(0, FREE_GENERATION_LIMIT - freeGenerationsUsed)} free generations remaining
+              </span>
+            </motion.div>
+          )}
+        </div>
+
+        {/* Prompt Helper Modal */}
+        <AnimatePresence>
+          {showPromptHelper && (
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+              onClick={() => setShowPromptHelper(false)}
+            >
+              <motion.div
+                initial={{ scale: 0.95, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                exit={{ scale: 0.95, opacity: 0 }}
+                onClick={(e) => e.stopPropagation()}
+                className="w-full max-w-lg bg-zinc-900 border border-zinc-800 rounded-2xl shadow-2xl overflow-hidden"
+              >
+                <div className="p-4 border-b border-zinc-800 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                    <span className="font-medium text-white">The Architect</span>
+                  </div>
+                  <button onClick={() => setShowPromptHelper(false)} className="text-zinc-500 hover:text-white">
+                    <X className="w-5 h-5" />
+                  </button>
+                </div>
+                
+                <div ref={helperChatRef} className="h-64 overflow-y-auto p-4 space-y-3">
+                  {helperMessages.map((msg, i) => (
+                    <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                      <div className={`max-w-[85%] px-3 py-2 rounded-lg text-sm ${
+                        msg.role === 'user' 
+                          ? 'bg-emerald-500/20 text-emerald-100' 
+                          : 'bg-zinc-800 text-zinc-200'
+                      }`}>
+                        {msg.content}
+                      </div>
+                    </div>
+                  ))}
+                  {isHelperLoading && (
+                    <div className="flex justify-start">
+                      <div className="bg-zinc-800 rounded-lg px-3 py-2">
+                        <div className="flex gap-1">
+                          <span className="w-2 h-2 bg-zinc-600 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                          <span className="w-2 h-2 bg-zinc-600 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                          <span className="w-2 h-2 bg-zinc-600 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                </div>
+
+                {generatedPrompt && (
+                  <div className="px-4 py-3 bg-emerald-500/10 border-t border-emerald-500/20">
+                    <p className="text-xs text-emerald-400 mb-2">Suggested prompt:</p>
+                    <p className="text-sm text-white mb-3 line-clamp-3">{generatedPrompt}</p>
+                    <button 
+                      onClick={useGeneratedPrompt}
+                      className="w-full py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-sm font-medium transition-colors"
+                    >
+                      Use This Prompt
+                    </button>
+                  </div>
+                )}
+
+                <div className="p-4 border-t border-zinc-800">
+                  <div className="flex gap-2">
+                    <input
+                      ref={helperInputRef}
+                      type="text"
+                      value={helperInput}
+                      onChange={(e) => setHelperInput(e.target.value)}
+                      onKeyDown={(e) => e.key === 'Enter' && handleHelperSend()}
+                      placeholder="Describe what you're building..."
+                      className="flex-1 bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-emerald-500/50"
+                    />
+                    <button
+                      onClick={handleHelperSend}
+                      disabled={!helperInput.trim() || isHelperLoading}
+                      className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white rounded-lg transition-colors"
+                    >
+                      <Send className="w-4 h-4" />
+                    </button>
+                  </div>
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+    )
+  }
+
   return (
     <div className="flex-1 flex flex-col md:flex-row min-h-0 max-h-full overflow-hidden bg-zinc-950">
       {/* Mobile Tab Switcher - Modern Segmented Control */}
