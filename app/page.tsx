@@ -42,21 +42,36 @@ function useReducedMotion() {
 
 // Quick-start example prompts
 const EXAMPLE_PROMPTS = [
-  { label: "SaaS Landing", prompt: "A modern SaaS landing page with pricing, features grid, and testimonials" },
-  { label: "Portfolio", prompt: "A developer portfolio with project showcase, about section, and contact form" },
-  { label: "Startup", prompt: "An AI startup homepage with hero animation, how it works section, and CTA" },
-  { label: "Agency", prompt: "A creative agency site with case studies, team section, and services" },
+  { label: "SaaS", mobile: "SaaS pricing page", desktop: "A modern SaaS landing page with pricing and features" },
+  { label: "Portfolio", mobile: "Dev portfolio site", desktop: "A developer portfolio with projects and contact form" },
+  { label: "Startup", mobile: "Startup landing page", desktop: "An AI startup homepage with hero and call-to-action" },
+  { label: "Agency", mobile: "Agency homepage", desktop: "A creative agency site with case studies" },
 ]
 
 // System Status - the main builder input
 function SystemStatus() {
-  const [prompt, setPrompt] = useState(EXAMPLE_PROMPTS[0].prompt)
+  const [prompt, setPrompt] = useState('')
   const [isFocused, setIsFocused] = useState(false)
   const [isLoading, setIsLoading] = useState(false)
   const [bootLines, setBootLines] = useState<string[]>([])
   const [isBooting, setIsBooting] = useState(true)
+  const [sampleIndex, setSampleIndex] = useState(0)
+  const [typedIndex, setTypedIndex] = useState(0)
+  const [userTouched, setUserTouched] = useState(false)
+  const [isMobile, setIsMobile] = useState(false)
   const router = useRouter()
   const inputRef = useRef<HTMLTextAreaElement>(null)
+
+  // Detect mobile viewport
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 480px)')
+    const onChange = () => setIsMobile(mq.matches)
+    onChange()
+    mq.addEventListener('change', onChange)
+    return () => mq.removeEventListener('change', onChange)
+  }, [])
+
+  const currentSample = EXAMPLE_PROMPTS[sampleIndex][isMobile ? 'mobile' : 'desktop']
 
   // Boot sequence effect
   useEffect(() => {
@@ -109,9 +124,32 @@ function SystemStatus() {
   }
 
   const handleExampleClick = (examplePrompt: string) => {
+    setUserTouched(true)
     setPrompt(examplePrompt)
     inputRef.current?.focus()
   }
+
+  // Typewriter loop (stops once user interacts)
+  useEffect(() => {
+    if (userTouched) return
+    const full = currentSample || ''
+    const typeSpeed = 40
+    const pause = 1200
+
+    if (typedIndex <= full.length) {
+      const t = setTimeout(() => {
+        setPrompt(full.slice(0, typedIndex))
+        setTypedIndex((v) => v + 1)
+      }, typeSpeed)
+      return () => clearTimeout(t)
+    }
+
+    const next = setTimeout(() => {
+      setTypedIndex(0)
+      setSampleIndex((v) => (v + 1) % EXAMPLE_PROMPTS.length)
+    }, pause)
+    return () => clearTimeout(next)
+  }, [userTouched, currentSample, typedIndex])
 
   return (
     <div className="w-full relative z-20 font-mono">
@@ -145,7 +183,7 @@ function SystemStatus() {
         </div>
 
         {/* Terminal Body */}
-        <div className="p-4 min-h-[180px] sm:min-h-[240px] flex flex-col relative" onClick={() => inputRef.current?.focus()}>
+        <div className="p-4 sm:p-5 min-h-[200px] sm:min-h-[260px] flex flex-col relative" onClick={() => inputRef.current?.focus()}>
           {/* Scanline effect */}
           <div className="absolute inset-0 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] z-0 pointer-events-none bg-[length:100%_4px,3px_100%]" />
 
@@ -163,11 +201,15 @@ function SystemStatus() {
               <textarea
                 ref={inputRef}
                 value={prompt}
-                onChange={(e) => setPrompt(e.target.value)}
+                onChange={(e) => {
+                  setUserTouched(true)
+                  setPrompt(e.target.value)
+                }}
                 onFocus={() => {
                   setIsFocused(true)
+                  setUserTouched(true)
                   if (!prompt.trim()) {
-                    setPrompt(EXAMPLE_PROMPTS[0].prompt)
+                    setPrompt(currentSample)
                   }
                 }}
                 onBlur={() => setIsFocused(false)}
@@ -178,7 +220,7 @@ function SystemStatus() {
                   }
                 }}
                 placeholder="Describe your dream website..."
-                className="flex-1 bg-transparent text-emerald-100 text-sm sm:text-base font-mono focus:outline-none resize-none min-h-[80px] placeholder-zinc-700 caret-emerald-500"
+                className="flex-1 bg-transparent text-white text-base sm:text-lg font-mono focus:outline-none resize-none min-h-[80px] placeholder-zinc-600 caret-emerald-400 selection:bg-emerald-500/30"
                 autoFocus
               />
             </div>
@@ -192,7 +234,7 @@ function SystemStatus() {
                     <button
                       key={i}
                       type="button"
-                      onClick={(e) => { e.stopPropagation(); handleExampleClick(example.prompt); }}
+                      onClick={(e) => { e.stopPropagation(); handleExampleClick(example[isMobile ? 'mobile' : 'desktop']); }}
                       className="whitespace-nowrap px-2 py-1 text-[10px] text-zinc-500 border border-zinc-800 rounded hover:border-emerald-500/50 hover:text-emerald-400 transition-colors"
                     >
                       {example.label}
@@ -394,6 +436,8 @@ export default function Home() {
       {/* GRID BACKGROUND - The Foundation */}
       <div className="absolute inset-0 bg-grid-white/[0.02] bg-[size:50px_50px] pointer-events-none" />
       <div className="absolute inset-0 bg-gradient-to-b from-zinc-950 via-transparent to-zinc-950 pointer-events-none" />
+      {/* Orb gradient layer borrowed from First Contact */}
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(16,185,129,0.08),transparent_40%),radial-gradient(circle_at_80%_0%,rgba(124,58,237,0.1),transparent_35%),radial-gradient(circle_at_50%_80%,rgba(6,182,212,0.08),transparent_45%)] pointer-events-none" />
       
       <FloatingNodes />
       
@@ -450,12 +494,12 @@ export default function Home() {
       `}</style>
 
       {/* HERO - The main event */}
-      <section className="relative px-4 sm:px-6 pt-6 pb-14 md:pt-16 md:pb-32">
+      <section className="relative px-4 sm:px-6 pt-10 pb-18 md:pt-16 md:pb-28">
         <div className="max-w-6xl mx-auto">
           
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
+          <div className="grid lg:grid-cols-2 gap-10 lg:gap-14 items-center justify-items-center lg:justify-items-stretch">
             {/* LEFT COLUMN: Copy & Value Prop */}
-            <div className="text-left relative z-10">
+            <div className="text-left relative z-10 w-full">
               {/* System Badge */}
               <div className="flex justify-start mb-8">
                 <motion.div 
@@ -507,7 +551,7 @@ export default function Home() {
 
               {/* Trust badges */}
               <motion.div
-                className="flex flex-wrap gap-3 sm:gap-4 text-sm"
+                className="flex flex-col sm:flex-row flex-wrap gap-3 sm:gap-4 text-sm"
                 {...getAnimation(0.4, 10)}
               >
                 <div className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-emerald-500/10 to-emerald-500/5 rounded-full border border-emerald-500/20">
@@ -523,11 +567,13 @@ export default function Home() {
             </div>
 
             {/* RIGHT COLUMN: Interactive Input */}
-            <div className="relative z-20">
-              {/* Decorative background glow */}
-              <div className="absolute -inset-4 bg-gradient-to-r from-emerald-500/10 to-teal-500/10 rounded-3xl blur-2xl opacity-50 pointer-events-none"></div>
-              
-              <SystemStatus />
+            <div className="relative z-20 flex justify-center lg:justify-start">
+              <div className="relative w-full max-w-[520px] sm:max-w-[620px] lg:max-w-[700px]">
+                {/* Decorative background glow */}
+                <div className="absolute -inset-4 bg-gradient-to-r from-emerald-500/10 to-teal-500/10 rounded-3xl blur-2xl opacity-50 pointer-events-none"></div>
+                
+                <SystemStatus />
+              </div>
             </div>
           </div>
 
@@ -585,74 +631,8 @@ export default function Home() {
         </div>
       </Section>
 
-      {/* INTERACTIVE CTA - The Hook */}
-      <Section className="px-6 py-16 md:py-24 relative overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-b from-zinc-950 via-emerald-950/20 to-zinc-950 pointer-events-none" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-emerald-500/10 via-transparent to-transparent pointer-events-none" />
-        
-        <div className="max-w-4xl mx-auto relative z-10">
-          <motion.div
-            initial={{ opacity: 0, y: 40 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6 }}
-            className="text-center"
-          >
-            {/* Glowing badge */}
-            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/30 mb-8">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-              </span>
-              <span className="text-emerald-400 text-sm font-mono">LIVE DEMO AVAILABLE</span>
-            </div>
-
-            <h2 className="text-4xl sm:text-5xl md:text-6xl font-black mb-6 leading-tight">
-              <span className="text-white">See it work.</span>
-              <br />
-              <span className="bg-gradient-to-r from-emerald-400 via-teal-400 to-cyan-400 bg-clip-text text-transparent">Right now.</span>
-            </h2>
-            
-            <p className="text-xl text-zinc-400 mb-10 max-w-2xl mx-auto">
-              No signup. No credit card. Just type what you want and watch The Architect build it in real-time.
-            </p>
-
-            {/* Big glowing CTA */}
-            <Link href="/builder?mode=guest">
-              <motion.div
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                className="inline-flex items-center gap-3 px-10 py-5 bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-500 rounded-2xl font-bold text-xl text-white shadow-[0_0_60px_rgba(16,185,129,0.4)] hover:shadow-[0_0_80px_rgba(16,185,129,0.6)] transition-all cursor-pointer group"
-              >
-                <Terminal className="w-6 h-6" />
-                <span>Try The Builder Free</span>
-                <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-              </motion.div>
-            </Link>
-
-            {/* Social proof micro-stat */}
-            <div className="mt-8 flex flex-wrap items-center justify-center gap-4 sm:gap-6 text-sm text-zinc-500">
-              <div className="flex items-center gap-2">
-                <Zap className="w-4 h-4 text-amber-500" />
-                <span>~30s builds</span>
-              </div>
-              <div className="w-px h-4 bg-zinc-800" />
-              <div className="flex items-center gap-2">
-                <Code2 className="w-4 h-4 text-cyan-500" />
-                <span>Real React</span>
-              </div>
-              <div className="w-px h-4 bg-zinc-800 hidden sm:block" />
-              <div className="hidden sm:flex items-center gap-2">
-                <Shield className="w-4 h-4 text-violet-500" />
-                <span>100% yours</span>
-              </div>
-            </div>
-          </motion.div>
-        </div>
-      </Section>
-
       {/* WHAT IS HATCHIT - Quick explainer */}
-      <Section className="px-6 py-24">
+      <Section className="px-4 sm:px-6 py-20 sm:py-24">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-6">
@@ -746,7 +726,7 @@ export default function Home() {
       </Section>
 
       {/* HOW IT WORKS - The AI Pipeline */}
-      <Section className="px-6 py-24 bg-zinc-900/30">
+      <Section className="px-4 sm:px-6 py-20 sm:py-24 bg-zinc-900/30">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-16">
             <h2 className="text-4xl sm:text-5xl font-bold mb-4">Not just one AI. A system.</h2>
@@ -843,7 +823,7 @@ export default function Home() {
 
 
       {/* PRICING */}
-      <Section id="pricing" className="px-6 py-24">
+      <Section id="pricing" className="px-4 sm:px-6 py-20 sm:py-24">
         <div className="max-w-6xl mx-auto">
           <div className="text-center mb-12">
             <h2 className="text-4xl sm:text-5xl font-bold mb-4">Simple pricing.</h2>
@@ -957,9 +937,9 @@ export default function Home() {
       </Section>
 
       {/* FINAL CTA */}
-      <Section className="px-6 py-24">
-        <div className="max-w-4xl mx-auto text-center">
-          <div className="relative p-12 md:p-16 bg-gradient-to-br from-emerald-900/20 via-teal-900/10 to-zinc-900/40 border border-emerald-500/20 rounded-xl overflow-hidden">
+      <Section className="px-4 sm:px-6 py-20 sm:py-24">
+          <div className="max-w-4xl mx-auto text-center">
+            <div className="relative p-10 md:p-16 bg-gradient-to-br from-emerald-900/20 via-teal-900/10 to-zinc-900/40 border border-emerald-500/20 rounded-xl overflow-hidden">
             <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-10" />
             <div className="absolute top-4 left-4 text-emerald-500/20">
               <Terminal className="w-12 h-12" />
@@ -971,7 +951,7 @@ export default function Home() {
             <div className="relative z-10">
               <h2 className="text-4xl sm:text-5xl md:text-6xl font-bold mb-6">Ready to initialize?</h2>
               <p className="text-xl text-zinc-300 mb-8 max-w-2xl mx-auto">Your next project is one prompt away. Initialize the system.</p>
-              <Link href="/builder?mode=guest" className="inline-flex items-center gap-2 px-10 py-5 bg-emerald-500 hover:bg-emerald-400 text-zinc-950 rounded-lg font-bold text-xl transition-all md:hover:scale-105 active:scale-95 shadow-[0_0_30px_rgba(16,185,129,0.3)]">
+              <Link href="/builder?mode=guest" className="inline-flex items-center gap-2 px-8 sm:px-10 py-4 sm:py-5 bg-emerald-500 hover:bg-emerald-400 text-zinc-950 rounded-lg font-bold text-lg sm:text-xl transition-all md:hover:scale-105 active:scale-95 shadow-[0_0_30px_rgba(16,185,129,0.3)]">
                 <Terminal className="w-6 h-6" />
                 {isSignedIn ? 'Initialize System' : 'Initialize Architect'}
               </Link>
@@ -980,28 +960,6 @@ export default function Home() {
           </div>
         </div>
       </Section>
-
-      {/* FOLLOW - Simple CTA */}
-      <section className="px-6 py-16 border-t border-zinc-800 bg-zinc-950">
-        <div className="max-w-4xl mx-auto text-center">
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-zinc-900/50 rounded-full border border-zinc-800 mb-6">
-            <span className="text-zinc-500 text-sm">🚀</span>
-            <span className="text-zinc-400 text-sm">We're just getting started</span>
-          </div>
-          <p className="text-zinc-500 mb-6">Built by developers, for developers. We ship updates daily.</p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <a href="https://www.reddit.com/r/HatchIt/" target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 px-5 py-2.5 bg-orange-500/10 hover:bg-orange-500/20 border border-orange-500/30 rounded-lg text-orange-400 hover:text-orange-300 transition-all font-medium text-sm group">
-              <svg className="w-4 h-4" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0A12 12 0 0 0 0 12a12 12 0 0 0 12 12 12 12 0 0 0 12-12A12 12 0 0 0 12 0zm5.01 4.744c.688 0 1.25.561 1.25 1.249a1.25 1.25 0 0 1-2.498.056l-2.597-.547-.8 3.747c1.824.07 3.48.632 4.674 1.488.308-.309.73-.491 1.207-.491.968 0 1.754.786 1.754 1.754 0 .716-.435 1.333-1.01 1.614a3.111 3.111 0 0 1 .042.52c0 2.694-3.13 4.87-7.004 4.87-3.874 0-7.004-2.176-7.004-4.87 0-.183.015-.366.043-.534A1.748 1.748 0 0 1 4.028 12c0-.968.786-1.754 1.754-1.754.463 0 .898.196 1.207.49 1.207-.883 2.878-1.43 4.744-1.487l.885-4.182a.342.342 0 0 1 .14-.197.35.35 0 0 1 .238-.042l2.906.617a1.214 1.214 0 0 1 1.108-.701zM9.25 12C8.561 12 8 12.562 8 13.25c0 .687.561 1.248 1.25 1.248.687 0 1.248-.561 1.248-1.249 0-.688-.561-1.249-1.249-1.249zm5.5 0c-.687 0-1.248.561-1.248 1.25 0 .687.561 1.248 1.249 1.248.688 0 1.249-.561 1.249-1.249 0-.687-.562-1.249-1.25-1.249zm-5.466 3.99a.327.327 0 0 0-.231.094.33.33 0 0 0 0 .463c.842.842 2.484.913 2.961.913.477 0 2.105-.056 2.961-.913a.361.361 0 0 0 .029-.463.33.33 0 0 0-.464 0c-.547.533-1.684.73-2.512.73-.828 0-1.979-.196-2.512-.73a.326.326 0 0 0-.232-.095z"/></svg>
-              <span>Join r/HatchIt</span>
-              <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
-            </a>
-            <Link href="/roadmap" className="inline-flex items-center gap-2 px-5 py-2.5 bg-zinc-800/50 hover:bg-zinc-800 border border-zinc-700 rounded-lg text-zinc-400 hover:text-white transition-all font-medium text-sm">
-              <Layers className="w-4 h-4" />
-              <span>View Roadmap</span>
-            </Link>
-          </div>
-        </div>
-      </section>
 
       {/* FOOTER - Now Global Component */}
     </div>

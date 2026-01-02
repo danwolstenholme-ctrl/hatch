@@ -22,9 +22,18 @@ const deviceSizes: Record<DeviceView, { width: string; icon: string; label: stri
   desktop: { width: '100%', icon: '🖥️', label: 'Desktop' },
 }
 
+// Encode unescaped quotes inside Tailwind data-URI utilities to keep Babel happy
+const sanitizeSvgDataUrls = (input: string) => {
+  return input.replace(/bg-\[url\((['"])data:image\/svg\+xml,([\s\S]*?)\1\)\]/g, (full, quote, data) => {
+    const safe = data.replace(/"/g, '%22').replace(/'/g, '%27')
+    return `bg-[url(${quote}data:image/svg+xml,${safe}${quote})]`
+  })
+}
+
 export default function SectionPreview({ code, darkMode = true, onRuntimeError, inspectorMode = false, onElementSelect, captureTrigger = 0, onScreenshotCaptured }: SectionPreviewProps) {
-  const [deviceView, setDeviceView] = useState<DeviceView>('desktop')
+  const [deviceView, setDeviceView] = useState<DeviceView>('mobile')
   const [viewMode, setViewMode] = useState<'preview' | 'code'>('preview')
+  const [isMobileDevice, setIsMobileDevice] = useState(false)
   const iframeRef = useRef<HTMLIFrameElement>(null)
 
   // Handle screenshot trigger
@@ -56,8 +65,23 @@ export default function SectionPreview({ code, darkMode = true, onRuntimeError, 
     return () => window.removeEventListener('message', handleMessage)
   }, [onRuntimeError, onElementSelect, onScreenshotCaptured])
 
+  // Lock to mobile view + preview-only on small screens
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 768px)')
+    const handle = () => {
+      setIsMobileDevice(mq.matches)
+      if (mq.matches) {
+        setDeviceView('mobile')
+        setViewMode('preview')
+      }
+    }
+    handle()
+    mq.addEventListener('change', handle)
+    return () => mq.removeEventListener('change', handle)
+  }, [])
+
   const [srcDoc, setSrcDoc] = useState('')
-  const displayCode = code?.trim() || ''
+  const displayCode = sanitizeSvgDataUrls(code?.trim() || '')
 
   useEffect(() => {
     let isMounted = true;
@@ -76,13 +100,15 @@ export default function SectionPreview({ code, darkMode = true, onRuntimeError, 
         .replace(/"use client"/g, '')
         .trim();
 
+      const sanitizedCode = sanitizeSvgDataUrls(cleanCode)
+
       // Use Babel to transform the code safely (No more Regex!)
       let transformedCode = ''
       let transformError = null
 
       try {
         const Babel = await import('@babel/standalone');
-        transformedCode = Babel.transform(cleanCode, {
+        transformedCode = Babel.transform(sanitizedCode, {
           presets: ['env', 'react', 'typescript'],
           filename: 'section.tsx',
         }).code || ''
@@ -426,10 +452,10 @@ export default function SectionPreview({ code, darkMode = true, onRuntimeError, 
             <Brain className="w-10 h-10 text-emerald-500" />
           </motion.div>
           <h3 className="text-lg font-semibold bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent mb-2">
-            Ready to hatch
+            Preparing your first render
           </h3>
           <p className="text-sm text-zinc-500">
-            Describe your section and watch it come to life
+            Describe your section and we will assemble a live preview
           </p>
         </div>
       </div>
@@ -440,23 +466,25 @@ export default function SectionPreview({ code, darkMode = true, onRuntimeError, 
     <div className="flex-1 flex flex-col min-h-0">
       {/* View + Device Bar */}
       <div className="flex items-center justify-between gap-2 px-3 py-2 bg-zinc-900/60 border-b border-zinc-800">
-        <div className="inline-flex bg-zinc-900/70 border border-zinc-800 rounded-lg p-1 shadow-sm">
-          {['preview', 'code'].map((mode) => (
-            <button
-              key={mode}
-              onClick={() => setViewMode(mode as 'preview' | 'code')}
-              className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all ${
-                viewMode === mode
-                  ? 'bg-gradient-to-r from-emerald-600/70 to-teal-500/70 text-white shadow-lg shadow-emerald-500/20'
-                  : 'text-zinc-500 hover:text-zinc-200'
-              }`}
-            >
-              {mode === 'preview' ? 'Visual' : 'Code'}
-            </button>
-          ))}
-        </div>
+        {!isMobileDevice && (
+          <div className="inline-flex bg-zinc-900/70 border border-zinc-800 rounded-lg p-1 shadow-sm">
+            {['preview', 'code'].map((mode) => (
+              <button
+                key={mode}
+                onClick={() => setViewMode(mode as 'preview' | 'code')}
+                className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all ${
+                  viewMode === mode
+                    ? 'bg-gradient-to-r from-emerald-600/70 to-teal-500/70 text-white shadow-lg shadow-emerald-500/20'
+                    : 'text-zinc-500 hover:text-zinc-200'
+                }`}
+              >
+                {mode === 'preview' ? 'Visual' : 'Code'}
+              </button>
+            ))}
+          </div>
+        )}
 
-        {viewMode === 'preview' && (
+        {!isMobileDevice && viewMode === 'preview' && (
           <div className="flex items-center gap-1 bg-zinc-900/70 border border-zinc-800 rounded-lg p-1">
             {(Object.keys(deviceSizes) as DeviceView[]).map((device) => (
               <button
@@ -490,12 +518,12 @@ export default function SectionPreview({ code, darkMode = true, onRuntimeError, 
         ) : (
           <motion.div
             initial={false}
-            animate={{ width: deviceSizes[deviceView].width }}
+            animate={{ width: deviceView === 'mobile' && isMobileDevice ? '100%' : deviceSizes[deviceView].width }}
             transition={{ type: 'spring', stiffness: 300, damping: 30 }}
             className="h-full bg-zinc-900 rounded-lg overflow-hidden shadow-2xl"
             style={{ 
               maxWidth: '100%',
-              minHeight: deviceView === 'desktop' ? '100%' : '600px',
+              minHeight: isMobileDevice ? '640px' : deviceView === 'desktop' ? '100%' : '600px',
             }}
           >
             {/* Device Frame */}

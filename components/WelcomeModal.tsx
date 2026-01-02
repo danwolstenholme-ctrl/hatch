@@ -12,6 +12,7 @@ interface WelcomeModalProps {
 
 export default function WelcomeModal({ trigger = 'auto', isOpen: externalIsOpen, onClose }: WelcomeModalProps) {
   const [isOpen, setIsOpen] = useState(false)
+  const SEEN_KEY = 'hatch_intro_v2_seen'
 
   useEffect(() => {
     // If controlled externally, use that state
@@ -21,7 +22,7 @@ export default function WelcomeModal({ trigger = 'auto', isOpen: externalIsOpen,
     }
     
     // Auto trigger for first-time users (disabled - now triggered post-demo)
-    // const hasSeenWelcome = localStorage.getItem('hatch_v1_welcome_seen')
+    // const hasSeenWelcome = localStorage.getItem(SEEN_KEY)
     // if (!hasSeenWelcome) {
     //   const timer = setTimeout(() => setIsOpen(true), 1500)
     //   return () => clearTimeout(timer)
@@ -30,7 +31,7 @@ export default function WelcomeModal({ trigger = 'auto', isOpen: externalIsOpen,
 
   const handleClose = useCallback(() => {
     setIsOpen(false)
-    localStorage.setItem('hatch_v1_welcome_seen', 'true')
+    localStorage.setItem(SEEN_KEY, 'true')
     onClose?.()
   }, [onClose])
 
@@ -67,76 +68,63 @@ export default function WelcomeModal({ trigger = 'auto', isOpen: externalIsOpen,
             </button>
 
             {/* Content */}
-            <div className="p-6 sm:p-8">
+            <div className="p-6 sm:p-8 space-y-6">
               {/* Welcome Header */}
-              <div className="text-center mb-6">
-                <div className="w-16 h-16 mx-auto mb-4 rounded-2xl bg-gradient-to-br from-emerald-500/20 to-teal-500/20 border border-emerald-500/30 flex items-center justify-center">
+              <div className="text-center space-y-2">
+                <div className="w-16 h-16 mx-auto rounded-2xl bg-gradient-to-br from-emerald-500/20 to-teal-500/20 border border-emerald-500/30 flex items-center justify-center">
                   <Terminal className="w-8 h-8 text-emerald-400" />
                 </div>
-                <h2 className="text-2xl font-bold text-white mb-2">Welcome to HatchIt 🎉</h2>
-                <p className="text-sm text-zinc-400">You just built your first site. That was fast, right?</p>
+                <h2 className="text-2xl font-bold text-white">Welcome to Hatch v2</h2>
+                <p className="text-sm text-zinc-400">New mobile intro, smoother builds, same instant code.</p>
               </div>
 
-              {/* Mission Statement */}
-              <div className="p-4 bg-zinc-950/60 border border-zinc-800 rounded-xl mb-5">
-                <p className="text-sm text-zinc-300 leading-relaxed">
-                  <span className="text-emerald-400 font-semibold">Our mission:</span> Make professional web development accessible to everyone. 
-                  You describe it, The Architect builds it. Real code you own forever.
-                </p>
-              </div>
-
-              {/* What You Can Do */}
-              <div className="space-y-3 mb-6">
-                <h3 className="text-xs font-semibold text-zinc-500 uppercase tracking-wider">What you can do now</h3>
-                
-                <div className="grid grid-cols-2 gap-2">
-                  <div className="flex items-center gap-2 p-3 bg-zinc-800/50 rounded-lg">
-                    <Share2 className="w-4 h-4 text-emerald-400 flex-shrink-0" />
-                    <span className="text-xs text-zinc-300">Share with friends</span>
-                  </div>
-                  <div className="flex items-center gap-2 p-3 bg-zinc-800/50 rounded-lg">
-                    <Sparkles className="w-4 h-4 text-teal-400 flex-shrink-0" />
-                    <span className="text-xs text-zinc-300">Refine sections</span>
-                  </div>
-                  <div className="flex items-center gap-2 p-3 bg-zinc-800/50 rounded-lg">
-                    <Download className="w-4 h-4 text-blue-400 flex-shrink-0" />
-                    <span className="text-xs text-zinc-300">Download code</span>
-                  </div>
-                  <div className="flex items-center gap-2 p-3 bg-zinc-800/50 rounded-lg">
-                    <Globe className="w-4 h-4 text-violet-400 flex-shrink-0" />
-                    <span className="text-xs text-zinc-300">Deploy live</span>
-                  </div>
+              {/* Update callout */}
+              <div className="p-4 bg-emerald-500/10 border border-emerald-500/30 rounded-xl space-y-2">
+                <div className="flex items-center gap-2 text-emerald-200 font-medium text-sm">
+                  <Sparkles className="w-4 h-4" />
+                  <span>What's new</span>
                 </div>
+                <ul className="text-xs text-emerald-100/80 space-y-1 list-disc list-inside">
+                  <li>Mobile-first intro before you build.</li>
+                  <li>Cleaner previews + fewer loading glitches.</li>
+                  <li>Architect Polish available in guest mode (3x3x3).</li>
+                </ul>
               </div>
 
-              {/* V1 Notice */}
-              <div className="flex items-start gap-3 p-3 bg-amber-500/10 border border-amber-500/20 rounded-lg mb-5">
-                <Heart className="w-5 h-5 text-amber-400 flex-shrink-0 mt-0.5" />
-                <div>
-                  <p className="text-sm text-amber-200/90 font-medium">We're in V1 — your feedback shapes the future</p>
-                  <p className="text-xs text-amber-200/60 mt-1">Found a bug? Want a feature? We're listening. Drop by our Reddit.</p>
-                </div>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="flex gap-3">
+              {/* Quick actions */}
+              <div className="grid grid-cols-2 gap-3 text-sm">
                 <a 
                   href="https://www.reddit.com/r/HatchIt/" 
                   target="_blank" 
                   rel="noopener noreferrer"
-                  className="flex-1 flex items-center justify-center gap-2 py-3 bg-zinc-800 hover:bg-zinc-700 text-white rounded-xl font-medium transition-colors text-sm border border-zinc-700"
+                  className="flex items-center justify-center gap-2 py-3 bg-zinc-800 hover:bg-zinc-700 text-white rounded-xl font-medium transition-colors border border-zinc-700"
                 >
                   <Users className="w-4 h-4" />
-                  <span>Join Community</span>
+                  <span>Reddit update</span>
                 </a>
-                <button 
-                  onClick={handleClose}
-                  className="flex-1 py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold transition-all text-sm shadow-lg shadow-emerald-900/30 hover:shadow-emerald-900/50 flex items-center justify-center gap-2"
+                <a 
+                  href="https://www.reddit.com/r/HatchIt/" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-center gap-2 py-3 bg-zinc-900 hover:bg-zinc-800 text-white rounded-xl font-medium transition-colors border border-zinc-800"
                 >
-                  <Rocket className="w-4 h-4" />
-                  <span>Keep Building</span>
-                </button>
+                  <Share2 className="w-4 h-4" />
+                  <span>Report a bug</span>
+                </a>
               </div>
+
+              <p className="text-[11px] text-emerald-200/80 text-center">
+                Mod on duty: <a href="https://www.reddit.com/user/Imaginary-Coffee8035" target="_blank" rel="noopener noreferrer" className="text-emerald-200 underline underline-offset-4">u/Imaginary-Coffee8035</a>
+              </p>
+
+              {/* CTA */}
+              <button 
+                onClick={handleClose}
+                className="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold transition-all text-sm shadow-lg shadow-emerald-900/30 hover:shadow-emerald-900/50 flex items-center justify-center gap-2"
+              >
+                <Rocket className="w-4 h-4" />
+                <span>Continue</span>
+              </button>
             </div>
           </motion.div>
         </div>
@@ -148,9 +136,10 @@ export default function WelcomeModal({ trigger = 'auto', isOpen: externalIsOpen,
 // Hook to trigger welcome modal after first build
 export function useFirstTimeWelcome() {
   const [showWelcome, setShowWelcome] = useState(false)
+  const SEEN_KEY = 'hatch_intro_v2_seen'
 
   const triggerWelcome = useCallback(() => {
-    const hasSeenWelcome = localStorage.getItem('hatch_v1_welcome_seen')
+    const hasSeenWelcome = localStorage.getItem(SEEN_KEY)
     if (!hasSeenWelcome) {
       // Small delay for impact after build completes
       setTimeout(() => setShowWelcome(true), 800)
@@ -159,7 +148,7 @@ export function useFirstTimeWelcome() {
 
   const closeWelcome = useCallback(() => {
     setShowWelcome(false)
-    localStorage.setItem('hatch_v1_welcome_seen', 'true')
+    localStorage.setItem(SEEN_KEY, 'true')
   }, [])
 
   return { showWelcome, triggerWelcome, closeWelcome }

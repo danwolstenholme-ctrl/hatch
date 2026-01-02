@@ -58,5 +58,6 @@ export const PRICING_TIERS: Record<string, PricingTier> = {
 export const GUEST_TRIAL_LIMITS = {
   generationsPerSession: parseInt(process.env.GUEST_GENERATION_LIMIT || '3', 10),
   refinementsAllowed: 3,
-  features: ['3 trial generations', '3 trial refinements', 'Live preview in builder', 'Signup required to save/export/deploy'],
+  dreamsPerSession: 3,
+  features: ['3 trial generations', '3 trial polishes', '3 trial dreams', 'Live preview in builder', 'Signup required to save/export/deploy'],
 }

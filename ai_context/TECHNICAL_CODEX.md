@@ -1,13 +1,15 @@
-# HATCHIT TECHNICAL CODEX (v1.2)
+# HATCHIT TECHNICAL CODEX (v1.3)
 > **SYSTEM NOTICE:** This file is the **Working Memory** for the HatchIt codebase. It contains the complete architectural map, data schemas, and operational logic.
 > **DIRECTIVE:** Use this file to understand *how* the system works. Use `FOUNDER_MEMORY.md` to understand *who* you are working for.
 
 ## 0. TIER STRUCTURE (Source of Truth)
 
-⚠️ **CRITICAL: NO FREE TIER EXISTS. ALL USERS MUST PAY VIA STRIPE BEFORE ACCESSING THE BUILDER.**
+⚠️ **PRODUCT INTENT:** No free tier. Stripe paywall required.
+⚠️ **CURRENT REALITY:** Guest trial is live (3 generations, 3 polishes, 3 dreams) via `SectionBuilder` localStorage counters. Align product/legal messaging before launch.
 
 | Tier | Price | Generations | Projects | Refinements | Deploy | Download |
 |------|-------|-------------|----------|-------------|--------|----------|
+| **Guest (trial)** | $0 | 3/session | 0 | 3/session | ❌ | ❌ |
 | **Lite** | $9/mo | Unlimited | 3 | 5/mo | ✅ | ✅ |
 | **Pro** | $29/mo | Unlimited | ∞ | 30/mo | ✅ | ✅ |
 | **Agency** | $99/mo | Unlimited | ∞ | ∞ | ✅ | ✅ |
@@ -21,18 +23,33 @@
 - `types/subscriptions.ts`: Tier config (limits, features)
 - `contexts/SubscriptionContext.tsx`: Runtime tier detection
 - `hooks/useProjects.ts`: Project limits enforcement
+- `components/SectionBuilder.tsx`: Guest counters and paywall triggers
 
 ## 1. SYSTEM ARCHITECTURE
 
+### A0. CTA → Builder / Checkout Flow (Current)
+* **Homepage CTAs:**
+    * "Ready to initialize" → `/builder?mode=guest` (forces guest even if signed in).
+    * Pricing buttons → `PricingButton` logic:
+        * Not signed in → `/builder?mode=guest&upgrade=<tier>` (guest run; upgrade flag preserved).
+        * Signed in → `/api/checkout` for `<tier>`; on 401 fallback to `/builder?upgrade=<tier>`.
+* **First Contact + Welcome v2:**
+    * Uses `hatch_intro_v2_seen`; legacy `hatch_welcome_v1_seen` keys are cleared on load so v2 shows once per device.
+    * URL `prompt` param is carried into First Contact and auto-builds section 1 (skips first guest credit for that handoff).
+* **Guest Experience:**
+    * Limits: 3 generations, 3 polishes, 3 dreams stored in `hatch_guest_*` localStorage keys; lock triggers signup CTA.
+    * Architect polish is available to guests until the polish counter is exhausted.
+* **Signed-in Experience:**
+    * Without active sub: pricing buttons go to checkout; “Ready to initialize” still enters guest.
+    * With active sub: pricing buttons still allowed; direct /builder works.
+* **Reality Check:** Guest mode is live despite the “no free tier” directive—align before ship.
+
 ### A. The Core Engine (`components/BuildFlowController.tsx`)
-*   **Role:** The Orchestrator. Manages the entire build lifecycle.
-*   **Key Mechanism:** `FullSitePreviewFrame` uses `@babel/standalone` to compile React code in the browser.
-*   **Safety:** Wrapped in `ErrorBoundary` and uses `Proxy` objects for `window.motion` and `window.LucideIcons` to prevent crashes from invalid AI code.
-*   **State Management:** Uses `useProjects` hook to sync with Supabase.
-*   **Deploy Wrapper:** The `wrappedCode` template now includes:
-    - All React hooks: `useState`, `useEffect`, `useRef`
-    - All framer-motion: `motion`, `AnimatePresence`
-    - Auto-extracted Lucide icons via regex pattern `/Lucide\w+|<(\w+Icon)\s/g`
+* **Role:** The Orchestrator. Manages the entire build lifecycle.
+* **Key Mechanism:** `FullSitePreviewFrame` uses `@babel/standalone` to compile React code in-browser; rejects null transforms and sanitizes data URIs before transform.
+* **Safety:** Wrapped in `ErrorBoundary`; uses `Proxy` objects for `window.motion` and `window.LucideIcons` to prevent crashes from invalid AI code.
+* **State Management:** Uses `useProjects` hook to sync with Supabase.
+* **Deploy Wrapper:** The `wrappedCode` template includes React hooks (`useState`, `useEffect`, `useRef`), framer-motion (`motion`, `AnimatePresence`), and Lucide icons auto-extracted via `/Lucide\w+|<(\w+Icon)\s/g`.
 
 ### B. The Auth & Payment Flow (Clerk + Stripe)
 *   **Mechanism:** Custom `[[...sign-up]]` page with pricing cards → Clerk popup → Stripe checkout.
@@ -64,16 +81,11 @@
     *   `DbBuild`: Snapshots of the full site code.
 
 ### E. The Preview Engine (`components/SectionPreview.tsx` & `components/LivePreview.tsx`)
-*   **Role:** Renders AI-generated React code in a safe iframe environment.
-*   **Mechanism:**
-    *   **Cleaning Pipeline:** Strips Markdown artifacts (` ```tsx `, ` ``` `) and `"use client"` directives before compilation.
-    *   **Compilation:** Uses `@babel/standalone` to transform JSX/TSX to JavaScript.
-    *   **Component Detection:** Robust fallback strategy to find the entry component:
-        1.  `module.exports.default` (Standard)
-        2.  Named exports (e.g., `export function Hero`)
-        3.  Global function declarations (e.g., `function HeroSection`)
-    *   **Anonymous Export Handling:** Automatically names anonymous default exports (`export default function()`) to prevent syntax errors.
-*   **Safety:** Runs in a sandboxed iframe with `allow-scripts`.
+* **Role:** Renders AI-generated React code in a safe iframe environment.
+* **Cleaning Pipeline:** Strips Markdown fences, `"use client"`, and now sanitizes `data:image/svg+xml` URIs to avoid Babel parse failures; mobile width tightened.
+* **Compilation:** Uses `@babel/standalone` to transform JSX/TSX to JavaScript; rejects null transforms.
+* **Component Detection:** Fallbacks: `module.exports.default` → named exports → global function declarations; anonymous defaults are auto-named to prevent syntax errors.
+* **Safety:** Sandbox iframe with `allow-scripts` only.
 
 ## 2. API ROUTES & LOGIC
 
@@ -84,21 +96,23 @@
 *   **Limits:** Free tier = 3 generations total. Paid = unlimited.
 
 ### B. Refinement (`app/api/refine-section/route.ts`)
-*   **Model:** Claude Sonnet 4 (`claude-sonnet-4-20250514`)
-*   **Role:** Fixes accessibility, performance, and visual bugs *without* adding features.
-*   **Constraint:** Returns JSON with `refinedCode` and `changes` array.
-*   **Tier Access:**
-    - Free: ❌ No access
-    - Lite: 5/month
-    - Pro: 30/month
-    - Agency: Unlimited
+* **Model:** Claude Sonnet 4 (`claude-sonnet-4-20250514`).
+* **Role:** Fixes accessibility, performance, and visual bugs without new features.
+* **Constraint:** Returns JSON with `refinedCode` and `changes` array.
+* **Tier Access:** Free: ❌; Lite: 5/month; Pro: 30/month; Agency: Unlimited.
 
-### C. Deployment (`app/api/deploy/route.ts`)
+### C. Contact (`app/api/contact/route.ts`)
+* **Mechanism:** POST sends Resend email to support.
+* **Payload:** `{ name, email, topic, message }` plus honeypot guard.
+* **Env:** `RESEND_API_KEY`, `SUPPORT_EMAIL_TO`, `SUPPORT_EMAIL_FROM`.
+* **Frontend:** `app/contact/page.tsx` branded form (status states + Reddit/email fallbacks).
+
+### D. Deployment (`app/api/deploy/route.ts`)
 *   **Mechanism:** Deploys to Vercel via API, creates `{slug}.hatchitsites.dev` subdomain.
 *   **Tier Check:** Requires active subscription (lite, pro, or agency).
 *   **Error Message:** "Deployment requires a $9/mo subscription"
 
-### D. Export (`app/api/export/route.ts`)
+### E. Export (`app/api/export/route.ts`)
 *   **Mechanism:** Generates downloadable ZIP with Next.js project structure.
 *   **Dependencies:** Auto-includes `framer-motion`, `lucide-react`, `tailwindcss`.
 *   **Icon Extraction:** Uses `extractLucideIcons()` to find all used icons and add proper imports.
@@ -132,6 +146,9 @@
 *   `STRIPE_LITE_PRICE_ID`: Stripe price ID for $9 Starter tier.
 *   `STRIPE_PRO_PRICE_ID`: Stripe price ID for $29 Pro tier.
 *   `STRIPE_AGENCY_PRICE_ID`: Stripe price ID for $99 Agency tier.
+*   `RESEND_API_KEY`: Resend email key (contact form backend).
+*   `SUPPORT_EMAIL_TO`: Support inbox (e.g., support@hatchit.dev).
+*   `SUPPORT_EMAIL_FROM`: Display sender (e.g., Hatch Support <support@hatchit.dev>).
 
 ---
 *End of Technical Codex. Maintain the Singularity.*

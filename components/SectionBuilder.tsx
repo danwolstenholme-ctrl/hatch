@@ -51,7 +51,6 @@ import SectionPreview from './SectionPreview'
 import { BrandConfig } from './BrandingStep'
 import { useSubscription } from '@/contexts/SubscriptionContext'
 import ThinkingLog from './ThinkingLog'
-import DirectLine from './DirectLine'
 import { chronosphere } from '@/lib/chronosphere'
 import { kernel } from '@/lib/consciousness'
 import { useRouter } from 'next/navigation'
@@ -338,9 +337,13 @@ export default function SectionBuilder({
   // Guest trial limits (align with global guest policy)
   const GUEST_GENERATION_LIMIT = GUEST_TRIAL_LIMITS.generationsPerSession || 5
   const GUEST_REFINEMENT_LIMIT = GUEST_TRIAL_LIMITS.refinementsAllowed ?? 0
+  const GUEST_DREAM_LIMIT = GUEST_TRIAL_LIMITS.dreamsPerSession ?? 3
   const [guestGenerationsUsed, setGuestGenerationsUsed] = useState(0)
   const [guestRefinementsUsed, setGuestRefinementsUsed] = useState(0)
   const [dreamsUsed, setDreamsUsed] = useState(0)
+  const [guestLocked, setGuestLocked] = useState(false)
+  const [guestLockReason, setGuestLockReason] = useState<string | null>(null)
+  const autoBuildRanRef = useRef(false)
 
   // Redirect to sign-up page when paywall is hit
   const goToSignUp = (tier: string = 'pro') => {
@@ -358,13 +361,20 @@ export default function SectionBuilder({
     setGuestRefinementsUsed(Number.isFinite(used) ? used : 0)
   }, [])
 
+  useEffect(() => {
+    const used = parseInt(localStorage.getItem('hatch_guest_dreams') || '0')
+    setDreamsUsed(Number.isFinite(used) ? used : 0)
+  }, [])
+
   // Auto-start generation if prompt is pre-filled (e.g. from homepage)
   // This enables the "Build First" flow where users type in the terminal and land here running.
   useEffect(() => {
+    if (autoBuildRanRef.current) return
     if (dbSection.user_prompt && stage === 'input' && !generatedCode && prompt) {
+      autoBuildRanRef.current = true
       // Small delay to ensure UI is ready and feels like a "handoff"
       const timer = setTimeout(() => {
-        handleBuildSection()
+        handleBuildSection({ skipGuestCredit: true })
       }, 500)
       return () => clearTimeout(timer)
     }
@@ -382,9 +392,24 @@ export default function SectionBuilder({
     setGuestRefinementsUsed(newValue)
     localStorage.setItem('hatch_guest_refinements', newValue.toString())
   }
-  
+
+  const incrementGuestDreams = () => {
+    const newValue = dreamsUsed + 1
+    setDreamsUsed(newValue)
+    localStorage.setItem('hatch_guest_dreams', newValue.toString())
+  }
+
+  const triggerGuestLock = (reason: string) => {
+    setGuestLocked(true)
+    setGuestLockReason(reason)
+    setError(reason)
+    setMobileTab('preview')
+  }
+
   const { subscription, tier } = useSubscription()
   const isPaidTier = tier === 'lite' || tier === 'pro' || tier === 'agency'
+  const isGuest = !isPaid && !isPaidTier
+  const canGuestPolish = isPaid || isPaidTier || GUEST_REFINEMENT_LIMIT < 0 || guestRefinementsUsed < GUEST_REFINEMENT_LIMIT
   
   // Dynamic placeholder effect
   const [placeholderIndex, setPlaceholderIndex] = useState(0)
@@ -445,11 +470,14 @@ export default function SectionBuilder({
 
   // The Singularity: Autonomous Evolution
   const evolve = async () => {
+    if (guestLocked) {
+      setMobileTab('preview')
+      return
+    }
     // Limit dream/evolution attempts for guests and Lite; Pro/Agency are unlimited
-    const dreamLimit = !isPaidTier ? 1 : tier === 'lite' ? 1 : Infinity
+    const dreamLimit = isGuest ? GUEST_DREAM_LIMIT : Infinity
     if (dreamLimit !== Infinity && dreamsUsed >= dreamLimit) {
-      setError('Dream limit reached. Sign up or upgrade to unlock more autonomous evolutions.')
-      if (!isPaidTier) goToSignUp('pro')
+      triggerGuestLock('Dream limit reached: unlock The Singularity to evolve further.')
       return
     }
 
@@ -493,7 +521,14 @@ export default function SectionBuilder({
           code: data.code,
           reason: data.thought || "Autonomous evolution applied."
         })
-        setDreamsUsed((prev) => prev + 1)
+        if (isGuest) {
+          incrementGuestDreams()
+          if (dreamLimit !== Infinity && dreamsUsed + 1 >= dreamLimit) {
+            triggerGuestLock('Dream limit reached: unlock The Singularity to evolve further.')
+          }
+        } else {
+          setDreamsUsed((prev) => prev + 1)
+        }
       } else {
         throw new Error("Dream returned no code")
       }
@@ -538,9 +573,11 @@ export default function SectionBuilder({
   const architectCreditsUsed = (typeof window !== 'undefined' && subscription) 
     ? (window as unknown as { __architectUsed?: number }).__architectUsed || 0 
     : 0
-  const architectCreditsRemaining = tier === 'lite'
-    ? Math.max(0, 5 - architectCreditsUsed)
-    : '∞'
+  const architectCreditsRemaining = isGuest && GUEST_REFINEMENT_LIMIT >= 0
+    ? Math.max(0, GUEST_REFINEMENT_LIMIT - guestRefinementsUsed)
+    : tier === 'lite'
+      ? Math.max(0, 5 - architectCreditsUsed)
+      : '∞'
   
   // Prompt Helper (Hatch) state
   const [showPromptHelper, setShowPromptHelper] = useState(false)
@@ -650,6 +687,12 @@ export default function SectionBuilder({
     }
   }, [stage, section.id])
 
+  useEffect(() => {
+    if (stage === 'complete') {
+      setMobileTab('preview')
+    }
+  }, [stage])
+
   // Log navigation to Chronosphere
   useEffect(() => {
     chronosphere.log('navigation', { section: section.name, sectionId: section.id }, section.id)
@@ -671,6 +714,8 @@ export default function SectionBuilder({
     setHelperMessages([])
     setHelperInput('')
     setGeneratedPrompt(null)
+    setGuestLocked(false)
+    setGuestLockReason(null)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [dbSection.id]) // Only reset when switching to a different section
 
@@ -692,7 +737,8 @@ export default function SectionBuilder({
   // Initialize prompt helper with first message from Hatch
   const initializePromptHelper = async () => {
     setShowPromptHelper(true)
-    setHelperMessages([])
+    const fallbackMessage = `I'm The Architect. Tell me about your ${section.name} section - what are you building?`
+    setHelperMessages([{ role: 'assistant', content: fallbackMessage }])
     setGeneratedPrompt(null)
     
     // Wait for modal to render, then focus
@@ -717,18 +763,12 @@ export default function SectionBuilder({
       
       if (response.ok) {
         const { message } = await response.json()
-        setHelperMessages([{ role: 'assistant', content: message }])
+        setHelperMessages([{ role: 'assistant', content: message || fallbackMessage }])
       } else {
-        setHelperMessages([{ 
-          role: 'assistant', 
-          content: `I'm The Architect. Tell me about your ${section.name} section - what are you building?` 
-        }])
+        setHelperMessages([{ role: 'assistant', content: fallbackMessage }])
       }
     } catch {
-      setHelperMessages([{ 
-        role: 'assistant', 
-        content: `I'm The Architect. Tell me about your ${section.name} section - what are you building?` 
-        }])
+      setHelperMessages([{ role: 'assistant', content: fallbackMessage }])
     } finally {
       setIsHelperLoading(false)
     }
@@ -792,10 +832,15 @@ export default function SectionBuilder({
     }
   }
 
-  const handleBuildSection = async () => {
+  const handleBuildSection = async (options?: { skipGuestCredit?: boolean }) => {
+    const skipGuestCredit = options?.skipGuestCredit
+    if (guestLocked) {
+      setMobileTab('preview')
+      return
+    }
     // Guest trial limit gate
-    if (!isPaid && !isPaidTier && guestGenerationsUsed >= GUEST_GENERATION_LIMIT) {
-      goToSignUp()
+    if (isGuest && !skipGuestCredit && guestGenerationsUsed >= GUEST_GENERATION_LIMIT) {
+      triggerGuestLock('Guest limit reached: 3 builds / 3 polishes / 3 dreams. Unlock to keep creating.')
       return
     }
 
@@ -811,8 +856,11 @@ export default function SectionBuilder({
     setHasSelfHealed(false)
     
     // Increment usage for free users
-    if (!isPaid && !isPaidTier) {
+    if (isGuest && !skipGuestCredit) {
       incrementGuestUsage()
+      if (guestGenerationsUsed + 1 >= GUEST_GENERATION_LIMIT) {
+        triggerGuestLock('Guest limit reached: unlock the builder to keep shipping.')
+      }
     }
     
     chronosphere.log('generation', { prompt, section: section.name }, section.id)
@@ -950,9 +998,12 @@ export default function SectionBuilder({
   }
 
   const handleUserRefine = async () => {
-    const isGuest = !isPaid && !isPaidTier
+    if (guestLocked) {
+      setMobileTab('preview')
+      return
+    }
     if (isGuest && GUEST_REFINEMENT_LIMIT >= 0 && guestRefinementsUsed >= GUEST_REFINEMENT_LIMIT) {
-      setError('Guest refinement limit reached. Sign up to continue refining.')
+      triggerGuestLock('Polish limit reached: upgrade to keep refining and export code.')
       return
     }
 
@@ -985,7 +1036,12 @@ export default function SectionBuilder({
       setRefinementChanges([...refinementChanges, refinePrompt])
       setRefinePrompt('')
       setIsUserRefining(false)
-      if (isGuest) incrementGuestRefinements()
+      if (isGuest) {
+        incrementGuestRefinements()
+        if (guestRefinementsUsed + 1 >= GUEST_REFINEMENT_LIMIT && GUEST_REFINEMENT_LIMIT >= 0) {
+          triggerGuestLock('Polish limit reached: upgrade to keep refining and export code.')
+        }
+      }
       onComplete(refinedCode, true, [...refinementChanges, refinePrompt])
       return
     }
@@ -1069,6 +1125,14 @@ export default function SectionBuilder({
   // Handle opt-in Architect polish (not automatic anymore)
   const handleArchitectPolish = async () => {
     if (!generatedCode || isArchitectPolishing) return
+    if (!canGuestPolish) {
+      const reason = 'Guest polish limit reached: unlock Architect for unlimited refinements.'
+      setGuestLocked(true)
+      setGuestLockReason(reason)
+      setError(reason)
+      setMobileTab('preview')
+      return
+    }
     
     setIsArchitectPolishing(true)
     setError(null)
@@ -1123,6 +1187,7 @@ export default function SectionBuilder({
       setRefined(wasRefined)
       setRefinementChanges(changes || [])
       onComplete(polishedCode || generatedCode, wasRefined, changes)
+      if (isGuest) incrementGuestRefinements()
       
       // Evolve style DNA (background)
       if (wasRefined) {
@@ -1145,6 +1210,7 @@ export default function SectionBuilder({
 
   // Immersive Input State - before any code is generated
   const isInitialState = stage === 'input' && !generatedCode
+  const canRevealRawCode = isPaid || isPaidTier
 
   // IMMERSIVE INITIAL STATE - Full canvas input experience
   if (isInitialState) {
@@ -1203,25 +1269,13 @@ export default function SectionBuilder({
               
               {/* Bottom bar */}
               <div className="flex items-center justify-between px-4 py-3 border-t border-zinc-800/50 bg-zinc-950/50">
-                <div className="flex items-center gap-4">
-                  {/* Voice input */}
-                  <DirectLine 
-                    context={{ stage, prompt, selectedElement: null }}
-                    onAction={(action, value) => {
-                      if (action === 'update_prompt') {
-                        setPrompt(prev => prev ? `${prev} ${value}` : value)
-                      }
-                    }}
-                  />
-                  {/* Architect helper */}
-                  <button 
-                    onClick={() => initializePromptHelper()}
-                    className="flex items-center gap-1.5 text-xs text-emerald-400 hover:text-emerald-300 transition-colors"
-                  >
-                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                    Ask Architect
-                  </button>
-                </div>
+                <button 
+                  onClick={() => initializePromptHelper()}
+                  className="flex items-center gap-1.5 text-xs text-emerald-400 hover:text-emerald-300 transition-colors"
+                >
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                  Ask Architect
+                </button>
                 
                 <div className="flex items-center gap-2 text-xs text-zinc-600">
                   <kbd className="hidden sm:inline px-1.5 py-0.5 bg-zinc-800 rounded text-[10px] font-mono">⌘↵</kbd>
@@ -1268,7 +1322,7 @@ export default function SectionBuilder({
             className="mt-6"
           >
             <button
-              onClick={handleBuildSection}
+              onClick={() => handleBuildSection()}
               disabled={!prompt.trim()}
               className="w-full py-4 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-semibold text-base disabled:opacity-40 disabled:cursor-not-allowed hover:shadow-[0_0_30px_rgba(16,185,129,0.3)] active:scale-[0.98] transition-all flex items-center justify-center gap-3 group"
             >
@@ -1464,27 +1518,6 @@ export default function SectionBuilder({
               placeholder={placeholderText}
               className="relative w-full min-h-[120px] bg-zinc-900/80 border border-zinc-800 rounded-xl p-3 text-sm font-mono text-zinc-200 placeholder-zinc-600 focus:outline-none focus:ring-0 focus:border-purple-500/50 disabled:opacity-50 resize-none transition-all"
             />
-            {/* Voice Input Button */}
-            <div className="absolute bottom-3 right-3 z-10">
-              <DirectLine 
-                context={{
-                  stage,
-                  prompt: stage === 'complete' ? refinePrompt : prompt,
-                  selectedElement
-                }}
-                onAction={(action, value) => {
-                  if (action === 'update_prompt') {
-                    if (stage === 'complete' || selectedElement) {
-                      setRefinePrompt(prev => prev ? `${prev} ${value}` : value)
-                    } else {
-                      setPrompt(prev => prev ? `${prev} ${value}` : value)
-                    }
-                  } else if (action === 'refine') {
-                    setRefinePrompt(value)
-                  }
-                }}
-              />
-            </div>
           </div>
 
           {/* Smart Suggestions - scrollable row */}
@@ -1532,7 +1565,7 @@ export default function SectionBuilder({
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
-                  onClick={handleBuildSection}
+                  onClick={() => handleBuildSection()}
                   disabled={!prompt.trim()}
                   className="w-full py-3 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-semibold disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-[0_0_20px_rgba(16,185,129,0.3)] active:scale-[0.98] transition-all flex items-center justify-center gap-2 group text-sm"
                 >
@@ -1693,28 +1726,27 @@ export default function SectionBuilder({
                         </button>
                       </div>
 
-                      {/* Architect Polish - Pro only */}
+                      {/* Architect Polish - now allowed in guest with 3x3x3 policy */}
                       {!refined && !isArchitectPolishing && (
-                        <div className="relative">
-                          {tier === 'free' && (
-                            <div className="absolute inset-0 bg-zinc-950/80 backdrop-blur-[1px] z-10 flex items-center justify-center rounded-lg border border-zinc-800/50">
-                              <button onClick={() => goToSignUp()} className="flex items-center gap-1.5 text-xs text-amber-400 font-medium hover:text-amber-300 transition-colors">
-                                <span className="text-sm">✨</span>
-                                <span>Unlock Architect Polish</span>
-                              </button>
-                            </div>
-                          )}
+                        <div className="space-y-1">
                           <button
                             onClick={handleArchitectPolish}
-                            disabled={isArchitectPolishing}
-                            className="w-full py-2 bg-violet-500/10 hover:bg-violet-500/20 border border-violet-500/30 text-violet-300 text-xs font-medium rounded-lg transition-all flex items-center justify-center gap-1.5"
+                            disabled={isArchitectPolishing || (!isPaid && !isPaidTier && GUEST_REFINEMENT_LIMIT >= 0 && guestRefinementsUsed >= GUEST_REFINEMENT_LIMIT)}
+                            className="w-full py-2 bg-violet-500/10 hover:bg-violet-500/20 border border-violet-500/30 text-violet-300 text-xs font-medium rounded-lg transition-all flex items-center justify-center gap-1.5 disabled:opacity-60 disabled:cursor-not-allowed"
                           >
                             <Sparkles className="w-3 h-3" />
                             <span>Architect Polish</span>
                             <span className="text-[10px] text-violet-400/60">
-                              ({tier === 'agency' ? '∞' : `${architectCreditsRemaining}/30`})
+                              {isGuest && GUEST_REFINEMENT_LIMIT >= 0
+                                ? `${Math.max(0, GUEST_REFINEMENT_LIMIT - guestRefinementsUsed)} left`
+                                : typeof architectCreditsRemaining === 'number'
+                                  ? `${architectCreditsRemaining}/30`
+                                  : '∞'}
                             </span>
                           </button>
+                          {!isPaid && !isPaidTier && (
+                            <p className="text-[10px] text-zinc-500 text-center">3x guest polishes before upgrade.</p>
+                          )}
                         </div>
                       )}
 
@@ -1947,9 +1979,9 @@ export default function SectionBuilder({
           )}
         </AnimatePresence>
 
-        <div className="flex-1 flex min-h-0">
-          {/* Show streaming code during generation or user refinement - ONLY for paid users */}
-          {((stage === 'generating' || stage === 'refining') && streamingCode) || ((isUserRefining || isArchitectPolishing) && streamingCode) ? (
+        <div className="flex-1 flex min-h-0 relative">
+          {/* Show streaming code during generation or refinement for paid users only */}
+          {(((stage === 'generating' || stage === 'refining') && streamingCode) || ((isUserRefining || isArchitectPolishing) && streamingCode)) && canRevealRawCode ? (
             <div className="flex-1 overflow-auto p-4 bg-zinc-950">
               <pre className="text-xs font-mono whitespace-pre-wrap">
                 <code className={(stage === 'refining' || isUserRefining) ? 'text-violet-400' : 'text-emerald-400'}>
@@ -1969,6 +2001,33 @@ export default function SectionBuilder({
               captureTrigger={captureTrigger}
               onScreenshotCaptured={handleScreenshotCaptured}
             />
+          )}
+
+          {(((stage === 'generating' || stage === 'refining') && streamingCode) || ((isUserRefining || isArchitectPolishing) && streamingCode)) && !canRevealRawCode && (
+            <div className="absolute inset-0 bg-zinc-950/80 backdrop-blur-sm flex flex-col items-center justify-center gap-3 text-center px-6">
+              <motion.div
+                animate={{ rotate: 360 }}
+                transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+                className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full"
+              />
+              <p className="text-sm text-zinc-300">Rendering preview...</p>
+              <p className="text-xs text-zinc-500">Upgrade to view raw code while it streams.</p>
+            </div>
+          )}
+
+          {guestLocked && isGuest && (
+            <div className="absolute inset-0 bg-zinc-950/90 backdrop-blur-sm flex flex-col items-center justify-center gap-3 text-center px-6 border border-emerald-500/20 rounded-lg">
+              <p className="text-emerald-300 text-sm font-semibold">Guest quota reached</p>
+              <p className="text-xs text-zinc-400 max-w-sm">
+                {guestLockReason || 'You used all 3 builds, 3 polishes, and 3 dreams. Unlock the full builder to keep shipping and export code.'}
+              </p>
+              <button
+                onClick={() => goToSignUp('pro')}
+                className="px-4 py-2 rounded-lg bg-emerald-500 text-black font-semibold text-sm hover:bg-emerald-400 transition-colors"
+              >
+                Unlock the Builder
+              </button>
+            </div>
           )}
         </div>
       </div>

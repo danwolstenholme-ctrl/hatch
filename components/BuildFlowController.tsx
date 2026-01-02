@@ -36,7 +36,8 @@ import {
   Star,
   Download,
   ExternalLink,
-  Lock
+  Lock,
+  Brain
 } from 'lucide-react'
 import { track } from '@vercel/analytics'
 // TemplateSelector and BrandingStep removed - The Architect decides now.
@@ -70,7 +71,7 @@ function FullSitePreviewFrame({ sections, deviceView }: { sections: { id: string
     // 1. Extract all Lucide imports to ensure they are available
     const allLucideImports = new Set<string>();
     const processedSections = sections.map((section, index) => {
-      let code = section.code;
+      let code = sanitizeSvgDataUrls(section.code || '')
       
       // Extract imports
       const lucideImportRegex = /import\s+\{(.*?)\}\s+from\s+['"]lucide-react['"]/g;
@@ -361,6 +362,15 @@ interface BuildFlowControllerProps {
 
 const generateId = () => Math.random().toString(36).substring(2, 15)
 
+// Encode unescaped quotes inside Tailwind data-URI utilities to keep Babel/eval safe
+const sanitizeSvgDataUrls = (input: string) => {
+  if (!input) return ''
+  return input.replace(/bg-\[url\((['"])data:image\/svg\+xml,([\s\S]*?)\1\)\]/g, (full, quote, data) => {
+    const safe = data.replace(/"/g, '%22').replace(/'/g, '%27')
+    return `bg-[url(${quote}data:image/svg+xml,${safe}${quote})]`
+  })
+}
+
 // The Architect's Default Template
 // Minimal, clean, ready for anything.
 const ARCHITECT_TEMPLATE: Template = {
@@ -389,6 +399,9 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
   // First Contact experience for new users
   const [showFirstContact, setShowFirstContact] = useState(false)
   const [firstContactPrompt, setFirstContactPrompt] = useState<string | undefined>(undefined)
+  const WELCOME_SEEN_KEY = 'hatch_intro_v2_seen'
+  const OLD_WELCOME_KEYS = ['hatch_welcome_v1_seen', 'hatch_v1_welcome_seen']
+  const skipFirstGuestCreditRef = useRef<boolean>(!!initialPrompt)
   
   // Handle Guest Mode & Initial Prompt
   useEffect(() => {
@@ -406,11 +419,20 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
   const [showHatchModal, setShowHatchModal] = useState(false)
   const [isDeploying, setIsDeploying] = useState(false)
   const [deployedUrl, setDeployedUrl] = useState<string | null>(null)
-  const [reviewDeviceView, setReviewDeviceView] = useState<'mobile' | 'tablet' | 'desktop'>('desktop')
+  const [reviewDeviceView, setReviewDeviceView] = useState<'mobile' | 'tablet' | 'desktop'>('mobile')
   const [reviewMobileTab, setReviewMobileTab] = useState<'modules' | 'preview'>('preview')
   const [editingSectionIndex, setEditingSectionIndex] = useState<number | null>(null)
   const [justCreatedProjectId, setJustCreatedProjectId] = useState<string | null>(null)
   const [showScorecard, setShowScorecard] = useState(false)
+
+  // Reset legacy welcome flags so V2 intro shows for all users (esp. mobile)
+  useEffect(() => {
+    try {
+      OLD_WELCOME_KEYS.forEach((key) => localStorage.removeItem(key))
+    } catch (err) {
+      console.warn('Welcome key cleanup failed', err)
+    }
+  }, [])
   
   // The Witness State
   const [showWitness, setShowWitness] = useState(false)
@@ -629,30 +651,9 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
       return
     }
 
-    // If we are not loaded yet, wait
-    if (!isLoaded) {
-      console.log('BuildFlowController: Clerk not loaded yet, waiting')
-      return
-    }
+    const hasSeenWelcome = localStorage.getItem(WELCOME_SEEN_KEY)
+    const shouldShowFirstContact = !hasSeenWelcome && !existingProjectId
 
-    // Wait for replication data to be processed
-    if (!isReplicationReady) {
-      console.log('BuildFlowController: Waiting for replication data')
-      return
-    }
-
-    // Check for saved project in localStorage to resume
-    const savedProjectId = localStorage.getItem('hatch_current_project')
-    if (savedProjectId) {
-      console.log('BuildFlowController: Found saved project, redirecting', savedProjectId)
-      router.replace(`/builder?project=${savedProjectId}`)
-      return
-    }
-
-    // Check if user has seen First Contact (only skip if already seen or resuming existing)
-    const hasSeenFirstContact = localStorage.getItem('hatch_first_contact_seen')
-    const shouldShowFirstContact = !hasSeenFirstContact && !existingProjectId
-    
     if (shouldShowFirstContact) {
       console.log('BuildFlowController: Showing First Contact experience')
       setShowFirstContact(true)
@@ -943,7 +944,11 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
 
     // Increment interaction count for guests AND free users
     if (demoMode || !isPaidUser) {
-      setGuestInteractionCount(prev => prev + 1)
+      const shouldSkipGuestCredit = skipFirstGuestCreditRef.current && (guestMode || !isPaidUser)
+      if (!shouldSkipGuestCredit) {
+        setGuestInteractionCount(prev => prev + 1)
+      }
+      skipFirstGuestCreditRef.current = false
     }
 
     setBuildState(newState)
@@ -1316,6 +1321,28 @@ export default function GeneratedPage() {
     }
   }
 
+  const hardReset = useCallback(() => {
+    try {
+      localStorage.removeItem('hatch_current_project')
+      localStorage.removeItem('hatch_guest_handoff')
+      localStorage.removeItem('hatch_guest_generations')
+      localStorage.removeItem('hatch_guest_refinements')
+      localStorage.removeItem('hatch_guest_dreams')
+    } catch (err) {
+      console.warn('Hard reset failed to clear localStorage', err)
+    }
+
+    setError(null)
+    setProject(null)
+    setDbSections([])
+    setBrandConfig(null)
+    setBuildState(null)
+    setPhase('initializing')
+    setDemoMode(false)
+    setJustCreatedProjectId(null)
+    window.location.href = '/builder'
+  }, [])
+
   const handleRunAudit = async () => {
     if (!project || !buildState || demoMode) return
 
@@ -1381,9 +1408,10 @@ export default function GeneratedPage() {
 
   // Handle First Contact completion
   const handleFirstContactComplete = (prompt?: string) => {
-    localStorage.setItem('hatch_first_contact_seen', 'true')
+    localStorage.setItem(WELCOME_SEEN_KEY, 'true')
     setShowFirstContact(false)
     setFirstContactPrompt(prompt)
+    skipFirstGuestCreditRef.current = true
     setIsLoading(true)
     // Initialize project with the prompt from First Contact
     initializeProject(prompt)
@@ -1401,50 +1429,64 @@ export default function GeneratedPage() {
     else if (!isLoaded) loadingMessage = 'Connecting to neural network...'
     
     return (
-      <div className="min-h-screen bg-zinc-950 flex flex-col items-center justify-center gap-4">
-        <motion.div
-          animate={{ rotate: 360 }}
-          transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-          className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full"
-        />
-        <p className="text-zinc-400 text-sm font-mono">{loadingMessage}</p>
-        
-        {showReset && (
-          <motion.div 
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="mt-4 flex flex-col items-center gap-2"
+      <div className="min-h-screen relative overflow-hidden bg-zinc-950 flex items-center justify-center px-6">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(16,185,129,0.08),transparent_45%),radial-gradient(circle_at_80%_10%,rgba(124,58,237,0.08),transparent_40%),radial-gradient(circle_at_50%_80%,rgba(6,182,212,0.08),transparent_50%)]" />
+        <div className="absolute inset-0 pointer-events-none">
+          {[...Array(12)].map((_, i) => (
+            <motion.div
+              key={i}
+              className="absolute w-2 h-2 bg-emerald-400/30 rounded-full blur-[2px]"
+              initial={{
+                x: Math.random() * 100 + '%',
+                y: Math.random() * 100 + '%',
+                opacity: 0.2
+              }}
+              animate={{
+                y: ['0%', '-12%', '0%'],
+                opacity: [0.15, 0.5, 0.15]
+              }}
+              transition={{ duration: 4 + i * 0.2, repeat: Infinity, ease: 'easeInOut' }}
+            />
+          ))}
+        </div>
+
+        <div className="relative z-10 text-center space-y-6 max-w-md">
+          <motion.div
+            className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-emerald-500/10 border border-emerald-500/30 shadow-[0_0_40px_rgba(16,185,129,0.25)]"
+            animate={{ rotate: 360 }}
+            transition={{ duration: 18, repeat: Infinity, ease: 'linear' }}
           >
-            <p className="text-zinc-500 text-xs">Taking longer than expected?</p>
-            <div className="flex gap-2">
-              <button 
-                onClick={() => {
-                  // Clear local storage and reload
-                  localStorage.removeItem('hatch_current_project')
-                  window.location.href = '/builder'
-                }}
-                className="px-4 py-2 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 rounded text-xs text-zinc-400 hover:text-white transition-colors"
-              >
-                Reset & Start New Project
-              </button>
-              <button 
-                onClick={() => {
-                  // Force demo mode
-                  setIsLoading(false)
-                  setDemoMode(true)
-                  setPhase('building')
-                  setBuildState(createInitialBuildState(ARCHITECT_TEMPLATE.id))
-                }}
-                className="px-4 py-2 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 rounded text-xs text-zinc-400 hover:text-white transition-colors"
-              >
-                Force Demo Mode
-              </button>
-            </div>
-            <div className="mt-4 p-2 bg-zinc-900/50 rounded text-[10px] text-zinc-600 font-mono max-w-md overflow-auto">
-              DEBUG: loaded={String(isLoaded)} creating={String(isCreatingProject)} existing={String(existingProjectId)} rep={String(isReplicationReady)}
-            </div>
+            <motion.div
+              animate={{ scale: [1, 1.08, 1] }}
+              transition={{ duration: 2.4, repeat: Infinity, ease: 'easeInOut' }}
+              className="w-16 h-16 rounded-full bg-emerald-400/20 border border-emerald-400/40 flex items-center justify-center"
+            >
+              <Brain className="w-8 h-8 text-emerald-300" />
+            </motion.div>
           </motion.div>
-        )}
+
+          <div className="space-y-2">
+            <p className="text-xs font-mono text-emerald-300 tracking-[0.2em]">SINGULARITY SPIN-UP</p>
+            <h2 className="text-2xl font-bold text-white">Preparing your build space</h2>
+            <p className="text-sm text-zinc-400">{loadingMessage}</p>
+          </div>
+
+          {showReset && (
+            <motion.div 
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="text-center space-y-2"
+            >
+              <p className="text-xs text-zinc-500">If it feels stuck, hard reset the session.</p>
+              <button
+                onClick={hardReset}
+                className="px-3 py-1.5 text-xs rounded-md border border-zinc-800 text-zinc-400 hover:text-white hover:border-emerald-500/50"
+              >
+                Reset session
+              </button>
+            </motion.div>
+          )}
+        </div>
       </div>
     )
   }

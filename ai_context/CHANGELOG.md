@@ -16,6 +16,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### The Paywall Revolution
 **Theme:** Close every free-tier loophole. Builder access requires active Stripe subscription.
 
+## [Unreleased]
+### Onboarding + Support
+- Replaced First Contact intro with a concise welcome/support screen that surfaces Reddit/email/bug links before the builder loads.
+- Contact Support floating button now collapses on mobile with tighter padding/icon and hidden label until `sm`.
+
 ### ⚠️ BREAKING CHANGES
 - **NO FREE TIER:** Completely removed. All users must pay before accessing the builder.
 - **Demo Mode Eliminated:** No guest access, no preview mode, no exceptions.
