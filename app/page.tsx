@@ -444,10 +444,10 @@ export default function Home() {
   return (
     <div className="min-h-screen bg-zinc-950 text-white relative selection:bg-emerald-500/30 overflow-x-hidden">
       {/* GRID BACKGROUND - The Foundation */}
-      <div className="absolute inset-0 bg-grid-white/[0.02] bg-[size:50px_50px] pointer-events-none" />
-      <div className="absolute inset-0 bg-gradient-to-b from-zinc-950 via-transparent to-zinc-950 pointer-events-none" />
+      <div className="absolute inset-0 bg-grid-white/[0.01] bg-[size:50px_50px] pointer-events-none" />
+      <div className="absolute inset-0 bg-gradient-to-b from-[#050505] via-transparent to-[#050505] pointer-events-none" />
       {/* Orb gradient layer borrowed from First Contact */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(16,185,129,0.08),transparent_40%),radial-gradient(circle_at_80%_0%,rgba(124,58,237,0.1),transparent_35%),radial-gradient(circle_at_50%_80%,rgba(6,182,212,0.08),transparent_45%)] pointer-events-none" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(16,185,129,0.06),transparent_42%),radial-gradient(circle_at_80%_0%,rgba(124,58,237,0.08),transparent_37%),radial-gradient(circle_at_50%_80%,rgba(6,182,212,0.06),transparent_47%)] pointer-events-none" />
       
       <FloatingNodes />
       
