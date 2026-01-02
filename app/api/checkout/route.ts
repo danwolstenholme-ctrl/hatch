@@ -130,7 +130,7 @@ export async function POST(req: NextRequest) {
       ],
       // Allow promo codes at checkout
       allow_promotion_codes: true,
-      success_url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/welcome?tier=${tier}${projectSlug ? `&project=${encodeURIComponent(projectSlug)}` : ''}`,
+      success_url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/post-payment?session_id={CHECKOUT_SESSION_ID}&tier=${tier}${projectSlug ? `&project=${encodeURIComponent(projectSlug)}` : ''}`,
       cancel_url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/builder?canceled=true`,
       metadata: {
         userId,

@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo } from 'react'
+import { Suspense, useMemo } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useUser } from '@clerk/nextjs'
 import { motion } from 'framer-motion'
@@ -31,7 +31,7 @@ const steps = [
   'Step 4: Review lock → signup'
 ]
 
-export default function Launch() {
+function LaunchContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const { isSignedIn } = useUser()
@@ -149,5 +149,13 @@ export default function Launch() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function LaunchPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-zinc-950" />}> 
+      <LaunchContent />
+    </Suspense>
   )
 }

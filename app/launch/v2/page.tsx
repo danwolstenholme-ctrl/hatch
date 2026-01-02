@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo } from 'react'
+import { Suspense, useMemo } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useUser } from '@clerk/nextjs'
 import { motion } from 'framer-motion'
@@ -31,7 +31,7 @@ const miniSteps = [
   'Lock on zero credits → show review wall → sign-up.'
 ]
 
-export default function LaunchV2() {
+function LaunchV2Content() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const { isSignedIn } = useUser()
@@ -161,5 +161,13 @@ export default function LaunchV2() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function LaunchV2Page() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-zinc-950" />}> 
+      <LaunchV2Content />
+    </Suspense>
   )
 }

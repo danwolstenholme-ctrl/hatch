@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useMemo, useState } from 'react'
+import { Suspense, useEffect, useMemo, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { useUser } from '@clerk/nextjs'
 import { motion } from 'framer-motion'
@@ -23,7 +23,7 @@ type GuestHandoff = {
   sections?: SavedSection[]
 }
 
-export default function LaunchReview() {
+function LaunchReviewContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const { isSignedIn } = useUser()
@@ -252,5 +252,13 @@ export default function LaunchReview() {
         </div>
       </div>
     </div>
+  )
+}
+
+export default function LaunchReviewPage() {
+  return (
+    <Suspense fallback={<div className="min-h-screen bg-zinc-950" />}> 
+      <LaunchReviewContent />
+    </Suspense>
   )
 }
