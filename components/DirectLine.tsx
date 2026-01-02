@@ -27,11 +27,11 @@ export default function DirectLine({ }: DirectLineProps) {
             className="absolute bottom-14 right-0 w-48 bg-zinc-900/95 border border-zinc-700 backdrop-blur-md p-3 rounded-xl shadow-2xl z-50"
           >
             <div className="flex items-center gap-2 mb-1">
-              <Mic className="w-4 h-4 text-violet-500" />
-              <span className="text-xs font-bold text-violet-400">Voice Control</span>
+              <Mic className="w-4 h-4 text-emerald-500" />
+              <span className="text-xs font-bold text-emerald-400">Voice Control</span>
             </div>
             <p className="text-xs text-zinc-400">
-              Coming soon! Speak directly to The Architect.
+              Coming soon! Voice commands for faster building.
             </p>
           </motion.div>
         )}

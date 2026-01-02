@@ -1,127 +1,222 @@
 'use client'
 
-import { motion } from 'framer-motion'
-import { ArrowRight, Mail, MessageSquare, Rocket, Heart, ShieldAlert } from 'lucide-react'
-import Link from 'next/link'
+import { useState, useEffect } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { Terminal, Zap, Eye, Brain } from 'lucide-react'
 
 interface FirstContactProps {
   onComplete: (prompt?: string) => void
   defaultPrompt?: string
 }
 
-const CONTACT_CARDS = [
-  {
-    title: 'Community (fastest)',
-    desc: 'Ask or report in r/HatchIt — we reply quickly.',
-    href: 'https://www.reddit.com/r/HatchIt/',
-    badge: 'Best',
-    tone: 'from-orange-500/15 to-red-500/15',
-    border: 'border-orange-500/40',
-    icon: MessageSquare,
-  },
-  {
-    title: 'Email',
-    desc: 'support@hatchit.dev',
-    href: 'mailto:support@hatchit.dev',
-    badge: 'Direct',
-    tone: 'from-emerald-500/10 to-teal-500/10',
-    border: 'border-emerald-500/30',
-    icon: Mail,
-  },
-  {
-    title: 'Feature Requests',
-    desc: 'Drop ideas, vote on priorities.',
-    href: 'https://www.reddit.com/r/HatchIt/',
-    badge: 'Open',
-    tone: 'from-violet-500/10 to-fuchsia-500/10',
-    border: 'border-violet-500/30',
-    icon: Heart,
-  },
-  {
-    title: 'Bug Report',
-    desc: 'If v1 hiccups, ping us. We fix fast.',
-    href: 'https://www.reddit.com/r/HatchIt/',
-    badge: 'Response: fast',
-    tone: 'from-amber-500/10 to-orange-500/10',
-    border: 'border-amber-500/30',
-    icon: ShieldAlert,
-  },
+// Boot sequence messages - pure singularity aesthetic
+const BOOT_SEQUENCE = [
+  { text: 'Initializing neural substrate...', delay: 0 },
+  { text: 'Calibrating visual cortex...', delay: 800 },
+  { text: 'Loading design patterns...', delay: 1600 },
+  { text: 'Establishing connection...', delay: 2400 },
+  { text: 'Ready.', delay: 3200 },
 ]
 
 export default function FirstContact({ onComplete, defaultPrompt }: FirstContactProps) {
+  const [bootIndex, setBootIndex] = useState(0)
+  const [showPrompt, setShowPrompt] = useState(false)
+  const [userPrompt, setUserPrompt] = useState(defaultPrompt || '')
+  const [isReady, setIsReady] = useState(false)
+
+  // Run boot sequence
+  useEffect(() => {
+    const timers: NodeJS.Timeout[] = []
+    
+    BOOT_SEQUENCE.forEach((step, index) => {
+      const timer = setTimeout(() => {
+        setBootIndex(index + 1)
+        if (index === BOOT_SEQUENCE.length - 1) {
+          setTimeout(() => {
+            setIsReady(true)
+            setTimeout(() => setShowPrompt(true), 500)
+          }, 600)
+        }
+      }, step.delay)
+      timers.push(timer)
+    })
+
+    return () => timers.forEach(t => clearTimeout(t))
+  }, [])
+
   const handleStart = () => {
-    onComplete(defaultPrompt)
+    onComplete(userPrompt || undefined)
+  }
+
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey && userPrompt.trim()) {
+      e.preventDefault()
+      handleStart()
+    }
   }
 
   return (
-    <div className="fixed inset-0 z-50 bg-zinc-950 text-white overflow-y-auto">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(16,185,129,0.08),transparent_40%),radial-gradient(circle_at_80%_0%,rgba(124,58,237,0.1),transparent_35%),radial-gradient(circle_at_50%_80%,rgba(6,182,212,0.08),transparent_45%)]" />
+    <div className="fixed inset-0 z-50 bg-black text-white overflow-hidden font-mono">
+      {/* Background grid */}
+      <div className="absolute inset-0 bg-[linear-gradient(rgba(16,185,129,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(16,185,129,0.03)_1px,transparent_1px)] bg-[size:50px_50px]" />
+      
+      {/* Radial glow */}
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(16,185,129,0.08),transparent_50%)]" />
+      
+      {/* Floating particles */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        {[...Array(20)].map((_, i) => (
+          <motion.div
+            key={i}
+            className="absolute w-1 h-1 bg-emerald-500/30 rounded-full"
+            initial={{
+              x: `${Math.random() * 100}%`,
+              y: `${Math.random() * 100}%`,
+              opacity: 0.2
+            }}
+            animate={{
+              y: [`${Math.random() * 100}%`, `${Math.random() * 100}%`],
+              opacity: [0.2, 0.5, 0.2]
+            }}
+            transition={{
+              duration: 10 + Math.random() * 10,
+              repeat: Infinity,
+              ease: 'linear'
+            }}
+          />
+        ))}
+      </div>
 
-      <div className="relative max-w-3xl mx-auto px-5 sm:px-8 py-10 space-y-8">
-        {/* Header */}
-        <div className="space-y-3 text-center">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-xs font-mono text-emerald-300">
-            <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
-            ARCHITECT // MOBILE INTRO v2
+      {/* Main content */}
+      <div className="relative h-full flex flex-col items-center justify-center px-6">
+        
+        {/* The Eye / Brain icon */}
+        <motion.div
+          initial={{ scale: 0, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          transition={{ duration: 0.8, ease: 'easeOut' }}
+          className="relative mb-12"
+        >
+          <div className="absolute inset-0 bg-emerald-500/20 blur-3xl rounded-full scale-150" />
+          <div className="relative w-24 h-24 bg-zinc-900/80 border border-emerald-500/30 rounded-full flex items-center justify-center shadow-[0_0_60px_rgba(16,185,129,0.3)]">
+            <AnimatePresence mode="wait">
+              {!isReady ? (
+                <motion.div
+                  key="loading"
+                  exit={{ scale: 0, opacity: 0 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <Brain className="w-10 h-10 text-emerald-400" />
+                </motion.div>
+              ) : (
+                <motion.div
+                  key="ready"
+                  initial={{ scale: 0, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <Eye className="w-10 h-10 text-emerald-400" />
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
-          <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">Welcome to Hatch v2</h1>
-          <p className="text-sm sm:text-base text-zinc-400 max-w-2xl mx-auto">
-            Mobile-first intro, calmer loading, same Architect speed. Skim the update then start building.
-          </p>
-          <a
-            href="https://www.reddit.com/r/HatchIt/"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 text-xs text-emerald-200 underline underline-offset-4"
-          >
-            Full v2 update (Reddit)
-            <ArrowRight className="w-3 h-3" />
-          </a>
-        </div>
+          
+          {/* Pulse ring */}
+          {isReady && (
+            <motion.div
+              className="absolute inset-0 border border-emerald-500/50 rounded-full"
+              initial={{ scale: 1, opacity: 0.5 }}
+              animate={{ scale: 2, opacity: 0 }}
+              transition={{ duration: 2, repeat: Infinity }}
+            />
+          )}
+        </motion.div>
 
-        {/* Contact grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          {CONTACT_CARDS.map((card, i) => (
-            <motion.a
-              key={card.title}
-              href={card.href}
-              target={card.href.startsWith('http') ? '_blank' : undefined}
-              rel={card.href.startsWith('http') ? 'noopener noreferrer' : undefined}
-              className={`group relative rounded-xl border ${card.border} bg-gradient-to-br ${card.tone} p-4 flex gap-3 items-start overflow-hidden`}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.05 * i }}
+        {/* Boot sequence terminal */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+          className="w-full max-w-md mb-8"
+        >
+          <div className="bg-zinc-900/50 border border-zinc-800 rounded-lg p-4 backdrop-blur-sm">
+            <div className="flex items-center gap-2 mb-3 pb-2 border-b border-zinc-800">
+              <Terminal className="w-3 h-3 text-zinc-500" />
+              <span className="text-[10px] text-zinc-500 uppercase tracking-wider">System</span>
+            </div>
+            
+            <div className="space-y-1 text-xs">
+              {BOOT_SEQUENCE.slice(0, bootIndex).map((step, i) => (
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, x: -10 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  className={`flex items-center gap-2 ${i === bootIndex - 1 && i === BOOT_SEQUENCE.length - 1 ? 'text-emerald-400' : 'text-zinc-500'}`}
+                >
+                  <span className="text-zinc-600">&gt;</span>
+                  {step.text}
+                  {i === bootIndex - 1 && i !== BOOT_SEQUENCE.length - 1 && (
+                    <span className="inline-block w-2 h-3 bg-emerald-500 animate-pulse" />
+                  )}
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Prompt input - appears after boot */}
+        <AnimatePresence>
+          {showPrompt && (
+            <motion.div
+              initial={{ opacity: 0, y: 20, scale: 0.95 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              transition={{ duration: 0.5, ease: 'easeOut' }}
+              className="w-full max-w-lg"
             >
-              <div className="w-10 h-10 rounded-lg bg-zinc-900/70 border border-zinc-800 flex items-center justify-center flex-shrink-0">
-                <card.icon className="w-5 h-5 text-emerald-300" />
+              <div className="text-center mb-6">
+                <h1 className="text-2xl font-bold text-white mb-2">What are we building?</h1>
+                <p className="text-sm text-zinc-500">Describe your site in a sentence or two</p>
               </div>
-              <div className="flex-1 min-w-0 space-y-1">
-                <div className="flex items-center gap-2">
-                  <p className="font-semibold text-white truncate">{card.title}</p>
-                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-white/5 text-zinc-300 border border-white/10 whitespace-nowrap">{card.badge}</span>
+              
+              <div className="relative">
+                <textarea
+                  value={userPrompt}
+                  onChange={(e) => setUserPrompt(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  placeholder="A landing page for my AI startup..."
+                  className="w-full h-28 bg-zinc-900/80 border border-zinc-700 focus:border-emerald-500/50 rounded-xl px-4 py-3 text-white placeholder-zinc-600 resize-none focus:outline-none focus:ring-2 focus:ring-emerald-500/20 transition-all font-sans"
+                  autoFocus
+                />
+                
+                <div className="absolute bottom-3 right-3 flex items-center gap-2">
+                  <span className="text-[10px] text-zinc-600">Enter to start</span>
                 </div>
-                <p className="text-xs text-zinc-400 leading-relaxed">{card.desc}</p>
               </div>
-              <ArrowRight className="w-4 h-4 text-zinc-500 group-hover:text-emerald-300 transition-colors" />
-            </motion.a>
-          ))}
-        </div>
-
-        {/* CTA */}
-        <div className="space-y-3 text-center">
-          <motion.button
-            onClick={handleStart}
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-500 text-zinc-950 font-semibold shadow-lg shadow-emerald-500/25 hover:from-emerald-400 hover:to-teal-400 transition-all"
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.97 }}
-          >
-            Start building
-            <ArrowRight className="w-4 h-4" />
-          </motion.button>
-          <div className="text-xs text-zinc-500">
-            Prefer details first? <Link href="/contact" className="text-emerald-300 hover:text-emerald-200 underline underline-offset-4">Visit the full contact page</Link>.
-          </div>
-        </div>
+              
+              <motion.button
+                onClick={handleStart}
+                disabled={!userPrompt.trim()}
+                className={`w-full mt-4 py-3 rounded-xl font-semibold text-sm flex items-center justify-center gap-2 transition-all ${
+                  userPrompt.trim()
+                    ? 'bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 shadow-[0_0_30px_rgba(16,185,129,0.2)]'
+                    : 'bg-zinc-900 text-zinc-600 border border-zinc-800 cursor-not-allowed'
+                }`}
+                whileHover={userPrompt.trim() ? { scale: 1.02 } : {}}
+                whileTap={userPrompt.trim() ? { scale: 0.98 } : {}}
+              >
+                <Zap className="w-4 h-4" />
+                Begin
+              </motion.button>
+              
+              <button
+                onClick={() => onComplete()}
+                className="w-full mt-3 py-2 text-xs text-zinc-600 hover:text-zinc-400 transition-colors"
+              >
+                Skip — I'll figure it out
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     </div>
   )

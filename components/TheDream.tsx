@@ -6,12 +6,12 @@ import { Brain, Sparkles, Eye } from 'lucide-react'
 
 // =============================================================================
 // THE DREAM
-// When users go idle, the Architect starts dreaming - analyzing the page,
+// When users go idle, the system starts dreaming - analyzing the page,
 // showing thoughts, creating an ambient "AI is always here" presence.
 // =============================================================================
 
 const DREAM_THOUGHTS = [
-  "Observing the architecture...",
+  "Observing the structure...",
   "Analyzing visual hierarchy...",
   "Contemplating the void...",
   "Dreaming of infinite iterations...",

@@ -43,8 +43,8 @@ export default function TheWitness({ isOpen, onClose, note, isLoading }: TheWitn
             {/* Header */}
             <div className="flex items-center justify-between px-6 py-4 border-b border-zinc-800 bg-zinc-900/50">
               <div className="flex items-center gap-2">
-                <Sparkles className="w-5 h-5 text-purple-400" />
-                <h2 className="text-lg font-semibold text-white">The Architect's Observation</h2>
+                <Sparkles className="w-5 h-5 text-emerald-400" />
+                <h2 className="text-lg font-semibold text-white">Observation</h2>
               </div>
               <button 
                 onClick={onClose}

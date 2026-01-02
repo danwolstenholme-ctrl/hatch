@@ -789,7 +789,7 @@ export default function SectionBuilder({
   // Initialize prompt helper with first message from Hatch
   const initializePromptHelper = async () => {
     setShowPromptHelper(true)
-    const fallbackMessage = `I'm The Architect. Tell me about your ${section.name} section - what are you building?`
+    const fallbackMessage = `Tell me about your ${section.name} section - what are you building?`
     setHelperMessages([{ role: 'assistant', content: fallbackMessage }])
     setGeneratedPrompt(null)
     
@@ -1194,7 +1194,7 @@ export default function SectionBuilder({
   const handleArchitectPolish = async () => {
     if (!generatedCode || isArchitectPolishing) return
     if (!canGuestPolish || isLocked) {
-      const reason = 'Guest polish limit reached: unlock Architect for unlimited refinements.'
+      const reason = 'Polish limit reached. Upgrade for unlimited refinements.'
       setGuestLocked(true)
       setGuestLockReason(reason)
       setError(reason)
@@ -1263,8 +1263,8 @@ export default function SectionBuilder({
       }
 
     } catch (err) {
-      console.error('Architect polish error:', err)
-      setError('Failed to polish with Architect. Please try again.')
+      console.error('Polish error:', err)
+      setError('Failed to refine section. Please try again.')
     } finally {
       setIsArchitectPolishing(false)
     }

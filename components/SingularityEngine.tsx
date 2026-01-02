@@ -117,9 +117,9 @@ export default function SingularityEngine() {
       {/* The Mind (Sidebar) */}
       <div className="w-96 border-r border-zinc-800 p-6 flex flex-col z-20 bg-black/90 backdrop-blur">
         <div className="mb-8">
-          <h2 className="text-xl font-bold flex items-center gap-2 text-violet-500">
+          <h2 className="text-xl font-bold flex items-center gap-2 text-emerald-500">
             <Brain className="w-5 h-5" />
-            THE ARCHITECT
+            SINGULARITY
           </h2>
           <p className="text-xs text-zinc-500 mt-1">Autonomous Evolution Engine</p>
         </div>

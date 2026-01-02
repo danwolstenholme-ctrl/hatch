@@ -43,11 +43,12 @@ import { track } from '@vercel/analytics'
 // TemplateSelector and BrandingStep removed - system drives decisions now.
 import SectionProgress from './SectionProgress'
 import SectionBuilder from './SectionBuilder'
+import SingularitySidebar from './SingularitySidebar'
+import PaywallTransition from './PaywallTransition'
 import HatchModal from './HatchModal'
 import Scorecard from './Scorecard'
 import TheWitness from './TheWitness'
 import FirstContact from './FirstContact'
-import WelcomeModal, { useWelcomeModal } from './WelcomeModal'
 import { chronosphere } from '@/lib/chronosphere'
 import { Template, Section, getTemplateById, getSectionById, createInitialBuildState, BuildState, websiteTemplate } from '@/lib/templates'
 import { DbProject, DbSection, DbBrandConfig } from '@/lib/supabase'
@@ -373,10 +374,10 @@ const sanitizeSvgDataUrls = (input: string) => {
 
 // Default System Template
 // Minimal, clean, ready for anything.
-const ARCHITECT_TEMPLATE: Template = {
+const SINGULARITY_TEMPLATE: Template = {
   ...websiteTemplate,
-  id: 'architect',
-  name: 'Singularity Mode',
+  id: 'singularity',
+  name: 'Build Mode',
   description: 'Default canvas ready for live generation.',
   sections: websiteTemplate.sections
 }
@@ -388,13 +389,15 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
   
   const [demoMode, setDemoMode] = useState(forceDemoMode ?? false)
   const [phase, setPhase] = useState<BuildPhase>('initializing')
-  const [selectedTemplate, setSelectedTemplate] = useState<Template>(ARCHITECT_TEMPLATE)
-  const [customizedSections, setCustomizedSections] = useState<Section[]>(ARCHITECT_TEMPLATE.sections)
+  const [selectedTemplate, setSelectedTemplate] = useState<Template>(SINGULARITY_TEMPLATE)
+  const [customizedSections, setCustomizedSections] = useState<Section[]>(SINGULARITY_TEMPLATE.sections)
   const [brandConfig, setBrandConfig] = useState<any>(null) // Brand config is now implicit or AI-driven
   const [buildState, setBuildState] = useState<BuildState | null>(null)
   const [project, setProject] = useState<DbProject | null>(null)
   const [guestInteractionCount, setGuestInteractionCount] = useState(0)
   const [hatchModalReason, setHatchModalReason] = useState<'generation_limit' | 'code_access' | 'deploy' | 'download' | 'proactive' | 'running_low' | 'guest_lock'>('proactive')
+  const [showPaywallTransition, setShowPaywallTransition] = useState(false)
+  const [paywallReason, setPaywallReason] = useState<'limit_reached' | 'site_complete'>('limit_reached')
   
   // First Contact experience for new users
   const [showFirstContact, setShowFirstContact] = useState(false)
@@ -447,7 +450,7 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
   const persistGuestHandoff = useCallback((sectionsSnapshot?: DbSection[], codeSnapshot?: Record<string, string>) => {
     if (!guestMode) return
     const payload = {
-      templateId: selectedTemplate?.id || ARCHITECT_TEMPLATE.id,
+      templateId: selectedTemplate?.id || SINGULARITY_TEMPLATE.id,
       projectName: brandConfig?.brandName || 'Untitled Project',
       brand: brandConfig,
       sections: (sectionsSnapshot || dbSections).map((s) => ({
@@ -471,13 +474,11 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
     if (!limit || limit < 0) return
     const isGuest = guestMode || (!isPaidUser && !isSignedIn)
     if (isGuest && guestInteractionCount >= limit) {
-      setHatchModalReason('generation_limit')
-      setShowHatchModal(true)
+      // Show immersive paywall transition instead of modal
+      setPaywallReason('limit_reached')
+      setShowPaywallTransition(true)
     }
   }, [guestInteractionCount, guestMode, isPaidUser, isSignedIn])
-  
-  // First-time welcome modal (post-demo)
-  const { showWelcome, triggerWelcome, closeWelcome } = useWelcomeModal()
 
   // Handle Replicator Mode & Onboarding Mode
   useEffect(() => {
@@ -490,7 +491,7 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
         const replicationData = JSON.parse(decodeURIComponent(data))
         // Transform replication data into a template
         const replicatedTemplate: Template = {
-          ...ARCHITECT_TEMPLATE,
+          ...SINGULARITY_TEMPLATE,
           name: replicationData.projectName || 'Replicated Project',
           description: replicationData.description || 'Imported from URL',
           sections: replicationData.sections.map((s: any, i: number) => ({
@@ -520,7 +521,7 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
           
           // Update template with onboarding data
           const newTemplate: Template = {
-            ...ARCHITECT_TEMPLATE,
+            ...SINGULARITY_TEMPLATE,
             name: onboardingData.brandName || 'New Entity',
             description: onboardingData.description || 'A new digital presence.',
           }
@@ -836,8 +837,8 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
       
       const { project: proj, sections } = await response.json()
       
-      // Use Architect template if ID matches, otherwise fallback to website template
-      const template = (proj.template_id === 'singularity' || proj.template_id === 'architect') ? ARCHITECT_TEMPLATE : (getTemplateById(proj.template_id) || websiteTemplate)
+      // Use Singularity template if ID matches, otherwise fallback to website template
+      const template = (proj.template_id === 'singularity' || proj.template_id === 'architect') ? SINGULARITY_TEMPLATE : (getTemplateById(proj.template_id) || websiteTemplate)
 
       setProject(proj)
       setDbSections(sections)
@@ -996,9 +997,6 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
     if (newState.currentSectionIndex >= sectionsForBuild.length) {
       setPhase('review')
       localStorage.removeItem('hatch_current_project')
-      
-      // Show welcome modal for first-time users who just completed their build
-      triggerWelcome()
       
       if (!demoMode && project) {
         try {
@@ -1518,6 +1516,14 @@ export default function GeneratedPage() {
 
   return (
     <div className="min-h-screen bg-zinc-950">
+      {/* Paywall Transition - Full screen immersive */}
+      {showPaywallTransition && (
+        <PaywallTransition
+          reason={paywallReason}
+          onClose={() => setShowPaywallTransition(false)}
+        />
+      )}
+      
       <AnimatePresence mode="wait">
         {phase === 'initializing' && (
           <motion.div
@@ -1527,25 +1533,28 @@ export default function GeneratedPage() {
             exit={{ opacity: 0 }}
             className="flex flex-col items-center justify-center h-screen bg-zinc-950"
           >
-            <div className="relative">
+            <div className="relative mb-8">
               <div className="absolute inset-0 bg-emerald-500/20 blur-3xl rounded-full animate-pulse" />
-              <div className="relative w-24 h-24 bg-zinc-900 border border-emerald-500/30 rounded-2xl flex items-center justify-center mb-8 shadow-[0_0_30px_rgba(16,185,129,0.2)]">
-                <Terminal className="w-10 h-10 text-emerald-400" />
+              <div className="relative w-20 h-20 bg-zinc-900 border border-emerald-500/30 rounded-2xl flex items-center justify-center shadow-[0_0_30px_rgba(16,185,129,0.2)]">
+                <Terminal className="w-8 h-8 text-emerald-400" />
               </div>
             </div>
-            <h2 className="text-2xl font-bold text-white mb-2 tracking-tight">Initializing build system</h2>
-                        <h2 className="text-2xl font-bold text-white mb-2 tracking-tight">Initializing build system</h2>
-              // Use Singularity template if ID matches, otherwise fallback to website template
-              const template = (proj.template_id === 'singularity' || proj.template_id === 'architect') ? ARCHITECT_TEMPLATE : (getTemplateById(proj.template_id) || websiteTemplate)
-            <div className="flex items-center gap-2 text-emerald-400/80 font-mono text-sm">
+            
+            <h2 className="text-xl font-bold text-white mb-2">Setting up your workspace</h2>
+            
+            <div className="flex items-center gap-2 text-emerald-400/80 font-mono text-sm mb-6">
               <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
-              <span>Establishing Direct Line...</span>
+              <span>Connecting to AI...</span>
             </div>
+            
+            <p className="text-zinc-500 text-sm max-w-xs text-center">
+              First build takes ~30 seconds. After that, iterations are faster.
+            </p>
             
             <motion.div 
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
-              transition={{ delay: 3 }}
+              transition={{ delay: 5 }}
               className="mt-8"
             >
               <button 
@@ -1555,7 +1564,7 @@ export default function GeneratedPage() {
                 }}
                 className="text-xs text-zinc-500 hover:text-zinc-300 underline decoration-zinc-700 underline-offset-4 transition-colors"
               >
-                Stuck? Start Over
+                Taking too long? Start over
               </button>
             </motion.div>
           </motion.div>
@@ -1567,30 +1576,49 @@ export default function GeneratedPage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="flex flex-col h-screen overflow-hidden"
+            className="flex h-screen overflow-hidden bg-black"
           >
-            <SectionProgress
-              template={templateForBuild}
-              buildState={buildState}
-              onSectionClick={handleSectionClick}
-              onSkip={handleSkipSection}
-            />
+            {/* Singularity Sidebar - Desktop Only */}
+            <div className="hidden lg:block">
+              <SingularitySidebar
+                currentSection={buildState.currentSectionIndex + 1}
+                totalSections={sectionsForBuild.length}
+                isGenerating={false}
+                thought={getCurrentSection()?.name ? `Building ${getCurrentSection()?.name}...` : 'Analyzing...'}
+                promptsUsed={guestInteractionCount}
+                promptsLimit={GUEST_TRIAL_LIMITS.generationsPerSession}
+                isPaid={isPaid}
+                onUpgrade={() => {
+                  setHatchModalReason('generation_limit')
+                  setShowHatchModal(true)
+                }}
+              />
+            </div>
 
-            <div className="flex-1 flex min-h-0 overflow-hidden">
-              {getCurrentSection() && getCurrentDbSection() && (project?.id || getCurrentDbSection()!.project_id) && (
-                <SectionBuilder
-                  section={getCurrentSection()!}
-                  dbSection={getCurrentDbSection()!}
-                  projectId={project?.id ?? getCurrentDbSection()!.project_id}
-                  onComplete={handleSectionComplete}
-                  onNextSection={handleNextSection}
-                  isLastSection={buildState.currentSectionIndex >= sectionsForBuild.length - 1}
-                  allSectionsCode={buildState.sectionCode}
-                  demoMode={demoMode}
-                  brandConfig={brandConfig}
-                  isPaid={isPaid}
-                />
-              )}
+            {/* Main Build Area */}
+            <div className="flex-1 flex flex-col overflow-hidden">
+              <SectionProgress
+                template={templateForBuild}
+                buildState={buildState}
+                onSectionClick={handleSectionClick}
+                onSkip={handleSkipSection}
+              />
+
+              <div className="flex-1 flex min-h-0 overflow-hidden">
+                {getCurrentSection() && getCurrentDbSection() && (project?.id || getCurrentDbSection()!.project_id) && (
+                  <SectionBuilder
+                    section={getCurrentSection()!}
+                    dbSection={getCurrentDbSection()!}
+                    projectId={project?.id ?? getCurrentDbSection()!.project_id}
+                    onComplete={handleSectionComplete}
+                    onNextSection={handleNextSection}
+                    isLastSection={buildState.currentSectionIndex >= sectionsForBuild.length - 1}
+                    allSectionsCode={buildState.sectionCode}
+                    demoMode={demoMode}
+                    brandConfig={brandConfig}
+                    isPaid={isPaid}
+                  />
+                )}
 
               {getCurrentSection() && getCurrentDbSection() && !(project?.id || getCurrentDbSection()!.project_id) && (
                 <div className="flex-1 flex items-center justify-center bg-zinc-950">
@@ -1643,6 +1671,7 @@ export default function GeneratedPage() {
                   </div>
                 </div>
               )}
+            </div>
             </div>
           </motion.div>
         )}
@@ -1808,7 +1837,7 @@ export default function GeneratedPage() {
                 w-full md:w-80 border-r border-zinc-800/50 flex-col bg-zinc-900/20 overflow-hidden
               `}>
                 <div className="p-4 border-b border-zinc-800/50">
-                  <h2 className="text-xs font-mono text-zinc-500 uppercase tracking-wider">Architecture Modules</h2>
+                  <h2 className="text-xs font-mono text-zinc-500 uppercase tracking-wider">Sections</h2>
                 </div>
                 <div className="flex-1 overflow-auto p-2 space-y-1">
                   {templateForBuild.sections.map((section, index) => {
@@ -2034,8 +2063,8 @@ export default function GeneratedPage() {
                       >
                         <Rocket className="w-10 h-10 text-emerald-400" />
                       </motion.div>
-                      <h2 className="text-2xl font-bold text-white mb-2">System Deployed Successfully</h2>
-                      <p className="text-zinc-400 mb-6">Your architecture is now live and accessible worldwide.</p>
+                      <h2 className="text-2xl font-bold text-white mb-2">Deployed Successfully</h2>
+                      <p className="text-zinc-400 mb-6">Your site is now live and accessible worldwide.</p>
                       <a
                         href={deployedUrl}
                         target="_blank"
@@ -2142,13 +2171,6 @@ export default function GeneratedPage() {
         onClose={() => setShowWitness(false)}
         note={witnessNote}
         isLoading={isWitnessLoading}
-      />
-
-      {/* First-time welcome modal after completing a build */}
-      <WelcomeModal 
-        trigger="auto"
-        isOpen={showWelcome}
-        onClose={closeWelcome}
       />
     </div>
   )

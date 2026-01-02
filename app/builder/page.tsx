@@ -6,9 +6,6 @@ import { useUser } from '@clerk/nextjs'
 import { motion } from 'framer-motion'
 import { Lock, CreditCard, ArrowRight } from 'lucide-react'
 import BuildFlowController from '@/components/BuildFlowController'
-import TheDream from '@/components/TheDream'
-import TheSubconscious from '@/components/TheSubconscious'
-import WelcomeModal from '@/components/WelcomeModal'
 import { AccountSubscription } from '@/types/subscriptions'
 
 // =============================================================================
@@ -30,7 +27,7 @@ function BuilderContent() {
 
   // Local dev: always allow guest mode so testing skips auth
   const forceGuest = (process.env.NEXT_PUBLIC_APP_ENV || '').startsWith('local')
-  const isGuest = forceGuest || mode === 'guest'
+  const isGuest = forceGuest || mode === 'guest' || mode === 'demo'
 
   // Get subscription from Clerk metadata
   const subscription = user?.publicMetadata?.accountSubscription as AccountSubscription | null
@@ -122,13 +119,19 @@ function BuilderContent() {
     return (
       <div className="min-h-screen bg-zinc-950 flex items-center justify-center">
         <div className="text-center">
-          <motion.div
-            animate={{ rotate: 360 }}
-            transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-            className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full mx-auto mb-4"
-          />
-          <p className="text-zinc-500 text-sm">
-            {isRedirecting ? 'Redirecting to checkout...' : isImportingGuest ? 'Importing your guest build...' : 'Loading...'}
+          <div className="relative mb-6">
+            <div className="absolute inset-0 w-16 h-16 bg-emerald-500/20 blur-xl rounded-full animate-pulse mx-auto" />
+            <motion.div
+              animate={{ rotate: 360 }}
+              transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+              className="relative w-12 h-12 border-2 border-emerald-500 border-t-transparent rounded-full mx-auto"
+            />
+          </div>
+          <p className="text-white font-medium mb-1">
+            {isRedirecting ? 'Setting up checkout...' : isImportingGuest ? 'Importing your build...' : 'Spinning up builder...'}
+          </p>
+          <p className="text-zinc-500 text-sm font-mono">
+            {isRedirecting ? 'One moment' : isImportingGuest ? 'Almost there' : 'This takes ~2 seconds'}
           </p>
         </div>
       </div>
@@ -185,16 +188,19 @@ export default function Home() {
   return (
     <Suspense fallback={
       <div className="min-h-screen bg-zinc-950 flex items-center justify-center">
-        <motion.div
-          animate={{ rotate: 360 }}
-          transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-          className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full"
-        />
+        <div className="text-center">
+          <div className="relative mb-6">
+            <div className="absolute inset-0 w-16 h-16 bg-emerald-500/20 blur-xl rounded-full animate-pulse mx-auto" />
+            <motion.div
+              animate={{ rotate: 360 }}
+              transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
+              className="relative w-12 h-12 border-2 border-emerald-500 border-t-transparent rounded-full mx-auto"
+            />
+          </div>
+          <p className="text-white font-medium">Spinning up builder...</p>
+        </div>
       </div>
     }>
-      <TheDream />
-      <TheSubconscious />
-      <WelcomeModal trigger="guest" />
       <BuilderContent />
     </Suspense>
   )

@@ -59,8 +59,8 @@ interface ChatProps {
 }
 
 const thinkingMessages = [
-  "Analyzing your request... to determine the best component structure.",
-  "Consulting the Architect... for optimal design patterns.",
+  "Analyzing your request... determining component structure.",
+  "Processing design patterns... optimizing layout.",
   "Generating code... with Tailwind utility classes.",
   "Refining the layout... for mobile responsiveness.",
   "Checking accessibility... to ensure inclusive design.",
@@ -69,7 +69,7 @@ const thinkingMessages = [
 
 const responses = [
   "Build complete. Ready for review.",
-  "Architecture updated. Check the preview.",
+  "Updated. Check the preview.",
   "Code synthesized. You can edit it now.",
   "Section generated. Try customizing it.",
   "Design applied. How does it look?",
