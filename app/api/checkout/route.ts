@@ -88,7 +88,9 @@ export async function POST(req: NextRequest) {
           metadata: { userId, tier, type: 'account_subscription' },
         })
 
-        const periodEnd = (updated.current_period_end || Math.floor(Date.now() / 1000) + 30 * 24 * 60 * 60) * 1000
+        // Stripe types wrap responses; access current_period_end defensively
+        const periodEndSeconds = (updated as any)?.current_period_end ?? (updated as any)?.data?.current_period_end ?? Math.floor(Date.now() / 1000) + 30 * 24 * 60 * 60
+        const periodEnd = periodEndSeconds * 1000
         const accountSubscription: AccountSubscription = {
           tier: tier as AccountSubscription['tier'],
           stripeSubscriptionId: existingSubscription.stripeSubscriptionId,
