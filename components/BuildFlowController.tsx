@@ -35,7 +35,8 @@ import {
   Zap,
   Star,
   Download,
-  ExternalLink
+  ExternalLink,
+  Lock
 } from 'lucide-react'
 import { track } from '@vercel/analytics'
 // TemplateSelector and BrandingStep removed - The Architect decides now.
@@ -49,7 +50,7 @@ import WelcomeModal, { useFirstTimeWelcome } from './WelcomeModal'
 import { chronosphere } from '@/lib/chronosphere'
 import { Template, Section, getTemplateById, getSectionById, createInitialBuildState, BuildState, websiteTemplate } from '@/lib/templates'
 import { DbProject, DbSection, DbBrandConfig } from '@/lib/supabase'
-import { AccountSubscription } from '@/types/subscriptions'
+import { AccountSubscription, GUEST_TRIAL_LIMITS } from '@/types/subscriptions'
 import { useSubscription } from '@/contexts/SubscriptionContext'
 
 // =============================================================================
@@ -418,6 +419,40 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
 
   const [showReset, setShowReset] = useState(false)
   const [isReplicationReady, setIsReplicationReady] = useState(false)
+  const showUnlockBanner = useMemo(() => guestMode || (!isPaidUser && !demoMode), [guestMode, isPaidUser, demoMode])
+  
+  // Persist guest build locally for post-signup migration
+  const persistGuestHandoff = useCallback((sectionsSnapshot?: DbSection[], codeSnapshot?: Record<string, string>) => {
+    if (!guestMode) return
+    const payload = {
+      templateId: selectedTemplate?.id || ARCHITECT_TEMPLATE.id,
+      projectName: brandConfig?.brandName || 'Untitled Project',
+      brand: brandConfig,
+      sections: (sectionsSnapshot || dbSections).map((s) => ({
+        sectionId: s.section_id,
+        code: codeSnapshot?.[s.section_id] || buildState?.sectionCode?.[s.section_id] || '',
+        userPrompt: s.user_prompt || '',
+        refined: s.refined || false,
+        refinementChanges: s.refinement_changes || [],
+      })),
+    }
+    try {
+      localStorage.setItem('hatch_guest_handoff', JSON.stringify(payload))
+    } catch (err) {
+      console.warn('Failed to persist guest handoff', err)
+    }
+  }, [guestMode, selectedTemplate?.id, brandConfig, dbSections, buildState])
+
+  // Enforce guest trial limits before requiring signup + paid plan
+  useEffect(() => {
+    const limit = GUEST_TRIAL_LIMITS.generationsPerSession
+    if (!limit || limit < 0) return
+    const isGuest = guestMode || (!isPaidUser && !isSignedIn)
+    if (isGuest && guestInteractionCount >= limit) {
+      setHatchModalReason('generation_limit')
+      setShowHatchModal(true)
+    }
+  }, [guestInteractionCount, guestMode, isPaidUser, isSignedIn])
   
   // First-time welcome modal (post-demo)
   const { showWelcome, triggerWelcome, closeWelcome } = useFirstTimeWelcome()
@@ -614,9 +649,9 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
       return
     }
 
-    // Check if user has seen First Contact (or has an initial prompt)
+    // Check if user has seen First Contact (only skip if already seen or resuming existing)
     const hasSeenFirstContact = localStorage.getItem('hatch_first_contact_seen')
-    const shouldShowFirstContact = !hasSeenFirstContact && !initialPrompt && !existingProjectId
+    const shouldShowFirstContact = !hasSeenFirstContact && !existingProjectId
     
     if (shouldShowFirstContact) {
       console.log('BuildFlowController: Showing First Contact experience')
@@ -898,6 +933,14 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
       )
     )
 
+    // Persist guest progress for post-signup migration
+    if (guestMode) {
+      persistGuestHandoff(dbSections.map(s => s.id === dbSection.id ? { ...s, code, refined, refinement_changes: refinementChanges || null } : s), {
+        ...(buildState?.sectionCode || {}),
+        [currentSection.id]: code,
+      })
+    }
+
     // Increment interaction count for guests AND free users
     if (demoMode || !isPaidUser) {
       setGuestInteractionCount(prev => prev + 1)
@@ -982,10 +1025,7 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
 
   const handleNextSection = () => {
     if (!buildState) return
-    
-    // LET THEM BUILD! Only lock deploy/download/export, not building itself.
-    // Free users can complete all sections and see the full preview.
-    
+
     const nextIndex = buildState.currentSectionIndex + 1
     
     if (nextIndex >= sectionsForBuild.length) {
@@ -1351,7 +1391,7 @@ export default function GeneratedPage() {
 
   // FIRST CONTACT - Theatrical onboarding for new users
   if (showFirstContact) {
-    return <FirstContact onComplete={handleFirstContactComplete} />
+    return <FirstContact onComplete={handleFirstContactComplete} defaultPrompt={initialPrompt} />
   }
 
   if (isLoading) {
@@ -1665,6 +1705,25 @@ export default function GeneratedPage() {
                 </div>
               )}
             </div>
+
+              {showUnlockBanner && (
+                <div className="px-6 py-4 border-b border-zinc-800/60 bg-zinc-900/40 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                  <div className="space-y-1">
+                    <p className="text-sm text-emerald-300 font-semibold">Your build is ready. Unlock deployment and code export.</p>
+                    <p className="text-xs text-zinc-400">Session is temporary: saving, deploy, export, and code view require a subscription.</p>
+                  </div>
+                  <button
+                    onClick={() => {
+                      setHatchModalReason('guest_lock')
+                      setShowHatchModal(true)
+                    }}
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-black font-semibold text-sm transition-colors"
+                  >
+                    <Lock className="w-4 h-4" />
+                    Unlock & Deploy
+                  </button>
+                </div>
+              )}
 
             {/* Main Content - Split Panel */}
             <div className="flex-1 flex flex-col md:flex-row min-h-0 overflow-hidden">

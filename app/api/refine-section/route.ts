@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth, clerkClient, currentUser } from '@clerk/nextjs/server'
 import { GoogleGenAI } from '@google/genai'
-import { PRO_ARCHITECT_MONTHLY_LIMIT } from '@/types/subscriptions'
 import { getProjectById, getSectionById, getOrCreateUser, updateSectionRefinement, getSectionsByProjectId } from '@/lib/db'
 
 // =============================================================================
@@ -131,10 +130,10 @@ export async function POST(request: NextRequest) {
       }, { status: 403 })
     }
 
-    // Check Architect usage for Lite and Pro tiers (Agency is unlimited)
+    // Check Architect usage for Lite tier (Pro/Agency are unlimited)
     // Skip check if self-healing
     const LITE_ARCHITECT_LIMIT = 5 // Lite tier gets 5 refinements/month
-    if (!isSelfHealing && (accountSub?.tier === 'pro' || accountSub?.tier === 'lite')) {
+    if (!isSelfHealing && accountSub?.tier === 'lite') {
       const architectUsed = (user.publicMetadata?.architectRefinementsUsed as number) || 0
       const resetDate = user.publicMetadata?.architectRefinementsResetDate as string | undefined
       const today = new Date().toISOString().split('T')[0]
@@ -143,8 +142,8 @@ export async function POST(request: NextRequest) {
       const shouldReset = !resetDate || new Date(resetDate) <= new Date(today)
       const currentUsage = shouldReset ? 0 : architectUsed
       
-      const limit = accountSub?.tier === 'lite' ? LITE_ARCHITECT_LIMIT : PRO_ARCHITECT_MONTHLY_LIMIT
-      
+      const limit = LITE_ARCHITECT_LIMIT
+
       if (currentUsage >= limit) {
         return NextResponse.json({ 
           error: `Monthly refinement limit reached (${limit}/month). ${accountSub?.tier === 'lite' ? 'Upgrade to Pro for 30/month.' : 'Upgrade to Agency for unlimited.'}`,

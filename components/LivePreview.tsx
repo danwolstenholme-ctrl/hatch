@@ -758,6 +758,17 @@ const GlassCard = ({ children, className }) => React.createElement('div', { clas
         '};' +
         '</script>' +
         '<script>' +
+        '  // Force all preview links to open in a new tab to keep the sandbox intact' +
+        '  document.addEventListener("click", function(e) {' +
+        '    var anchor = e.target && e.target.closest ? e.target.closest("a") : null;' +
+        '    if (!anchor) return;' +
+        '    var href = anchor.getAttribute("href");' +
+        '    if (!href || href.startsWith("#")) return;' +
+        '    e.preventDefault();' +
+        '    window.open(href, "_blank", "noopener,noreferrer");' +
+        '  }, true);' +
+        '</script>' +
+        '<script>' +
         '// Setup globals with fallbacks\n' +
         '// FRAMER MOTION: ALWAYS use Proxy to ensure safe access\n' +
         '// Target must be a function to support motion(Component) usage\n' +

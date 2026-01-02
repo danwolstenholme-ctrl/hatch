@@ -46,6 +46,15 @@ export const websiteTemplate: Template = {
   bestFor: ['Businesses', 'Agencies', 'Startups', 'Companies'],
   sections: [
     {
+      id: 'hero',
+      name: 'Hero Section',
+      description: 'Your main headline, value prop, and primary call-to-action.',
+      prompt: 'Lead with a sharp headline, proof, and a primary action. Highlight speed, AI craftsmanship, and ownership.',
+      estimatedTime: '~30s',
+      required: true,
+      order: 0,
+    },
+    {
       id: 'header',
       name: 'Header/Navigation',
       description: 'Logo, navigation links, and optional CTA button.',
@@ -53,15 +62,6 @@ export const websiteTemplate: Template = {
       estimatedTime: '~20s',
       required: true,
       order: 1,
-    },
-    {
-      id: 'hero',
-      name: 'Hero Section',
-      description: 'Your main headline, value prop, and primary call-to-action.',
-      prompt: 'Define entity function and target demographic. Specify desired user action.',
-      estimatedTime: '~30s',
-      required: true,
-      order: 2,
     },
     {
       id: 'services',
@@ -150,21 +150,21 @@ export const landingPageTemplate: Template = {
   bestFor: ['SaaS products', 'App launches', 'Services', 'Campaigns'],
   sections: [
     {
+      id: 'hero',
+      name: 'Hero Section',
+      description: 'Your first impression. The headline and call-to-action that hooks visitors.',
+      prompt: 'Lead with the key promise, credibility, and a single primary action. Mention AI-crafted build quality.',
+      estimatedTime: '~30s',
+      required: true,
+      order: 0,
+    },
+    {
       id: 'header',
       name: 'Header/Navigation',
       description: 'Logo, nav links, and CTA button. Sticky or fixed optional.',
       prompt: 'Define entity designation and navigation links.',
       estimatedTime: '~20s',
       required: false,
-      order: 0,
-    },
-    {
-      id: 'hero',
-      name: 'Hero Section',
-      description: 'Your first impression. The headline and call-to-action that hooks visitors.',
-      prompt: 'Define product parameters and target audience. Specify primary benefit vector.',
-      estimatedTime: '~30s',
-      required: true,
       order: 1,
     },
     {

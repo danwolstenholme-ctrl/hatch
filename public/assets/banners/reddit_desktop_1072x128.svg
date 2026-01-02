@@ -1,15 +1,14 @@
 <svg width="1072" height="128" viewBox="0 0 1072 128" fill="none" xmlns="http://www.w3.org/2000/svg">
   <defs>
-    <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+    <pattern id="grid-desktop" width="40" height="40" patternUnits="userSpaceOnUse">
       <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#1f2937" stroke-width="1"/>
     </pattern>
-    <linearGradient id="grad-overlay" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0%" stop-color="#09090b" stop-opacity="1"/>
-      <stop offset="20%" stop-color="#09090b" stop-opacity="0.2"/>
-      <stop offset="80%" stop-color="#09090b" stop-opacity="0.2"/>
-      <stop offset="100%" stop-color="#09090b" stop-opacity="1"/>
+    <linearGradient id="scanline" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#000" stop-opacity="0.2"/>
+      <stop offset="50%" stop-color="#000" stop-opacity="0"/>
+      <stop offset="100%" stop-color="#000" stop-opacity="0.2"/>
     </linearGradient>
-    <filter id="glow">
+    <filter id="glow-text">
       <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
       <feMerge>
         <feMergeNode in="coloredBlur"/>
@@ -20,31 +19,41 @@
 
   <!-- Background -->
   <rect width="1072" height="128" fill="#09090b"/>
-  <rect width="1072" height="128" fill="url(#grid)" opacity="0.3"/>
-  
-  <!-- Glitch Accents -->
-  <rect x="0" y="124" width="1072" height="4" fill="#10b981" opacity="0.8"/>
-  <rect x="0" y="0" width="1072" height="2" fill="#8b5cf6" opacity="0.5"/>
-  
-  <!-- Random Glitch Blocks -->
-  <rect x="100" y="20" width="40" height="4" fill="#10b981" opacity="0.4"/>
-  <rect x="900" y="80" width="60" height="2" fill="#8b5cf6" opacity="0.6"/>
-  <rect x="940" y="84" width="10" height="10" fill="#8b5cf6" opacity="0.3"/>
+  <rect width="1072" height="128" fill="url(#grid-desktop)" opacity="0.2"/>
 
-  <!-- Main Text -->
-  <text x="50%" y="50%" dominant-baseline="middle" text-anchor="middle" font-family="monospace" font-weight="bold" font-size="48" fill="#ffffff" letter-spacing="4" filter="url(#glow)">
-    HATCHIT
+  <!-- IDE Header Bar Simulation (Left) -->
+  <rect x="0" y="0" width="1072" height="24" fill="#18181b" opacity="0.8"/>
+  <circle cx="20" cy="12" r="4" fill="#ef4444"/>
+  <circle cx="36" cy="12" r="4" fill="#f59e0b"/>
+  <circle cx="52" cy="12" r="4" fill="#10b981"/>
+  <text x="70" y="16" font-family="monospace" font-size="10" fill="#71717a">architect_v4.tsx</text>
+
+  <!-- Main Content Area -->
+  
+  <!-- Left: Terminal Prompt -->
+  <text x="40" y="70" font-family="monospace" font-size="14" fill="#10b981">user@system:~$</text>
+  <text x="170" y="70" font-family="monospace" font-size="14" fill="#e4e4e7">./architect --init</text>
+  <rect x="320" y="60" width="8" height="14" fill="#10b981">
+    <animate attributeName="opacity" values="1;0;1" dur="1s" repeatCount="indefinite"/>
+  </rect>
+
+  <!-- Center: Brand (REPLACED 'HATCHIT' with 'THE ARCHITECT') -->
+  <text x="50%" y="75" text-anchor="middle" font-family="monospace" font-weight="bold" font-size="42" fill="#ffffff" letter-spacing="6" filter="url(#glow-text)">
+    THE ARCHITECT
   </text>
-  
-  <!-- Subtext -->
-  <text x="50%" y="80%" dominant-baseline="middle" text-anchor="middle" font-family="monospace" font-size="14" fill="#10b981" letter-spacing="8">
-    THE NEURAL STUDIO
+  <text x="50%" y="100" text-anchor="middle" font-family="monospace" font-size="12" fill="#a78bfa" letter-spacing="4">
+    hatchit.dev
   </text>
 
-  <!-- Side Decorations -->
-  <path d="M 20 20 L 40 20 L 30 40 Z" fill="#34d399" opacity="0.5"/>
-  <path d="M 1052 108 L 1032 108 L 1042 88 Z" fill="#a78bfa" opacity="0.5"/>
+  <!-- Right: System Status -->
+  <rect x="900" y="40" width="140" height="60" rx="4" fill="#18181b" stroke="#27272a"/>
+  <text x="910" y="60" font-family="monospace" font-size="10" fill="#71717a">SYSTEM_STATE</text>
+  <circle cx="1020" cy="56" r="3" fill="#10b981"/>
+  <text x="910" y="80" font-family="monospace" font-size="12" fill="#10b981">SINGULARITY</text>
 
-  <!-- Scanline Overlay -->
-  <rect width="1072" height="128" fill="url(#grad-overlay)"/>
+  <!-- Bottom Accent -->
+  <rect x="0" y="126" width="1072" height="2" fill="#8b5cf6"/>
+
+  <!-- Scanlines -->
+  <rect width="1072" height="128" fill="url(#scanline)" pointer-events="none"/>
 </svg>

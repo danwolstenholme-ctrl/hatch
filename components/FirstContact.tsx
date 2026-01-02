@@ -12,6 +12,7 @@ import { Sparkles, ArrowRight, Zap, Code2, Layers, Globe, Cpu } from 'lucide-rea
 
 interface FirstContactProps {
   onComplete: (prompt?: string) => void
+  defaultPrompt?: string
 }
 
 // Demo sites that showcase real capabilities
@@ -281,12 +282,19 @@ const QUICK_STARTS = [
 // Default show-off prompt for new users
 const DEFAULT_PROMPT = 'A dark-mode SaaS landing page for an AI code assistant with animated hero, feature grid with icons, pricing table, and testimonials'
 
-export default function FirstContact({ onComplete }: FirstContactProps) {
+export default function FirstContact({ onComplete, defaultPrompt }: FirstContactProps) {
   const [phase, setPhase] = useState<'intro' | 'demo' | 'ready'>('intro')
   const [currentDemo, setCurrentDemo] = useState(0)
   const [textPhase, setTextPhase] = useState(0)
-  const [customPrompt, setCustomPrompt] = useState(DEFAULT_PROMPT)
+  const [customPrompt, setCustomPrompt] = useState(defaultPrompt || DEFAULT_PROMPT)
   const inputRef = useRef<HTMLTextAreaElement>(null)
+
+  // Sync default prompt from entry point (e.g., hero) on first show
+  useEffect(() => {
+    if (defaultPrompt) {
+      setCustomPrompt(defaultPrompt)
+    }
+  }, [defaultPrompt])
   
   // Auto-advance through intro phases
   useEffect(() => {

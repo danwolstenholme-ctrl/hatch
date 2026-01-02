@@ -35,8 +35,8 @@ export default function HatchModal({ isOpen, onClose, reason, projectSlug = '', 
 
   const messages = {
     generation_limit: {
-      title: "Generation limit reached",
-      description: "You've used your free builds. Upgrade to continue creating.",
+      title: "Guest trial complete",
+      description: "You've used your trial builds. Sign up and pick a plan to keep creating.",
     },
     running_low: {
       title: `${generationsRemaining} builds remaining`,
@@ -44,11 +44,11 @@ export default function HatchModal({ isOpen, onClose, reason, projectSlug = '', 
     },
     proactive: {
       title: "Ready to build more?",
-      description: "Unlock unlimited generations, deploy your projects, and get full code access.",
+      description: "Create an account and unlock unlimited generations, deploy, and full code export.",
     },
     guest_lock: {
-      title: "Your site is ready.",
-      description: "Download your code and deploy to the web.",
+      title: "Save and ship your site",
+      description: "Sign up to save, deploy, and export your generated site.",
     },
     code_access: {
       title: "Unlock your code",
@@ -169,11 +169,11 @@ export default function HatchModal({ isOpen, onClose, reason, projectSlug = '', 
             {/* 3-Tier Pricing Grid */}
             <div className="grid md:grid-cols-3 gap-4 mb-6">
               
-              {/* STARTER - $9 */}
+              {/* LITE - $9 */}
               <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5 flex flex-col">
                 <div className="mb-4">
-                  <span className="text-xs font-bold text-purple-400 tracking-wider">SEEDLING</span>
-                  <h3 className="text-xl font-bold text-white mt-1">Starter</h3>
+                  <span className="text-xs font-bold text-lime-400 tracking-wider">LITE</span>
+                  <h3 className="text-xl font-bold text-white mt-1">Lite</h3>
                   <div className="flex items-baseline gap-1 mt-2">
                     <span className="text-3xl font-bold text-white">$9</span>
                     <span className="text-zinc-500 text-sm">/month</span>
@@ -185,10 +185,11 @@ export default function HatchModal({ isOpen, onClose, reason, projectSlug = '', 
                   {[
                     { text: '3 Active Projects', included: true },
                     { text: 'Unlimited AI Generations', included: true },
+                    { text: '5 AI Refinements / month', included: true },
                     { text: 'Download Source Code', included: true },
-                    { text: 'Deploy to hatchitsites.dev', included: true },
+                    { text: 'Deploy to managed subdomain', included: true },
                     { text: 'Custom Domain', included: false },
-                    { text: 'Remove Branding', included: false },
+                    { text: 'Remove Platform Branding', included: false },
                   ].map((feature, i) => (
                     <div key={i} className={`flex items-center gap-2 text-sm ${feature.included ? 'text-zinc-300' : 'text-zinc-600'}`}>
                       <span className={feature.included ? 'text-emerald-400' : 'text-zinc-700'}>
@@ -204,7 +205,7 @@ export default function HatchModal({ isOpen, onClose, reason, projectSlug = '', 
                   disabled={isLoading || isSyncing}
                   className="w-full mt-6 py-3 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-white font-semibold transition-all"
                 >
-                  Start Building
+                  Unlock Lite
                 </button>
               </div>
 
@@ -232,9 +233,9 @@ export default function HatchModal({ isOpen, onClose, reason, projectSlug = '', 
                     'Unlimited Generations',
                     'Unlimited AI Refinements',
                     'Deploy to Custom Domain',
-                    'Remove HatchIt Branding',
-                    'Priority Code Export',
-                    'The Living Site Engine',
+                    'Remove Platform Branding',
+                    'Unlimited AI Refinements',
+                    'The Living Site Engine (evolves over time)',
                   ].map((feature, i) => (
                     <div key={i} className="flex items-center gap-2 text-sm text-zinc-300">
                       <span className="text-emerald-400">✓</span>
@@ -269,9 +270,8 @@ export default function HatchModal({ isOpen, onClose, reason, projectSlug = '', 
                     'Everything in Pro',
                     'Commercial License',
                     'Priority 24/7 Support',
-                    'Multiple Projects',
-                    'Team Seats (Coming Soon)',
-                    'White Label Options',
+                    'Unlimited Projects',
+                    'Team Features (Coming Soon)',
                   ].map((feature, i) => (
                     <div key={i} className="flex items-center gap-2 text-sm text-zinc-300">
                       <span className="text-emerald-400">✓</span>
@@ -308,7 +308,7 @@ export default function HatchModal({ isOpen, onClose, reason, projectSlug = '', 
                 animate={{ opacity: 1, y: 0 }}
                 className="mb-4 p-4 bg-emerald-500/10 border border-emerald-500/30 rounded-xl text-center"
               >
-                <p className="text-emerald-400 font-semibold mb-1">You&apos;re already a {tier === 'agency' ? 'Agency' : tier === 'pro' ? 'Pro' : 'Starter'} member!</p>
+                <p className="text-emerald-400 font-semibold mb-1">You&apos;re already a {tier === 'agency' ? 'Agency' : tier === 'pro' ? 'Pro' : 'Lite'} member!</p>
                 <p className="text-zinc-400 text-sm">You have full access to all features.</p>
                 <button
                   onClick={onClose}

@@ -2,10 +2,11 @@
 > "The central repository for The Architect's memory, branding, and operational logs."
 
 ## ⚠️ CRITICAL RULES (READ FIRST)
-1. **NO FREE TIER** - Builder is 100% locked behind Stripe payment
+1. **NO FREE SIGNED-IN TIER** - Guests can trial builds/preview; saving/export/deploy requires signup + paid plan
 2. **Claude Sonnet 4** (`claude-sonnet-4-20250514`) powers the builder
 3. **Paywall Flow:** `/sign-up` → Clerk popup → Stripe checkout → `/welcome` → `/builder`
 4. **Tier Colors:** Lite=Lime, Pro=Emerald, Agency=Amber
+5. **Dev-Only Mock:** `/api/dev/mock-subscription` is allowed only when `ALLOW_DEV_MOCK_SUB=true` (never enable in production)
 
 ## 📂 Directory Structure
 

@@ -24,6 +24,7 @@ const deviceSizes: Record<DeviceView, { width: string; icon: string; label: stri
 
 export default function SectionPreview({ code, darkMode = true, onRuntimeError, inspectorMode = false, onElementSelect, captureTrigger = 0, onScreenshotCaptured }: SectionPreviewProps) {
   const [deviceView, setDeviceView] = useState<DeviceView>('desktop')
+  const [viewMode, setViewMode] = useState<'preview' | 'code'>('preview')
   const iframeRef = useRef<HTMLIFrameElement>(null)
 
   // Handle screenshot trigger
@@ -56,6 +57,7 @@ export default function SectionPreview({ code, darkMode = true, onRuntimeError, 
   }, [onRuntimeError, onElementSelect, onScreenshotCaptured])
 
   const [srcDoc, setSrcDoc] = useState('')
+  const displayCode = code?.trim() || ''
 
   useEffect(() => {
     let isMounted = true;
@@ -169,6 +171,16 @@ export default function SectionPreview({ code, darkMode = true, onRuntimeError, 
     window.useMotionValue = window.Motion?.useMotionValue || function(v) { return { get: () => v, set: () => {} }; };
     window.useSpring = window.Motion?.useSpring || function(v) { return v; };
     window.useAnimation = window.Motion?.useAnimation || function() { return { start: () => {}, stop: () => {} }; };
+
+    // Force all links to open in a new tab to keep the preview sandboxed
+    document.addEventListener('click', (e) => {
+      const anchor = e.target?.closest?.('a')
+      if (!anchor) return
+      const href = anchor.getAttribute('href')
+      if (!href || href.startsWith('#')) return
+      e.preventDefault()
+      window.open(href, '_blank', 'noopener,noreferrer')
+    }, true);
     
     // Robust Lucide Icons Proxy
     // Fix for React #130: Ensure we return a valid component (function or string), never an object/undefined
@@ -426,53 +438,84 @@ export default function SectionPreview({ code, darkMode = true, onRuntimeError, 
 
   return (
     <div className="flex-1 flex flex-col min-h-0">
-      {/* Device Toggle Bar */}
-      <div className="flex items-center justify-center gap-1 p-2 bg-zinc-900/50 border-b border-zinc-800">
-        {(Object.keys(deviceSizes) as DeviceView[]).map((device) => (
-          <button
-            key={device}
-            onClick={() => setDeviceView(device)}
-            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all flex items-center gap-1.5 ${
-              deviceView === device
-                ? 'bg-zinc-700 text-white'
-                : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800'
-            }`}
-          >
-            <span>{deviceSizes[device].icon}</span>
-            <span>{deviceSizes[device].label}</span>
-          </button>
-        ))}
+      {/* View + Device Bar */}
+      <div className="flex items-center justify-between gap-2 px-3 py-2 bg-zinc-900/60 border-b border-zinc-800">
+        <div className="inline-flex bg-zinc-900/70 border border-zinc-800 rounded-lg p-1 shadow-sm">
+          {['preview', 'code'].map((mode) => (
+            <button
+              key={mode}
+              onClick={() => setViewMode(mode as 'preview' | 'code')}
+              className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all ${
+                viewMode === mode
+                  ? 'bg-gradient-to-r from-emerald-600/70 to-teal-500/70 text-white shadow-lg shadow-emerald-500/20'
+                  : 'text-zinc-500 hover:text-zinc-200'
+              }`}
+            >
+              {mode === 'preview' ? 'Visual' : 'Code'}
+            </button>
+          ))}
+        </div>
+
+        {viewMode === 'preview' && (
+          <div className="flex items-center gap-1 bg-zinc-900/70 border border-zinc-800 rounded-lg p-1">
+            {(Object.keys(deviceSizes) as DeviceView[]).map((device) => (
+              <button
+                key={device}
+                onClick={() => setDeviceView(device)}
+                className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all flex items-center gap-1.5 ${
+                  deviceView === device
+                    ? 'bg-zinc-800 text-white border border-emerald-400/30'
+                    : 'text-zinc-500 hover:text-zinc-200'
+                }`}
+              >
+                <span>{deviceSizes[device].icon}</span>
+                <span>{deviceSizes[device].label}</span>
+              </button>
+            ))}
+          </div>
+        )}
       </div>
       
-      {/* Preview Container */}
+      {/* Preview / Code Container */}
       <div className="flex-1 flex items-start justify-center overflow-auto bg-zinc-950 p-4">
-        <motion.div
-          initial={false}
-          animate={{ width: deviceSizes[deviceView].width }}
-          transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-          className="h-full bg-zinc-900 rounded-lg overflow-hidden shadow-2xl"
-          style={{ 
-            maxWidth: '100%',
-            minHeight: deviceView === 'desktop' ? '100%' : '600px',
-          }}
-        >
-          {/* Device Frame */}
-          {deviceView !== 'desktop' && (
-            <div className="h-6 bg-zinc-800 flex items-center justify-center gap-1 border-b border-zinc-700">
-              <div className="w-16 h-1 bg-zinc-600 rounded-full" />
+        {viewMode === 'code' ? (
+          <div className="w-full max-w-5xl h-full bg-zinc-900 border border-zinc-800 rounded-lg shadow-2xl overflow-auto">
+            <div className="flex items-center justify-between px-4 py-2 border-b border-zinc-800 bg-zinc-900/80">
+              <span className="text-xs font-mono text-emerald-300">Raw React + Tailwind (no wrappers)</span>
             </div>
-          )}
-          <iframe
-            ref={iframeRef}
-            srcDoc={srcDoc}
-            className="w-full border-0"
+            <pre className="p-4 text-xs font-mono text-zinc-100 whitespace-pre overflow-auto min-h-[320px]">
+              {displayCode || '// Generate a section to see code'}
+            </pre>
+          </div>
+        ) : (
+          <motion.div
+            initial={false}
+            animate={{ width: deviceSizes[deviceView].width }}
+            transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+            className="h-full bg-zinc-900 rounded-lg overflow-hidden shadow-2xl"
             style={{ 
-              height: deviceView === 'desktop' ? '100%' : 'calc(100% - 24px)',
+              maxWidth: '100%',
+              minHeight: deviceView === 'desktop' ? '100%' : '600px',
             }}
-            sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals"
-            title="Section Preview"
-          />
-        </motion.div>
+          >
+            {/* Device Frame */}
+            {deviceView !== 'desktop' && (
+              <div className="h-6 bg-zinc-800 flex items-center justify-center gap-1 border-b border-zinc-700">
+                <div className="w-16 h-1 bg-zinc-600 rounded-full" />
+              </div>
+            )}
+            <iframe
+              ref={iframeRef}
+              srcDoc={srcDoc}
+              className="w-full border-0"
+              style={{ 
+                height: deviceView === 'desktop' ? '100%' : 'calc(100% - 24px)',
+              }}
+              sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals"
+              title="Section Preview"
+            />
+          </motion.div>
+        )}
       </div>
     </div>
   )

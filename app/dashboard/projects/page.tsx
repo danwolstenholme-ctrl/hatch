@@ -18,7 +18,7 @@ export default function ProjectsPage() {
     if (tier === 'agency') return { name: 'Agency', color: 'amber', icon: Crown, limit: Infinity, gradient: 'from-amber-500 to-orange-500' }
     if (tier === 'pro') return { name: 'Pro', color: 'emerald', icon: Zap, limit: Infinity, gradient: 'from-emerald-500 to-teal-500' }
     if (tier === 'lite') return { name: 'Lite', color: 'lime', icon: Star, limit: 3, gradient: 'from-lime-500 to-green-500' }
-    return { name: 'Free', color: 'zinc', icon: Box, limit: 1, gradient: 'from-zinc-500 to-zinc-600' }
+    return { name: 'No Plan', color: 'zinc', icon: Box, limit: 0, gradient: 'from-zinc-500 to-zinc-600' }
   }, [accountSubscription?.tier])
 
   const projectsRemaining = tierConfig.limit === Infinity ? '∞' : Math.max(0, tierConfig.limit - projects.length)

@@ -41,7 +41,7 @@ export default function Navigation() {
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.5, ease: [0.25, 0.1, 0.25, 1] }}
       >
-        <div className="max-w-7xl mx-auto flex justify-between items-center">
+        <div className="max-w-7xl mx-auto flex justify-between items-center gap-3">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2 group">
             <motion.div
@@ -84,17 +84,21 @@ export default function Navigation() {
           {/* Auth & CTA */}
           <div className="flex items-center gap-2 sm:gap-3">
             <SignedOut>
-              {/* Hidden to focus on Hero interaction */}
-              {/* <Link href="/sign-up" className="text-zinc-400 hover:text-white transition-colors text-sm font-medium hidden sm:block px-3 py-2">
-                Sign In
-              </Link> */}
+              <SignInButton mode="modal" forceRedirectUrl="/dashboard/projects">
+                <button className="hidden md:inline-flex items-center gap-2 px-3.5 py-2 text-sm font-semibold rounded-lg bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-lg shadow-emerald-900/20 hover:from-emerald-500 hover:to-teal-500 transition-colors">
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                  </svg>
+                  Projects
+                </button>
+              </SignInButton>
             </SignedOut>
             <SignedIn>
               <div className="flex items-center gap-2 sm:gap-3">
                 {/* My Projects link */}
                 <Link
                   href="/dashboard/projects"
-                  className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 text-sm text-zinc-400 hover:text-white transition-colors"
+                  className="hidden md:inline-flex items-center gap-2 px-3.5 py-2 text-sm font-semibold rounded-lg bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-lg shadow-emerald-900/20 hover:from-emerald-500 hover:to-teal-500 transition-colors"
                 >
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
@@ -115,8 +119,6 @@ export default function Navigation() {
                 />
               </div>
             </SignedIn>
-            {/* Hidden Initialize button for non-signed in users to focus on Hero */}
-
             
             {/* Mobile Menu Button */}
             <button
@@ -162,10 +164,10 @@ export default function Navigation() {
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
               transition={{ type: 'tween', duration: 0.2, ease: [0.32, 0.72, 0, 1] }} // Faster, smoother tween instead of spring
-              className="absolute right-0 top-0 h-full w-72 bg-zinc-950 border-l border-zinc-800 shadow-2xl overflow-y-auto"
+              className="absolute right-0 top-0 h-full w-80 bg-gradient-to-b from-zinc-950 via-zinc-900 to-zinc-950 border-l border-emerald-500/20 shadow-[0_20px_70px_rgba(0,0,0,0.45)] overflow-y-auto"
               style={{ willChange: 'transform', backfaceVisibility: 'hidden', touchAction: 'pan-y' }}
             >
-              <div className="p-5 border-b border-zinc-800 flex justify-between items-center bg-zinc-900/50">
+              <div className="p-5 border-b border-emerald-500/10 flex justify-between items-center bg-zinc-900/70">
                 <div className="flex flex-col">
                   <span className="font-bold text-white flex items-center gap-2">
                     <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
@@ -205,11 +207,11 @@ export default function Navigation() {
               
               {/* Mobile My Projects - for signed in users */}
               <SignedIn>
-                <div className="p-4 border-t border-zinc-800">
+                <div className="p-4 border-t border-emerald-500/15">
                   <Link
                     href="/dashboard/projects"
                     onClick={() => setMobileMenuOpen(false)}
-                    className="flex items-center justify-center gap-2 w-full py-3.5 text-center bg-zinc-900 hover:bg-zinc-800 text-white rounded-xl font-medium transition-all border border-zinc-800"
+                    className="flex items-center justify-center gap-2 w-full py-3.5 text-center bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white rounded-xl font-semibold transition-all shadow-lg shadow-emerald-900/30 border border-emerald-400/30"
                   >
                     <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
@@ -221,10 +223,10 @@ export default function Navigation() {
               
               {/* Mobile Sign In */}
               <SignedOut>
-                <div className="p-4 mt-auto border-t border-zinc-800 bg-zinc-900/30">
-                  <SignInButton mode="modal">
+                <div className="p-4 mt-auto border-t border-emerald-500/15 bg-zinc-900/40">
+                  <SignInButton mode="modal" forceRedirectUrl="/dashboard/projects">
                     <button className="w-full py-3.5 text-center bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white rounded-xl font-semibold transition-all shadow-lg shadow-emerald-900/20">
-                      Sign In
+                      Sign in to Projects
                     </button>
                   </SignInButton>
                 </div>

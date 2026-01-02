@@ -60,9 +60,9 @@
 - [x] **Input Stage**
     - [x] `Prompt Input`: Textarea expands/contracts.
     - [x] **Suggestions**:
-        - [x] **Free**: Show 2 suggestions.
+        - [x] **Guest Trial**: Show 2 suggestions.
         - [x] **Pro/Agency**: Show 4 suggestions.
-        - [x] **Unlock UI**: "Unlock Pro Suggestions" button for Free tier.
+        - [x] **Unlock UI**: "Unlock Pro Suggestions" button when unsigned/guest.
     - [x] `Build Button`: Disabled if input is empty.
 - [ ] **Generation Stage**
     - [ ] `Thinking Log`: Animations play smoothly.
@@ -70,13 +70,13 @@
 - [x] **Review Stage**
     - [x] `Preview`: Renders correctly (Babel engine).
     - [x] `Refine Input`:
-        - [x] **Free**: Locked with overlay.
+        - [x] **Guest Trial**: Locked with overlay.
         - [x] **Pro/Agency**: Unlocked.
     - [x] `Architect Polish`:
-        - [x] **Free**: Locked with "Unlock" overlay.
+        - [x] **Guest Trial**: Locked with "Unlock" overlay.
         - [x] **Pro**: Credit system (30/mo).
         - [x] **Agency**: Unlimited (∞).
-    - [x] `Continue`: Saves section to DB -> Moves to next.
+    - [x] `Continue`: Saves section to DB -> Moves to next. **Guest can complete all sections before paywall; deploy/export/code remain locked.**
 
 ### C. The Preview (`FullSitePreviewFrame`)
 - [x] **Rendering**: Uses `@babel/standalone` (Fixed Error #130).
@@ -87,9 +87,9 @@
 ### D. The Deployment Flow (`BuildFlowController.tsx`)
 - [x] **Review Screen**
     - [x] `Section List`: Click to edit previous section.
-    - [x] `Deploy Button`:
-        - [x] **Free**: Opens Paywall Modal (Verified in `handleDeploy`).
-        - [x] **Paid**: Triggers Vercel/Netlify deploy.
+    - [x] `Deploy/Export Buttons`:
+        - [x] **Guest Trial**: Unlock banner + paywall modal; deploy/export/code are locked but full preview is visible.
+        - [x] **Paid**: Triggers deploy/export normally.
     - [x] `Success Modal`: Shows live URL + "Next Steps".
 
 ---
@@ -115,8 +115,12 @@
 - [ ] **Auth State**: `useUser()` syncs correctly with `useSubscription()`.
 
 ### B. Monetization (Tier Logic)
-⚠️ **NO FREE TIER. PAYWALL FIRST.**
+⚠️ **Guest trial allowed pre-signup. No free signed-in tier.**
 
+- [x] **Guest Trial (unsigned)**:
+    - [x] Generations: 3/session (configurable), preview only.
+    - [x] Save/Deploy/Export: 🚫 Locked until signup + paid tier.
+    - [x] Refinements: 🚫 Locked.
 - [x] **Lite ($9/mo)**:
     - [x] Builder: Full access, 4 Suggestions.
     - [x] Projects: 3 max.

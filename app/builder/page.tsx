@@ -20,7 +20,14 @@ function BuilderContent() {
   const { user, isSignedIn, isLoaded } = useUser()
   const projectId = searchParams.get('project')
   const upgrade = searchParams.get('upgrade')
+  const mode = searchParams.get('mode')
+  const prompt = searchParams.get('prompt')
   const [isRedirecting, setIsRedirecting] = useState(false)
+  const [isImportingGuest, setIsImportingGuest] = useState(false)
+
+  // Local dev: always allow guest mode so testing skips auth
+  const forceGuest = (process.env.NEXT_PUBLIC_APP_ENV || '').startsWith('local')
+  const isGuest = forceGuest || mode === 'guest'
 
   // Get subscription from Clerk metadata
   const subscription = user?.publicMetadata?.accountSubscription as AccountSubscription | null
@@ -30,8 +37,8 @@ function BuilderContent() {
   useEffect(() => {
     if (!isLoaded) return
     
-    // Not signed in? Go to sign-up
-    if (!isSignedIn) {
+    // Not signed in? Go to sign-up (unless guest)
+    if (!isSignedIn && !isGuest) {
       router.push('/sign-up')
       return
     }
@@ -68,14 +75,47 @@ function BuilderContent() {
       return
     }
 
-    // Signed in but NO active subscription and NO pending checkout - block and redirect
-    if (!hasActiveSubscription && !pendingTier) {
+    // Signed in but NO active subscription and NO pending checkout - block and redirect (unless guest)
+    if (!hasActiveSubscription && !pendingTier && !isGuest) {
       router.push('/sign-up')
     }
-  }, [isLoaded, isSignedIn, upgrade, hasActiveSubscription, router])
+  }, [isLoaded, isSignedIn, upgrade, hasActiveSubscription, router, isGuest])
+
+  // Migrate guest build into a real project after signup
+  useEffect(() => {
+    if (!isLoaded || !isSignedIn || isGuest || isRedirecting) return
+
+    const payloadStr = typeof window !== 'undefined' ? localStorage.getItem('hatch_guest_handoff') : null
+    if (!payloadStr) return
+
+    const migrate = async () => {
+      try {
+        setIsImportingGuest(true)
+        const payload = JSON.parse(payloadStr)
+        const res = await fetch('/api/project/import', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        })
+        if (res.ok) {
+          localStorage.removeItem('hatch_guest_handoff')
+          const data = await res.json()
+          if (data?.projectId) {
+            router.replace(`/builder?project=${data.projectId}`)
+          }
+        }
+      } catch (err) {
+        console.error('Guest import failed', err)
+      } finally {
+        setIsImportingGuest(false)
+      }
+    }
+
+    migrate()
+  }, [isLoaded, isSignedIn, isGuest, isRedirecting, router])
 
   // Loading state
-  if (!isLoaded || isRedirecting) {
+  if (!isLoaded || isRedirecting || isImportingGuest) {
     return (
       <div className="min-h-screen bg-zinc-950 flex items-center justify-center">
         <div className="text-center">
@@ -85,20 +125,20 @@ function BuilderContent() {
             className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full mx-auto mb-4"
           />
           <p className="text-zinc-500 text-sm">
-            {isRedirecting ? 'Redirecting to checkout...' : 'Loading...'}
+            {isRedirecting ? 'Redirecting to checkout...' : isImportingGuest ? 'Importing your guest build...' : 'Loading...'}
           </p>
         </div>
       </div>
     )
   }
 
-  // Not signed in - redirect handled above, show nothing
-  if (!isSignedIn) {
+  // Not signed in and not guest - redirect handled above, show nothing
+  if (!isSignedIn && !isGuest) {
     return null
   }
 
-  // Signed in but no subscription - BLOCKED
-  if (!hasActiveSubscription) {
+  // Signed in but no subscription - BLOCKED (unless guest)
+  if (!hasActiveSubscription && !isGuest) {
     return (
       <div className="min-h-screen bg-zinc-950 flex items-center justify-center p-4">
         <motion.div
@@ -126,11 +166,13 @@ function BuilderContent() {
     )
   }
 
-  // HAS ACTIVE SUBSCRIPTION - show builder
+  // HAS ACTIVE SUBSCRIPTION OR GUEST - show builder
   return (
     <div className="relative min-h-screen">
       <BuildFlowController 
         existingProjectId={projectId || undefined} 
+        guestMode={isGuest}
+        initialPrompt={prompt || undefined}
       />
     </div>
   )

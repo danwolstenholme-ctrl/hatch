@@ -4,7 +4,7 @@
       <path d="M 20 0 L 0 0 0 20" fill="none" stroke="#27272a" stroke-width="1"/>
     </pattern>
     <filter id="glow-mobile">
-      <feGaussianBlur stdDeviation="1.5" result="coloredBlur"/>
+      <feGaussianBlur stdDeviation="2" result="coloredBlur"/>
       <feMerge>
         <feMergeNode in="coloredBlur"/>
         <feMergeNode in="SourceGraphic"/>
@@ -14,29 +14,24 @@
 
   <!-- Background -->
   <rect width="1080" height="128" fill="#09090b"/>
-  <rect width="1080" height="128" fill="url(#grid-mobile)" opacity="0.2"/>
+  <rect width="1080" height="128" fill="url(#grid-mobile)" opacity="0.3"/>
 
-  <!-- Accent Lines -->
-  <rect x="0" y="0" width="8" height="128" fill="#10b981"/>
-  <rect x="1072" y="0" width="8" height="128" fill="#8b5cf6"/>
-
-  <!-- Center Text -->
-  <text x="50%" y="55%" dominant-baseline="middle" text-anchor="middle" font-family="monospace" font-weight="bold" font-size="56" fill="#ffffff" letter-spacing="2" filter="url(#glow-mobile)">
-    HATCHIT
+  <!-- Center Text (REPLACED 'HATCHIT' with 'THE ARCHITECT') -->
+  <text x="50%" y="55%" dominant-baseline="middle" text-anchor="middle" font-family="monospace" font-weight="bold" font-size="56" fill="#ffffff" letter-spacing="4" filter="url(#glow-mobile)">
+    THE ARCHITECT
+  </text>
+  
+  <!-- Subtext -->
+  <text x="50%" y="80%" dominant-baseline="middle" text-anchor="middle" font-family="monospace" font-size="14" fill="#10b981" letter-spacing="6">
+    hatchit.dev
   </text>
 
-  <!-- Status Indicators -->
-  <circle cx="40" cy="64" r="4" fill="#10b981">
-    <animate attributeName="opacity" values="1;0.2;1" dur="2s" repeatCount="indefinite"/>
-  </circle>
-  <text x="60" y="68" font-family="monospace" font-size="12" fill="#10b981">ONLINE</text>
-
-  <circle cx="1040" cy="64" r="4" fill="#8b5cf6">
-    <animate attributeName="opacity" values="1;0.2;1" dur="3s" repeatCount="indefinite"/>
-  </circle>
+  <!-- Accents -->
+  <rect x="0" y="0" width="6" height="128" fill="#8b5cf6"/>
+  <rect x="1074" y="0" width="6" height="128" fill="#10b981"/>
   
-  <!-- Glitch Elements -->
-  <rect x="300" y="20" width="100" height="2" fill="#34d399" opacity="0.3"/>
-  <rect x="700" y="100" width="120" height="2" fill="#a78bfa" opacity="0.3"/>
+  <!-- Glitch Blocks -->
+  <rect x="200" y="30" width="40" height="2" fill="#a78bfa" opacity="0.5"/>
+  <rect x="840" y="90" width="60" height="2" fill="#34d399" opacity="0.5"/>
 
 </svg>
