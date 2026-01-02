@@ -51,6 +51,9 @@ function SignUpContent() {
   }, [isSignedIn, router])
 
   const handleSelectTier = (tierName: string) => {
+    // Store tier in localStorage as backup (OAuth sometimes drops URL params)
+    localStorage.setItem('pendingUpgradeTier', tierName.toLowerCase())
+    
     // All tiers go to checkout after sign-up
     openSignUp({
       afterSignUpUrl: `/builder?upgrade=${tierName.toLowerCase()}`,
@@ -165,7 +168,7 @@ function SignUpContent() {
           transition={{ duration: 0.5, delay: 0.5 }}
           className="text-center text-sm text-zinc-500 mt-12"
         >
-          No credit card required for free tier - Cancel anytime
+          Cancel anytime • Secure payment via Stripe
         </motion.p>
       </div>
     </div>
