@@ -104,6 +104,14 @@ Always mobile-first: grid-cols-1 md:grid-cols-2 lg:grid-cols-3
 ## ICONS (Lucide)
 Use directly: <ArrowRight size={20} /> or <Menu className="w-6 h-6" />
 
+## NEVER USE INLINE SVG DATA URLs
+WRONG: bg-[url('data:image/svg+xml,...')]
+This causes parsing errors due to unescaped quotes.
+Instead, use:
+- CSS gradients/patterns for backgrounds
+- Actual <svg> elements inline
+- Simple solid colors or gradients
+
 ## MAX 300 LINES
 Keep code tight. Use map() for repetitive items.
 
@@ -111,7 +119,8 @@ Keep code tight. Use map() for repetitive items.
 ✓ No imports
 ✓ Responsive on all screens  
 ✓ Hover/tap animations
-✓ Clear typography hierarchy`
+✓ Clear typography hierarchy
+✓ NO inline SVG data URLs`
 
 // Server-side rate limiting
 const rateLimits = new Map<string, number[]>()

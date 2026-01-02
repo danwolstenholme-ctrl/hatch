@@ -347,7 +347,8 @@ Light theme (when requested):
 - Max 300 lines
 - Use map() for repeated items
 - If complex, build core structure first
-- Working code beats ambitious broken code`
+- Working code beats ambitious broken code
+- NEVER use inline SVG data URLs like bg-[url('data:image/svg+xml,...')] — they cause parse errors`
 
 export async function POST(request: NextRequest) {
   

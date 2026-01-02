@@ -359,21 +359,9 @@ export default function SectionBuilder({
     }
   }
   
-  // Ghost Logic
+  // Ghost Logic - DISABLED: was pointing at random things with no clear purpose
   const { subscription, tier } = useSubscription()
-  const [showGhost, setShowGhost] = useState(false)
-  
-  useEffect(() => {
-    const visits = parseInt(localStorage.getItem('hatch_builder_visits') || '0')
-    const isAgency = subscription?.tier === 'agency'
-    const isNewUser = visits < 5 
-    
-    if (!isAgency && isNewUser) {
-      setShowGhost(true)
-    }
-    
-    localStorage.setItem('hatch_builder_visits', (visits + 1).toString())
-  }, [subscription])
+  const [showGhost] = useState(false) // Always hidden
   
   // Dynamic placeholder effect
   const [placeholderIndex, setPlaceholderIndex] = useState(0)
@@ -434,18 +422,11 @@ export default function SectionBuilder({
 
   // The Singularity: Autonomous Evolution
   const evolve = async () => {
-    // Check Free Tier Limits
-    if (!isPaid && freeGenerationsUsed >= FREE_GENERATION_LIMIT) {
-      onShowHatchModal?.()
-      return
-    }
+    // Singularity suggestions are unlimited - this is the magic demo moment
 
     if (isDreaming) return
     setIsDreaming(true)
     setError(null)
-    
-    // Increment usage for free users
-    incrementFreeUsage()
 
     try {
       // 1. Capture Vision
@@ -753,14 +734,14 @@ export default function SectionBuilder({
       } else {
         setHelperMessages([{ 
           role: 'assistant', 
-          content: `Hey! I'm Hatch 🥚✨ Let's write an awesome ${section.name} section! Tell me about your business - what do you do?` 
+          content: `I'm The Architect. Tell me about your ${section.name} section - what are you building?` 
         }])
         setHatchState('idle')
       }
     } catch {
       setHelperMessages([{ 
         role: 'assistant', 
-        content: `Hey! I'm Hatch 🥚✨ Let's write an awesome ${section.name} section! Tell me about your business - what do you do?` 
+        content: `I'm The Architect. Tell me about your ${section.name} section - what are you building?` 
       }])
       setHatchState('idle')
     } finally {
@@ -988,11 +969,8 @@ export default function SectionBuilder({
   }
 
   const handleUserRefine = async () => {
-    // Check Free Tier Limits
-    if (!isPaid && freeGenerationsUsed >= FREE_GENERATION_LIMIT) {
-      onShowHatchModal?.()
-      return
-    }
+    // Refinements are unlimited - let users see the full power
+    // (Initial generations still limited to encourage signup)
 
     if (!refinePrompt.trim() || !generatedCode) {
       setError('Please describe what changes you want')
@@ -1002,9 +980,6 @@ export default function SectionBuilder({
     setError(null)
     setIsUserRefining(true)
     setStreamingCode('')
-    
-    // Increment usage for free users
-    incrementFreeUsage()
     
     chronosphere.log('refinement', { prompt: refinePrompt, section: section.name }, section.id)
 
@@ -2063,10 +2038,16 @@ export default function SectionBuilder({
                   )}
                 </button>
                 {stage === 'complete' && (
-                  <div className="flex items-center gap-1 px-2 py-1 bg-zinc-800 rounded border border-zinc-700" title="Built by The Architect">
-                    <span className="text-emerald-400 text-xs font-mono">⚡ Architect</span>
-                    {refined && <span className="text-violet-400 text-xs font-mono">+ ✨ Polished</span>}
-                  </div>
+                  <button
+                    onClick={handleArchitectPolish}
+                    disabled={isArchitectPolishing}
+                    className="flex items-center gap-1 px-2 py-1 bg-emerald-500/10 hover:bg-emerald-500/20 rounded border border-emerald-500/30 hover:border-emerald-500/50 transition-colors" 
+                    title="Polish with The Architect"
+                  >
+                    <Sparkles className="w-3 h-3 text-emerald-400" />
+                    <span className="text-emerald-400 text-xs font-mono">Architect</span>
+                    {refined && <span className="text-violet-400 text-xs font-mono">+ Polished</span>}
+                  </button>
                 )}
               </>
             )}
@@ -2095,7 +2076,7 @@ export default function SectionBuilder({
                     transition={{ duration: 1.5, repeat: Infinity }}
                     className="text-6xl mb-4"
                   >
-                    {stage === 'refining' || isUserRefining ? '🐣' : '⚡'}
+                    {stage === 'refining' || isUserRefining ? '✨' : '🔧'}
                   </motion.div>
                   <h3 className="text-lg font-semibold text-white mb-2">
                     {stage === 'refining' || isUserRefining ? 'Architect is polishing...' : 'Architect is building...'}
