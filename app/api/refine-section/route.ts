@@ -1,18 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth, clerkClient, currentUser } from '@clerk/nextjs/server'
-import { GoogleGenAI } from '@google/genai'
 import { getProjectById, getSectionById, getOrCreateUser, updateSectionRefinement, getSectionsByProjectId } from '@/lib/db'
 
 // =============================================================================
-// GEMINI 2.0 FLASH - THE ARCHITECT (REFINER MODE)
+// CLAUDE 3.5 SONNET - THE ARCHITECT (REFINER MODE)
 // "The Polisher"
 // Auto-polishes code after Genesis builds
 // Fixes issues WITHOUT adding features
 // Pro tier: 30 refinements/month (configurable), Agency tier: unlimited
 // =============================================================================
 
-const geminiApiKey = process.env.GEMINI_API_KEY
-const genai = geminiApiKey ? new GoogleGenAI({ apiKey: geminiApiKey }) : null
 const FREE_TOTAL_CREDITS = parseInt(process.env.FREE_TOTAL_CREDITS || '9', 10)
 const LITE_ARCHITECT_LIMIT = 5 // Lite tier gets 5 refinements/month
 
@@ -98,8 +95,7 @@ Return ONLY valid JSON (no markdown code blocks, no explanation):
   "refinedCode": "function ComponentName() { return ( <section>...</section> ) }",
   "changes": ["Made buttons larger with py-4 px-8", "Changed primary color to emerald-500"]
 }
-
-Apply the requested changes precisely. Do not add unrequested improvements.`
+`
 
 export async function POST(request: NextRequest) {
   try {
@@ -225,49 +221,61 @@ Refine this code:
 
 ${code}`
 
-    // Prepare content parts for Gemini
-    const parts: any[] = [
-      { text: isUserDirected ? USER_REFINE_SYSTEM_PROMPT : REFINER_SYSTEM_PROMPT },
-      { text: userMessage }
+    // Prepare messages for Claude
+    const messages: any[] = [
+      { role: 'user', content: [] }
     ]
+
+    // Add text content
+    messages[0].content.push({
+      type: 'text',
+      text: userMessage
+    })
 
     // Add visual context if screenshot is provided (The Retina)
     if (screenshot) {
       // Remove data URL prefix if present to get raw base64
       const base64Data = screenshot.replace(/^data:image\/\w+;base64,/, "")
       
-      parts.push({
+      messages[0].content.push({
+        type: 'text',
         text: "I have attached a screenshot of the currently rendered component. Use this visual data to identify layout issues, contrast problems, or visual bugs that might not be obvious in the code alone. If the visual output contradicts the code's intent, prioritize fixing the code to match the visual goal."
       })
       
-      parts.push({
-        inlineData: {
-          mimeType: "image/png",
+      messages[0].content.push({
+        type: 'image',
+        source: {
+          type: 'base64',
+          media_type: 'image/png',
           data: base64Data
         }
       })
     }
 
-    // Call Gemini 2.0 Flash for refinement
-    if (!genai) {
-      return NextResponse.json({ error: 'Gemini API key not configured' }, { status: 500 })
-    }
-
-    const response = await genai.models.generateContent({
-      model: 'gemini-2.0-flash-exp',
-      config: {
-        responseMimeType: 'application/json',
+    // Call Claude 3.5 Sonnet for refinement
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': process.env.ANTHROPIC_API_KEY || '',
+        'anthropic-version': '2023-06-01'
       },
-      contents: [
-        {
-          role: 'user',
-          parts: parts
-        }
-      ]
+      body: JSON.stringify({
+        model: 'claude-3-5-sonnet-20241022',
+        max_tokens: 8192,
+        system: isUserDirected ? USER_REFINE_SYSTEM_PROMPT : REFINER_SYSTEM_PROMPT,
+        messages: messages
+      })
     })
 
-    // Extract the response
-    const responseText = response.text || ''
+    if (!response.ok) {
+      const error = await response.json()
+      console.error('Anthropic API error:', error)
+      return NextResponse.json({ error: 'Refinement failed' }, { status: 500 })
+    }
+
+    const data = await response.json()
+    const responseText = data.content[0]?.text || ''
     console.log('[refine-section] Raw response:', responseText.slice(0, 500))
 
     // Parse JSON response
@@ -276,28 +284,22 @@ ${code}`
     let wasRefined = false
 
     try {
-      const parsed = JSON.parse(responseText)
-      refinedCode = parsed.refinedCode || code
-      changes = parsed.changes || []
-      wasRefined = changes.length > 0
+      const cleanedResponse = responseText
+        .replace(/^```(?:json)?\n?/gm, '')
+        .replace(/\n?```$/gm, '')
+        .trim()
+
+      const jsonMatch = cleanedResponse.match(/\{[\s\S]*\}/)
+      if (jsonMatch) {
+        const parsed = JSON.parse(jsonMatch[0])
+        refinedCode = parsed.refinedCode || code
+        changes = parsed.changes || []
+        wasRefined = changes.length > 0
+      }
     } catch (parseError) {
       console.error('[refine-section] Failed to parse response:', parseError)
       
-      // Strategy 2: Extract JSON from markdown blocks
-      const jsonMatch = responseText.match(/```json\n([\s\S]*?)\n```/) || responseText.match(/\{[\s\S]*\}/)
-      if (jsonMatch) {
-        try {
-          const jsonStr = jsonMatch[1] || jsonMatch[0]
-          const parsed = JSON.parse(jsonStr)
-          refinedCode = parsed.refinedCode || code
-          changes = parsed.changes || []
-          wasRefined = changes.length > 0
-        } catch (e2) {
-          console.error('[refine-section] Failed to parse extracted JSON:', e2)
-        }
-      }
-      
-      // Strategy 3: Extract code block directly (fallback)
+      // Fallback: Extract code block directly
       if (!wasRefined) {
          const codeMatch = responseText.match(/```(?:tsx|jsx|javascript|typescript)?\n([\s\S]*?)```/)
          if (codeMatch) {
@@ -363,7 +365,7 @@ ${code}`
       refined: wasRefined,
       code: refinedCode,
       changes,
-      model: 'gemini-2.0-flash',
+      model: 'claude-3.5-sonnet',
     })
 
   } catch (error) {

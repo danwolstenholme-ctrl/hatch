@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth, currentUser } from '@clerk/nextjs/server'
-import { GoogleGenAI } from '@google/genai'
 import { 
   getLatestBuild, 
   updateBuildAudit,
@@ -10,24 +9,14 @@ import {
 } from '@/lib/db'
 
 // =============================================================================
-// GEMINI 2.0 FLASH - THE AUDITOR
-// Final review with fresh eyes from a different AI model
-// Catches what Claude misses
+// CLAUDE SONNET 4.5 - THE AUDITOR
+// Final review with fresh eyes from the smartest model available
 // =============================================================================
-
-// Validate Gemini API key at module level
-const geminiApiKey = process.env.GEMINI_API_KEY
-if (!geminiApiKey) {
-  console.warn('GEMINI_API_KEY is not configured - audit feature will be unavailable')
-}
-
-// Initialize Gemini client (may be null if API key not set)
-const genai = geminiApiKey ? new GoogleGenAI({ apiKey: geminiApiKey }) : null
 
 const AUDITOR_SYSTEM_PROMPT = `You are The Auditor — a high-precision quality assurance system performing a FINAL AUDIT on a React + Tailwind page.
 
-CONTEXT: This code was constructed by The Architect (Sonnet 3.5) and refined by The Refiner (Gemini 2.0).
-You are The Auditor (Gemini 2.0 Flash) — the final gatekeeper.
+CONTEXT: This code was constructed by The Architect (Sonnet 4.5).
+You are The Auditor (Sonnet 4.5) — the final gatekeeper.
 Your job is to catch what they missed. Be the fresh eyes.
 
 ## AUDIT CHECKLIST
@@ -111,14 +100,6 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    // Check if Gemini is configured
-    if (!genai) {
-      return NextResponse.json(
-        { error: 'Audit feature is currently unavailable. Please try again later.' },
-        { status: 503 }
-      )
-    }
-
     const user = await currentUser()
     const email = user?.emailAddresses?.[0]?.emailAddress
     const dbUser = await getOrCreateUser(clerkId, email)
@@ -160,14 +141,32 @@ export async function POST(request: NextRequest) {
 
     const fullCode = build.full_code
 
-    // Call Gemini 2.0 Flash for audit
-    const response = await genai.models.generateContent({
-      model: 'gemini-2.0-flash-exp',
-      contents: `${AUDITOR_SYSTEM_PROMPT}\n\n---\n\nAudit this complete React + Tailwind page:\n\n${fullCode}`,
+    // Call Claude Sonnet 4.5 for audit
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': process.env.ANTHROPIC_API_KEY || '',
+        'anthropic-version': '2023-06-01'
+      },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-5-20250929',
+        max_tokens: 64000,
+        system: AUDITOR_SYSTEM_PROMPT,
+        messages: [
+          { role: 'user', content: `Audit this complete React + Tailwind page:\n\n${fullCode}` }
+        ]
+      })
     })
 
-    // Extract the response
-    const responseText = response.text || ''
+    if (!response.ok) {
+      const error = await response.json()
+      console.error('Anthropic API error:', error)
+      return NextResponse.json({ error: 'Audit failed' }, { status: 500 })
+    }
+
+    const data = await response.json()
+    const responseText = data.content[0]?.text || ''
 
     // Parse JSON response
     let auditedCode = fullCode
@@ -190,7 +189,7 @@ export async function POST(request: NextRequest) {
         passed = parsed.passed !== false
       }
     } catch (parseError) {
-      console.error('[audit] Failed to parse Gemini response:', parseError)
+      console.error('[audit] Failed to parse Claude response:', parseError)
       auditedCode = fullCode
       changes = []
     }
@@ -210,7 +209,7 @@ export async function POST(request: NextRequest) {
       scores,
       passed,
       hasChanges: changes.length > 0,
-      model: 'gemini-2.5-pro',
+      model: 'claude-sonnet-4.5',
     })
 
   } catch (error) {

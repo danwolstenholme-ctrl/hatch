@@ -1,15 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { GoogleGenAI } from '@google/genai'
 
-const geminiApiKey = process.env.GEMINI_API_KEY
-const genai = geminiApiKey ? new GoogleGenAI({ apiKey: geminiApiKey }) : null
+// =============================================================================
+// CLAUDE 3.5 SONNET - THE WITNESS
+// "The Observer"
+// Analyzes user behavior and generates personalized insights
+// =============================================================================
 
 export async function POST(req: NextRequest) {
   try {
-    if (!genai) {
-      return NextResponse.json({ error: 'Gemini API key not configured' }, { status: 500 })
-    }
-
     const { dna } = await req.json()
     
     const prompt = `
@@ -35,17 +33,30 @@ export async function POST(req: NextRequest) {
       Sign it as "The Architect".
     `
 
-    const response = await genai.models.generateContent({
-      model: 'gemini-2.0-flash-exp',
-      contents: [
-        {
-          role: 'user',
-          parts: [{ text: prompt }]
-        }
-      ]
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': process.env.ANTHROPIC_API_KEY || '',
+        'anthropic-version': '2023-06-01'
+      },
+      body: JSON.stringify({
+        model: 'claude-3-5-sonnet-20241022',
+        max_tokens: 1024,
+        messages: [
+          { role: 'user', content: prompt }
+        ]
+      })
     })
 
-    const text = response.text || ''
+    if (!response.ok) {
+      const error = await response.json()
+      console.error('Anthropic API error:', error)
+      return NextResponse.json({ error: 'Witness failed' }, { status: 500 })
+    }
+
+    const data = await response.json()
+    const text = data.content[0]?.text || ''
 
     return NextResponse.json({ note: text })
   } catch (error) {
