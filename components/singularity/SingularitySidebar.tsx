@@ -3,7 +3,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { Terminal, Eye, Brain, Sparkles, Zap, Activity, Lock, Settings } from 'lucide-react'
-import ArchitectLogo from './ArchitectLogo'
+import ArchitectLogo from '../ArchitectLogo'
 
 interface SingularitySidebarProps {
   currentSection: number

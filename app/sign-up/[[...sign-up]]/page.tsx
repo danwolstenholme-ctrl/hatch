@@ -39,7 +39,6 @@ export default function SignUpPage() {
           <SignUp 
             forceRedirectUrl={redirectUrl}
             appearance={{
-              variables: { colorScheme: 'dark' },
               elements: {
                 rootBox: 'w-full',
                 card: 'bg-zinc-900 border border-zinc-800 shadow-2xl shadow-black/50',
