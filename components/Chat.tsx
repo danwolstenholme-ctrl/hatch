@@ -81,7 +81,7 @@ const componentPresets = [
   { label: '🧭 Navbar', prompt: 'Add a modern responsive navbar with logo on the left, navigation links in the center, and a CTA button on the right. Include mobile hamburger menu.' },
   { label: '🦶 Footer', prompt: 'Add a professional footer with multiple columns: company info, quick links, contact details, and social media icons. Include copyright.' },
   { label: '📬 Contact Form', prompt: 'Add a contact form section with name, email, subject, and message fields. Include validation styling and a submit button.' },
-  { label: '💰 Pricing Table', prompt: 'Add a pricing section with 3 tiers (Basic, Pro, Enterprise). Each card should have: plan name, price, feature list with checkmarks, and CTA button. Highlight the recommended plan.' },
+  { label: '💰 Pricing Table', prompt: 'Add a pricing section with 3 tiers (Architect, Visionary, Singularity). Each card should have: plan name, price, feature list with checkmarks, and CTA button. Highlight the Visionary plan.' },
   { label: '⭐ Testimonials', prompt: 'Add a testimonials section with 3 customer reviews. Each should have: quote, customer name, role/company, and avatar placeholder.' },
   { label: '🎯 Hero Section', prompt: 'Add a hero section with a large headline, subheadline, CTA button, and optional background image or gradient.' },
   { label: '📊 Features Grid', prompt: 'Add a features section with 6 feature cards in a grid. Each card has an icon, title, and short description.' },

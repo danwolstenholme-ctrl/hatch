@@ -66,7 +66,7 @@ export default function HatchModal({ isOpen, onClose, reason, projectSlug = '', 
 
   const { title, description } = messages[reason]
 
-  const handleHatch = async (selectedTier: 'pro' | 'lite' | 'agency' = 'pro') => {
+  const handleHatch = async (selectedTier: 'architect' | 'visionary' | 'singularity' = 'visionary') => {
     // If not signed in, go to split-screen sign-up page with tier pre-selected
     if (!isSignedIn) {
       onClose()
@@ -89,39 +89,23 @@ export default function HatchModal({ isOpen, onClose, reason, projectSlug = '', 
     track('Hatch Started', { reason, projectSlug, tier: selectedTier })
     try {
       const response = await fetch('/api/checkout', {
-        method: 'POST',
+        method: 'GET', // Changed to GET for new checkout flow
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ tier: selectedTier }),
+        // Params are now in query string for GET, but let's check how the new checkout route works.
+        // Actually, the new checkout route is a GET that redirects to Stripe.
+        // We should just redirect the window location.
       })
-
-      if (response.status === 401) {
-        onClose()
-        openSignIn({
-          afterSignInUrl: window.location.href,
-          afterSignUpUrl: window.location.href,
-        })
-        return
-      }
-
-      const data = await response.json()
       
-      if (data.url) {
-        window.location.href = data.url
-      } else if (data.existingTier) {
-        // User already has subscription - sync and close
-        setError(`You already have a ${data.existingTier} subscription! Syncing your account...`)
-        await syncSubscription()
-        setTimeout(() => {
-          onClose()
-          window.location.reload()
-        }, 2000)
-      } else {
-        setError(data.error || 'Failed to start checkout. Please try again.')
-      }
+      // Direct redirect to checkout endpoint with params
+      const checkoutUrl = new URL('/api/checkout', window.location.origin)
+      checkoutUrl.searchParams.set('tier', selectedTier)
+      if (projectSlug) checkoutUrl.searchParams.set('project', projectSlug)
+      
+      window.location.href = checkoutUrl.toString()
+      
     } catch (error) {
       console.error('Checkout error:', error)
       setError('Failed to start checkout. Please try again.')
-    } finally {
       setIsLoading(false)
     }
   }
@@ -169,11 +153,11 @@ export default function HatchModal({ isOpen, onClose, reason, projectSlug = '', 
             {/* 3-Tier Pricing Grid */}
             <div className="grid md:grid-cols-3 gap-4 mb-6">
               
-              {/* STARTER - $9/2wks */}
+              {/* ARCHITECT - $9/2wks */}
               <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5 flex flex-col">
                 <div className="mb-4">
-                  <span className="text-xs font-bold text-lime-400 tracking-wider">SEEDLING</span>
-                  <h3 className="text-xl font-bold text-white mt-1">Starter</h3>
+                  <span className="text-xs font-bold text-emerald-400 tracking-wider">FOUNDATION</span>
+                  <h3 className="text-xl font-bold text-white mt-1">Architect</h3>
                   <div className="flex items-baseline gap-1 mt-2">
                     <span className="text-3xl font-bold text-white">$9</span>
                     <span className="text-zinc-500 text-sm">/2 weeks</span>
@@ -187,7 +171,7 @@ export default function HatchModal({ isOpen, onClose, reason, projectSlug = '', 
                     { text: 'Unlimited AI Generations', included: true },
                     { text: 'Live Preview Your Site', included: true },
                     { text: 'Deploy to managed subdomain', included: true },
-                    { text: 'Download Source Code', included: false },
+                    { text: 'Download Source Code', included: true },
                     { text: 'Custom Domain', included: false },
                     { text: 'Remove Branding', included: false },
                   ].map((feature, i) => (
@@ -201,7 +185,7 @@ export default function HatchModal({ isOpen, onClose, reason, projectSlug = '', 
                 </div>
 
                 <button
-                  onClick={() => handleHatch('lite')}
+                  onClick={() => handleHatch('architect')}
                   disabled={isLoading || isSyncing}
                   className="w-full mt-6 py-3 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-white font-semibold transition-all"
                 >
@@ -209,20 +193,20 @@ export default function HatchModal({ isOpen, onClose, reason, projectSlug = '', 
                 </button>
               </div>
 
-              {/* PRO - $49 (Highlighted) */}
-              <div className="bg-zinc-900 border-2 border-emerald-500/50 rounded-xl p-5 flex flex-col relative">
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-emerald-500 text-zinc-950 text-[10px] font-bold px-3 py-1 rounded-full whitespace-nowrap">
-                  FULL ACCESS
+              {/* VISIONARY - $29 (Highlighted) */}
+              <div className="bg-zinc-900 border-2 border-violet-500/50 rounded-xl p-5 flex flex-col relative">
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-violet-500 text-white text-[10px] font-bold px-3 py-1 rounded-full whitespace-nowrap">
+                  MOST POPULAR
                 </div>
                 
                 <div className="mb-4">
                   <div className="flex items-center gap-2">
-                    <span className="text-emerald-400">⚡</span>
-                    <span className="text-xs font-bold text-emerald-400 tracking-wider">UNLIMITED</span>
+                    <span className="text-violet-400">⚡</span>
+                    <span className="text-xs font-bold text-violet-400 tracking-wider">UNLIMITED</span>
                   </div>
-                  <h3 className="text-xl font-bold text-white mt-1">Pro</h3>
+                  <h3 className="text-xl font-bold text-white mt-1">Visionary</h3>
                   <div className="flex items-baseline gap-1 mt-2">
-                    <span className="text-3xl font-bold text-white">$49</span>
+                    <span className="text-3xl font-bold text-white">$29</span>
                     <span className="text-zinc-500 text-sm">/month</span>
                   </div>
                   <p className="text-zinc-500 text-xs mt-1">Everything. Unlimited.</p>
@@ -234,30 +218,30 @@ export default function HatchModal({ isOpen, onClose, reason, projectSlug = '', 
                     'Download Full Source Code',
                     'Deploy to Custom Domain',
                     'Remove Platform Branding',
-                    'Commercial License',
+                    'Evolution Engine Access',
                     'Priority Support',
                   ].map((feature, i) => (
                     <div key={i} className="flex items-center gap-2 text-sm text-zinc-300">
-                      <span className="text-emerald-400">✓</span>
+                      <span className="text-violet-400">✓</span>
                       {feature}
                     </div>
                   ))}
                 </div>
 
                 <button
-                  onClick={() => handleHatch('pro')}
+                  onClick={() => handleHatch('visionary')}
                   disabled={isLoading || isSyncing}
-                  className="w-full mt-6 py-3 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold transition-all shadow-lg shadow-emerald-500/20"
+                  className="w-full mt-6 py-3 rounded-lg bg-violet-600 hover:bg-violet-500 text-white font-bold transition-all shadow-lg shadow-violet-500/20"
                 >
-                  {isLoading ? 'Processing...' : 'Get Pro'}
+                  {isLoading ? 'Processing...' : 'Become Visionary'}
                 </button>
               </div>
 
-              {/* AGENCY - $99 */}
+              {/* SINGULARITY - $99 */}
               <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5 flex flex-col">
                 <div className="mb-4">
                   <span className="text-xs font-bold text-amber-400 tracking-wider">EMPIRE</span>
-                  <h3 className="text-xl font-bold text-white mt-1">Agency</h3>
+                  <h3 className="text-xl font-bold text-white mt-1">Singularity</h3>
                   <div className="flex items-baseline gap-1 mt-2">
                     <span className="text-3xl font-bold text-white">$99</span>
                     <span className="text-zinc-500 text-sm">/month</span>
@@ -267,25 +251,25 @@ export default function HatchModal({ isOpen, onClose, reason, projectSlug = '', 
                 
                 <div className="space-y-2.5 flex-1">
                   {[
-                    'Everything in Pro',
+                    'Everything in Visionary',
                     'Commercial License',
                     'Priority 24/7 Support',
                     'Unlimited Projects',
-                    'Team Features (Coming Soon)',
+                    'Replicator Access (Clone Sites)',
                   ].map((feature, i) => (
                     <div key={i} className="flex items-center gap-2 text-sm text-zinc-300">
-                      <span className="text-emerald-400">✓</span>
+                      <span className="text-amber-400">✓</span>
                       {feature}
                     </div>
                   ))}
                 </div>
 
                 <button
-                  onClick={() => handleHatch('agency')}
+                  onClick={() => handleHatch('singularity')}
                   disabled={isLoading || isSyncing}
                   className="w-full mt-6 py-3 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-white font-semibold transition-all"
                 >
-                  Initialize Agency
+                  Enter Singularity
                 </button>
               </div>
             </div>

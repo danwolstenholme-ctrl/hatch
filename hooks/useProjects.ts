@@ -144,7 +144,7 @@ export function useProjects(): UseProjectsReturn {
   const canUndo = currentVersionIndex > 0
   const canRedo = currentVersionIndex < versions.length - 1
   
-  // Account subscription from user metadata (Pro or Agency tier)
+  // Account subscription from user metadata (Architect, Visionary, or Singularity tier)
   const accountSubscription = useMemo(() => {
     return (user?.publicMetadata?.accountSubscription as AccountSubscription) || null
   }, [user?.publicMetadata?.accountSubscription])

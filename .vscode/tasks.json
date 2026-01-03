@@ -257,6 +257,11 @@
 			"label": "commit-pricing-migration",
 			"type": "shell",
 			"command": "git add . && git commit -m \"feat: complete migration to Singularity pricing tiers (Architect, Visionary, Singularity)\""
+		},
+		{
+			"label": "commit-final-fixes",
+			"type": "shell",
+			"command": "git add . && git commit -m \"fix: resolve remaining legacy tier references in HatchModal and Chat components\""
 		}
 	]
 }
