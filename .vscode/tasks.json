@@ -225,6 +225,15 @@
 			"label": "commit-homepage-refactor",
 			"type": "shell",
 			"command": "git add . && git commit -m \"refactor: simplify homepage copy - remove HatchIt/Architect jargon, focus on 'Text to React' value prop\""
+		},
+		{
+			"label": "commit-launch-experience",
+			"type": "shell",
+			"command": "git add . && git commit -m \"feat: implement human touch launch experience - void animation, reddit link, manual entry\" && git push",
+			"args": [],
+			"isBackground": false,
+			"problemMatcher": [],
+			"group": "build"
 		}
 	]
 }

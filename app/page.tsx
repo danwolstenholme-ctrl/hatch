@@ -31,8 +31,8 @@ function VoidButton({ isSignedIn, router }: { isSignedIn: boolean | undefined, r
     
     // Quick transition, let /launch handle the immersive sequence
     setTimeout(() => {
-      const destination = isSignedIn ? '/builder' : '/launch'
-      router.push(destination)
+      // Always route to launch to ensure the "Human Touch" experience
+      router.push('/launch')
     }, 150)
   }
   
