@@ -11,7 +11,7 @@ import { motion, useInView, AnimatePresence } from 'framer-motion'
 import { Cpu, Terminal, Layers, Shield, Zap, Code2, Globe, ArrowRight, CheckCircle2, Layout, Sparkles, Smartphone, Brain } from 'lucide-react'
 import type { AppRouterInstance } from 'next/dist/shared/lib/app-router-context.shared-runtime'
 import HomepageWelcome from '@/components/HomepageWelcome'
-import SingularityTransition from '@/components/SingularityTransition'
+import SingularityTransition from '@/components/singularity/SingularityTransition'
 
 // Client-side check to prevent hydration mismatch
 const emptySubscribe = () => () => {}

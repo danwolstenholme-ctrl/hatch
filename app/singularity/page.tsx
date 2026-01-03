@@ -1,4 +1,4 @@
-import SingularityEngine from '@/components/SingularityEngine'
+import SingularityEngine from '@/components/singularity/SingularityEngine'
 
 export const metadata = {
   title: 'The Singularity | Hatch',
