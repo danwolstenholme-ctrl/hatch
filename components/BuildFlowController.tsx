@@ -48,6 +48,7 @@ import PaywallTransition from './PaywallTransition'
 import HatchModal from './HatchModal'
 import Scorecard from './Scorecard'
 import TheWitness from './TheWitness'
+import WelcomeModal from './WelcomeModal'
 import FirstContact from './FirstContact'
 import { chronosphere } from '@/lib/chronosphere'
 import { Template, Section, getTemplateById, getSectionById, createInitialBuildState, BuildState, websiteTemplate } from '@/lib/templates'
@@ -433,6 +434,7 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
   const [editingSectionIndex, setEditingSectionIndex] = useState<number | null>(null)
   const [justCreatedProjectId, setJustCreatedProjectId] = useState<string | null>(null)
   const [showScorecard, setShowScorecard] = useState(false)
+  const [showSignupGate, setShowSignupGate] = useState(false)
 
   // Reset legacy welcome flags so V2 intro shows for all users (esp. mobile)
   useEffect(() => {
@@ -662,7 +664,8 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
 
     const hasSeenWelcome = localStorage.getItem(WELCOME_SEEN_KEY)
     // For guests, always show First Contact on fresh load; signed-in users respect the seen flag
-    const shouldShowFirstContact = (!existingProjectId && (!hasSeenWelcome || !isSignedIn))
+    // const shouldShowFirstContact = (!existingProjectId && (!hasSeenWelcome || !isSignedIn))
+    const shouldShowFirstContact = false // FORCE SKIP FIRST CONTACT - User wants straight to builder
 
     if (shouldShowFirstContact) {
       console.log('BuildFlowController: Showing First Contact experience')
@@ -954,6 +957,14 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
       })
     }
 
+    // TRIGGER SIGNUP GATE FOR GUESTS AFTER FIRST SECTION (HERO)
+    if (guestMode && buildState.currentSectionIndex === 0) {
+      // Small delay to let them see the preview update first
+      setTimeout(() => {
+        setShowSignupGate(true)
+      }, 1500)
+    }
+
     // NO MORE GENERATION COUNTING - users can generate freely
     // Paywall is at deploy/export only
 
@@ -1033,6 +1044,12 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
 
   const handleNextSection = () => {
     if (!buildState) return
+
+    // STRICT GUEST LOCK: Prevent advancing past Hero (index 0)
+    if (guestMode && buildState.currentSectionIndex === 0) {
+      setShowSignupGate(true)
+      return
+    }
 
     const nextIndex = buildState.currentSectionIndex + 1
     
@@ -2233,6 +2250,16 @@ export default function GeneratedPage() {
         onClose={() => setShowWitness(false)}
         note={witnessNote}
         isLoading={isWitnessLoading}
+      />
+
+      <WelcomeModal 
+        trigger="manual" 
+        isOpen={showSignupGate} 
+        onClose={() => {
+          // If they close it, they stay on the current section but can't advance
+          // We don't force it open, but the "Next" button will trigger it again
+          setShowSignupGate(false)
+        }} 
       />
     </div>
   )

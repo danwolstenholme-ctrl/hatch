@@ -10,6 +10,7 @@ import { useUser } from '@clerk/nextjs'
 import { motion, useInView } from 'framer-motion'
 import { Cpu, Terminal, Layers, Shield, Zap, Code2, Globe, ArrowRight, CheckCircle2, Layout, Sparkles, Smartphone, Brain } from 'lucide-react'
 import type { AppRouterInstance } from 'next/dist/shared/lib/app-router-context.shared-runtime'
+import LaunchAnimation from '@/components/LaunchAnimation'
 
 // Client-side check to prevent hydration mismatch
 const emptySubscribe = () => () => {}
@@ -22,40 +23,23 @@ function useIsClient() {
 }
 
 // The Void Button - hands off to launch page for the immersive experience
-function VoidButton({ isSignedIn, router }: { isSignedIn: boolean | undefined, router: AppRouterInstance }) {
-  const [isLoading, setIsLoading] = useState(false)
+function VoidButton({ isSignedIn, router, onLaunch }: { isSignedIn: boolean | undefined, router: AppRouterInstance, onLaunch: () => void }) {
   
   const handleClick = () => {
-    if (isLoading) return
-    setIsLoading(true)
-    
-    // Direct route to builder - bypass legacy launch sequence
-    setTimeout(() => {
-      router.push('/builder')
-    }, 150)
+    onLaunch()
   }
   
   return (
     <button
       onClick={handleClick}
-      disabled={isLoading}
-      className="group relative w-full sm:w-auto inline-flex justify-center items-center gap-3 px-8 sm:px-10 py-4 sm:py-5 bg-zinc-900/80 hover:bg-zinc-900 border border-emerald-500/30 hover:border-emerald-500/60 rounded-2xl font-bold text-lg transition-all duration-300 hover:scale-105 active:scale-95 shadow-[0_0_60px_rgba(16,185,129,0.15)] hover:shadow-[0_0_80px_rgba(16,185,129,0.25)] disabled:hover:scale-100 overflow-hidden"
+      className="group relative w-full sm:w-auto inline-flex justify-center items-center gap-3 px-8 sm:px-10 py-4 sm:py-5 bg-zinc-900/80 hover:bg-zinc-900 border border-emerald-500/30 hover:border-emerald-500/60 rounded-2xl font-bold text-lg transition-all duration-300 hover:scale-105 active:scale-95 shadow-[0_0_60px_rgba(16,185,129,0.15)] hover:shadow-[0_0_80px_rgba(16,185,129,0.25)] overflow-hidden"
     >
       {/* Glow ring on hover - Always active on mobile via CSS animation */}
       <div className="absolute -inset-[2px] rounded-2xl bg-gradient-to-r from-emerald-500/40 via-teal-500/40 to-emerald-500/40 opacity-50 sm:opacity-0 sm:group-hover:opacity-100 blur-md transition-opacity duration-500 animate-pulse sm:animate-none" />
       
       <div className="relative z-10 flex items-center gap-3">
-        {isLoading ? (
-          <>
-            <div className="w-5 h-5 border-2 border-emerald-500/30 border-t-emerald-500 rounded-full animate-spin" />
-            <span className="text-emerald-400 font-mono text-base">LOADING...</span>
-          </>
-        ) : (
-          <>
-            <span className="text-white tracking-wide">START BUILDING</span>
-            <ArrowRight className="w-5 h-5 text-emerald-400 group-hover:translate-x-1 transition-transform" />
-          </>
-        )}
+        <span className="text-white tracking-wide">START BUILDING</span>
+        <ArrowRight className="w-5 h-5 text-emerald-400 group-hover:translate-x-1 transition-transform" />
       </div>
     </button>
   )
@@ -128,9 +112,12 @@ function AnimatedCard({ children, delay = 0, className = '' }: { children: React
 export default function Home() {
   const { isSignedIn } = useUser()
   const router = useRouter()
+  const [showLaunch, setShowLaunch] = useState(false)
   
   return (
     <main className="min-h-screen bg-zinc-950 text-white">
+      {showLaunch && <LaunchAnimation onComplete={() => router.push('/builder')} />}
+      
       {/* CSS for smooth scroll and effects */}
       <style jsx global>{`
         html { scroll-behavior: smooth; }
@@ -203,7 +190,7 @@ export default function Home() {
               transition={{ delay: 0.6 }}
               className="mb-12 w-full sm:w-auto"
             >
-              <VoidButton isSignedIn={isSignedIn} router={router} />
+              <VoidButton isSignedIn={isSignedIn} router={router} onLaunch={() => setShowLaunch(true)} />
             </motion.div>
 
             {/* Value props */}
@@ -546,7 +533,7 @@ export default function Home() {
           <h2 className="text-4xl sm:text-6xl font-black mb-6 tracking-tighter">Enter the void.</h2>
           <p className="text-xl text-zinc-400 mb-10">Your website is waiting to be born.</p>
           <div className="flex justify-center">
-            <VoidButton isSignedIn={isSignedIn} router={router} />
+            <VoidButton isSignedIn={isSignedIn} router={router} onLaunch={() => setShowLaunch(true)} />
           </div>
         </div>
       </Section>
