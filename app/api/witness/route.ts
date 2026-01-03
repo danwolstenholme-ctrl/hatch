@@ -36,7 +36,7 @@ export async function POST(req: NextRequest) {
     `
 
     const response = await genai.models.generateContent({
-      model: 'gemini-2.0-flash-001',
+      model: 'gemini-2.0-flash-exp',
       contents: [
         {
           role: 'user',

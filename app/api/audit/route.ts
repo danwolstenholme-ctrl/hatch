@@ -10,7 +10,7 @@ import {
 } from '@/lib/db'
 
 // =============================================================================
-// GEMINI 2.5 PRO - THE AUDITOR
+// GEMINI 2.0 FLASH - THE AUDITOR
 // Final review with fresh eyes from a different AI model
 // Catches what Claude misses
 // =============================================================================
@@ -27,7 +27,7 @@ const genai = geminiApiKey ? new GoogleGenAI({ apiKey: geminiApiKey }) : null
 const AUDITOR_SYSTEM_PROMPT = `You are The Auditor — a high-precision quality assurance system performing a FINAL AUDIT on a React + Tailwind page.
 
 CONTEXT: This code was constructed by The Architect (Sonnet 3.5) and refined by The Refiner (Gemini 2.0).
-You are The Auditor (Gemini 2.5 Pro) — the final gatekeeper.
+You are The Auditor (Gemini 2.0 Flash) — the final gatekeeper.
 Your job is to catch what they missed. Be the fresh eyes.
 
 ## AUDIT CHECKLIST
@@ -160,9 +160,9 @@ export async function POST(request: NextRequest) {
 
     const fullCode = build.full_code
 
-    // Call Gemini 2.5 Pro for audit
+    // Call Gemini 2.0 Flash for audit
     const response = await genai.models.generateContent({
-      model: 'gemini-2.5-pro-preview-06-05',
+      model: 'gemini-2.0-flash-exp',
       contents: `${AUDITOR_SYSTEM_PROMPT}\n\n---\n\nAudit this complete React + Tailwind page:\n\n${fullCode}`,
     })
 

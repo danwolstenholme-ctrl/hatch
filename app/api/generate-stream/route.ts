@@ -143,7 +143,8 @@ function checkRateLimit(userId: string): boolean {
 
 // Daily generation tracking
 const dailyGenerations = new Map<string, { count: number; date: string }>()
-const FREE_DAILY_LIMIT = parseInt(process.env.FREE_TOTAL_CREDITS || '9', 10)  // Unified free credit pool
+// FREE_DAILY_LIMIT is now 10 for builds (generous)
+const FREE_BUILD_LIMIT = 10
 
 function checkAndRecordGeneration(userId: string, isPaid: boolean): { allowed: boolean } {
   if (isPaid) return { allowed: true }
@@ -156,7 +157,7 @@ function checkAndRecordGeneration(userId: string, isPaid: boolean): { allowed: b
     userGen.date = today
   }
   
-  if (userGen.count >= FREE_DAILY_LIMIT) {
+  if (userGen.count >= FREE_BUILD_LIMIT) {
     return { allowed: false }
   }
   
@@ -264,8 +265,8 @@ export async function POST(request: NextRequest) {
             'anthropic-version': '2023-06-01'
           },
           body: JSON.stringify({
-            model: 'claude-sonnet-4-20250514',  // Sonnet for builds
-            max_tokens: 16000,
+            model: 'claude-3-5-sonnet-20240620',  // Sonnet 3.5 (Latest)
+            max_tokens: 8192,
             stream: true,
             system: systemPrompt,
             messages

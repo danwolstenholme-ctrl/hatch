@@ -294,6 +294,75 @@ function BrandQuickReference({ brandConfig }: { brandConfig: DbBrandConfig }) {
   )
 }
 
+// Builder Guide Overlay
+const BuilderGuide = ({ onClose }: { onClose: () => void }) => (
+  <motion.div
+    initial={{ opacity: 0 }}
+    animate={{ opacity: 1 }}
+    exit={{ opacity: 0 }}
+    className="absolute inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+  >
+    <motion.div
+      initial={{ scale: 0.9, y: 20 }}
+      animate={{ scale: 1, y: 0 }}
+      className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 max-w-md w-full shadow-2xl relative overflow-hidden"
+    >
+      {/* Background Glow */}
+      <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/10 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none" />
+      
+      <div className="relative z-10">
+        <div className="w-12 h-12 bg-zinc-800 rounded-xl flex items-center justify-center mb-4 border border-zinc-700">
+          <Terminal className="w-6 h-6 text-emerald-400" />
+        </div>
+        
+        <h3 className="text-xl font-bold text-white mb-2">Welcome to the Architect</h3>
+        <p className="text-zinc-400 text-sm mb-6">
+          You are in the command center. Here you can build, refine, and deploy your vision.
+        </p>
+        
+        <div className="space-y-4 mb-8">
+          <div className="flex gap-3">
+            <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center shrink-0">
+              <Wand2 className="w-4 h-4 text-emerald-400" />
+            </div>
+            <div>
+              <h4 className="text-sm font-medium text-zinc-200">Build Sections</h4>
+              <p className="text-xs text-zinc-500">Type your vision to generate code instantly. Free users get 10 builds.</p>
+            </div>
+          </div>
+          
+          <div className="flex gap-3">
+            <div className="w-8 h-8 rounded-lg bg-purple-500/10 flex items-center justify-center shrink-0">
+              <Sparkles className="w-4 h-4 text-purple-400" />
+            </div>
+            <div>
+              <h4 className="text-sm font-medium text-zinc-200">Refine & Polish</h4>
+              <p className="text-xs text-zinc-500">Tweak details with AI. Free users get 1 trial refinement.</p>
+            </div>
+          </div>
+          
+          <div className="flex gap-3">
+            <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center shrink-0">
+              <Zap className="w-4 h-4 text-blue-400" />
+            </div>
+            <div>
+              <h4 className="text-sm font-medium text-zinc-200">Deploy</h4>
+              <p className="text-xs text-zinc-500">Export your code or deploy live. Requires Architect plan.</p>
+            </div>
+          </div>
+        </div>
+        
+        <button
+          onClick={onClose}
+          className="w-full py-3 bg-white text-black font-semibold rounded-xl hover:bg-zinc-200 transition-colors"
+        >
+          Initialize Builder
+        </button>
+      </div>
+    </motion.div>
+  </motion.div>
+)
+
 export default function SectionBuilder({
   section,
   dbSection,
@@ -307,7 +376,7 @@ export default function SectionBuilder({
   isPaid = false,
 }: SectionBuilderProps) {
   const router = useRouter()
-  const { isSignedIn } = useUser()
+  const { isSignedIn, user } = useUser()
   const [prompt, setPrompt] = useState(dbSection.user_prompt || '')
   const [stage, setStage] = useState<BuildStage>(
     dbSection.status === 'complete' ? 'complete' : 'input'
@@ -333,14 +402,30 @@ export default function SectionBuilder({
   const [isExplaining, setIsExplaining] = useState(false)
   const [isDreaming, setIsDreaming] = useState(false)
 
-  // NO MORE GENERATION LIMITS - Free users can generate unlimited
-  // Paywall is at DEPLOY/EXPORT only
+  // Paywall Logic: Free users get 3 credits (1 Build + 2 Refines)
   const { subscription, tier } = useSubscription()
   const isPaidTier = tier === 'architect' || tier === 'visionary' || tier === 'singularity'
-  const isProOrHigher = tier === 'visionary' || tier === 'singularity' // Only Visionary/Singularity get custom domains etc
+  const isProOrHigher = tier === 'visionary' || tier === 'singularity'
   const isGuest = !isPaid && !isPaidTier
-  const canGuestPolish = true // Everyone can polish - paywall at deploy
-  const isLocked = false // No more generation locks
+  
+  const freeCreditsUsed = (user?.publicMetadata?.freeCreditsUsed as number) || 0
+  const architectRefinementsUsed = (user?.publicMetadata?.architectRefinementsUsed as number) || 0
+  
+  // NEW LOGIC:
+  // 1. Builds are generous (10 credits) to allow finishing a site.
+  // 2. Refinements are strictly limited (1 credit) for free users.
+  const FREE_BUILD_LIMIT = 10
+  const FREE_REFINE_LIMIT = 1
+  
+  const isBuildLocked = !isPaidTier && freeCreditsUsed >= FREE_BUILD_LIMIT
+  const isRefineLocked = !isPaidTier && architectRefinementsUsed >= FREE_REFINE_LIMIT
+  
+  // General lock for "Deploy" or extreme usage
+  const isLocked = isBuildLocked && isRefineLocked
+
+  // Guide State
+  // Only show guide if it's the first section (Hero) and user hasn't seen it
+  const [showGuide, setShowGuide] = useState(section.id === 'hero' && !dbSection.code)
   const autoBuildRanRef = useRef(false)
 
   // Redirect to sign-up page when paywall is hit (deploy/export only)
@@ -817,8 +902,10 @@ export default function SectionBuilder({
 
   const handleBuildSection = async (options?: { skipGuestCredit?: boolean }) => {
     const skipGuestCredit = options?.skipGuestCredit
-    if (isLocked) {
+    if (isBuildLocked) {
       setMobileTab('preview')
+      // Show upgrade modal or toast
+      setError("Free build limit reached. Upgrade to continue building.")
       return
     }
     // NO MORE GENERATION LIMITS - free users can build unlimited
@@ -970,7 +1057,10 @@ export default function SectionBuilder({
   }
 
   const handleUserRefine = async () => {
-    // NO MORE LIMITS - unlimited refinements, paywall at deploy
+    if (isRefineLocked) {
+      goToSignUp('architect')
+      return
+    }
 
     if (!refinePrompt.trim() || !generatedCode) {
       setError('Please describe what changes you want')
@@ -1169,6 +1259,10 @@ export default function SectionBuilder({
   if (isInitialState) {
     return (
       <div className="flex-1 flex flex-col items-center justify-center min-h-0 bg-zinc-950 relative overflow-hidden">
+        <AnimatePresence>
+          {showGuide && <BuilderGuide onClose={() => setShowGuide(false)} />}
+        </AnimatePresence>
+        
         {/* Subtle background glow */}
         <div className="absolute inset-0 pointer-events-none">
           <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-emerald-500/5 rounded-full blur-[120px]" />
@@ -1381,7 +1475,12 @@ export default function SectionBuilder({
   }
 
   return (
-    <div className="flex-1 flex flex-col md:flex-row min-h-0 max-h-full overflow-hidden bg-zinc-950">
+    <div className="flex flex-col h-screen bg-zinc-950 text-white overflow-hidden">
+      <AnimatePresence>
+        {showGuide && <BuilderGuide onClose={() => setShowGuide(false)} />}
+      </AnimatePresence>
+
+      <div className="flex-1 flex flex-col md:flex-row min-h-0 max-h-full overflow-hidden bg-zinc-950">
       {isLocked && (
         <div className="w-full bg-emerald-500/10 border-b border-emerald-500/30 text-emerald-200 text-sm px-4 py-3 flex items-center justify-between z-30">
           <span className="font-medium">Guest trial complete: preview is unlocked, edits are disabled.</span>
@@ -1657,7 +1756,8 @@ export default function SectionBuilder({
                           onClick={handleUserRefine}
                           disabled={
                             !refinePrompt.trim() ||
-                            isUserRefining
+                            isUserRefining ||
+                            isRefineLocked
                           }
                           aria-disabled={isLocked}
                           className="px-3 py-2 rounded-lg bg-emerald-600/80 border border-emerald-500/40 text-white text-xs font-semibold hover:bg-emerald-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5 shadow-[0_0_14px_rgba(16,185,129,0.25)]"

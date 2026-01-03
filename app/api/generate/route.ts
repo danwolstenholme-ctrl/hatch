@@ -561,8 +561,8 @@ export async function POST(request: NextRequest) {
         'Authorization': `Bearer ${process.env.OPENAI_API_KEY || ''}`
       },
       body: JSON.stringify({
-        model: 'gpt-5.1-codex-max',  // The God Model
-        max_tokens: 32000,
+        model: 'gpt-4o',  // The God Model
+        max_tokens: 4096,
         messages: [
           { role: 'system', content: systemPrompt },
           ...messages

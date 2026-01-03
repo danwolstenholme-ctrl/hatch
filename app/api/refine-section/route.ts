@@ -127,19 +127,21 @@ export async function POST(request: NextRequest) {
     const freeCreditsUsed = (user.publicMetadata?.freeCreditsUsed as number) || 0
     const hasActiveSub = accountSub?.status === 'active'
 
-    // Free users: allow up to FREE_TOTAL_CREDITS, then block
-    if (!isSelfHealing && !hasActiveSub && freeCreditsUsed >= FREE_TOTAL_CREDITS) {
+    // Free users: allow up to FREE_REFINE_LIMIT (1), then block
+    const FREE_REFINE_LIMIT = 1
+    
+    if (!isSelfHealing && !hasActiveSub && architectUsed >= FREE_REFINE_LIMIT) {
       return NextResponse.json({
-        error: 'Free credits exhausted. Upgrade for unlimited refinements.',
+        error: 'Free refinement limit reached. Upgrade to Architect for unlimited polish.',
         limitReached: true,
-        used: freeCreditsUsed,
-        limit: FREE_TOTAL_CREDITS,
+        used: architectUsed,
+        limit: FREE_REFINE_LIMIT,
       }, { status: 429 })
     }
 
-    // Check Architect usage for paid tiers (Agency is unlimited)
+    // Check Architect usage for paid tiers (Singularity is unlimited)
     // Skip check if self-healing
-    if (!isSelfHealing && hasActiveSub && accountSub?.tier && accountSub.tier !== 'agency') {
+    if (!isSelfHealing && hasActiveSub && accountSub?.tier && accountSub.tier !== 'singularity') {
       const architectUsed = (user.publicMetadata?.architectRefinementsUsed as number) || 0
       const resetDate = user.publicMetadata?.architectRefinementsResetDate as string | undefined
       const today = new Date().toISOString().split('T')[0]
@@ -252,7 +254,7 @@ ${code}`
     }
 
     const response = await genai.models.generateContent({
-      model: 'gemini-2.0-flash-001',
+      model: 'gemini-2.0-flash-exp',
       config: {
         responseMimeType: 'application/json',
       },
