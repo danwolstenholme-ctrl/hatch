@@ -594,9 +594,9 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
 
 
 
-  // Can deploy: Any paid tier (lite, pro, agency)
+  // Can deploy: Any paid tier (architect, visionary, singularity)
   const canDeploy = useMemo(() => {
-    return accountSubscription?.status === 'active' && ['lite', 'pro', 'agency'].includes(accountSubscription.tier)
+    return accountSubscription?.status === 'active' && ['architect', 'visionary', 'singularity'].includes(accountSubscription.tier)
   }, [accountSubscription])
   
   // Visionary features: Custom domain, remove branding (visionary/singularity only)

@@ -81,7 +81,7 @@ export async function POST(req: NextRequest) {
     }
   }
 
-  // Check if user has Pro or Agency tier (Lite cannot download code)
+  // Check if user has active subscription (Architect, Visionary, or Singularity)
   try {
     const client = await clerkClient()
     const user = await client.users.getUser(userId)

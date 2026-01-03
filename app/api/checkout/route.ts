@@ -18,7 +18,6 @@ const PRICE_IDS = {
   architect: process.env.STRIPE_ARCHITECT_PRICE_ID,    // $19/mo
   visionary: process.env.STRIPE_VISIONARY_PRICE_ID,    // $49/mo
   singularity: process.env.STRIPE_SINGULARITY_PRICE_ID, // $199/mo
-  lite: process.env.STRIPE_LITE_PRICE_ID, // $9/mo
 } as const
 
 type PriceTier = keyof typeof PRICE_IDS
@@ -42,7 +41,7 @@ async function handleCheckout(
     }
 
     // Block downgrades through this endpoint
-    const tierRank = { lite: 0, architect: 1, visionary: 2, singularity: 3 } as const
+    const tierRank = { architect: 1, visionary: 2, singularity: 3 } as const
     // @ts-ignore
     if (tierRank[tier] < tierRank[existingSubscription.tier]) {
       return { redirect: '/dashboard/projects?error=downgrade_not_allowed' }
@@ -120,12 +119,11 @@ export async function GET(req: NextRequest) {
     const tierParam = searchParams.get('tier')
     
     let tier: PriceTier | undefined
-    if (tierParam && ['lite', 'architect', 'visionary', 'singularity'].includes(tierParam)) {
+    if (tierParam && ['architect', 'visionary', 'singularity'].includes(tierParam)) {
       tier = tierParam as PriceTier
     } else if (priceIdParam === 'price_architect') tier = 'architect'
     else if (priceIdParam === 'price_visionary') tier = 'visionary'
     else if (priceIdParam === 'price_singularity') tier = 'singularity'
-    else if (priceIdParam === 'price_lite') tier = 'lite'
     
     if (!tier) return NextResponse.json({ error: 'Invalid tier or price ID' }, { status: 400 })
 
@@ -152,7 +150,7 @@ export async function POST(req: NextRequest) {
     const body = await req.json()
     const { tier, projectSlug, projectName } = body
 
-    if (!tier || !['lite', 'architect', 'visionary', 'singularity'].includes(tier)) {
+    if (!tier || !['architect', 'visionary', 'singularity'].includes(tier)) {
       return NextResponse.json({ error: 'Invalid tier' }, { status: 400 })
     }
 

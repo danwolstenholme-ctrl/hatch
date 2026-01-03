@@ -48,7 +48,7 @@ function BuilderContent() {
     const pendingTier = upgrade || (typeof window !== 'undefined' ? localStorage.getItem('pendingUpgradeTier') : null)
     
     // Has a pending tier to checkout
-    if (pendingTier && ['lite', 'pro', 'agency'].includes(pendingTier)) {
+    if (pendingTier && ['architect', 'visionary', 'singularity'].includes(pendingTier)) {
       setIsRedirecting(true)
       
       // Clear both URL param and localStorage

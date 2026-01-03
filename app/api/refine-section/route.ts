@@ -117,7 +117,7 @@ export async function POST(request: NextRequest) {
     const user = await client.users.getUser(userId)
     const accountSub = user.publicMetadata?.accountSubscription as { 
       status?: string
-      tier?: 'lite' | 'pro' | 'agency' | 'singularity'
+      tier?: 'architect' | 'visionary' | 'singularity'
     } | undefined
     
     const freeCreditsUsed = (user.publicMetadata?.freeCreditsUsed as number) || 0
@@ -146,13 +146,13 @@ export async function POST(request: NextRequest) {
       const shouldReset = !resetDate || new Date(resetDate) <= new Date(today)
       const currentUsage = shouldReset ? 0 : architectUsed
       
-      const limit = accountSub.tier === 'lite'
+      const limit = accountSub.tier === 'architect'
         ? LITE_ARCHITECT_LIMIT
         : parseInt(process.env.PRO_ARCHITECT_MONTHLY_LIMIT || '30', 10)
 
       if (currentUsage >= limit) {
         return NextResponse.json({ 
-          error: `Monthly refinement limit reached (${limit}/month). ${accountSub?.tier === 'lite' ? 'Upgrade to Pro for 30/month.' : 'Upgrade to Agency for unlimited.'}`,
+          error: `Monthly refinement limit reached (${limit}/month). ${accountSub?.tier === 'architect' ? 'Upgrade to Visionary for 30/month.' : 'Upgrade to Singularity for unlimited.'}`,
           limitReached: true,
           used: currentUsage,
           limit: limit
@@ -307,7 +307,7 @@ ${code}`
 
     // Increment Refinement usage for paid tiers after successful refinement
     // Skip if self-healing (free)
-    if (!isSelfHealing && hasActiveSub && accountSub?.tier && accountSub.tier !== 'agency' && wasRefined) {
+    if (!isSelfHealing && hasActiveSub && accountSub?.tier && accountSub.tier !== 'singularity' && wasRefined) {
       try {
         const currentUsed = (user.publicMetadata?.architectRefinementsUsed as number) || 0
         const resetDate = user.publicMetadata?.architectRefinementsResetDate as string | undefined

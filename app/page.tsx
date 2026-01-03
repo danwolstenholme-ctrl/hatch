@@ -47,7 +47,7 @@ function VoidButton({ isSignedIn, router, onLaunch }: { isSignedIn: boolean | un
 }
 
 // Pricing button that handles auth + checkout
-function PricingButton({ tier, className, children }: { tier: 'lite' | 'pro' | 'agency', className: string, children: React.ReactNode }) {
+function PricingButton({ tier, className, children }: { tier: 'architect' | 'visionary' | 'singularity', className: string, children: React.ReactNode }) {
   const { isSignedIn } = useUser()
   const [isLoading, setIsLoading] = useState(false)
   const router = useRouter()
@@ -452,7 +452,7 @@ export default function Home() {
                 ))}
               </ul>
               <PricingButton 
-                tier="lite" 
+                tier="architect" 
                 className="block w-full py-4 text-center bg-zinc-800 hover:bg-emerald-900/50 hover:text-white text-zinc-300 rounded-xl font-semibold transition-all"
               >
                 Initialize
@@ -485,7 +485,7 @@ export default function Home() {
                 ))}
               </ul>
               <PricingButton 
-                tier="pro" 
+                tier="visionary" 
                 className="block w-full py-4 text-center bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold transition-all shadow-[0_0_20px_rgba(16,185,129,0.3)] hover:shadow-[0_0_30px_rgba(16,185,129,0.5)]"
               >
                 Ascend
@@ -517,7 +517,7 @@ export default function Home() {
                 ))}
               </ul>
               <PricingButton 
-                tier="agency" 
+                tier="singularity" 
                 className="block w-full py-4 text-center bg-zinc-800 hover:bg-violet-600 hover:text-white text-zinc-300 rounded-xl font-semibold transition-all"
               >
                 Enter God Mode

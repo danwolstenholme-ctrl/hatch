@@ -123,7 +123,7 @@ export async function POST(req: NextRequest) {
 
     if (!accountSubscription || accountSubscription.status !== 'active') {
       return NextResponse.json({ 
-        error: 'Starter subscription ($9/mo) required to deploy',
+        error: 'Architect subscription ($19/mo) required to deploy',
         requiresUpgrade: true,
         projectSlug: slug
       }, { status: 403 })
