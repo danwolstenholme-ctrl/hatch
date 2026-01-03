@@ -87,7 +87,7 @@ export default function ConditionalAnalytics() {
   return (
     <>
       <Analytics />
-      <GoogleAnalytics gaId="G-DVZ9KLVPLG" />
+      <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID || ''} />
     </>
   )
 }
