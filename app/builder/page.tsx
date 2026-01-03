@@ -27,7 +27,8 @@ function BuilderContent() {
 
   // Local dev: always allow guest mode so testing skips auth
   const forceGuest = (process.env.NEXT_PUBLIC_APP_ENV || '').startsWith('local')
-  const isGuest = forceGuest || mode === 'guest' || mode === 'demo'
+  // Treat anyone not signed in as a guest automatically
+  const isGuest = forceGuest || mode === 'guest' || mode === 'demo' || !isSignedIn
 
   // Get subscription from Clerk metadata
   const subscription = user?.publicMetadata?.accountSubscription as AccountSubscription | null
