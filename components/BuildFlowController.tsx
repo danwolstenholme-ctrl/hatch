@@ -1111,7 +1111,7 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
   }, [buildState, sectionsForBuild])
 
   // Direct checkout - skip modal, go straight to Stripe
-  const handleDirectCheckout = async (tier: 'lite' | 'pro' | 'agency' = 'lite') => {
+  const handleDirectCheckout = async (tier: 'architect' | 'visionary' | 'singularity' = 'architect') => {
     // If not signed in, redirect to sign-up with tier pre-selected
     if (!isSignedIn) {
       const currentUrl = new URL(window.location.href)
@@ -1151,7 +1151,7 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
   const handleDeploy = async () => {
     if (!project || !assembledCode || isDeploying || !buildState) return
     
-    // Check if user has any paid subscription (Lite, Pro, or Agency can deploy)
+    // Check if user has any paid subscription (Architect, Visionary, or Singularity can deploy)
     if (!canDeploy) {
       setHatchModalReason('deploy')
       setShowHatchModal(true)
@@ -1289,7 +1289,7 @@ export default function GeneratedPage() {
   const handleDownload = async () => {
     if (!project || !assembledCode || !buildState) return
     
-    // Only Pro and Agency can download code - Lite cannot
+    // Only Visionary and Singularity can download code - Architect cannot
     if (!isProUser) {
       setHatchModalReason('download')
       setShowHatchModal(true)
@@ -1852,11 +1852,11 @@ export default function GeneratedPage() {
                     <p className="text-sm text-zinc-400">Don't lose your progress. Start your 14-day trial to keep building.</p>
                   </div>
                   <button
-                    onClick={() => handleDirectCheckout('lite')}
+                    onClick={() => handleDirectCheckout('architect')}
                     className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-sm transition-all shadow-lg shadow-emerald-900/30 hover:shadow-emerald-900/50 hover:scale-105"
                   >
                     <Lock className="w-4 h-4" />
-                    Unlock — $9/2wks
+                    Unlock — $19/mo
                   </button>
                 </div>
               )}
@@ -1916,7 +1916,7 @@ export default function GeneratedPage() {
                         onClick={() => {
                           if (isLocked) {
                             // Go DIRECTLY to Stripe checkout - skip the modal
-                            handleDirectCheckout('lite')
+                            handleDirectCheckout('architect')
                           } else if (isCompleted) {
                             // Go back to building mode for this section
                             const sectionIndex = sectionsForBuild.findIndex(s => s.id === section.id)

@@ -1,21 +1,122 @@
 'use client'
 
 import { useState, useEffect, ReactNode } from 'react'
-import { motion } from 'framer-motion'
-import { Activity, Bot, Brain, Cpu, Globe, Shield, Terminal, Zap, Copy, Plus, ArrowRight, Layout, ExternalLink, Edit3, Trash2 } from 'lucide-react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { Activity, Bot, Brain, Cpu, Globe, Shield, Terminal, Zap, Copy, Plus, ArrowRight, Layout, ExternalLink, Edit3, Trash2, X, Rocket, Sparkles, Code2, HelpCircle } from 'lucide-react'
 import ReplicatorModal from '@/components/ReplicatorModal'
 import { useRouter } from 'next/navigation'
 import { useProjects } from '@/hooks/useProjects'
 import Link from 'next/link'
+
+// =============================================================================
+// WELCOME BANNER - Explains what HatchIt does for new users
+// =============================================================================
+function WelcomeBanner({ onDismiss }: { onDismiss: () => void }) {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: -20 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -20 }}
+      className="relative bg-gradient-to-br from-emerald-950/80 via-zinc-900 to-zinc-900 border border-emerald-500/30 rounded-2xl p-6 md:p-8 mb-8 overflow-hidden"
+    >
+      {/* Background decoration */}
+      <div className="absolute top-0 right-0 w-64 h-64 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none" />
+      <div className="absolute bottom-0 left-0 w-48 h-48 bg-teal-500/5 rounded-full blur-3xl pointer-events-none" />
+      
+      <button 
+        onClick={onDismiss}
+        className="absolute top-4 right-4 p-2 text-zinc-500 hover:text-white transition-colors rounded-lg hover:bg-zinc-800/50"
+      >
+        <X className="w-4 h-4" />
+      </button>
+      
+      <div className="relative z-10">
+        <div className="flex items-center gap-3 mb-4">
+          <div className="p-2 bg-emerald-500/10 rounded-lg border border-emerald-500/20">
+            <Sparkles className="w-5 h-5 text-emerald-400" />
+          </div>
+          <h2 className="text-xl md:text-2xl font-bold text-white">Welcome to HatchIt 👋</h2>
+        </div>
+        
+        <p className="text-zinc-300 mb-6 max-w-2xl leading-relaxed">
+          <strong className="text-white">Build websites with AI in minutes.</strong> Describe what you want in plain English, and our AI builds it for you — no coding required.
+        </p>
+        
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          <div className="flex items-start gap-3 p-4 bg-zinc-900/50 rounded-xl border border-zinc-800">
+            <div className="p-1.5 bg-blue-500/10 rounded-lg shrink-0">
+              <Code2 className="w-4 h-4 text-blue-400" />
+            </div>
+            <div>
+              <h3 className="font-semibold text-white text-sm mb-1">1. Describe</h3>
+              <p className="text-xs text-zinc-400">Tell AI what you want to build</p>
+            </div>
+          </div>
+          
+          <div className="flex items-start gap-3 p-4 bg-zinc-900/50 rounded-xl border border-zinc-800">
+            <div className="p-1.5 bg-purple-500/10 rounded-lg shrink-0">
+              <Zap className="w-4 h-4 text-purple-400" />
+            </div>
+            <div>
+              <h3 className="font-semibold text-white text-sm mb-1">2. Generate</h3>
+              <p className="text-xs text-zinc-400">AI creates your website instantly</p>
+            </div>
+          </div>
+          
+          <div className="flex items-start gap-3 p-4 bg-zinc-900/50 rounded-xl border border-zinc-800">
+            <div className="p-1.5 bg-emerald-500/10 rounded-lg shrink-0">
+              <Rocket className="w-4 h-4 text-emerald-400" />
+            </div>
+            <div>
+              <h3 className="font-semibold text-white text-sm mb-1">3. Deploy</h3>
+              <p className="text-xs text-zinc-400">Go live with one click</p>
+            </div>
+          </div>
+        </div>
+        
+        <div className="flex flex-col sm:flex-row gap-3">
+          <Link 
+            href="/builder"
+            className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-emerald-500 hover:bg-emerald-400 text-black font-bold rounded-xl transition-all text-sm shadow-lg shadow-emerald-500/20"
+          >
+            <Plus className="w-4 h-4" />
+            Start Building
+          </Link>
+          <button
+            onClick={onDismiss}
+            className="inline-flex items-center justify-center gap-2 px-6 py-3 bg-zinc-800 hover:bg-zinc-700 text-white font-medium rounded-xl transition-all text-sm border border-zinc-700"
+          >
+            Got it, thanks!
+          </button>
+        </div>
+      </div>
+    </motion.div>
+  )
+}
 
 export default function AgencyDashboard() {
   const [systemLoad, setSystemLoad] = useState(0)
   const [activeAgents, setActiveAgents] = useState(0)
   const [showReplicator, setShowReplicator] = useState(false)
   const [onboardingData, setOnboardingData] = useState<any>(null)
+  const [showWelcome, setShowWelcome] = useState(false)
   const router = useRouter()
   const { projects, deleteProject } = useProjects()
   const [projectsLoading, setProjectsLoading] = useState(true)
+
+  // Show welcome banner for new users (no projects)
+  useEffect(() => {
+    const welcomeDismissed = localStorage.getItem('hatch_welcome_banner_dismissed')
+    // Show welcome if user hasn't dismissed it AND has no projects
+    if (!welcomeDismissed && projects.length === 0 && !projectsLoading) {
+      setShowWelcome(true)
+    }
+  }, [projects.length, projectsLoading])
+
+  const handleDismissWelcome = () => {
+    setShowWelcome(false)
+    localStorage.setItem('hatch_welcome_banner_dismissed', 'true')
+  }
 
   useEffect(() => {
     // Simulate loading state since useProjects doesn't expose it directly yet
@@ -51,15 +152,20 @@ export default function AgencyDashboard() {
   }
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6 md:space-y-8">
       <ReplicatorModal 
         isOpen={showReplicator} 
         onClose={() => setShowReplicator(false)}
         onReplicate={handleReplication}
       />
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      {/* Welcome Banner for New Users */}
+      <AnimatePresence>
+        {showWelcome && <WelcomeBanner onDismiss={handleDismissWelcome} />}
+      </AnimatePresence>
+
+      {/* Stats Grid - More compact on mobile */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 md:gap-4">
         <StatCard 
           title="ACTIVE_PROJECTS" 
           value={projects.length.toString()} 
@@ -86,22 +192,23 @@ export default function AgencyDashboard() {
         />
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
         {/* Main Feed - Now Project List */}
-        <div className="lg:col-span-2 space-y-6">
-          <div className="bg-zinc-900/50 border border-zinc-800 rounded-lg p-6 backdrop-blur-sm">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-lg font-mono font-bold flex items-center gap-2">
-                <Terminal className="w-5 h-5 text-emerald-500" />
-                ACTIVE_OPERATIONS
+        <div className="lg:col-span-2 space-y-4 md:space-y-6">
+          <div className="bg-zinc-900/50 border border-zinc-800 rounded-lg p-4 md:p-6 backdrop-blur-sm">
+            <div className="flex items-center justify-between mb-4 md:mb-6">
+              <h2 className="text-base md:text-lg font-mono font-bold flex items-center gap-2">
+                <Terminal className="w-4 h-4 md:w-5 md:h-5 text-emerald-500" />
+                <span className="hidden sm:inline">ACTIVE_OPERATIONS</span>
+                <span className="sm:hidden">MY PROJECTS</span>
               </h2>
               <div className="flex items-center gap-2">
                 <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                <span className="text-xs font-mono text-zinc-500">SYNCED</span>
+                <span className="text-xs font-mono text-zinc-500 hidden sm:inline">SYNCED</span>
               </div>
             </div>
             
-            <div className="space-y-4 font-mono text-sm min-h-[300px] max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
+            <div className="space-y-3 md:space-y-4 font-mono text-sm min-h-[200px] md:min-h-[300px] max-h-[400px] md:max-h-[500px] overflow-y-auto pr-2 custom-scrollbar">
               {projectsLoading ? (
                 <div className="flex items-center justify-center h-32 text-zinc-500">
                   <Cpu className="w-5 h-5 animate-spin mr-2" />
@@ -119,31 +226,24 @@ export default function AgencyDashboard() {
                 </div>
               ) : (
                 projects.map((project) => (
-                  <div key={project.id} className="group flex items-center justify-between p-4 bg-zinc-950/50 border border-zinc-800/50 rounded-lg hover:border-emerald-500/30 transition-all">
-                    <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 bg-zinc-900 rounded flex items-center justify-center text-zinc-500 group-hover:text-emerald-400 transition-colors">
-                        <Layout className="w-5 h-5" />
+                  <div key={project.id} className="group flex items-center justify-between p-3 md:p-4 bg-zinc-950/50 border border-zinc-800/50 rounded-lg hover:border-emerald-500/30 transition-all">
+                    <Link href={`/builder?project=${project.id}`} className="flex items-center gap-3 md:gap-4 flex-1 min-w-0">
+                      <div className="w-8 h-8 md:w-10 md:h-10 bg-zinc-900 rounded flex items-center justify-center text-zinc-500 group-hover:text-emerald-400 transition-colors shrink-0">
+                        <Layout className="w-4 h-4 md:w-5 md:h-5" />
                       </div>
-                      <div>
-                        <h3 className="font-bold text-zinc-200 group-hover:text-white">{project.name}</h3>
-                        <p className="text-xs text-zinc-500">ID: {project.id.slice(0, 8)}...</p>
+                      <div className="min-w-0">
+                        <h3 className="font-bold text-sm md:text-base text-zinc-200 group-hover:text-white truncate">{project.name}</h3>
+                        <p className="text-[10px] md:text-xs text-zinc-500 truncate">ID: {project.id.slice(0, 8)}...</p>
                       </div>
-                    </div>
-                    <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <Link 
-                        href={`/builder?project=${project.id}`}
-                        className="p-2 hover:bg-zinc-800 rounded text-zinc-400 hover:text-white"
-                        title="Edit Architecture"
-                      >
-                        <Edit3 className="w-4 h-4" />
-                      </Link>
+                    </Link>
+                    <div className="flex items-center gap-1 md:gap-2 ml-2 shrink-0">
                       {project.deployedSlug && (
                         <a 
                           href={`https://${project.deployedSlug}.hatchit.dev`}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="p-2 hover:bg-zinc-800 rounded text-zinc-400 hover:text-emerald-400"
-                          title="View Live System"
+                          title="View Live Site"
                         >
                           <ExternalLink className="w-4 h-4" />
                         </a>
@@ -151,7 +251,7 @@ export default function AgencyDashboard() {
                       <button 
                         onClick={() => deleteProject()}
                         className="p-2 hover:bg-red-900/20 rounded text-zinc-400 hover:text-red-400"
-                        title="Terminate Operation"
+                        title="Delete"
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
@@ -228,14 +328,14 @@ export default function AgencyDashboard() {
 
 function StatCard({ title, value, icon, trend }: { title: string; value: string; icon: ReactNode; trend: string }) {
   return (
-    <div className="bg-zinc-900/50 border border-zinc-800 rounded-lg p-6 backdrop-blur-sm hover:border-zinc-700 transition-colors">
-      <div className="flex items-center justify-between mb-4">
-        <span className="text-xs font-mono text-zinc-500">{title}</span>
+    <div className="bg-zinc-900/50 border border-zinc-800 rounded-lg p-4 md:p-6 backdrop-blur-sm hover:border-zinc-700 transition-colors">
+      <div className="flex items-center justify-between mb-2 md:mb-4">
+        <span className="text-[10px] md:text-xs font-mono text-zinc-500 truncate">{title}</span>
         {icon}
       </div>
-      <div className="flex items-end justify-between">
-        <span className="text-2xl font-bold font-mono">{value}</span>
-        <span className="text-xs font-mono text-emerald-500 bg-emerald-500/10 px-2 py-1 rounded-full">{trend}</span>
+      <div className="flex items-end justify-between gap-2">
+        <span className="text-xl md:text-2xl font-bold font-mono">{value}</span>
+        <span className="text-[10px] md:text-xs font-mono text-emerald-500 bg-emerald-500/10 px-1.5 md:px-2 py-0.5 md:py-1 rounded-full truncate">{trend}</span>
       </div>
     </div>
   )
@@ -257,13 +357,13 @@ function ActionCard({ title, description, icon, onClick }: { title: string; desc
   return (
     <button 
       onClick={onClick}
-      className="bg-zinc-900/50 border border-zinc-800 rounded-lg p-6 backdrop-blur-sm hover:bg-zinc-800/50 hover:border-emerald-500/50 transition-all text-left group"
+      className="bg-zinc-900/50 border border-zinc-800 rounded-lg p-4 md:p-6 backdrop-blur-sm hover:bg-zinc-800/50 hover:border-emerald-500/50 transition-all text-left group w-full"
     >
-      <div className="mb-4 p-3 bg-zinc-950 rounded-lg w-fit group-hover:scale-110 transition-transform duration-300 border border-zinc-800 group-hover:border-emerald-500/30">
+      <div className="mb-3 md:mb-4 p-2 md:p-3 bg-zinc-950 rounded-lg w-fit group-hover:scale-110 transition-transform duration-300 border border-zinc-800 group-hover:border-emerald-500/30">
         {icon}
       </div>
-      <h3 className="font-mono font-bold text-zinc-100 mb-2 group-hover:text-emerald-400 transition-colors">{title}</h3>
-      <p className="text-sm text-zinc-500">{description}</p>
+      <h3 className="font-mono font-bold text-sm md:text-base text-zinc-100 mb-1 md:mb-2 group-hover:text-emerald-400 transition-colors">{title}</h3>
+      <p className="text-xs md:text-sm text-zinc-500 line-clamp-2">{description}</p>
     </button>
   )
 }

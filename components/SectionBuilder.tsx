@@ -315,9 +315,9 @@ const BuilderGuide = ({ onClose }: { onClose: () => void }) => (
           <Terminal className="w-6 h-6 text-emerald-400" />
         </div>
         
-        <h3 className="text-xl font-bold text-white mb-2">Welcome to the Architect</h3>
+        <h3 className="text-xl font-bold text-white mb-2">System Initialized</h3>
         <p className="text-zinc-400 text-sm mb-6">
-          You are in the command center. Here you can build, refine, and deploy your vision.
+          The interface is ready. Describe your vision to begin.
         </p>
         
         <div className="space-y-4 mb-8">
@@ -327,7 +327,7 @@ const BuilderGuide = ({ onClose }: { onClose: () => void }) => (
             </div>
             <div>
               <h4 className="text-sm font-medium text-zinc-200">Build Sections</h4>
-              <p className="text-xs text-zinc-500">Type your vision to generate code instantly. Free users get 10 builds.</p>
+              <p className="text-xs text-zinc-500">Generate code instantly. Free users get 10 builds.</p>
             </div>
           </div>
           
@@ -337,7 +337,7 @@ const BuilderGuide = ({ onClose }: { onClose: () => void }) => (
             </div>
             <div>
               <h4 className="text-sm font-medium text-zinc-200">Refine & Polish</h4>
-              <p className="text-xs text-zinc-500">Tweak details with AI. Free users get 1 trial refinement.</p>
+              <p className="text-xs text-zinc-500">Refine with AI. Free users get 1 trial refinement.</p>
             </div>
           </div>
           
@@ -347,7 +347,7 @@ const BuilderGuide = ({ onClose }: { onClose: () => void }) => (
             </div>
             <div>
               <h4 className="text-sm font-medium text-zinc-200">Deploy</h4>
-              <p className="text-xs text-zinc-500">Export your code or deploy live. Requires Architect plan.</p>
+              <p className="text-xs text-zinc-500">Export or deploy live. Requires Architect plan.</p>
             </div>
           </div>
         </div>
@@ -1253,7 +1253,7 @@ export default function SectionBuilder({
 
   // Immersive Input State - before any code is generated
   const isInitialState = stage === 'input' && !generatedCode
-  const canRevealRawCode = isProOrHigher // Only Pro/Agency can view code - Lite cannot
+  const canRevealRawCode = isProOrHigher // Only Visionary/Singularity can view code - Architect cannot
 
   // IMMERSIVE INITIAL STATE - Full canvas input experience
   if (isInitialState) {

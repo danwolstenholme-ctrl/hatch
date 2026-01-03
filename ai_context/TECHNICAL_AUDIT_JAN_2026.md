@@ -1,36 +1,25 @@
 # TECHNICAL AUDIT REPORT: JANUARY 2026
-**Auditor:** GitHub Copilot (Model: Gemini 3 Pro)
-**Date:** January 2026
-**Status:** CRITICAL FINDINGS DETECTED
+**Auditor:** GitHub Copilot (Claude Opus 4.5)
+**Date:** 3 January 2026
+**Status:** ✅ HEALTHY (No Critical Issues)
 
 ---
 
-## 🚨 1. CRITICAL: The "Money Loop" Fracture
-**Severity:** HIGH (Revenue Risk)
-**Location:** `types/subscriptions.ts` vs `app/api/checkout/route.ts` vs `app/api/webhook/route.ts`
+## ✅ 1. RESOLVED: Tier Naming Consistency
+**Status:** FIXED
+**Location:** `types/subscriptions.ts`, `app/api/checkout/route.ts`, `app/api/webhook/route.ts`
 
-### The Issue
-The application is suffering from a "Split Personality" regarding subscription tiers. This will cause runtime errors or silent failures during the upgrade process.
+The tier naming is now **fully consistent** across the codebase:
+*   `AccountSubscription.tier`: `'architect' | 'visionary' | 'singularity'`
+*   `PricingTier.name`: `'architect' | 'visionary' | 'singularity'`
+*   `PRICING_TIERS`: Keys are `architect`, `visionary`, `singularity`
+*   `checkout/route.ts`: Validates against `['architect', 'visionary', 'singularity']`
+*   `webhook/route.ts`: Correctly casts to `'architect' | 'visionary' | 'singularity'`
 
-*   **Personality A (The "Lite" Standard):**
-    *   `types/subscriptions.ts` defines `PricingTier` names as `'lite' | 'pro' | 'agency'`.
-    *   `app/api/checkout/route.ts` accepts `'lite'` as a valid tier.
-*   **Personality B (The "Architect" Standard):**
-    *   `types/subscriptions.ts` defines `AccountSubscription` tier as `'architect' | 'visionary' | 'singularity'`.
-    *   `app/api/webhook/route.ts` forces a cast to `'architect' | 'visionary' | 'singularity'`.
-
-### The Failure Scenario
-1.  User selects "Lite" plan ($9/mo).
-2.  Checkout route processes it as `lite`.
-3.  Stripe Webhook receives metadata `tier: 'lite'`.
-4.  Webhook casts `'lite'` to `AccountSubscription['tier']` (which expects `architect`).
-5.  **Result:** The database (Clerk Metadata) stores `tier: 'lite'`.
-6.  **Runtime Crash:** Any component expecting `tier` to be `architect` (e.g., `SubscriptionIndicator.tsx` or `BuildFlowController.tsx`) may crash or behave unpredictably when it encounters `'lite'`.
-
-### Recommendation
-**IMMEDIATE ACTION REQUIRED:** Standardize on ONE naming convention.
-*   **Preferred:** `lite`, `pro`, `agency` (Clearer for users).
-*   **Action:** Update `AccountSubscription` type definition and `app/api/webhook/route.ts` to use `lite`, `pro`, `agency`. Map legacy `architect` data if necessary.
+**Pricing:**
+*   Architect: $19/mo (3 sites, 5 refinements)
+*   Visionary: $49/mo (10 sites, 30 refinements, code export)
+*   Singularity: $199/mo (Unlimited, commercial license)
 
 ---
 
@@ -64,28 +53,28 @@ Refactor into smaller hooks and components:
 **Location:** `components/singularity/` & `app/api/`
 
 ### The Issue
-The codebase contains significant remnants of a "Singularity" / "Consciousness" feature set that appears to be abandoned or refactored out.
+The `components/singularity/` folder has been **cleaned up**. It now only contains:
+*   `SingularityEngine.tsx`
+*   `SingularitySidebar.tsx` (Active)
+*   `SingularityTransition.tsx`
+*   `TheWitness.tsx` (Active - used after deploy)
+*   `ThinkingLog.tsx`
 
-**Dead Components (0-1 usages):**
-*   `components/singularity/TheDream.tsx`
-*   `components/singularity/TheSubconscious.tsx`
-*   `components/singularity/DirectLine.tsx`
-*   `components/singularity/HatchCharacter.tsx` (Recursive usage only)
-*   `components/Chat.tsx`
+The following legacy components have been **deleted**:
+*   ~~`TheDream.tsx`~~
+*   ~~`TheSubconscious.tsx`~~
+*   ~~`DirectLine.tsx`~~
+*   ~~`HatchCharacter.tsx`~~
 
-**Suspected Dead API Routes:**
+**Suspected Dead API Routes (Needs Verification):**
 *   `app/api/chronosphere/`
 *   `app/api/consciousness/`
 *   `app/api/direct-line/`
 *   `app/api/heal/`
 *   `app/api/replicator/`
-*   `app/api/witness/`
 
 ### Recommendation
-**Purge Protocol:**
-1.  Verify no external dependencies rely on these routes.
-2.  Delete the `components/singularity` folder (keep `SingularitySidebar` if used).
-3.  Delete the identified API routes.
+Verify these API routes are unused and delete them.
 
 ---
 
@@ -100,8 +89,22 @@ Consolidate generation logic into a single `app/api/engine` route with typed act
 
 ---
 
+## 📱 5. RECENT WORK: Mobile UI Polish
+**Status:** IN PROGRESS (Unstaged Changes)
+
+Recent changes in the diff:
+*   `app/dashboard/layout.tsx`: Sidebar hidden on mobile, mobile nav added.
+*   `app/dashboard/projects/page.tsx`: Mobile-responsive cards, touch-friendly buttons.
+*   `app/dashboard/strategy/page.tsx`: Mobile-first layout for GTM page.
+*   `components/BuildFlowController.tsx`: Fixed tier references (`lite` → `architect`).
+*   `components/SectionBuilder.tsx`: Updated comment to reflect tier names.
+*   `app/api/refine-section/route.ts`: Renamed `LITE_ARCHITECT_LIMIT` → `ARCHITECT_REFINEMENT_LIMIT`.
+
+---
+
 ## ✅ SUMMARY & NEXT STEPS
 
-1.  **FIX THE MONEY LOOP:** This is the only "Stop Ship" issue. The types must be aligned immediately.
-2.  **DELETE GHOST CODE:** Remove the noise to make the refactor easier.
-3.  **REFACTOR BUILDER:** Break down `BuildFlowController` over time.
+1.  ~~**FIX THE MONEY LOOP:**~~ ✅ **RESOLVED.** Types are aligned.
+2.  **COMMIT MOBILE CHANGES:** Stage and commit the dashboard mobile fixes.
+3.  **DELETE GHOST API ROUTES:** Verify and remove unused API routes.
+4.  **REFACTOR BUILDER:** Break down `BuildFlowController` over time (Tech Debt).

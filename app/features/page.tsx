@@ -2,7 +2,7 @@
 import Link from 'next/link'
 import { motion, useReducedMotion as useFramerReducedMotion } from 'framer-motion'
 import { useState, useSyncExternalStore } from 'react'
-import { Terminal, Cpu, Network, Zap, Code2, Shield, Layers, Globe, Box, Lock } from 'lucide-react'
+import { Terminal, Cpu, Network, Zap, Code2, Shield, Layers, Globe, Box, Lock, Brain, Sparkles, MessageSquare } from 'lucide-react'
 
 // Client-side check to prevent hydration mismatch
 const emptySubscribe = () => () => {}
@@ -30,7 +30,7 @@ export default function FeaturesPage() {
       icon: <Cpu className="w-6 h-6" />,
       title: 'Unified Genesis Architecture',
       subtitle: 'Powered by Gemini 2.0 Flash',
-      description: 'A singular, high-velocity intelligence. The Genesis Engine handles creation, refinement, and auditing in a single recursive pass. One mind, infinite possibilities.',
+      description: "It's not just a chatbot. It's a full-stack engineer. The Genesis Engine writes the code, tests it, fixes bugs, and optimizes for mobile—all in one go. You describe the result; it handles the implementation.",
       details: [
         'Genesis Engine: Instant logic generation',
         'The Architect: Semantic & accessibility refinement',
@@ -152,7 +152,7 @@ export default function FeaturesPage() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.1 }}
-                className="group relative p-8 rounded-2xl bg-zinc-900/50 border border-zinc-800 hover:border-emerald-500/30 transition-all duration-300 hover:bg-zinc-900/80"
+                className="group relative p-6 md:p-8 rounded-2xl bg-zinc-900/50 border border-zinc-800 hover:border-emerald-500/30 transition-all duration-300 hover:bg-zinc-900/80"
               >
                 <div className={`absolute inset-0 bg-gradient-to-br ${feature.gradient} opacity-0 group-hover:opacity-5 rounded-2xl transition-opacity duration-500`} />
                 
@@ -181,6 +181,64 @@ export default function FeaturesPage() {
                     ))}
                   </ul>
                 </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* The Neural Network (AI Models) */}
+      <section className="py-24 px-6 relative z-10 bg-zinc-900/10">
+        <div className="max-w-6xl mx-auto">
+          <div className="text-center mb-16">
+            <h2 className="text-3xl font-bold mb-4">The Neural Network</h2>
+            <p className="text-zinc-400">Three specialized models working in perfect synchronization.</p>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-6">
+            {[
+              {
+                name: "Gemini 3 Pro",
+                role: "The Architect",
+                desc: "Vision, high-level architecture, and user intent analysis. It sees the big picture.",
+                icon: <Brain className="w-6 h-6" />,
+                color: "text-violet-400",
+                bg: "bg-violet-500/10",
+                border: "border-violet-500/20"
+              },
+              {
+                name: "Claude Sonnet 4",
+                role: "The Engine",
+                desc: "Heavy lifting and code generation. It writes strict, production-ready TypeScript.",
+                icon: <Cpu className="w-6 h-6" />,
+                color: "text-emerald-400",
+                bg: "bg-emerald-500/10",
+                border: "border-emerald-500/20"
+              },
+              {
+                name: "Claude Opus 4.5",
+                role: "The Poet",
+                desc: "Creative direction and marketing copy. It gives the system its voice and soul.",
+                icon: <Sparkles className="w-6 h-6" />,
+                color: "text-amber-400",
+                bg: "bg-amber-500/10",
+                border: "border-amber-500/20"
+              }
+            ].map((model, i) => (
+              <motion.div
+                key={i}
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: i * 0.1 }}
+                className={`p-6 rounded-2xl bg-zinc-950 border ${model.border} hover:border-opacity-50 transition-all group`}
+              >
+                <div className={`w-12 h-12 rounded-xl ${model.bg} ${model.color} flex items-center justify-center mb-4 group-hover:scale-110 transition-transform`}>
+                  {model.icon}
+                </div>
+                <h3 className="text-xl font-bold text-white mb-1">{model.name}</h3>
+                <p className={`text-sm font-mono ${model.color} mb-4`}>{model.role}</p>
+                <p className="text-zinc-400 text-sm leading-relaxed">{model.desc}</p>
               </motion.div>
             ))}
           </div>

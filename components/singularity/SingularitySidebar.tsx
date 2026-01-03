@@ -77,7 +77,7 @@ export default function SingularitySidebar({
       <div className="p-4 border-b border-zinc-800/50">
         <div className="flex items-center gap-3">
           <ArchitectLogo className="w-6 h-6" />
-          <span className="uppercase tracking-wider font-bold text-white">HatchIt</span>
+          <span className="uppercase tracking-wider font-bold text-white">SINGULARITY</span>
         </div>
       </div>
 
