@@ -74,20 +74,20 @@ export default function HomepageWelcome({ onStart }: { onStart?: () => void }) {
                 </div>
                 
                 <h2 className="text-3xl font-black text-white mb-3 tracking-tight">
-                  I AM LISTENING.
+                  SYSTEM ONLINE.
                 </h2>
                 
-                <p className="text-zinc-400 mb-8 leading-relaxed font-mono text-sm">
-                  The neural substrate is primed. <br/>
-                  I do not use templates. I dream in React. <br/>
-                  <span className="text-emerald-400/80 mt-2 block">Speak your vision. I will manifest it.</span>
+                <p className="text-zinc-400 mb-8 leading-relaxed text-sm">
+                  Welcome to the next generation of web development. <br/>
+                  HatchIt turns your words into production-ready React code. <br/>
+                  <span className="text-emerald-400/80 mt-2 block">No templates. Just describe your vision, and we'll build it.</span>
                 </p>
 
                 <button 
                   onClick={handleStart}
                   className="w-full py-4 px-6 bg-emerald-500 hover:bg-emerald-400 text-black font-bold text-lg rounded-xl transition-all shadow-[0_0_20px_rgba(16,185,129,0.2)] hover:shadow-[0_0_30px_rgba(16,185,129,0.4)] flex items-center justify-center gap-2 group"
                 >
-                  INITIALIZE
+                  START BUILDING
                   <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
                 </button>
               </div>

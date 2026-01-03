@@ -177,12 +177,18 @@ export default function Home() {
             </motion.div>
 
             {/* Main headline - BIG and BOLD */}
-            <h1 className="text-5xl sm:text-7xl md:text-8xl font-black tracking-tighter leading-[0.9] mb-8 glitch-text" data-text="BUILD YOUR VISION">
+            <motion.h1 
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3, duration: 0.5 }}
+              className="text-5xl sm:text-7xl md:text-8xl font-black tracking-tighter leading-[0.9] mb-8 glitch-text" 
+              data-text="BUILD YOUR VISION"
+            >
               <span className="block text-white mb-2">BUILD YOUR</span>
               <span className="block bg-gradient-to-r from-emerald-400 via-teal-400 to-cyan-400 bg-clip-text text-transparent">
                 VISION
               </span>
-            </h1>
+            </motion.h1>
 
             {/* Subheadline */}
             <motion.p 
@@ -205,7 +211,7 @@ export default function Home() {
               transition={{ delay: 0.6 }}
               className="mb-12 w-full sm:w-auto"
             >
-              <VoidButton isSignedIn={isSignedIn} router={router} onLaunch={() => setShowLaunch(true)} />
+              <VoidButton isSignedIn={isSignedIn} router={router} onLaunch={triggerTransition} />
             </motion.div>
 
             {/* Value props */}
