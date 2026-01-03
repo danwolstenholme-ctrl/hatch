@@ -407,6 +407,7 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
   // First Contact experience for new users
   const [showFirstContact, setShowFirstContact] = useState(false)
   const [firstContactPrompt, setFirstContactPrompt] = useState<string | undefined>(undefined)
+  const [skipLoadingScreen, setSkipLoadingScreen] = useState(false) // Skip loading after FirstContact
   const WELCOME_SEEN_KEY = 'hatch_intro_v2_seen'
   const OLD_WELCOME_KEYS = ['hatch_welcome_v1_seen', 'hatch_v1_welcome_seen']
   const skipFirstGuestCreditRef = useRef<boolean>(!!initialPrompt)
@@ -736,6 +737,7 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
       setDemoMode(true)
       setIsCreatingProject(false)
       setIsLoading(false)
+      setSkipLoadingScreen(false) // Reset for future loads
     }
 
     // If user is not signed in, redirect to sign up - NO MORE DEMO MODE LOOPHOLE
@@ -805,6 +807,7 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
       setupDemoMode()
     } finally {
       setIsLoading(false)
+      setSkipLoadingScreen(false) // Reset for future loads
       setIsCreatingProject(false)
     }
   }
@@ -1077,6 +1080,44 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
       }))
       .filter(s => !!s.code)
   }, [buildState, sectionsForBuild])
+
+  // Direct checkout - skip modal, go straight to Stripe
+  const handleDirectCheckout = async (tier: 'lite' | 'pro' | 'agency' = 'lite') => {
+    // If not signed in, redirect to sign-up with tier pre-selected
+    if (!isSignedIn) {
+      const currentUrl = new URL(window.location.href)
+      currentUrl.searchParams.set('upgrade', tier)
+      router.push(`/sign-up?upgrade=${tier}&redirect_url=${encodeURIComponent(currentUrl.toString())}`)
+      return
+    }
+
+    // Already paid? Just refresh to sync
+    if (isPaidUser) {
+      window.location.reload()
+      return
+    }
+
+    try {
+      const response = await fetch('/api/checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tier }),
+      })
+
+      const data = await response.json()
+      
+      if (data.url) {
+        window.location.href = data.url
+      } else if (data.existingTier) {
+        window.location.reload()
+      }
+    } catch (error) {
+      console.error('Direct checkout error:', error)
+      // Fallback to modal
+      setHatchModalReason('proactive')
+      setShowHatchModal(true)
+    }
+  }
 
   const handleDeploy = async () => {
     if (!project || !assembledCode || isDeploying || !buildState) return
@@ -1412,6 +1453,7 @@ export default function GeneratedPage() {
     setShowFirstContact(false)
     setFirstContactPrompt(prompt)
     skipFirstGuestCreditRef.current = true
+    setSkipLoadingScreen(true) // Skip the loading screen - FirstContact already did the theatrical intro
     setIsLoading(true)
     // Initialize project with the prompt from First Contact
     initializeProject(prompt)
@@ -1422,7 +1464,8 @@ export default function GeneratedPage() {
     return <FirstContact onComplete={handleFirstContactComplete} defaultPrompt={initialPrompt} />
   }
 
-  if (isLoading) {
+  // Only show loading screen if NOT coming from FirstContact
+  if (isLoading && !skipLoadingScreen) {
     // Show different message depending on if we're loading existing vs creating new
     let loadingMessage = 'Initializing the build system...'
     if (existingProjectId) loadingMessage = 'Resuming your project...'
@@ -1792,10 +1835,7 @@ export default function GeneratedPage() {
                     <p className="text-sm text-zinc-400">Don't lose your progress. Start your 14-day trial to keep building.</p>
                   </div>
                   <button
-                    onClick={() => {
-                      setHatchModalReason('proactive')
-                      setShowHatchModal(true)
-                    }}
+                    onClick={() => handleDirectCheckout('lite')}
                     className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-sm transition-all shadow-lg shadow-emerald-900/30 hover:shadow-emerald-900/50 hover:scale-105"
                   >
                     <Lock className="w-4 h-4" />
@@ -1858,9 +1898,8 @@ export default function GeneratedPage() {
                         key={section.id}
                         onClick={() => {
                           if (isLocked) {
-                            // Show paywall for locked sections
-                            setHatchModalReason('proactive')
-                            setShowHatchModal(true)
+                            // Go DIRECTLY to Stripe checkout - skip the modal
+                            handleDirectCheckout('lite')
                           } else if (isCompleted) {
                             // Go back to building mode for this section
                             const sectionIndex = sectionsForBuild.findIndex(s => s.id === section.id)
@@ -1893,7 +1932,7 @@ export default function GeneratedPage() {
                           <div className="flex-1 min-w-0">
                             <h3 className={`text-sm font-medium truncate ${isLocked ? 'text-zinc-500' : 'text-zinc-300 group-hover:text-white'}`}>{section.name}</h3>
                             {isLocked && (
-                              <p className="text-[10px] text-zinc-600 mt-0.5">Unlock to customize</p>
+                              <p className="text-[10px] text-emerald-500/70 mt-0.5 group-hover:text-emerald-400">Unlock — $9/2wks</p>
                             )}
                           </div>
                           {isCompleted && !isLocked && (
