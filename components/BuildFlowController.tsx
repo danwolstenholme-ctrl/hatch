@@ -599,12 +599,23 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
   // Check if project is paid (hatched) - now based on account subscription
   const isPaid = isPaidUser
 
-  // The canonical section list for the build (must match the DB sections order/selection)
-  const sectionsForBuild = useMemo(() => {
+  // The FULL section list for the template (used in review to show placeholders)
+  const allTemplateSections = useMemo(() => {
     return customizedSections && customizedSections.length > 0
       ? customizedSections
       : selectedTemplate.sections
   }, [customizedSections, selectedTemplate])
+
+  // For FREE users: Only build the HERO section first
+  // For PAID users: Build all sections
+  // This creates a faster "aha moment" - they see their hero, then the full site potential
+  const sectionsForBuild = useMemo(() => {
+    if (isPaidUser) {
+      return allTemplateSections
+    }
+    // Free users only build hero initially
+    return allTemplateSections.filter(s => s.id === 'hero')
+  }, [allTemplateSections, isPaidUser])
 
   const templateForBuild = useMemo(() => {
     return { ...selectedTemplate, sections: sectionsForBuild }
@@ -1772,20 +1783,23 @@ export default function GeneratedPage() {
             </div>
 
               {showUnlockBanner && (
-                <div className="px-6 py-4 border-b border-zinc-800/60 bg-zinc-900/40 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
-                  <div className="space-y-1">
-                    <p className="text-sm text-emerald-300 font-semibold">Your build is ready. Unlock deployment and code export.</p>
-                    <p className="text-xs text-zinc-400">Session is temporary: saving, deploy, export, and code view require a subscription.</p>
+                <div className="px-6 py-5 border-b border-emerald-500/20 bg-gradient-to-r from-emerald-950/50 via-zinc-900/80 to-emerald-950/50 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                  <div className="space-y-1.5">
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                      <p className="text-base text-white font-semibold">🎉 Your Hero is Live!</p>
+                    </div>
+                    <p className="text-sm text-zinc-400">Don't lose your progress. Start your 14-day trial to keep building.</p>
                   </div>
                   <button
                     onClick={() => {
-                      setHatchModalReason('guest_lock')
+                      setHatchModalReason('proactive')
                       setShowHatchModal(true)
                     }}
-                    className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-black font-semibold text-sm transition-colors"
+                    className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-sm transition-all shadow-lg shadow-emerald-900/30 hover:shadow-emerald-900/50 hover:scale-105"
                   >
                     <Lock className="w-4 h-4" />
-                    Unlock & Deploy
+                    Unlock — $9/2wks
                   </button>
                 </div>
               )}
@@ -1827,52 +1841,71 @@ export default function GeneratedPage() {
                 w-full md:w-80 border-r border-zinc-800/50 flex-col bg-zinc-900/20 overflow-hidden
               `}>
                 <div className="p-4 border-b border-zinc-800/50">
-                  <h2 className="text-xs font-mono text-zinc-500 uppercase tracking-wider">Sections</h2>
+                  <h2 className="text-xs font-mono text-zinc-500 uppercase tracking-wider">Your Full Site</h2>
+                  {!isPaidUser && (
+                    <p className="text-xs text-zinc-500 mt-1">Hero complete • {allTemplateSections.length - 1} sections ready to customize</p>
+                  )}
                 </div>
                 <div className="flex-1 overflow-auto p-2 space-y-1">
-                  {templateForBuild.sections.map((section, index) => {
+                  {/* Show ALL template sections, not just built ones */}
+                  {allTemplateSections.map((section, index) => {
                     const isCompleted = buildState.completedSections.includes(section.id)
                     const isSkipped = buildState.skippedSections.includes(section.id)
+                    const isLocked = !isPaidUser && section.id !== 'hero' // Lock all except hero for free users
                     
                     return (
                       <button
                         key={section.id}
                         onClick={() => {
-                          if (isCompleted) {
+                          if (isLocked) {
+                            // Show paywall for locked sections
+                            setHatchModalReason('proactive')
+                            setShowHatchModal(true)
+                          } else if (isCompleted) {
                             // Go back to building mode for this section
-                            setBuildState(prev => prev ? ({ ...prev, currentSectionIndex: index }) : null)
-                            setPhase('building')
+                            const sectionIndex = sectionsForBuild.findIndex(s => s.id === section.id)
+                            if (sectionIndex >= 0) {
+                              setBuildState(prev => prev ? ({ ...prev, currentSectionIndex: sectionIndex }) : null)
+                              setPhase('building')
+                            }
                           }
                         }}
                         className={`w-full text-left p-3 rounded-lg mb-1 transition-all group ${
-                          isCompleted
+                          isLocked
+                            ? 'bg-zinc-800/30 border border-zinc-700/50 cursor-pointer hover:border-emerald-500/30'
+                            : isCompleted
                             ? 'hover:bg-zinc-800/50 border border-transparent cursor-pointer'
                             : 'opacity-50 cursor-not-allowed border border-transparent'
                         }`}
                       >
                         <div className="flex items-center gap-3">
                           <div className={`w-6 h-6 rounded flex items-center justify-center text-xs font-mono ${
-                            isCompleted 
+                            isLocked
+                              ? 'bg-zinc-700/50 text-zinc-500 border border-zinc-600'
+                            : isCompleted 
                               ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' 
                               : isSkipped
                               ? 'bg-zinc-800 text-zinc-500 border border-zinc-700'
                               : 'bg-zinc-800 text-zinc-500 border border-zinc-700'
                           }`}>
-                            {isCompleted ? <CheckCircle2 className="w-3.5 h-3.5" /> : index + 1}
+                            {isLocked ? <Lock className="w-3 h-3" /> : isCompleted ? <CheckCircle2 className="w-3.5 h-3.5" /> : index + 1}
                           </div>
                           <div className="flex-1 min-w-0">
-                            <h3 className="text-sm font-medium truncate text-zinc-300 group-hover:text-white">{section.name}</h3>
+                            <h3 className={`text-sm font-medium truncate ${isLocked ? 'text-zinc-500' : 'text-zinc-300 group-hover:text-white'}`}>{section.name}</h3>
+                            {isLocked && (
+                              <p className="text-[10px] text-zinc-600 mt-0.5">Unlock to customize</p>
+                            )}
                           </div>
-                          {isCompleted && (
+                          {isCompleted && !isLocked && (
                             <Edit3 className="w-3.5 h-3.5 text-zinc-600 group-hover:text-zinc-400" />
+                          )}
+                          {isLocked && (
+                            <Sparkles className="w-3.5 h-3.5 text-emerald-500/50 group-hover:text-emerald-400" />
                           )}
                         </div>
                       </button>
                     )
-                  })}{`
-                ${reviewMobileTab === 'preview' ? 'flex' : 'hidden'} md:flex
-                flex-1 flex-col bg-zinc-950 min-h-0 relative
-              `}
+                  })}
                 </div>
                 
                 {/* Tier Features Panel */}

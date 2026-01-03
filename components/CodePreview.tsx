@@ -311,7 +311,7 @@ function CodePreview({ code, isPaid = false, onCodeChange, pagePath = '/', strea
                       onClick={() => setShowHatchModal(true)}
                       className="w-full py-2 bg-gradient-to-r from-teal-600 to-cyan-600 hover:from-teal-500 hover:to-cyan-500 text-white text-sm rounded-lg font-medium transition-all shadow-[0_0_15px_rgba(20,184,166,0.3)]"
                     >
-                      💠 Get Pro — $19/mo
+                      💠 Get Pro — $49/mo
                     </button>
                   </div>
                 </div>

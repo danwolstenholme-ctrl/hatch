@@ -2,7 +2,7 @@
 
 import { useMemo, useState, useEffect, useRef } from 'react'
 import { motion } from 'framer-motion'
-import { Brain } from 'lucide-react'
+import { Brain, Type } from 'lucide-react'
 
 interface SectionPreviewProps {
   code: string
@@ -12,6 +12,10 @@ interface SectionPreviewProps {
   onElementSelect?: (element: { tagName: string; text: string; className: string }) => void
   captureTrigger?: number
   onScreenshotCaptured?: (dataUrl: string) => void
+  editMode?: boolean
+  onTextEdit?: (oldText: string, newText: string) => void
+  allowCodeView?: boolean
+  onUpgradeClick?: () => void
 }
 
 type DeviceView = 'mobile' | 'tablet' | 'desktop'
@@ -30,10 +34,13 @@ const sanitizeSvgDataUrls = (input: string) => {
   })
 }
 
-export default function SectionPreview({ code, darkMode = true, onRuntimeError, inspectorMode = false, onElementSelect, captureTrigger = 0, onScreenshotCaptured }: SectionPreviewProps) {
-  const [deviceView, setDeviceView] = useState<DeviceView>('mobile')
+export default function SectionPreview({ code, darkMode = true, onRuntimeError, inspectorMode = false, onElementSelect, captureTrigger = 0, onScreenshotCaptured, editMode = false, onTextEdit, allowCodeView = false, onUpgradeClick }: SectionPreviewProps) {
+  // Default to desktop on desktop, mobile on mobile devices
+  const [deviceView, setDeviceView] = useState<DeviceView>('desktop')
   const [viewMode, setViewMode] = useState<'preview' | 'code'>('preview')
   const [isMobileDevice, setIsMobileDevice] = useState(false)
+  const [isEditModeActive, setIsEditModeActive] = useState(false)
+  const [showCodePaywall, setShowCodePaywall] = useState(false)
   const iframeRef = useRef<HTMLIFrameElement>(null)
 
   // Handle screenshot trigger
@@ -43,7 +50,14 @@ export default function SectionPreview({ code, darkMode = true, onRuntimeError, 
     }
   }, [captureTrigger])
 
-  // Listen for runtime errors, element selection, and screenshots from the iframe
+  // Send edit mode state to iframe
+  useEffect(() => {
+    if (iframeRef.current?.contentWindow) {
+      iframeRef.current.contentWindow.postMessage({ type: 'set-edit-mode', enabled: isEditModeActive }, '*')
+    }
+  }, [isEditModeActive])
+
+  // Listen for runtime errors, element selection, text edits, and screenshots from the iframe
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
       if (!event.data) return
@@ -60,19 +74,27 @@ export default function SectionPreview({ code, darkMode = true, onRuntimeError, 
       if (event.data.type === 'screenshot-captured') {
         onScreenshotCaptured?.(event.data.dataUrl)
       }
+      
+      if (event.data.type === 'text-edited') {
+        onTextEdit?.(event.data.oldText, event.data.newText)
+      }
     }
     window.addEventListener('message', handleMessage)
     return () => window.removeEventListener('message', handleMessage)
-  }, [onRuntimeError, onElementSelect, onScreenshotCaptured])
+  }, [onRuntimeError, onElementSelect, onScreenshotCaptured, onTextEdit])
 
-  // Lock to mobile view + preview-only on small screens
+  // Set device view based on actual device - desktop on desktop, mobile on mobile
   useEffect(() => {
     const mq = window.matchMedia('(max-width: 768px)')
     const handle = () => {
       setIsMobileDevice(mq.matches)
       if (mq.matches) {
+        // On mobile device: lock to mobile view
         setDeviceView('mobile')
         setViewMode('preview')
+      } else {
+        // On desktop: show desktop view
+        setDeviceView('desktop')
       }
     }
     handle()
@@ -321,6 +343,116 @@ export default function SectionPreview({ code, darkMode = true, onRuntimeError, 
         }, '*');
       }, true);
     }
+    
+    // Edit Mode Logic - Double-click to edit text inline
+    let editModeEnabled = false;
+    let activeEditor = null;
+    
+    window.addEventListener('message', (event) => {
+      if (event.data.type === 'set-edit-mode') {
+        editModeEnabled = event.data.enabled;
+        document.body.style.cursor = editModeEnabled ? 'text' : '';
+        
+        // Add visual indicator when edit mode is active
+        const indicator = document.getElementById('edit-mode-indicator');
+        if (editModeEnabled && !indicator) {
+          const div = document.createElement('div');
+          div.id = 'edit-mode-indicator';
+          div.style.cssText = 'position:fixed;top:8px;left:50%;transform:translateX(-50%);background:#a855f7;color:white;padding:4px 12px;border-radius:9999px;font-size:11px;z-index:99999;font-family:system-ui;pointer-events:none;';
+          div.textContent = '✏️ Edit Mode - Double-click text to edit';
+          document.body.appendChild(div);
+        } else if (!editModeEnabled && indicator) {
+          indicator.remove();
+        }
+      }
+    });
+    
+    // Text elements that can be edited
+    const editableSelectors = 'h1, h2, h3, h4, h5, h6, p, span, a, button, li, label, td, th';
+    
+    document.addEventListener('dblclick', (e) => {
+      if (!editModeEnabled) return;
+      
+      const target = e.target;
+      if (!target.matches(editableSelectors)) return;
+      if (target === document.body || target.id === 'root') return;
+      
+      // Don't edit if already editing
+      if (activeEditor) return;
+      
+      e.preventDefault();
+      e.stopPropagation();
+      
+      const originalText = target.innerText;
+      const originalBg = target.style.backgroundColor;
+      const originalOutline = target.style.outline;
+      
+      // Make editable
+      target.contentEditable = 'true';
+      target.style.outline = '2px solid #a855f7';
+      target.style.backgroundColor = 'rgba(168, 85, 247, 0.1)';
+      target.focus();
+      
+      // Select all text
+      const range = document.createRange();
+      range.selectNodeContents(target);
+      const selection = window.getSelection();
+      selection.removeAllRanges();
+      selection.addRange(range);
+      
+      activeEditor = target;
+      
+      const finishEdit = () => {
+        if (!activeEditor) return;
+        
+        target.contentEditable = 'false';
+        target.style.outline = originalOutline;
+        target.style.backgroundColor = originalBg;
+        
+        const newText = target.innerText.trim();
+        if (newText !== originalText) {
+          // Flash green to confirm
+          target.style.backgroundColor = 'rgba(16, 185, 129, 0.2)';
+          setTimeout(() => { target.style.backgroundColor = originalBg; }, 500);
+          
+          window.parent.postMessage({
+            type: 'text-edited',
+            oldText: originalText,
+            newText: newText
+          }, '*');
+        }
+        
+        activeEditor = null;
+      };
+      
+      target.addEventListener('blur', finishEdit, { once: true });
+      target.addEventListener('keydown', (ke) => {
+        if (ke.key === 'Enter' && !ke.shiftKey) {
+          ke.preventDefault();
+          target.blur();
+        }
+        if (ke.key === 'Escape') {
+          target.innerText = originalText;
+          target.blur();
+        }
+      });
+    }, true);
+    
+    // Hover effect in edit mode
+    document.addEventListener('mouseover', (e) => {
+      if (!editModeEnabled || activeEditor) return;
+      const target = e.target;
+      if (!target.matches(editableSelectors)) return;
+      target.style.outline = '1px dashed #a855f7';
+      target.style.cursor = 'text';
+    }, true);
+    
+    document.addEventListener('mouseout', (e) => {
+      if (!editModeEnabled || activeEditor) return;
+      const target = e.target;
+      target.style.outline = '';
+      target.style.cursor = '';
+    }, true);
   </script>
   
   <script>
@@ -468,45 +600,109 @@ export default function SectionPreview({ code, darkMode = true, onRuntimeError, 
       <div className="flex items-center justify-between gap-2 px-3 py-2 bg-zinc-900/60 border-b border-zinc-800">
         {!isMobileDevice && (
           <div className="inline-flex bg-zinc-900/70 border border-zinc-800 rounded-lg p-1 shadow-sm">
-            {['preview', 'code'].map((mode) => (
-              <button
-                key={mode}
-                onClick={() => setViewMode(mode as 'preview' | 'code')}
-                className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all ${
-                  viewMode === mode
-                    ? 'bg-gradient-to-r from-emerald-600/70 to-teal-500/70 text-white shadow-lg shadow-emerald-500/20'
-                    : 'text-zinc-500 hover:text-zinc-200'
-                }`}
-              >
-                {mode === 'preview' ? 'Visual' : 'Code'}
-              </button>
-            ))}
+            <button
+              onClick={() => setViewMode('preview')}
+              className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all ${
+                viewMode === 'preview'
+                  ? 'bg-gradient-to-r from-emerald-600/70 to-teal-500/70 text-white shadow-lg shadow-emerald-500/20'
+                  : 'text-zinc-500 hover:text-zinc-200'
+              }`}
+            >
+              Visual
+            </button>
+            <button
+              onClick={() => {
+                if (allowCodeView) {
+                  setViewMode('code')
+                } else {
+                  setShowCodePaywall(true)
+                }
+              }}
+              className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all flex items-center gap-1.5 ${
+                viewMode === 'code'
+                  ? 'bg-gradient-to-r from-emerald-600/70 to-teal-500/70 text-white shadow-lg shadow-emerald-500/20'
+                  : 'text-zinc-500 hover:text-zinc-200'
+              }`}
+            >
+              Code
+              {!allowCodeView && <span className="text-amber-400">🔒</span>}
+            </button>
           </div>
         )}
 
         {!isMobileDevice && viewMode === 'preview' && (
-          <div className="flex items-center gap-1 bg-zinc-900/70 border border-zinc-800 rounded-lg p-1">
-            {(Object.keys(deviceSizes) as DeviceView[]).map((device) => (
-              <button
-                key={device}
-                onClick={() => setDeviceView(device)}
-                className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all flex items-center gap-1.5 ${
-                  deviceView === device
-                    ? 'bg-zinc-800 text-white border border-emerald-400/30'
-                    : 'text-zinc-500 hover:text-zinc-200'
-                }`}
-              >
-                <span>{deviceSizes[device].icon}</span>
-                <span>{deviceSizes[device].label}</span>
-              </button>
-            ))}
+          <div className="flex items-center gap-2">
+            {/* Edit Mode Toggle */}
+            <button
+              onClick={() => setIsEditModeActive(!isEditModeActive)}
+              className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 border ${
+                isEditModeActive
+                  ? 'bg-violet-500/20 text-violet-400 border-violet-500/50'
+                  : 'bg-zinc-900/70 text-zinc-500 border-zinc-800 hover:text-zinc-200 hover:border-zinc-700'
+              }`}
+              title="Double-click text to edit"
+            >
+              <Type className="w-3.5 h-3.5" />
+              <span>Edit Text</span>
+            </button>
+            
+            {/* Device Selector */}
+            <div className="flex items-center gap-1 bg-zinc-900/70 border border-zinc-800 rounded-lg p-1">
+              {(Object.keys(deviceSizes) as DeviceView[]).map((device) => (
+                <button
+                  key={device}
+                  onClick={() => setDeviceView(device)}
+                  className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all flex items-center gap-1.5 ${
+                    deviceView === device
+                      ? 'bg-zinc-800 text-white border border-emerald-400/30'
+                      : 'text-zinc-500 hover:text-zinc-200'
+                  }`}
+                >
+                  <span>{deviceSizes[device].icon}</span>
+                  <span>{deviceSizes[device].label}</span>
+                </button>
+              ))}
+            </div>
           </div>
         )}
       </div>
       
+      {/* Code Paywall Modal */}
+      {showCodePaywall && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm" onClick={() => setShowCodePaywall(false)}>
+          <div className="bg-zinc-900 border border-zinc-700 rounded-2xl p-8 max-w-md mx-4 text-center" onClick={e => e.stopPropagation()}>
+            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-amber-500/10 border border-amber-500/30 flex items-center justify-center">
+              <span className="text-3xl">🔒</span>
+            </div>
+            <h3 className="text-xl font-bold text-white mb-2">Code Access Locked</h3>
+            <p className="text-zinc-400 mb-6">
+              Upgrade to view and export your raw React + Tailwind code. 
+              It&apos;s 100% yours to keep - no lock-in.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowCodePaywall(false)}
+                className="flex-1 px-4 py-2 text-sm font-medium text-zinc-400 border border-zinc-700 rounded-lg hover:bg-zinc-800 transition-colors"
+              >
+                Maybe later
+              </button>
+              <button
+                onClick={() => {
+                  setShowCodePaywall(false)
+                  onUpgradeClick?.()
+                }}
+                className="flex-1 px-4 py-2 text-sm font-bold text-black bg-emerald-500 rounded-lg hover:bg-emerald-400 transition-colors"
+              >
+                Unlock Code
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      
       {/* Preview / Code Container */}
       <div className="flex-1 flex items-start justify-center overflow-auto bg-zinc-950 p-4">
-        {viewMode === 'code' ? (
+        {viewMode === 'code' && allowCodeView ? (
           <div className="w-full max-w-5xl h-full bg-zinc-900 border border-zinc-800 rounded-lg shadow-2xl overflow-auto">
             <div className="flex items-center justify-between px-4 py-2 border-b border-zinc-800 bg-zinc-900/80">
               <span className="text-xs font-mono text-emerald-300">Raw React + Tailwind (no wrappers)</span>

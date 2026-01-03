@@ -8,7 +8,8 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useUser } from '@clerk/nextjs'
 import { motion, useInView } from 'framer-motion'
-import { Cpu, Terminal, Layers, Shield, Zap, Code2, Globe, ArrowRight, CheckCircle2, Layout, Sparkles, Smartphone } from 'lucide-react'
+import { Cpu, Terminal, Layers, Shield, Zap, Code2, Globe, ArrowRight, CheckCircle2, Layout, Sparkles, Smartphone, Brain } from 'lucide-react'
+import type { AppRouterInstance } from 'next/dist/shared/lib/app-router-context.shared-runtime'
 
 // Client-side check to prevent hydration mismatch
 const emptySubscribe = () => () => {}
@@ -20,210 +21,44 @@ function useIsClient() {
   )
 }
 
-
-
-
-
-// Quick-start example prompts
-const EXAMPLE_PROMPTS = [
-  { label: "SaaS", mobile: "SaaS pricing page", desktop: "A modern SaaS landing page with pricing and features" },
-  { label: "Portfolio", mobile: "Dev portfolio site", desktop: "A developer portfolio with projects and contact form" },
-  { label: "Startup", mobile: "Startup landing page", desktop: "An AI startup homepage with hero and call-to-action" },
-  { label: "Agency", mobile: "Agency homepage", desktop: "A creative agency site with case studies" },
-]
-
-// System Status - the main builder input
-function SystemStatus() {
-  const [prompt, setPrompt] = useState('')
-  const [isFocused, setIsFocused] = useState(false)
+// The Void Button - hands off to launch page for the immersive experience
+function VoidButton({ isSignedIn, router }: { isSignedIn: boolean | undefined, router: AppRouterInstance }) {
   const [isLoading, setIsLoading] = useState(false)
-  const [bootLines, setBootLines] = useState<string[]>([])
-  const [isBooting, setIsBooting] = useState(true)
-  const [sampleIndex, setSampleIndex] = useState(0)
-  const [typedIndex, setTypedIndex] = useState(0)
-  const [userTouched, setUserTouched] = useState(false)
-  const [isMobile, setIsMobile] = useState(false)
-  const router = useRouter()
-  const { isSignedIn } = useUser()
-  const inputRef = useRef<HTMLTextAreaElement>(null)
-
-  // Detect mobile viewport
-  useEffect(() => {
-    const mq = window.matchMedia('(max-width: 480px)')
-    const onChange = () => setIsMobile(mq.matches)
-    onChange()
-    mq.addEventListener('change', onChange)
-    return () => mq.removeEventListener('change', onChange)
-  }, [])
-
-  const currentSample = EXAMPLE_PROMPTS[sampleIndex][isMobile ? 'mobile' : 'desktop']
-
-  // Boot sequence - show immediately, no delays
-  useEffect(() => {
-    const sequence = [
-      '> REAL CODE. React + Tailwind. Yours to keep.',
-      '> FIRST BUILD IN ~30 SECONDS.',
-      '> NO SIGNUP TO TRY.',
-      '> DEPLOY TO YOUR OWN DOMAIN.',
-      '> READY. // The Architect watches.',
-    ]
-    setBootLines(sequence)
-    setIsBooting(false)
-  }, [])
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault()
+  
+  const handleClick = () => {
     if (isLoading) return
     setIsLoading(true)
     
-    // Small delay to show the loading state before navigation
+    // Quick transition, let /launch handle the immersive sequence
     setTimeout(() => {
-      const params = new URLSearchParams()
-      const nextPrompt = prompt || currentSample || ''
-      if (nextPrompt) params.set('prompt', nextPrompt)
-      params.set('mode', 'demo')
-      router.push(`/builder?${params.toString()}`)
-    }, 300)
+      const destination = isSignedIn ? '/builder' : '/launch'
+      router.push(destination)
+    }, 150)
   }
-
-  const handleExampleClick = (examplePrompt: string) => {
-    setUserTouched(true)
-    setPrompt(examplePrompt)
-    inputRef.current?.focus()
-  }
-
-  // Typewriter loop (stops once user interacts)
-  useEffect(() => {
-    if (userTouched) return
-    const full = currentSample || ''
-    const typeSpeed = 40
-    const pause = 1200
-
-    if (typedIndex <= full.length) {
-      const t = setTimeout(() => {
-        setPrompt(full.slice(0, typedIndex))
-        setTypedIndex((v) => v + 1)
-      }, typeSpeed)
-      return () => clearTimeout(t)
-    }
-
-    const next = setTimeout(() => {
-      setTypedIndex(0)
-      setSampleIndex((v) => (v + 1) % EXAMPLE_PROMPTS.length)
-    }, pause)
-    return () => clearTimeout(next)
-  }, [userTouched, currentSample, typedIndex])
-
+  
   return (
-    <div className="w-full relative z-20 font-mono">
-      {/* Outer glow ring */}
-      <div className={`absolute -inset-[2px] rounded-lg bg-gradient-to-r from-emerald-500/60 via-teal-500/60 to-emerald-500/60 opacity-0 blur-md transition-opacity duration-500 ${isFocused ? 'opacity-100' : 'opacity-30'}`} />
+    <button
+      onClick={handleClick}
+      disabled={isLoading}
+      className="group relative inline-flex items-center gap-3 px-10 py-5 bg-zinc-900/80 hover:bg-zinc-900 border border-emerald-500/30 hover:border-emerald-500/60 rounded-2xl font-bold text-lg transition-all duration-300 hover:scale-105 active:scale-95 shadow-[0_0_60px_rgba(16,185,129,0.15)] hover:shadow-[0_0_80px_rgba(16,185,129,0.25)] disabled:hover:scale-100"
+    >
+      {/* Glow ring on hover */}
+      <div className="absolute -inset-[2px] rounded-2xl bg-gradient-to-r from-emerald-500/40 via-teal-500/40 to-emerald-500/40 opacity-0 group-hover:opacity-100 blur-md transition-opacity duration-500" />
       
-      <div
-        className={`relative rounded-lg overflow-hidden transition-all duration-300 bg-black border ${
-          isFocused 
-            ? 'border-emerald-500/50 shadow-[0_0_60px_rgba(16,185,129,0.2)]' 
-            : 'border-zinc-800 hover:border-emerald-500/40'
-        }`}
-      >
-        {/* Terminal Header */}
-        <div className="flex items-center justify-between px-4 py-2 bg-zinc-900/90 border-b border-zinc-800">
-          <div className="flex items-center gap-2">
-            <div className="flex gap-1.5">
-              <div className="w-2.5 h-2.5 rounded-full bg-red-500/80"></div>
-              <div className="w-2.5 h-2.5 rounded-full bg-amber-500/80"></div>
-              <div className="w-2.5 h-2.5 rounded-full bg-emerald-500"></div>
-            </div>
-            <div className="ml-3 text-[10px] text-zinc-500">builder.exe</div>
-          </div>
-          <div className="flex items-center gap-2">
-             <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></div>
-             <span className="text-[10px] text-emerald-500">ONLINE</span>
-          </div>
-        </div>
-
-        {/* Terminal Body */}
-        <div className="p-4 sm:p-5 min-h-[200px] sm:min-h-[260px] flex flex-col relative" onClick={() => inputRef.current?.focus()}>
-          {/* Scanline effect */}
-          <div className="absolute inset-0 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] z-0 pointer-events-none bg-[length:100%_4px,3px_100%]" />
-
-          {/* Boot Sequence */}
-          <div className="text-xs sm:text-sm text-emerald-500/80 mb-4 space-y-1 relative z-10 font-mono">
-            {bootLines.map((line, i) => (
-              <div key={i}>{line}</div>
-            ))}
-          </div>
-
-          {/* Input Area */}
-          <form onSubmit={handleSubmit} className="flex-1 flex flex-col relative z-10 scroll-m-16" aria-busy={isBooting}>
-            <div className="flex gap-2 flex-1">
-              <span className="text-emerald-500 shrink-0 mt-[2px]">&gt;</span>
-              <textarea
-                ref={inputRef}
-                value={prompt}
-                onChange={(e) => {
-                  setUserTouched(true)
-                  setPrompt(e.target.value)
-                }}
-                onFocus={() => {
-                  setIsFocused(true)
-                  setUserTouched(true)
-                  if (!prompt.trim()) {
-                    setPrompt(currentSample)
-                  }
-                }}
-                onBlur={() => setIsFocused(false)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault()
-                    handleSubmit(e)
-                  }
-                }}
-                placeholder="Describe your dream website..."
-                className="flex-1 bg-transparent text-white text-base sm:text-lg font-mono focus:outline-none resize-none min-h-[80px] placeholder-zinc-600 caret-emerald-400 selection:bg-emerald-500/30"
-                autoFocus
-              />
-            </div>
-
-            <div className="mt-2 text-[11px] text-zinc-500 font-mono">Press Enter — first draft in ~30s.</div>
-            
-            {/* Footer Actions */}
-            <div className="mt-3 flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-t border-zinc-800/50 pt-3">
-               <div className="flex gap-2 overflow-x-auto pb-1 no-scrollbar max-w-full sm:max-w-[70%]">
-                  {EXAMPLE_PROMPTS.map((example, i) => (
-                    <button
-                      key={i}
-                      type="button"
-                      onClick={(e) => { e.stopPropagation(); handleExampleClick(example[isMobile ? 'mobile' : 'desktop']); }}
-                      className="whitespace-nowrap px-2 py-1 text-[10px] text-zinc-500 border border-zinc-800 rounded hover:border-emerald-500/50 hover:text-emerald-400 transition-colors"
-                    >
-                      {example.label}
-                    </button>
-                  ))}
-               </div>
-               
-               <button
-                type="submit"
-                disabled={isLoading || isBooting}
-                className="w-full sm:w-auto bg-emerald-600/20 hover:bg-emerald-600/30 text-emerald-400 border border-emerald-500/50 px-4 py-2 rounded text-xs font-mono transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 group"
-              >
-                {isLoading ? (
-                  <>
-                    <div className="w-3 h-3 border-2 border-emerald-500/30 border-t-emerald-500 rounded-full animate-spin" />
-                    <span>Launching builder...</span>
-                  </>
-                ) : (
-                  <>
-                    <span>Generate my site</span>
-                    <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
-                  </>
-                )}
-              </button>
-            </div>
-          </form>
-        </div>
+      <div className="relative z-10 flex items-center gap-3">
+        {isLoading ? (
+          <>
+            <div className="w-5 h-5 border-2 border-emerald-500/30 border-t-emerald-500 rounded-full animate-spin" />
+            <span className="text-emerald-400 font-mono text-base">Entering...</span>
+          </>
+        ) : (
+          <>
+            <span className="text-white">Start Building Free</span>
+            <ArrowRight className="w-5 h-5 text-emerald-400 group-hover:translate-x-1 transition-transform" />
+          </>
+        )}
       </div>
-    </div>
+    </button>
   )
 }
 
@@ -308,63 +143,67 @@ export default function Home() {
       `}</style>
 
       {/* HERO SECTION */}
-      <section className="relative min-h-[80vh] flex items-center pt-16 pb-12 px-4 sm:px-6 overflow-hidden">
-        {/* Background - grid */}
-        <div className="absolute inset-0 bg-[linear-gradient(rgba(16,185,129,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(16,185,129,0.02)_1px,transparent_1px)] bg-[size:50px_50px]" />
-        <div className="absolute inset-0 bg-gradient-to-b from-emerald-950/20 via-transparent to-zinc-950" />
+      <section className="relative min-h-[80vh] flex items-center pt-28 sm:pt-32 pb-12 px-4 sm:px-6 overflow-hidden">
+        {/* THE VOID - deep black with subtle grid */}
+        <div className="absolute inset-0 bg-zinc-950" />
+        <div className="absolute inset-0 bg-[linear-gradient(rgba(16,185,129,0.015)_1px,transparent_1px),linear-gradient(90deg,rgba(16,185,129,0.015)_1px,transparent_1px)] bg-[size:60px_60px]" />
         
-        {/* Floating orbs */}
-        <div className="absolute top-20 left-[10%] w-72 h-72 bg-emerald-500/8 rounded-full blur-[80px] glow-pulse" />
-        <div className="absolute top-40 right-[15%] w-64 h-64 bg-teal-500/6 rounded-full blur-[70px] glow-pulse" style={{ animationDelay: '1s' }} />
-        <div className="absolute bottom-20 left-[20%] w-56 h-56 bg-cyan-500/5 rounded-full blur-[60px] glow-pulse" style={{ animationDelay: '2s' }} />
+        {/* Massive void orbs - the portal */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-emerald-500/[0.04] rounded-full blur-[150px] glow-pulse" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-teal-500/[0.06] rounded-full blur-[120px] glow-pulse" style={{ animationDelay: '1.5s' }} />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-cyan-500/[0.08] rounded-full blur-[100px] glow-pulse" style={{ animationDelay: '0.75s' }} />
+        
+        {/* Edge orbs - depth */}
+        <div className="absolute -top-40 -left-40 w-96 h-96 bg-emerald-500/[0.06] rounded-full blur-[120px]" />
+        <div className="absolute -bottom-40 -right-40 w-96 h-96 bg-teal-500/[0.05] rounded-full blur-[120px]" />
+        
+        {/* Radial fade to void edges */}
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_0%,rgba(9,9,11,0.4)_50%,rgba(9,9,11,0.9)_100%)]" />
         
         <div className="max-w-7xl mx-auto w-full relative z-10">
-          <div className="grid lg:grid-cols-2 gap-10 lg:gap-14 items-center">
+          <div className="text-center max-w-3xl mx-auto">
             
-            {/* LEFT - Headlines */}
-            <div className="space-y-6">
-              {/* Status badge */}
-              <div className="inline-flex items-center gap-2.5 px-4 py-2 bg-zinc-900/90 border border-emerald-500/40 rounded-full">
-                <span className="relative flex h-2.5 w-2.5">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
-                </span>
-                <span className="text-sm font-mono text-emerald-400 tracking-wide">AI BUILDER ONLINE</span>
-              </div>
-
-              {/* Main headline - BIG and BOLD */}
-              <h1 className="text-5xl sm:text-6xl md:text-7xl font-black tracking-tight leading-[0.95]">
-                <span className="block text-white">Describe it.</span>
-                <span className="block mt-1 bg-gradient-to-r from-emerald-400 via-teal-400 to-cyan-400 bg-clip-text text-transparent">
-                  We build it.
-                </span>
-              </h1>
-
-              {/* Subheadline */}
-              <p className="text-lg sm:text-xl text-zinc-400 max-w-lg leading-relaxed">
-                AI website builder that generates <span className="text-white font-semibold">real React + Tailwind code</span>. Export anytime. No lock-in.
-              </p>
-
-              {/* Value props */}
-              <div className="flex flex-wrap gap-3">
-                <div className="flex items-center gap-2 px-3 py-1.5 bg-zinc-900/80 border border-zinc-800 rounded-lg text-sm">
-                  <Zap className="w-4 h-4 text-amber-400" />
-                  <span>~30 sec builds</span>
-                </div>
-                <div className="flex items-center gap-2 px-3 py-1.5 bg-zinc-900/80 border border-zinc-800 rounded-lg text-sm">
-                  <Code2 className="w-4 h-4 text-emerald-400" />
-                  <span>Export code</span>
-                </div>
-                <div className="flex items-center gap-2 px-3 py-1.5 bg-zinc-900/80 border border-zinc-800 rounded-lg text-sm">
-                  <Shield className="w-4 h-4 text-violet-400" />
-                  <span>100% yours</span>
-                </div>
-              </div>
+            {/* Status badge */}
+            <div className="inline-flex items-center gap-2.5 px-4 py-2 bg-zinc-900/90 border border-emerald-500/40 rounded-full mb-8">
+              <span className="relative flex h-2.5 w-2.5">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+              </span>
+              <span className="text-sm font-mono text-emerald-400 tracking-wide">AI BUILDER ONLINE</span>
             </div>
 
-            {/* RIGHT - Terminal */}
-            <div className="w-full">
-              <SystemStatus />
+            {/* Main headline - BIG and BOLD */}
+            <h1 className="text-5xl sm:text-6xl md:text-7xl font-black tracking-tight leading-[0.95] mb-6">
+              <span className="block text-white">Describe it.</span>
+              <span className="block mt-1 bg-gradient-to-r from-emerald-400 via-teal-400 to-cyan-400 bg-clip-text text-transparent">
+                We build it.
+              </span>
+            </h1>
+
+            {/* Subheadline */}
+            <p className="text-lg sm:text-xl text-zinc-400 max-w-xl mx-auto leading-relaxed mb-8">
+              AI website builder that generates <span className="text-white font-semibold">real React + Tailwind code</span>. First section in ~30 seconds. Export anytime.
+            </p>
+
+            {/* THE BIG CTA */}
+            <div className="mb-8">
+              <VoidButton isSignedIn={isSignedIn} router={router} />
+            </div>
+
+            {/* Value props */}
+            <div className="flex flex-wrap justify-center gap-3">
+              <div className="flex items-center gap-2 px-3 py-1.5 bg-zinc-900/80 border border-zinc-800 rounded-lg text-sm">
+                <Zap className="w-4 h-4 text-amber-400" />
+                <span>~30 sec builds</span>
+              </div>
+              <div className="flex items-center gap-2 px-3 py-1.5 bg-zinc-900/80 border border-zinc-800 rounded-lg text-sm">
+                <Code2 className="w-4 h-4 text-emerald-400" />
+                <span>Export code</span>
+              </div>
+              <div className="flex items-center gap-2 px-3 py-1.5 bg-zinc-900/80 border border-zinc-800 rounded-lg text-sm">
+                <Shield className="w-4 h-4 text-violet-400" />
+                <span>100% yours</span>
+              </div>
             </div>
           </div>
         </div>
@@ -539,22 +378,22 @@ export default function Home() {
           </div>
 
           <div className="grid md:grid-cols-3 gap-6">
-            {/* Starter ($9) */}
+            {/* Starter ($9/2wks) */}
             <div className="p-8 bg-zinc-900/50 border border-zinc-800 rounded-xl hover:border-lime-500/30 transition-colors group">
               <div className="text-sm text-lime-500 mb-2 font-mono">SEEDLING</div>
               <h3 className="text-2xl font-bold mb-1 text-white">Starter</h3>
               <div className="flex items-baseline gap-2 mb-2">
                 <span className="text-4xl font-bold font-mono text-white">$9</span>
-                <span className="text-zinc-500">/month</span>
+                <span className="text-zinc-500">/2 weeks</span>
               </div>
-              <div className="text-zinc-500 text-sm mb-6">Perfect for side projects</div>
+              <div className="text-zinc-500 text-sm mb-6">Perfect for exploring</div>
               <ul className="space-y-3 mb-8">
                 {[
-                  { text: '3 Active Projects', included: true },
+                  { text: 'Full Builder Access', included: true },
                   { text: 'Unlimited AI Generations', included: true },
-                  { text: '5 AI Polishes / month', included: true },
-                  { text: 'Download Source Code', included: true },
+                  { text: 'Live Preview Your Site', included: true },
                   { text: 'Deploy to hatchitsites.dev', included: true },
+                  { text: 'Download Source Code', included: false },
                   { text: 'Custom Domain', included: false },
                   { text: 'Remove Branding', included: false },
                 ].map((item, i) => (
@@ -576,24 +415,24 @@ export default function Home() {
               </PricingButton>
             </div>
 
-            {/* Pro ($29) */}
+            {/* Pro ($49) */}
             <div className="relative p-8 bg-zinc-900 border border-emerald-500/50 rounded-xl overflow-hidden shadow-[0_0_50px_rgba(16,185,129,0.1)] transform md:-translate-y-4">
-              <div className="absolute top-0 right-0 px-3 py-1 bg-emerald-600 text-xs font-semibold rounded-bl-xl text-white font-mono">MOST POPULAR</div>
-              <div className="flex items-center gap-2 text-sm text-emerald-400 mb-2 font-mono"><span>⚡</span><span>FULL POWER</span></div>
+              <div className="absolute top-0 right-0 px-3 py-1 bg-emerald-600 text-xs font-semibold rounded-bl-xl text-white font-mono">FULL ACCESS</div>
+              <div className="flex items-center gap-2 text-sm text-emerald-400 mb-2 font-mono"><span>⚡</span><span>UNLIMITED</span></div>
               <h3 className="text-2xl font-bold mb-1 text-white">Pro</h3>
               <div className="flex items-baseline gap-2 mb-2">
-                <span className="text-4xl font-bold font-mono text-white">$29</span>
+                <span className="text-4xl font-bold font-mono text-white">$49</span>
                 <span className="text-zinc-500">/month</span>
               </div>
-              <div className="text-zinc-400 text-sm mb-6">Most popular</div>
+              <div className="text-zinc-400 text-sm mb-6">Everything. Unlimited.</div>
               <ul className="space-y-3 mb-8">
                 {[
-                  'Unlimited Generations',
-                  'Up to 30 AI Polishes / month',
+                  'Unlimited AI Generations',
+                  'Download Full Source Code',
                   'Deploy to Custom Domain',
                   'Remove HatchIt Branding',
-                  'Priority Code Export',
-                  'The Living Site Engine',
+                  'Commercial License',
+                  'Priority Support',
                 ].map((item, i) => (
                   <li key={i} className="flex items-center gap-2 text-sm text-white">
                     <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0" />
@@ -645,26 +484,18 @@ export default function Home() {
         </div>
       </Section>
 
-      {/* FINAL CTA */}
-      <Section className="px-4 sm:px-6 py-16">
-          <div className="max-w-3xl mx-auto text-center">
-            <div className="relative p-8 md:p-12 bg-gradient-to-br from-emerald-900/20 via-teal-900/10 to-zinc-900/40 border border-emerald-500/20 rounded-xl overflow-hidden">
-            
-            <div className="relative z-10">
-              <h2 className="text-3xl sm:text-4xl font-bold mb-4">Ready to build?</h2>
-              <p className="text-lg text-zinc-400 mb-6">Describe your site. Get real code. Ship it.</p>
-              <button
-                onClick={() => {
-                  const destination = isSignedIn ? '/builder' : '/launch'
-                  router.push(destination)
-                }}
-                className="inline-flex items-center gap-2 px-8 py-4 bg-emerald-500 hover:bg-emerald-400 text-zinc-950 rounded-lg font-bold text-lg transition-all hover:scale-105 active:scale-95 shadow-[0_0_30px_rgba(16,185,129,0.3)]"
-              >
-                Start Building Free
-                <ArrowRight className="w-5 h-5" />
-              </button>
-            </div>
-          </div>
+      {/* FINAL CTA - THE PORTAL */}
+      <Section className="px-4 sm:px-6 py-24 relative overflow-hidden">
+        {/* Void background for CTA */}
+        <div className="absolute inset-0 bg-zinc-950" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-emerald-500/[0.05] rounded-full blur-[150px] glow-pulse" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-teal-500/[0.07] rounded-full blur-[100px] glow-pulse" style={{ animationDelay: '1s' }} />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_0%,rgba(9,9,11,0.6)_70%,rgba(9,9,11,1)_100%)]" />
+        
+        <div className="max-w-3xl mx-auto text-center relative z-10">
+          <h2 className="text-4xl sm:text-5xl font-bold mb-4">Enter the void.</h2>
+          <p className="text-xl text-zinc-400 mb-8">Your website is waiting to be born.</p>
+          <VoidButton isSignedIn={isSignedIn} router={router} />
         </div>
       </Section>
 

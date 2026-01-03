@@ -1,23 +1,13 @@
 'use client'
 
 import { SignIn } from '@clerk/nextjs'
-import { useSearchParams, useRouter } from 'next/navigation'
+import { useSearchParams } from 'next/navigation'
 import { motion } from 'framer-motion'
-import { Sparkles, ArrowRight } from 'lucide-react'
-
-// =============================================================================
-// DEV BYPASS MODE - Set to true for local testing without Clerk
-// =============================================================================
-const DEV_BYPASS = false
+import { Sparkles } from 'lucide-react'
 
 export default function SignInPage() {
   const searchParams = useSearchParams()
-  const router = useRouter()
   const redirectUrl = searchParams.get('redirect_url') || '/builder'
-  
-  const handleBypass = () => {
-    router.push(redirectUrl)
-  }
   
   return (
     <div className="min-h-screen bg-zinc-950 flex flex-col items-center justify-center relative overflow-hidden p-4">
@@ -44,34 +34,27 @@ export default function SignInPage() {
           </p>
         </div>
 
-        {/* DEV BYPASS Card */}
-        {DEV_BYPASS ? (
-          <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 shadow-2xl">
-            <div className="text-center space-y-4">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400 text-xs font-mono">
-                DEV BYPASS ACTIVE
-              </div>
-              <p className="text-zinc-400 text-sm">
-                Auth bypassed for development. Click below to continue.
-              </p>
-              <button
-                onClick={handleBypass}
-                className="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg font-medium transition-all flex items-center justify-center gap-2"
-              >
-                Continue to {redirectUrl}
-                <ArrowRight className="w-4 h-4" />
-              </button>
-            </div>
-          </div>
-        ) : (
-          /* Original Clerk Card - uncomment for production */
-          <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-1 shadow-2xl shadow-black/50 ring-1 ring-white/5">
-            <div className="bg-zinc-950/50 rounded-xl p-6 sm:p-8">
-              {/* <SignIn forceRedirectUrl={redirectUrl} ... /> */}
-              <p className="text-zinc-500 text-center">Clerk SignIn disabled</p>
-            </div>
-          </div>
-        )}
+        {/* Clerk Sign In */}
+        <div className="flex justify-center">
+          <SignIn 
+            forceRedirectUrl={redirectUrl}
+            appearance={{
+              elements: {
+                rootBox: 'w-full',
+                card: 'bg-zinc-900 border border-zinc-800 shadow-2xl shadow-black/50',
+                headerTitle: 'text-white',
+                headerSubtitle: 'text-zinc-400',
+                socialButtonsBlockButton: 'bg-zinc-800 border-zinc-700 text-white hover:bg-zinc-700',
+                formFieldLabel: 'text-zinc-300',
+                formFieldInput: 'bg-zinc-800 border-zinc-700 text-white',
+                footerActionLink: 'text-emerald-400 hover:text-emerald-300',
+                identityPreviewText: 'text-zinc-300',
+                identityPreviewEditButton: 'text-emerald-400',
+                formButtonPrimary: 'bg-emerald-600 hover:bg-emerald-500',
+              }
+            }}
+          />
+        </div>
 
         {/* Footer */}
         <div className="mt-8 text-center">

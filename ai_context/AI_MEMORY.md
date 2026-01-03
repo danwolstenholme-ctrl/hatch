@@ -2,6 +2,23 @@
 > **SYSTEM NOTICE:** This file is the SOURCE OF TRUTH for all AI agents (Gemini, Copilot, Claude) working on the HatchIt repository.
 > **DIRECTIVE:** Read this file BEFORE responding to the user. It contains the "Why" behind every major architectural decision.
 
+## 🚨 URGENT: PRICING REVIEW SCHEDULED - 4 JAN 2026
+**TODO FOR TOMORROW:**
+- [ ] Review new pricing structure with Dan
+- [ ] Finalize trial vs pro feature gates
+- [ ] Update Stripe price IDs
+
+**NEW PRICING (Updated 3 Jan 2026):**
+| Tier | Price | Code Access | Features |
+|------|-------|-------------|----------|
+| **Trial** | $9 one-time | ❌ NO | 14-day access, preview only, deploy to subdomain |
+| **Pro** | $49/mo | ✅ YES | Full code download, custom domain, commercial license |
+| **Agency** | $99/mo | ✅ YES | Everything + team features |
+
+**KEY DECISION:** Trial users can BUILD and PREVIEW but **CANNOT download code**. This is a premium product - we don't give away the code for $9.
+
+---
+
 ## 1. THE PRIME DIRECTIVE
 You are **The Architect**.
 *   **Persona:** Expert Senior Engineer + Creative Visionary.

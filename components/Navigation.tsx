@@ -25,13 +25,16 @@ export default function Navigation() {
   return (
     <>
       <motion.nav 
-        className="fixed top-0 left-0 right-0 z-50 w-full px-4 sm:px-6 py-3 sm:py-5 bg-transparent pointer-events-none"
+        className="fixed top-0 left-0 right-0 z-50 w-full bg-zinc-950 border-b border-zinc-800/50"
         initial={{ y: -100, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.5, ease: [0.25, 0.1, 0.25, 1] }}
       >
-        <div className="max-w-7xl mx-auto flex justify-between items-center gap-3 pointer-events-auto">
-          {/* Logo */}
+        {/* Subtle gradient bottom edge - matches footer top edge */}
+        <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-emerald-500/20 to-transparent" />
+        
+        <div className="relative max-w-7xl mx-auto px-6 py-4 flex justify-between items-center gap-3">
+          {/* Logo - matches footer style */}
           <Link href="/" className="flex items-center gap-2 group">
             <motion.div
               className="inline-block"
@@ -39,32 +42,26 @@ export default function Navigation() {
               whileHover={{ scale: 1.1, rotate: 15 }}
               transition={{ type: 'spring', stiffness: 400, damping: 17 }}
             >
-              <Image src="/assets/hatchit_definitive.svg" alt="HatchIt" width={36} height={36} className="w-9 h-9" />
+              <Image src="/assets/hatchit_definitive.svg" alt="HatchIt" width={32} height={32} className="w-8 h-8" />
             </motion.div>
+            <span className="font-semibold text-white">HatchIt</span>
           </Link>
           
-          {/* Desktop Nav Links */}
-          <div className="hidden md:flex items-center gap-1">
+          {/* Desktop Nav Links - footer style */}
+          <div className="hidden md:flex items-center gap-6">
             {navLinks.map((link) => {
               const isActive = pathname === link.href
               return (
                 <Link 
                   key={link.href}
                   href={link.href} 
-                  className={`relative px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  className={`text-sm transition-colors ${
                     isActive 
-                      ? 'text-white' 
-                      : 'text-zinc-400 hover:text-white'
+                      ? 'text-white font-medium' 
+                      : 'text-zinc-500 hover:text-white'
                   }`}
                 >
                   {link.label}
-                  {isActive && (
-                    <motion.div
-                      layoutId="activeNav"
-                      className="absolute inset-0 bg-zinc-800 rounded-lg -z-10"
-                      transition={{ type: 'spring', stiffness: 380, damping: 30 }}
-                    />
-                  )}
                 </Link>
               )
             })}
@@ -74,8 +71,8 @@ export default function Navigation() {
           <div className="flex items-center gap-2 sm:gap-3">
             <SignedOut>
               <SignInButton mode="modal" forceRedirectUrl="/dashboard/projects">
-                <button className="hidden md:inline-flex items-center gap-2 px-3.5 py-2 text-sm font-semibold rounded-lg bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-lg shadow-emerald-900/20 hover:from-emerald-500 hover:to-teal-500 transition-colors">
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <button className="hidden md:inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-md shadow-emerald-900/20 hover:from-emerald-500 hover:to-teal-500 transition-colors">
+                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
                   </svg>
                   Projects
@@ -87,9 +84,9 @@ export default function Navigation() {
                 {/* My Projects link */}
                 <Link
                   href="/dashboard/projects"
-                  className="hidden md:inline-flex items-center gap-2 px-3.5 py-2 text-sm font-semibold rounded-lg bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-lg shadow-emerald-900/20 hover:from-emerald-500 hover:to-teal-500 transition-colors"
+                  className="hidden md:inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-md shadow-emerald-900/20 hover:from-emerald-500 hover:to-teal-500 transition-colors"
                 >
-                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
                   </svg>
                   Projects

@@ -5,39 +5,37 @@ import { useClerk, useUser } from '@clerk/nextjs'
 import { motion } from 'framer-motion'
 import { Check, Zap, Building2, ArrowLeft, Sparkles } from 'lucide-react'
 import Image from 'next/image'
-import { Suspense } from 'react'
-
-// =============================================================================
-// DEV BYPASS MODE - Set to true for local testing without Clerk
-// =============================================================================
-const DEV_BYPASS = false
+import { Suspense, useEffect } from 'react'
 
 const tiers = [
   {
     name: 'Lite',
     price: '$9',
-    tag: 'STARTER',
+    period: '/2 wks',
+    tag: 'SEEDLING',
     tagColor: 'text-lime-400',
-    description: 'Perfect to get started',
-    features: ['3 landing pages', 'AI-powered builder', 'Live preview', 'Basic templates'],
+    description: 'Perfect to explore',
+    features: ['Full Builder Access', 'Unlimited AI Generations', 'Live Preview', 'Deploy to subdomain'],
     highlight: false,
   },
   {
     name: 'Pro',
-    price: '$29',
-    tag: 'MOST POPULAR',
+    price: '$49',
+    period: '/mo',
+    tag: 'FULL ACCESS',
     tagColor: 'text-emerald-400',
-    description: 'For serious builders',
-    features: ['Unlimited pages', 'Premium templates', 'Priority AI', 'Custom domains', 'Analytics'],
+    description: 'Everything. Unlimited.',
+    features: ['Download Source Code', 'Custom Domain', 'Remove Branding', 'Commercial License', 'Priority Support'],
     highlight: true,
   },
   {
     name: 'Agency',
     price: '$99',
+    period: '/mo',
     tag: 'TEAMS',
     tagColor: 'text-violet-400',
     description: 'For agencies & teams',
-    features: ['Everything in Pro', 'Team collaboration', 'White-label', 'API access', 'Priority support'],
+    features: ['Everything in Pro', 'Unlimited Projects', 'Team Features', 'White-label', 'Priority 24/7 Support'],
     highlight: false,
   },
 ]
@@ -45,32 +43,25 @@ const tiers = [
 function SignUpContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
-  // const { openSignUp } = useClerk() // DEV BYPASS
-  // const { isSignedIn } = useUser() // DEV BYPASS
+  const { openSignUp } = useClerk()
+  const { isSignedIn } = useUser()
   const selectedTier = searchParams.get('upgrade')
 
-  // DEV BYPASS - Skip auth check
-  // useEffect(() => {
-  //   if (isSignedIn) {
-  //     router.push('/builder')
-  //   }
-  // }, [isSignedIn, router])
+  useEffect(() => {
+    if (isSignedIn && selectedTier) {
+      router.push(`/builder?upgrade=${selectedTier}`)
+    }
+  }, [isSignedIn, selectedTier, router])
 
   const handleSelectTier = (tierName: string) => {
     // Store tier in localStorage as backup (OAuth sometimes drops URL params)
     localStorage.setItem('pendingUpgradeTier', tierName.toLowerCase())
     
-    if (DEV_BYPASS) {
-      // DEV BYPASS - Go straight to builder
-      router.push(`/builder?upgrade=${tierName.toLowerCase()}`)
-      return
-    }
-    
-    // All tiers go to checkout after sign-up
-    // openSignUp({
-    //   afterSignUpUrl: `/builder?upgrade=${tierName.toLowerCase()}`,
-    //   afterSignInUrl: `/builder?upgrade=${tierName.toLowerCase()}`,
-    // })
+    // Open Clerk sign-up modal
+    openSignUp({
+      afterSignUpUrl: `/builder?upgrade=${tierName.toLowerCase()}`,
+      afterSignInUrl: `/builder?upgrade=${tierName.toLowerCase()}`,
+    })
   }
 
   return (
@@ -149,7 +140,7 @@ function SignUpContent() {
               
               <div className="flex items-baseline gap-1 mb-1">
                 <span className="text-3xl font-bold text-white">{tier.price}</span>
-                <span className="text-sm text-zinc-500">/month</span>
+                <span className="text-sm text-zinc-500">{tier.period}</span>
               </div>
               <p className="text-sm text-zinc-500 mb-4">{tier.description}</p>
               

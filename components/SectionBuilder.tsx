@@ -432,20 +432,44 @@ export default function SectionBuilder({
     setError(null)
 
     try {
-      // 1. Capture Vision
+      // 1. Capture Vision - give iframe more time to be ready
       setCaptureTrigger(Date.now())
       const screenshot = await new Promise<string | null>((resolve) => {
         screenshotPromiseRef.current = resolve
+        // Increase timeout to 5 seconds for slower machines
         setTimeout(() => {
           if (screenshotPromiseRef.current) {
+            console.warn('[Singularity] Vision capture timed out')
             screenshotPromiseRef.current(null)
             screenshotPromiseRef.current = null
           }
-        }, 2000)
+        }, 5000)
       })
 
       if (!screenshot) {
-        throw new Error("Vision capture failed")
+        // Try to evolve without vision if capture fails
+        console.warn('[Singularity] Vision capture failed, evolving blind')
+        const res = await fetch('/api/singularity/dream', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            code: generatedCode,
+            screenshot: null,
+            iteration: 1
+          })
+        })
+        
+        const data = await res.json()
+        
+        if (data.code) {
+          setSuggestion({
+            code: data.code,
+            reason: data.thought || "Blind evolution applied (no vision)."
+          })
+        } else {
+          throw new Error("Dream returned no code")
+        }
+        return
       }
 
       // 2. Dream (Mutate Code)
@@ -596,6 +620,30 @@ export default function SectionBuilder({
       const input = document.querySelector('input[placeholder*="Refinement Directive"]') as HTMLInputElement
       if (input) input.focus()
     }, 100)
+  }
+  
+  // Handle inline text editing from preview
+  const handleTextEdit = (oldText: string, newText: string) => {
+    if (!generatedCode || oldText === newText) return
+    
+    // Replace the old text with new text in the code
+    // Use a regex that's smart about JSX context
+    const escapedOld = oldText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+    const regex = new RegExp(`(>\\s*)${escapedOld}(\\s*<)`, 'g')
+    
+    let updated = generatedCode
+    if (regex.test(generatedCode)) {
+      updated = generatedCode.replace(regex, `$1${newText}$2`)
+    } else {
+      // Fallback: simple string replace for text in JSX
+      updated = generatedCode.replace(oldText, newText)
+    }
+    
+    if (updated !== generatedCode) {
+      setGeneratedCode(updated)
+      setRefinementChanges(prev => [`Text edit: "${oldText.slice(0, 20)}..." → "${newText.slice(0, 20)}..."`, ...prev])
+      onComplete(updated, refined, [`Text edit: ${oldText} → ${newText}`])
+    }
   }
 
   const handleExplainElement = async () => {
@@ -1156,7 +1204,7 @@ export default function SectionBuilder({
             {/* Glow effect */}
             <div className="absolute -inset-1 bg-gradient-to-r from-emerald-500/20 via-teal-500/20 to-emerald-500/20 rounded-2xl opacity-0 group-focus-within:opacity-100 blur-xl transition-opacity duration-500" />
             
-            <div className="relative bg-zinc-900/80 backdrop-blur-sm border border-zinc-800 group-focus-within:border-emerald-500/50 rounded-2xl overflow-hidden transition-all">
+            <div className="relative bg-zinc-900/50 backdrop-blur-sm border border-zinc-800 group-focus-within:border-emerald-500/50 rounded-2xl overflow-hidden transition-all">
               <textarea
                 ref={textareaRef}
                 value={prompt}
@@ -1173,7 +1221,7 @@ export default function SectionBuilder({
               />
               
               {/* Bottom bar */}
-              <div className="flex items-center justify-between px-4 py-3 border-t border-zinc-800/50 bg-zinc-950/50">
+              <div className="flex items-center justify-between px-4 py-3 border-t border-zinc-800/30 bg-zinc-900/30">
                 <button 
                   onClick={() => initializePromptHelper()}
                   className="flex items-center gap-1.5 text-xs text-emerald-400 hover:text-emerald-300 transition-colors"
@@ -1975,6 +2023,10 @@ export default function SectionBuilder({
               onElementSelect={handleElementSelect}
               captureTrigger={captureTrigger}
               onScreenshotCaptured={handleScreenshotCaptured}
+              editMode={true}
+              onTextEdit={handleTextEdit}
+              allowCodeView={canRevealRawCode}
+              onUpgradeClick={() => goToSignUp('pro')}
             />
           )}
 
@@ -1997,6 +2049,19 @@ export default function SectionBuilder({
                 className="px-3 py-2 rounded-lg bg-emerald-600 text-black text-xs font-semibold shadow-lg shadow-emerald-900/30 hover:bg-emerald-500 transition-colors"
               >
                 Unlock builder
+              </button>
+            </div>
+          )}
+          
+          {/* Skip to Preview button - shows after first section is generated */}
+          {generatedCode && !isLastSection && stage !== 'generating' && stage !== 'refining' && !isUserRefining && !isArchitectPolishing && (
+            <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-20">
+              <button
+                onClick={onNextSection}
+                className="px-4 py-1.5 rounded-full bg-zinc-800/90 hover:bg-zinc-700 border border-zinc-700 text-xs text-zinc-400 hover:text-white transition-all flex items-center gap-1.5 backdrop-blur-sm"
+              >
+                <span>Skip to preview</span>
+                <span>→</span>
               </button>
             </div>
           )}

@@ -28,7 +28,7 @@ const TIERS = [
   {
     id: 'lite',
     name: 'Lite',
-    price: '$9',
+    price: '$9/2wks',
     period: '/month',
     description: 'For personal projects',
     features: [
