@@ -265,8 +265,8 @@ export async function POST(request: NextRequest) {
             'anthropic-version': '2023-06-01'
           },
           body: JSON.stringify({
-            model: 'claude-3-5-sonnet-20240620',  // Sonnet 3.5 (Latest)
-            max_tokens: 8192,
+            model: 'claude-sonnet-4-5-20250929',  // Sonnet 4.5 (Latest 2026)
+            max_tokens: 64000,
             stream: true,
             system: systemPrompt,
             messages
