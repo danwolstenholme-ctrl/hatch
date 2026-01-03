@@ -234,6 +234,15 @@
 			"isBackground": false,
 			"problemMatcher": [],
 			"group": "build"
+		},
+		{
+			"label": "commit-cleanup",
+			"type": "shell",
+			"command": "git add . && git commit -m \"chore: eradicate legacy files - removed canvas, audit, marketing, and unused components\" && git push",
+			"args": [],
+			"isBackground": false,
+			"problemMatcher": [],
+			"group": "build"
 		}
 	]
 }

@@ -45,10 +45,9 @@ const getSuggestions = (id: string) => {
 }
 
 import { Section } from '@/lib/templates'
-import { DbSection } from '@/lib/supabase'
+import { DbSection, DbBrandConfig } from '@/lib/supabase'
 import { SectionCompleteIndicator } from './SectionProgress'
 import SectionPreview from './SectionPreview'
-import { BrandConfig } from './BrandingStep'
 import { useSubscription } from '@/contexts/SubscriptionContext'
 import ThinkingLog from './ThinkingLog'
 import { chronosphere } from '@/lib/chronosphere'
@@ -72,7 +71,7 @@ interface SectionBuilderProps {
   isLastSection?: boolean // Hide "Next" on last section
   allSectionsCode: Record<string, string> // For preview context
   demoMode?: boolean // Local testing without API
-  brandConfig?: BrandConfig | null // Brand styling from branding step
+  brandConfig?: DbBrandConfig | null // Brand styling from branding step
   isPaid?: boolean // Whether project is hatched (paid)
 }
 
@@ -158,7 +157,7 @@ const generateMockCode = (sectionType: string, sectionName: string, userPrompt: 
 }
 
 // Brand Quick Reference - Shows current brand settings in the builder
-function BrandQuickReference({ brandConfig }: { brandConfig: BrandConfig }) {
+function BrandQuickReference({ brandConfig }: { brandConfig: DbBrandConfig }) {
   const [expanded, setExpanded] = useState(false)
   
   return (
