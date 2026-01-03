@@ -3,7 +3,7 @@
 import { useState, useMemo } from 'react'
 import Link from 'next/link'
 import { motion } from 'framer-motion'
-import { Plus, Box, ArrowRight, Trash2, ExternalLink, Calendar, Clock, Crown, Zap, Star, Lock, Terminal } from 'lucide-react'
+import { Plus, Box, ArrowRight, Trash2, ExternalLink, Calendar, Clock, Crown, Zap, Star, Lock, Terminal, Search, Filter, MoreHorizontal, Activity, Database, Cpu, Globe } from 'lucide-react'
 import { useProjects } from '@/hooks/useProjects'
 import { formatDistanceToNow } from 'date-fns'
 
@@ -11,6 +11,7 @@ export default function ProjectsPage() {
   const { projects, createProject, deleteProject, switchProject, accountSubscription } = useProjects()
   const [isCreating, setIsCreating] = useState(false)
   const [showLimitModal, setShowLimitModal] = useState(false)
+  const [searchQuery, setSearchQuery] = useState('')
 
   // Tier config for display
   const tierConfig = useMemo(() => {
@@ -18,11 +19,18 @@ export default function ProjectsPage() {
     if (tier === 'singularity') return { name: 'Singularity', color: 'amber', icon: Crown, limit: Infinity, gradient: 'from-amber-500 to-orange-500' }
     if (tier === 'visionary') return { name: 'Visionary', color: 'violet', icon: Zap, limit: Infinity, gradient: 'from-violet-500 to-purple-500' }
     if (tier === 'architect') return { name: 'Architect', color: 'emerald', icon: Terminal, limit: 3, gradient: 'from-emerald-500 to-teal-500' }
-    return { name: 'No Plan', color: 'zinc', icon: Terminal, limit: 0, gradient: 'from-zinc-500 to-zinc-600' }
+    return { name: 'Free Tier', color: 'zinc', icon: Terminal, limit: 1, gradient: 'from-zinc-500 to-zinc-600' }
   }, [accountSubscription?.tier])
 
   const projectsRemaining = tierConfig.limit === Infinity ? '∞' : Math.max(0, tierConfig.limit - projects.length)
   const isAtLimit = tierConfig.limit !== Infinity && projects.length >= tierConfig.limit
+
+  const filteredProjects = useMemo(() => {
+    return projects.filter(p => 
+      p.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
+      p.id.toLowerCase().includes(searchQuery.toLowerCase())
+    )
+  }, [projects, searchQuery])
 
   const handleCreate = () => {
     if (isAtLimit) {
@@ -46,174 +54,217 @@ export default function ProjectsPage() {
   }
 
   return (
-    <div className="px-4 py-6 md:p-8 max-w-7xl mx-auto">
-      {/* Header - stacks on mobile */}
-      <div className="flex flex-col gap-4 mb-6 md:mb-8">
-        {/* Title row */}
-        <div className="flex items-center justify-between">
-          <h1 className="text-2xl md:text-3xl font-bold text-white">Terminal</h1>
-          
-          {/* Tier badge - always visible */}
-          <div className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full border`}
-               style={{ 
-                 backgroundColor: tierConfig.color === 'amber' ? 'rgba(245,158,11,0.1)' : 
-                                  tierConfig.color === 'violet' ? 'rgba(139,92,246,0.1)' :
-                                  tierConfig.color === 'emerald' ? 'rgba(16,185,129,0.1)' : 'rgba(63,63,70,0.5)',
-                 borderColor: tierConfig.color === 'amber' ? 'rgba(245,158,11,0.3)' : 
-                              tierConfig.color === 'violet' ? 'rgba(139,92,246,0.3)' :
-                              tierConfig.color === 'emerald' ? 'rgba(16,185,129,0.3)' : 'rgba(63,63,70,0.5)'
-               }}>
-            <tierConfig.icon className="w-3 h-3" 
-                            style={{ color: tierConfig.color === 'amber' ? '#fbbf24' : 
-                                           tierConfig.color === 'violet' ? '#a78bfa' :
-                                           tierConfig.color === 'emerald' ? '#34d399' : '#a1a1aa' }} />
-            <span className="text-[10px] md:text-xs font-bold uppercase tracking-wider"
-                  style={{ color: tierConfig.color === 'amber' ? '#fbbf24' : 
-                                 tierConfig.color === 'violet' ? '#a78bfa' :
-                                 tierConfig.color === 'emerald' ? '#34d399' : '#a1a1aa' }}>
-              {tierConfig.name}
-            </span>
+    <div className="max-w-7xl mx-auto font-mono">
+      {/* Terminal Header */}
+      <div className="mb-8 border-b border-zinc-800 pb-6">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+          <div>
+            <h1 className="text-2xl md:text-3xl font-bold text-white flex items-center gap-3">
+              <Terminal className="w-8 h-8 text-emerald-500" />
+              <span>PROJECT_INDEX</span>
+            </h1>
+            <p className="text-zinc-500 text-xs mt-1 flex items-center gap-2">
+              <span className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
+              SYSTEM_READY // ACCESS_LEVEL: <span className={`uppercase ${
+                tierConfig.color === 'amber' ? 'text-amber-400' : 
+                tierConfig.color === 'violet' ? 'text-violet-400' : 
+                tierConfig.color === 'emerald' ? 'text-emerald-400' : 'text-zinc-400'
+              }`}>{tierConfig.name}</span>
+            </p>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <div className="hidden md:flex items-center gap-4 px-4 py-2 bg-zinc-900/50 border border-zinc-800 rounded-lg">
+              <div className="flex flex-col">
+                <span className="text-[10px] text-zinc-500 uppercase">Total Constructs</span>
+                <span className="text-lg font-bold text-white leading-none">{projects.length}</span>
+              </div>
+              <div className="w-px h-8 bg-zinc-800" />
+              <div className="flex flex-col">
+                <span className="text-[10px] text-zinc-500 uppercase">Capacity</span>
+                <span className="text-lg font-bold text-zinc-400 leading-none">
+                  {tierConfig.limit === Infinity ? '∞' : tierConfig.limit}
+                </span>
+              </div>
+            </div>
+
+            {tierConfig.limit !== Infinity && (
+              <button
+                onClick={() => setShowLimitModal(true)}
+                className="hidden md:flex items-center gap-2 px-4 py-3 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 hover:border-amber-500/50 text-zinc-400 hover:text-amber-400 rounded-lg font-bold text-sm transition-all"
+              >
+                <Crown className="w-4 h-4" />
+                <span>UPGRADE</span>
+              </button>
+            )}
+
+            <button
+              onClick={handleCreate}
+              disabled={isCreating}
+              className={`flex items-center gap-2 px-4 py-3 rounded-lg font-bold text-sm transition-all hover:shadow-[0_0_20px_rgba(16,185,129,0.2)] ${
+                isAtLimit 
+                  ? 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700' 
+                  : 'bg-emerald-600 hover:bg-emerald-500 text-white'
+              }`}
+            >
+              {isCreating ? (
+                <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+              ) : isAtLimit ? (
+                <Lock className="w-4 h-4" />
+              ) : (
+                <Plus className="w-4 h-4" />
+              )}
+              <span>{isAtLimit ? 'UPGRADE_REQUIRED' : 'INITIALIZE_NEW'}</span>
+            </button>
           </div>
         </div>
-        
-        {/* Subtitle + counter row */}
-        <div className="flex items-center justify-between gap-3">
-          <p className="text-sm text-zinc-400 hidden sm:block">Manage your digital constructs</p>
-          
-          {/* Project counter */}
-          <div className="flex items-center gap-2 px-2.5 py-1 bg-zinc-900 border border-zinc-800 rounded-full text-xs">
-            <span className="text-zinc-400 font-mono">
-              {projects.length}/{tierConfig.limit === Infinity ? '∞' : tierConfig.limit}
-            </span>
-            <span className="text-zinc-600 hidden sm:inline">constructs</span>
+
+        {/* Command Bar */}
+        <div className="flex items-center gap-4 bg-zinc-900/30 border border-zinc-800 p-1 rounded-lg">
+          <div className="flex-1 flex items-center gap-3 px-3">
+            <span className="text-emerald-500 font-bold">{'>'}</span>
+            <input 
+              type="text" 
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="filter_constructs..." 
+              className="bg-transparent border-none focus:outline-none text-white text-sm w-full font-mono placeholder-zinc-600"
+            />
           </div>
-          
-          {/* Create button */}
-          <button
-            onClick={handleCreate}
-            disabled={isCreating}
-            className={`flex items-center gap-2 px-3 md:px-4 py-2 rounded-lg font-medium text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed ${
-              isAtLimit 
-                ? 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700' 
-                : 'bg-emerald-600 hover:bg-emerald-500 text-white'
-            }`}
-          >
-            {isCreating ? (
-              <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-            ) : isAtLimit ? (
-              <Lock className="w-4 h-4" />
-            ) : (
-              <Plus className="w-4 h-4" />
-            )}
-            <span className="hidden sm:inline">{isAtLimit ? 'Upgrade' : 'New Construct'}</span>
-          </button>
+          <div className="flex items-center gap-1 pr-1">
+            <button className="p-2 text-zinc-500 hover:text-white hover:bg-zinc-800 rounded transition-colors">
+              <Filter className="w-4 h-4" />
+            </button>
+            <button className="p-2 text-zinc-500 hover:text-white hover:bg-zinc-800 rounded transition-colors">
+              <Activity className="w-4 h-4" />
+            </button>
+          </div>
         </div>
       </div>
 
+      {/* Data Grid */}
       {projects.length === 0 ? (
-        <div className="flex flex-col items-center justify-center py-12 md:py-20 border border-dashed border-zinc-800 rounded-xl bg-zinc-900/20">
-          <div className="w-14 h-14 md:w-16 md:h-16 bg-zinc-800/50 rounded-full flex items-center justify-center mb-4">
-            <Terminal className="w-7 h-7 md:w-8 md:h-8 text-zinc-600" />
+        <div className="flex flex-col items-center justify-center py-20 border border-dashed border-zinc-800 rounded-xl bg-zinc-900/10">
+          <div className="w-16 h-16 bg-zinc-900 border border-zinc-800 rounded-full flex items-center justify-center mb-4">
+            <Database className="w-8 h-8 text-zinc-700" />
           </div>
-          <h3 className="text-lg md:text-xl font-semibold text-white mb-2">No constructs yet</h3>
-          <p className="text-zinc-400 mb-6 max-w-md text-center text-sm px-4">
-            Create your first site to begin building.
+          <h3 className="text-xl font-bold text-white mb-2">NO_DATA_FOUND</h3>
+          <p className="text-zinc-500 mb-6 font-mono text-sm">
+            Database empty. Initialize first construct.
           </p>
           <button
             onClick={handleCreate}
-            className="flex items-center gap-2 px-5 py-2.5 md:px-6 md:py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg font-medium transition-colors text-sm md:text-base"
+            className="flex items-center gap-2 px-6 py-3 bg-zinc-900 hover:bg-zinc-800 border border-zinc-700 hover:border-emerald-500/50 text-white rounded-lg font-mono text-sm transition-all group"
           >
-            <Plus className="w-4 h-4" />
-            Create Site
+            <Plus className="w-4 h-4 text-emerald-500 group-hover:animate-pulse" />
+            <span>EXECUTE_INIT</span>
           </button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-          {projects.map((project) => {
-            const isLocked = tierConfig.name === 'No Plan'
-            
-            return (
-              <div
-                key={project.id}
-                onClick={() => isLocked && setShowLimitModal(true)}
-                className={`group relative block p-4 md:p-6 bg-zinc-900/50 border border-zinc-800 rounded-xl transition-all ${
-                  isLocked 
-                    ? 'cursor-pointer' 
-                    : 'hover:border-emerald-500/50 hover:bg-zinc-900 active:scale-[0.98]'
-                }`}
-              >
-                {!isLocked && (
-                  <Link href={`/builder?project=${project.id}`} className="absolute inset-0 z-0" />
-                )}
+        <div className="border border-zinc-800 rounded-xl overflow-hidden bg-zinc-900/20">
+          {/* Table Header */}
+          <div className="grid grid-cols-12 gap-4 px-6 py-3 bg-zinc-900/50 border-b border-zinc-800 text-[10px] uppercase tracking-wider text-zinc-500 font-bold">
+            <div className="col-span-5 md:col-span-4">Construct Identity</div>
+            <div className="col-span-3 md:col-span-2 text-center">Status</div>
+            <div className="hidden md:block md:col-span-3">Last Modified</div>
+            <div className="col-span-4 md:col-span-3 text-right">Operations</div>
+          </div>
 
-                {/* Lock Overlay */}
-                {isLocked && (
-                  <div className="absolute inset-0 z-10 flex items-center justify-center bg-zinc-950/60 backdrop-blur-[2px] rounded-xl">
-                    <div className="flex flex-col items-center gap-1.5 px-3 py-2 bg-zinc-900 border border-zinc-800 rounded-lg">
-                      <Lock className="w-4 h-4 text-zinc-500" />
-                      <span className="text-[10px] font-mono text-zinc-400 uppercase tracking-widest">Locked</span>
-                    </div>
-                  </div>
-                )}
-
-                {/* Delete button - larger touch target on mobile */}
-                {!isLocked && (
-                  <button
-                    onClick={(e) => handleDelete(e, project.id)}
-                    className="absolute top-3 right-3 md:top-4 md:right-4 z-20 p-2 md:p-1.5 text-zinc-600 hover:text-red-400 hover:bg-red-500/10 rounded-md md:opacity-0 md:group-hover:opacity-100 transition-all"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
-                )}
-                
-                <div className="flex items-start gap-3 mb-3 md:mb-4 relative">
-                  <div className={`w-9 h-9 md:w-10 md:h-10 rounded-lg flex items-center justify-center shrink-0 transition-transform ${
-                    isLocked ? 'bg-zinc-800 border border-zinc-700' : 'bg-emerald-500/10 border border-emerald-500/20'
-                  }`}>
-                    <Terminal className={`w-4 h-4 md:w-5 md:h-5 ${isLocked ? 'text-zinc-600' : 'text-emerald-500'}`} />
-                  </div>
-                  <div className="flex items-center gap-1.5 flex-wrap pr-8">
-                    {project.deployedSlug && (
-                      <span className="px-1.5 py-0.5 rounded text-[10px] md:text-xs font-mono bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                        Live
-                      </span>
-                    )}
-                    <span className={`px-1.5 py-0.5 rounded text-[10px] md:text-xs font-mono ${
-                      project.status === 'published' 
-                        ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' 
-                        : 'bg-zinc-800 text-zinc-400 border border-zinc-700'
-                    }`}>
-                      {project.status || 'draft'}
-                    </span>
-                  </div>
-                </div>
-
-                <h3 className={`text-base md:text-lg font-bold mb-1.5 md:mb-2 transition-colors line-clamp-1 ${isLocked ? 'text-zinc-500' : 'text-white'}`}>
-                  {project.name || 'Untitled'}
-                </h3>
-                <p className="text-xs md:text-sm text-zinc-500 mb-4 md:mb-6 line-clamp-2">
-                  {project.description || 'No description'}
-                </p>
-
-                <div className="flex items-center justify-between text-[10px] md:text-xs text-zinc-600 border-t border-zinc-800 pt-3 md:pt-4">
-                  <div className="flex items-center gap-1">
-                    <Clock className="w-3 h-3" />
-                    <span>
-                      {project.updatedAt 
-                        ? formatDistanceToNow(new Date(project.updatedAt), { addSuffix: true })
-                        : 'Just now'}
-                    </span>
-                  </div>
+          {/* Table Body */}
+          <div className="divide-y divide-zinc-800/50">
+            {filteredProjects.map((project) => {
+              const isLocked = tierConfig.name === 'No Plan'
+              
+              return (
+                <div
+                  key={project.id}
+                  onClick={() => isLocked && setShowLimitModal(true)}
+                  className={`group relative grid grid-cols-12 gap-4 px-6 py-4 items-center transition-colors ${
+                    isLocked 
+                      ? 'opacity-50 cursor-not-allowed bg-zinc-950' 
+                      : 'hover:bg-zinc-900/40 cursor-pointer'
+                  }`}
+                >
                   {!isLocked && (
-                    <div className="flex items-center gap-1 text-emerald-500 md:text-emerald-500/0 md:group-hover:text-emerald-500 transition-colors">
-                      <span className="font-medium">Open</span>
-                      <ArrowRight className="w-3 h-3" />
-                    </div>
+                    <Link href={`/builder?project=${project.id}`} className="absolute inset-0 z-0" />
                   )}
+
+                  {/* Identity */}
+                  <div className="col-span-5 md:col-span-4 relative z-10">
+                    <div className="flex items-center gap-3">
+                      <div className={`w-8 h-8 rounded flex items-center justify-center shrink-0 ${
+                        isLocked ? 'bg-zinc-800' : 'bg-emerald-500/10 border border-emerald-500/20'
+                      }`}>
+                        <Cpu className={`w-4 h-4 ${isLocked ? 'text-zinc-600' : 'text-emerald-500'}`} />
+                      </div>
+                      <div className="min-w-0">
+                        <h3 className={`text-sm font-bold truncate ${isLocked ? 'text-zinc-500' : 'text-white group-hover:text-emerald-400 transition-colors'}`}>
+                          {project.name || 'UNTITLED_CONSTRUCT'}
+                        </h3>
+                        <p className="text-[10px] text-zinc-600 font-mono truncate">
+                          ID: {project.id.substring(0, 8)}...
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Status */}
+                  <div className="col-span-3 md:col-span-2 flex justify-center relative z-10">
+                    <div className={`px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider border ${
+                      project.deployedSlug 
+                        ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' 
+                        : 'bg-zinc-800/50 text-zinc-500 border-zinc-700/50'
+                    }`}>
+                      {project.deployedSlug ? 'LIVE' : 'DRAFT'}
+                    </div>
+                  </div>
+
+                  {/* Last Modified */}
+                  <div className="hidden md:block md:col-span-3 text-xs text-zinc-500 font-mono relative z-10">
+                    {project.updatedAt 
+                      ? formatDistanceToNow(new Date(project.updatedAt), { addSuffix: true })
+                      : 'Just now'}
+                  </div>
+
+                  {/* Operations */}
+                  <div className="col-span-4 md:col-span-3 flex items-center justify-end gap-2 relative z-20">
+                    {project.deployedSlug && (
+                      <a
+                        href={`https://${project.deployedSlug}.hatchit.app`} // Assuming domain structure
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="p-2 text-zinc-500 hover:text-emerald-400 hover:bg-emerald-500/10 rounded transition-colors"
+                        title="View Live"
+                        onClick={(e) => e.stopPropagation()}
+                      >
+                        <Globe className="w-4 h-4" />
+                      </a>
+                    )}
+                    
+                    {!isLocked && (
+                      <Link
+                        href={`/builder?project=${project.id}`}
+                        className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-xs font-medium rounded transition-colors"
+                      >
+                        <Terminal className="w-3 h-3" />
+                        <span>EDIT</span>
+                      </Link>
+                    )}
+
+                    {!isLocked && (
+                      <button
+                        onClick={(e) => handleDelete(e, project.id)}
+                        className="p-2 text-zinc-600 hover:text-red-400 hover:bg-red-500/10 rounded transition-colors"
+                        title="Delete"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    )}
+                  </div>
                 </div>
-              </div>
-            )
-          })}
+              )
+            })}
+          </div>
         </div>
       )}
       
