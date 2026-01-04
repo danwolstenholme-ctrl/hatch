@@ -1397,6 +1397,7 @@ export default function GeneratedPage() {
                     brandConfig={brandConfig}
                     isPaid={isPaid}
                     guestMode={guestMode}
+                    initialPrompt={buildState.currentSectionIndex === 0 ? initialPrompt : undefined}
                   />
                 )}
 

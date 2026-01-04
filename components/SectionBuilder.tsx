@@ -74,6 +74,7 @@ interface SectionBuilderProps {
   brandConfig?: DbBrandConfig | null // Brand styling from branding step
   isPaid?: boolean // Whether project is hatched (paid)
   guestMode?: boolean // Simplified UI for unauthenticated users
+  initialPrompt?: string // Prompt passed from demo page - use this to skip empty state
 }
 
 type BuildStage = 'input' | 'generating' | 'refining' | 'complete'
@@ -376,12 +377,15 @@ export default function SectionBuilder({
   brandConfig = null,
   isPaid = false,
   guestMode = false,
+  initialPrompt,
 }: SectionBuilderProps) {
   const router = useRouter()
   const { isSignedIn, user } = useUser()
-  const [prompt, setPrompt] = useState(dbSection.user_prompt || '')
+  // Use initialPrompt from props (passed from demo) or fallback to dbSection
+  const effectivePrompt = initialPrompt || dbSection.user_prompt || ''
+  const [prompt, setPrompt] = useState(effectivePrompt)
   // If we have a prompt from demo page, start in generating state immediately (no empty state)
-  const hasInitialPrompt = !!dbSection.user_prompt && !dbSection.code
+  const hasInitialPrompt = !!effectivePrompt && !dbSection.code
   const [stage, setStage] = useState<BuildStage>(
     dbSection.status === 'complete' ? 'complete' : (hasInitialPrompt ? 'generating' : 'input')
   )
@@ -442,7 +446,7 @@ export default function SectionBuilder({
   // Since we start in 'generating' stage, this kicks off immediately
   useEffect(() => {
     if (autoBuildRanRef.current) return
-    if (dbSection.user_prompt && !generatedCode && prompt) {
+    if (effectivePrompt && !generatedCode && hasInitialPrompt) {
       autoBuildRanRef.current = true
       // Kick off generation immediately - no delay needed since we're already in generating state
       handleBuildSection({ skipGuestCredit: true })
