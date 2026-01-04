@@ -142,7 +142,7 @@ function BuilderContent() {
             Choose a plan to unlock the builder and start creating.
           </p>
           <button
-            onClick={() => router.push('/sign-up')}
+            onClick={() => router.push('/#pricing')}
             className="w-full py-3 bg-emerald-500 hover:bg-emerald-400 text-black font-semibold rounded-xl transition-colors flex items-center justify-center gap-2"
           >
             <CreditCard className="w-4 h-4" />

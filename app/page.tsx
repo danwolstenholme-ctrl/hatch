@@ -117,6 +117,55 @@ function AnimatedCard({ children, delay = 0, className = '' }: { children: React
 
 // FloatingNodes removed to reduce background layering and potential scroll jank
 
+// Typewriter effect for hero code preview
+function TypewriterCode() {
+  const [displayedText, setDisplayedText] = useState('')
+  const [currentPromptIndex, setCurrentPromptIndex] = useState(0)
+  
+  const prompts = [
+    '"A modern hero with gradient background and CTA"',
+    '"Pricing table with 3 tiers and toggle"',
+    '"Testimonial carousel with avatars"',
+    '"Feature grid with icons and hover effects"',
+  ]
+  
+  useEffect(() => {
+    const currentPrompt = prompts[currentPromptIndex]
+    let charIndex = 0
+    
+    // Type out
+    const typeInterval = setInterval(() => {
+      if (charIndex <= currentPrompt.length) {
+        setDisplayedText(currentPrompt.slice(0, charIndex))
+        charIndex++
+      } else {
+        clearInterval(typeInterval)
+        // Wait, then clear and move to next
+        setTimeout(() => {
+          setDisplayedText('')
+          setCurrentPromptIndex((prev) => (prev + 1) % prompts.length)
+        }, 2000)
+      }
+    }, 50)
+    
+    return () => clearInterval(typeInterval)
+  }, [currentPromptIndex])
+  
+  return (
+    <div className="text-left">
+      <span className="text-zinc-500">{'> '}</span>
+      <span className="text-emerald-400">{displayedText}</span>
+      <motion.span
+        animate={{ opacity: [1, 0] }}
+        transition={{ duration: 0.5, repeat: Infinity }}
+        className="text-emerald-400"
+      >
+        |
+      </motion.span>
+    </div>
+  )
+}
+
 export default function Home() {
   const { isSignedIn } = useUser()
   const router = useRouter()
@@ -156,9 +205,64 @@ export default function Home() {
 
       {/* HERO SECTION - Clean and confident */}
       <section className="relative min-h-[90vh] flex flex-col justify-center items-center pt-28 sm:pt-32 pb-12 px-4 sm:px-6 overflow-hidden">
-        {/* Simple background - one subtle glow */}
+        {/* Layered depth background */}
         <div className="absolute inset-0 bg-zinc-950" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-emerald-500/[0.07] rounded-full blur-[120px]" />
+        
+        {/* Perspective grid - fades into distance */}
+        <div className="absolute inset-0 overflow-hidden">
+          <div 
+            className="absolute inset-0 opacity-[0.15]"
+            style={{
+              backgroundImage: `
+                linear-gradient(rgba(16,185,129,0.3) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(16,185,129,0.3) 1px, transparent 1px)
+              `,
+              backgroundSize: '60px 60px',
+              maskImage: 'linear-gradient(to bottom, transparent, black 20%, black 50%, transparent 90%)',
+              WebkitMaskImage: 'linear-gradient(to bottom, transparent, black 20%, black 50%, transparent 90%)',
+              transform: 'perspective(500px) rotateX(60deg) translateY(-50%)',
+              transformOrigin: 'center top',
+              height: '200%',
+              top: '30%',
+            }}
+          />
+        </div>
+        
+        {/* Radial depth layers */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-emerald-500/[0.08] rounded-full blur-[150px]" />
+        <div className="absolute top-1/3 left-1/3 w-[400px] h-[400px] bg-teal-500/[0.05] rounded-full blur-[100px]" />
+        <div className="absolute bottom-1/4 right-1/4 w-[300px] h-[300px] bg-emerald-600/[0.04] rounded-full blur-[80px]" />
+        
+        {/* Subtle vignette */}
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_0%,rgba(9,9,11,0.6)_70%,rgba(9,9,11,0.9)_100%)]" />
+        
+        {/* Floating particles */}
+        <div className="absolute inset-0 overflow-hidden pointer-events-none">
+          {[...Array(8)].map((_, i) => (
+            <motion.div
+              key={i}
+              className="absolute rounded-full"
+              style={{
+                left: `${10 + i * 12}%`,
+                top: `${15 + (i % 4) * 20}%`,
+                width: i % 2 === 0 ? '3px' : '2px',
+                height: i % 2 === 0 ? '3px' : '2px',
+                background: i % 3 === 0 ? 'rgba(16,185,129,0.4)' : 'rgba(20,184,166,0.3)',
+              }}
+              animate={{
+                y: [0, -40, 0],
+                opacity: [0.2, 0.6, 0.2],
+                scale: [1, 1.2, 1],
+              }}
+              transition={{
+                duration: 4 + i * 0.7,
+                repeat: Infinity,
+                ease: "easeInOut",
+                delay: i * 0.4,
+              }}
+            />
+          ))}
+        </div>
         
         <div className="max-w-4xl mx-auto w-full relative z-10 flex flex-col items-center text-center">
             
@@ -170,9 +274,15 @@ export default function Home() {
               className="text-5xl sm:text-7xl md:text-8xl font-black tracking-tight leading-[1.1] mb-6"
             >
               <span className="block text-white">Describe it.</span>
-              <span className="block bg-gradient-to-r from-emerald-400 via-teal-400 to-emerald-400 bg-clip-text text-transparent animate-gradient">
+              <motion.span 
+                className="block bg-gradient-to-r from-emerald-400 via-teal-400 to-emerald-400 bg-clip-text text-transparent animate-gradient"
+                animate={{ 
+                  backgroundPosition: ["0% 50%", "100% 50%", "0% 50%"],
+                }}
+                transition={{ duration: 5, repeat: Infinity, ease: "linear" }}
+              >
                 Watch it build.
-              </span>
+              </motion.span>
             </motion.h1>
 
             {/* Subheadline - let it breathe */}
@@ -180,10 +290,38 @@ export default function Home() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.5 }}
-              className="text-lg sm:text-xl text-zinc-400 max-w-xl mx-auto leading-relaxed mb-12"
+              className="text-lg sm:text-xl text-zinc-400 max-w-xl mx-auto leading-relaxed mb-10"
             >
               Type what you want. Get production-ready React + Tailwind in seconds.
             </motion.p>
+            
+            {/* Mini code preview - shows what you're building */}
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.6 }}
+              className="relative w-full max-w-lg mb-10 hidden sm:block"
+            >
+              <div className="bg-zinc-900/80 border border-zinc-800 rounded-xl p-4 font-mono text-sm overflow-hidden backdrop-blur-sm">
+                <div className="flex items-center gap-2 mb-3 text-zinc-500">
+                  <div className="flex gap-1.5">
+                    <div className="w-3 h-3 rounded-full bg-red-500/50" />
+                    <div className="w-3 h-3 rounded-full bg-yellow-500/50" />
+                    <div className="w-3 h-3 rounded-full bg-green-500/50" />
+                  </div>
+                  <span className="text-xs">prompt.tsx</span>
+                </div>
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.8 }}
+                >
+                  <TypewriterCode />
+                </motion.div>
+              </div>
+              {/* Glow effect */}
+              <div className="absolute -inset-1 bg-gradient-to-r from-emerald-500/20 to-teal-500/20 rounded-xl blur-xl opacity-50 -z-10" />
+            </motion.div>
 
             {/* CTA */}
             <motion.div 
@@ -200,22 +338,34 @@ export default function Home() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.9 }}
-              className="flex items-center justify-center gap-6 text-sm text-zinc-500"
+              className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 text-sm text-zinc-500"
             >
-              <span className="flex items-center gap-2">
+              <motion.span 
+                className="flex items-center gap-2"
+                whileHover={{ scale: 1.05, color: '#10b981' }}
+                transition={{ type: 'spring', stiffness: 400 }}
+              >
                 <Zap className="w-4 h-4 text-emerald-500/70" />
                 ~15 sec builds
-              </span>
-              <span className="w-1 h-1 rounded-full bg-zinc-700" />
-              <span className="flex items-center gap-2">
+              </motion.span>
+              <span className="w-1 h-1 rounded-full bg-zinc-700 hidden sm:block" />
+              <motion.span 
+                className="flex items-center gap-2"
+                whileHover={{ scale: 1.05, color: '#10b981' }}
+                transition={{ type: 'spring', stiffness: 400 }}
+              >
                 <Code2 className="w-4 h-4 text-emerald-500/70" />
                 Export anytime
-              </span>
-              <span className="w-1 h-1 rounded-full bg-zinc-700" />
-              <span className="flex items-center gap-2">
+              </motion.span>
+              <span className="w-1 h-1 rounded-full bg-zinc-700 hidden sm:block" />
+              <motion.span 
+                className="flex items-center gap-2"
+                whileHover={{ scale: 1.05, color: '#10b981' }}
+                transition={{ type: 'spring', stiffness: 400 }}
+              >
                 <Shield className="w-4 h-4 text-emerald-500/70" />
                 Your code
-              </span>
+              </motion.span>
             </motion.div>
         </div>
       </section>
@@ -381,16 +531,49 @@ export default function Home() {
 
 
       {/* PRICING */}
-      <Section id="pricing" className="px-4 sm:px-6 py-24">
-        <div className="max-w-6xl mx-auto">
+      <Section id="pricing" className="px-4 sm:px-6 py-24 relative overflow-hidden">
+        {/* Depth background for pricing */}
+        <div className="absolute inset-0">
+          {/* Grid with perspective */}
+          <div 
+            className="absolute inset-0 opacity-[0.08]"
+            style={{
+              backgroundImage: `
+                linear-gradient(rgba(16,185,129,0.5) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(16,185,129,0.5) 1px, transparent 1px)
+              `,
+              backgroundSize: '40px 40px',
+              maskImage: 'radial-gradient(ellipse at center, black 0%, transparent 70%)',
+              WebkitMaskImage: 'radial-gradient(ellipse at center, black 0%, transparent 70%)',
+            }}
+          />
+          {/* Central glow */}
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-emerald-500/[0.05] rounded-full blur-[100px]" />
+        </div>
+        
+        <div className="max-w-6xl mx-auto relative z-10">
           <div className="text-center mb-16">
-            <h2 className="text-4xl sm:text-5xl font-bold mb-4 tracking-tight">Choose your reality.</h2>
+            <motion.h2 
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="text-4xl sm:text-5xl font-bold mb-4 tracking-tight"
+            >
+              Choose your reality.
+            </motion.h2>
             <p className="text-xl text-zinc-400">Access the Singularity Engine.</p>
           </div>
 
           <div className="grid md:grid-cols-3 gap-8">
             {/* Starter ($19/mo) */}
-            <div className="p-8 bg-zinc-900/50 border border-zinc-800 rounded-2xl hover:border-emerald-500/30 transition-colors group flex flex-col">
+            <motion.div 
+              className="p-8 bg-zinc-900/50 backdrop-blur-sm border border-zinc-800 rounded-2xl hover:border-emerald-500/30 transition-all group flex flex-col relative"
+              whileHover={{ 
+                y: -8, 
+                boxShadow: '0 20px 40px -20px rgba(16,185,129,0.2)',
+                transition: { type: 'spring', stiffness: 300, damping: 20 }
+              }}
+            >
               <div className="text-sm text-emerald-500/70 mb-2 font-mono tracking-wider">INITIATE</div>
               <h3 className="text-2xl font-bold mb-1 text-white">Architect</h3>
               <div className="flex items-baseline gap-2 mb-2">
@@ -424,10 +607,17 @@ export default function Home() {
               >
                 Initialize
               </PricingButton>
-            </div>
+            </motion.div>
 
             {/* Pro ($49) */}
-            <div className="relative p-8 bg-zinc-900 border border-emerald-500/50 rounded-2xl overflow-hidden shadow-[0_0_50px_rgba(16,185,129,0.1)] transform md:-translate-y-4 flex flex-col">
+            <motion.div 
+              className="relative p-8 bg-zinc-900 backdrop-blur-sm border border-emerald-500/50 rounded-2xl overflow-hidden shadow-[0_0_50px_rgba(16,185,129,0.15)] transform md:-translate-y-4 flex flex-col"
+              whileHover={{ 
+                y: -12, 
+                boxShadow: '0 30px 60px -20px rgba(16,185,129,0.3)',
+                transition: { type: 'spring', stiffness: 300, damping: 20 }
+              }}
+            >
               <div className="absolute top-0 right-0 px-4 py-1.5 bg-emerald-600 text-xs font-bold rounded-bl-xl text-white font-mono tracking-wider">RECOMMENDED</div>
               <div className="flex items-center gap-2 text-sm text-emerald-400 mb-2 font-mono tracking-wider"><span>⚡</span><span>UNLIMITED</span></div>
               <h3 className="text-2xl font-bold mb-1 text-white">Visionary</h3>
@@ -457,10 +647,17 @@ export default function Home() {
               >
                 Ascend
               </PricingButton>
-            </div>
+            </motion.div>
 
             {/* Agency ($199) */}
-            <div className="relative p-8 bg-zinc-900/50 border border-zinc-800 rounded-2xl hover:border-violet-500/30 transition-colors group flex flex-col">
+            <motion.div 
+              className="relative p-8 bg-zinc-900/50 backdrop-blur-sm border border-zinc-800 rounded-2xl hover:border-violet-500/30 transition-all group flex flex-col"
+              whileHover={{ 
+                y: -8, 
+                boxShadow: '0 20px 40px -20px rgba(139,92,246,0.2)',
+                transition: { type: 'spring', stiffness: 300, damping: 20 }
+              }}
+            >
               <div className="text-sm text-violet-500 mb-2 font-mono tracking-wider">GOD MODE</div>
               <h3 className="text-2xl font-bold mb-1 text-white">Singularity</h3>
               <div className="flex items-baseline gap-2 mb-2">
@@ -489,7 +686,7 @@ export default function Home() {
               >
                 Enter God Mode
               </PricingButton>
-            </div>
+            </motion.div>
           </div>
           <p className="text-center text-sm text-zinc-600 mt-12">Cancel anytime. The code belongs to you.</p>
         </div>

@@ -42,9 +42,50 @@ export default function DemoPage() {
         )}
       </AnimatePresence>
 
-      {/* Background */}
-      <div className="absolute inset-0 pointer-events-none">
-        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-emerald-500/5 rounded-full blur-[120px]" />
+      {/* PROFESSIONAL DEPTH BACKGROUND - Subtle, not dark web */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        {/* Single perspective grid - clean depth */}
+        <div 
+          className="absolute inset-0 opacity-[0.04]"
+          style={{
+            backgroundImage: `
+              linear-gradient(rgba(16,185,129,0.5) 1px, transparent 1px),
+              linear-gradient(90deg, rgba(16,185,129,0.5) 1px, transparent 1px)
+            `,
+            backgroundSize: '60px 60px',
+            transform: 'perspective(500px) rotateX(60deg) translateY(-40%)',
+            transformOrigin: 'center top',
+          }}
+        />
+        
+        {/* Central glow - the entry point */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-emerald-500/5 rounded-full blur-[120px]" />
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] bg-emerald-400/8 rounded-full blur-[60px]" />
+        
+        {/* Subtle vignette */}
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,transparent_50%,rgba(0,0,0,0.3)_100%)]" />
+        
+        {/* Minimal floating particles - just a few */}
+        {[...Array(6)].map((_, i) => (
+          <motion.div
+            key={i}
+            className="absolute w-1 h-1 bg-emerald-500/30 rounded-full"
+            style={{
+              left: `${25 + (i % 3) * 25}%`,
+              top: `${20 + Math.floor(i / 3) * 40}%`,
+            }}
+            animate={{
+              y: [0, 30, 0],
+              opacity: [0.2, 0.4, 0.2],
+            }}
+            transition={{
+              duration: 5 + (i % 2),
+              repeat: Infinity,
+              delay: i * 0.5,
+              ease: 'easeInOut',
+            }}
+          />
+        ))}
       </div>
 
       <AnimatePresence mode="wait">
@@ -53,11 +94,16 @@ export default function DemoPage() {
             key="form"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95 }}
+            exit={{ opacity: 0, scale: 0.98 }}
+            transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
             className="relative z-10 w-full max-w-md"
           >
-            {/* Main Card */}
-            <div className="bg-zinc-900/90 backdrop-blur-xl border border-zinc-800 rounded-2xl overflow-hidden shadow-2xl">
+            {/* Main Card - Clean, professional */}
+            <motion.div 
+              className="relative bg-zinc-900/90 backdrop-blur-xl border border-zinc-800 rounded-2xl overflow-hidden shadow-2xl"
+              whileHover={{ borderColor: 'rgba(63,63,70,1)' }}
+              transition={{ duration: 0.2 }}
+            >
               
               {/* Hero */}
               <div className="p-6 pb-4 text-center">
@@ -69,7 +115,7 @@ export default function DemoPage() {
                   No templates. No drag-and-drop. Just describe it.
                 </p>
                 <div className="flex items-center justify-center gap-3 text-xs text-zinc-500">
-                  <span className="px-2 py-1 rounded bg-zinc-800/50">Claude 3.5</span>
+                  <span className="px-2 py-1 rounded bg-zinc-800/80 text-zinc-400">Claude 4.5</span>
                   <span className="px-2 py-1 rounded bg-zinc-800/50">Next.js</span>
                   <span className="px-2 py-1 rounded bg-zinc-800/50">Tailwind</span>
                 </div>
@@ -104,16 +150,18 @@ export default function DemoPage() {
                   value={prompt}
                   onChange={(e) => setPrompt(e.target.value)}
                   placeholder="A hero section with gradient background, animated headline, and email signup form..."
-                  className="w-full min-h-[80px] bg-zinc-950/50 border border-zinc-800 rounded-xl p-3 text-sm text-white placeholder-zinc-600 focus:outline-none focus:border-emerald-500/50 resize-none"
+                  className="w-full min-h-[80px] bg-zinc-950 border border-zinc-800 rounded-xl p-4 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-zinc-700 resize-none transition-colors"
                 />
 
-                <button
+                <motion.button
                   onClick={handleInitialize}
-                  className="w-full mt-4 py-3 bg-emerald-500 hover:bg-emerald-400 text-black font-semibold rounded-xl transition-all flex items-center justify-center gap-2"
+                  className="w-full mt-4 py-3.5 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold rounded-xl transition-colors flex items-center justify-center gap-2"
+                  whileHover={{ scale: 1.01 }}
+                  whileTap={{ scale: 0.99 }}
                 >
-                  Try it free
+                  Start Building
                   <ArrowRight className="w-4 h-4" />
-                </button>
+                </motion.button>
 
                 <p className="text-center text-xs text-zinc-600 mt-3">
                   No signup required. 3 free builds.
@@ -136,7 +184,7 @@ export default function DemoPage() {
                   </span>
                 </div>
               </a>
-            </div>
+            </motion.div>
 
             {/* Footer */}
             <div className="flex items-center justify-center mt-5">
