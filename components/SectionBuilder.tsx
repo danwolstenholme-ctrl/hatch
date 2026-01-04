@@ -1263,9 +1263,9 @@ export default function SectionBuilder({
   // =============================================================================
   if (guestMode) {
     return (
-      <div className="relative h-screen w-full bg-zinc-950 overflow-hidden">
-        {/* Preview Area */}
-        <div className="absolute inset-0">
+      <div className="relative h-screen w-full bg-zinc-950 overflow-hidden flex flex-col">
+        {/* Preview Area - takes full height minus bottom panel */}
+        <div className="flex-1 flex flex-col min-h-0">
           {generatedCode ? (
             <SectionPreview 
               code={generatedCode} 
@@ -1300,8 +1300,8 @@ export default function SectionBuilder({
           )}
         </div>
 
-        {/* Bottom Panel */}
-        <div className="absolute bottom-0 left-0 right-0 z-20 p-4 sm:p-6">
+        {/* Bottom Panel - fixed at bottom */}
+        <div className="flex-shrink-0 p-4 sm:p-6 bg-gradient-to-t from-zinc-950 via-zinc-950/95 to-transparent">
           <motion.div
             initial={{ y: 30, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
