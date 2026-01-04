@@ -111,18 +111,28 @@ Recent changes in the diff:
 1.  ~~**FIX THE MONEY LOOP:**~~ ✅ **RESOLVED.** Types are aligned.
 2.  ~~**DELETE GHOST API ROUTES:**~~ ✅ **VERIFIED.** chronosphere/heal/replicator are ACTIVE.
 3.  **REFACTOR BUILDER:** Break down `BuildFlowController` over time (Tech Debt).
-4.  **Unstaged changes:** 3 files modified (demo/page.tsx, SectionBuilder.tsx, UserSync.tsx)
+4.  ~~**Demo page UX:**~~ ✅ **DONE.** Immersive experience, no nav/footer.
 
 ---
 
 ## 📋 COMMIT LOG (Latest)
 ```
+a29f7f4 fix: demo page UX polish
+3ab82c3 docs: accuracy sweep - fix line counts, model metadata, and dead code status
 6f78d61 fix: skip empty state when prompt passed from demo + add SITE_MAP.md
 c6a13b4 feat: cinematic demo page + auto-start builder flow
 e6ed3ed fix: eliminate loading flash - unified bg-black across transition states
-f92ce1d refactor: major repo cleanup and stabilization
-65d2c2b fix: correct Architect tier feature list - code download is Visionary+ only
-c3bf0e0 fix: immersive full-screen preview for guest mode
-97643c0 fix: guest mode preview layout + faster transitions
-0ac4166 chore: remove dead code - 7 unused API routes, 3 unused components
 ```
+
+---
+
+## 📝 SESSION LOG: 4 January 2026 (Afternoon)
+
+### Changes Made This Session:
+1. **Accuracy Sweep** - Fixed incorrect line counts in docs, corrected model metadata
+2. **Demo Page UX Polish:**
+   - Removed nav/footer for immersive experience
+   - Updated suggestions to showcase AI capabilities
+   - Simplified CTA: "Try it free — no account needed"
+   - Aligned headline with homepage: "Describe it. Watch it build."
+3. **Verified API Routes** - chronosphere/heal/replicator confirmed ACTIVE (not dead code)
