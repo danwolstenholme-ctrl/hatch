@@ -2,7 +2,6 @@
 
 @theme {
   --color-neon-emerald: #10b981;
-  --color-neon-purple: #a855f7;
   --color-neon-cyan: #06b6d4;
   
   --animate-pulse-slow: pulse 4s cubic-bezier(0.4, 0, 0.6, 1) infinite;
@@ -126,6 +125,11 @@ html, body {
   /* Simple scroll setup - let content dictate height */
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
+}
+
+::selection {
+  background-color: rgba(16, 185, 129, 0.3); /* Emerald-500/30 */
+  color: #ffffff;
 }
 
 /* Reduce animations on mobile for better performance */
@@ -269,10 +273,6 @@ input, textarea, select {
 @layer utilities {
   .text-glow {
     text-shadow: 0 0 10px rgba(16, 185, 129, 0.5), 0 0 20px rgba(16, 185, 129, 0.3);
-  }
-  
-  .text-glow-purple {
-    text-shadow: 0 0 10px rgba(168, 85, 247, 0.5), 0 0 20px rgba(168, 85, 247, 0.3);
   }
 
   .shadow-neon {
