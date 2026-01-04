@@ -1753,8 +1753,45 @@ export default function SectionBuilder({
               </div>
             )}
 
-            {/* Complete Stage - Toolbar Removed per user request */}
-            {stage === 'complete' && null}
+            {/* Complete Stage - Guest Refine Bar */}
+            {stage === 'complete' && (
+              <div className="flex items-center gap-3">
+                {/* Refine Input - pill style */}
+                <div className="flex-1 flex items-center bg-zinc-950/90 backdrop-blur-xl border border-zinc-800 rounded-full overflow-hidden group focus-within:border-emerald-500/50 transition-colors">
+                  <input
+                    type="text"
+                    value={refinePrompt}
+                    onChange={(e) => setRefinePrompt(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && refinePrompt.trim() && !isGuestRefineLocked && handleUserRefine()}
+                    disabled={isUserRefining || isGuestRefineLocked}
+                    placeholder={isGuestRefineLocked ? "Sign up to refine more" : "What would you change?"}
+                    className="flex-1 bg-transparent px-5 py-3 text-sm text-white placeholder-zinc-500 focus:outline-none disabled:opacity-50"
+                  />
+                  <button
+                    onClick={handleUserRefine}
+                    disabled={!refinePrompt.trim() || isUserRefining || isGuestRefineLocked}
+                    className="px-5 py-3 bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-medium transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2"
+                  >
+                    {isUserRefining ? (
+                      <RefreshCw className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <>
+                        <Wand2 className="w-4 h-4" />
+                        <span>Refine</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+                
+                {/* Signup CTA - compact pill */}
+                <button
+                  onClick={() => goToSignUp()}
+                  className="flex-shrink-0 px-5 py-3 rounded-full bg-zinc-900/90 backdrop-blur-xl border border-zinc-800 hover:border-emerald-500/30 text-zinc-300 hover:text-white text-sm font-medium transition-all"
+                >
+                  Sign up
+                </button>
+              </div>
+            )}
 
             {/* Refining Stage */}
             {stage === 'refining' && (

@@ -43,7 +43,11 @@ Moving away from the "Hacker/Terminal" aesthetic towards a clean, high-end SaaS 
 ---
 
 ## 📢 Marketing Strategy (Upcoming)
-**Status:** Strategy needed for Reddit/Google ads.
+**Status:** Historical data recovered (Jan 2026). Ready for reactivation.
+
+**Reddit Data (REDDIT_RESURRECTION):**
+- **Spend:** €257.36 | **Clicks:** 1,163 | **CPC:** €0.22 | **CTR:** 0.41%
+- **Verdict:** Highly efficient traffic. Previous bottleneck was likely on-site conversion due to "toy-like" aesthetic.
 
 **Key Assets:**
 - **Value Prop:** "Text to React" - No drag-and-drop, just description.

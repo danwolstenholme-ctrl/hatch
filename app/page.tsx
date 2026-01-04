@@ -39,7 +39,7 @@ function VoidButton({ isSignedIn, router, onLaunch }: { isSignedIn: boolean | un
       <div className="absolute -inset-[2px] rounded-md bg-gradient-to-r from-emerald-500/40 via-teal-500/40 to-emerald-500/40 opacity-50 sm:opacity-0 sm:group-hover:opacity-100 blur-md transition-opacity duration-500 animate-pulse sm:animate-none" />
       
       <div className="relative z-10 flex items-center gap-3">
-        <span className="text-white tracking-wide font-mono uppercase">Initialize System</span>
+        <span className="text-white tracking-wide font-semibold">Try the Demo</span>
         <ArrowRight className="w-5 h-5 text-emerald-400 group-hover:translate-x-1 transition-transform" />
       </div>
     </button>
@@ -288,7 +288,7 @@ export default function Home() {
               transition={{ delay: 0.5 }}
               className="text-lg sm:text-xl text-zinc-400 max-w-xl mx-auto leading-relaxed mb-10"
             >
-              Type what you want. Get production-ready React + Tailwind in seconds.
+              Describe what you need. Preview it live. Deploy to your domain or ours.
             </motion.p>
             
             {/* Mini code preview - shows what you're building */}
@@ -305,7 +305,7 @@ export default function Home() {
                     <div className="w-2 h-2 rounded-full bg-zinc-700" />
                     <div className="w-2 h-2 rounded-full bg-zinc-700" />
                   </div>
-                  <span className="text-xs uppercase tracking-wider">architect_protocol.tsx</span>
+                  <span className="text-xs uppercase tracking-wider">HeroSection.tsx</span>
                 </div>
                 <motion.div
                   initial={{ opacity: 0 }}
@@ -342,7 +342,7 @@ export default function Home() {
                 transition={{ type: 'spring', stiffness: 400 }}
               >
                 <Zap className="w-3 h-3 text-emerald-500/70" />
-                ~15s Build Time
+                Live Preview
               </motion.span>
               <span className="w-0.5 h-3 bg-zinc-800 hidden sm:block" />
               <motion.span 
@@ -351,7 +351,7 @@ export default function Home() {
                 transition={{ type: 'spring', stiffness: 400 }}
               >
                 <Code2 className="w-3 h-3 text-emerald-500/70" />
-                Full Source Export
+                Real React + Tailwind
               </motion.span>
               <span className="w-0.5 h-3 bg-zinc-800 hidden sm:block" />
               <motion.span 
@@ -359,8 +359,8 @@ export default function Home() {
                 whileHover={{ scale: 1.05, color: '#10b981' }}
                 transition={{ type: 'spring', stiffness: 400 }}
               >
-                <Shield className="w-3 h-3 text-emerald-500/70" />
-                Zero Lock-in
+                <Globe className="w-3 h-3 text-emerald-500/70" />
+                Deploy Anywhere
               </motion.span>
             </motion.div>
         </div>
@@ -371,10 +371,10 @@ export default function Home() {
         <div className="max-w-6xl mx-auto relative z-10">
           <div className="text-center mb-16">
             <h2 className="text-3xl sm:text-5xl font-bold mb-4 tracking-tight">
-              Real code. <span className="bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent">Real ownership.</span>
+              See it <span className="bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent">before you ship it.</span>
             </h2>
             <p className="text-lg text-zinc-400 max-w-2xl mx-auto">
-              No proprietary formats. No vendor lock-in. Just clean, production-ready React + Tailwind that runs anywhere.
+              Live preview of real React components. Iterate until it&apos;s perfect, then deploy or download the code.
             </p>
           </div>
 
@@ -382,24 +382,24 @@ export default function Home() {
           <div className="grid md:grid-cols-3 gap-6 mb-16">
             <div className="p-6 bg-zinc-900/50 border border-zinc-800 sm:border-zinc-800 border-emerald-500/20 rounded-md hover:border-emerald-500/30 transition-all group">
               <div className="w-12 h-12 bg-emerald-500/10 rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                <Code2 className="w-6 h-6 text-emerald-400" />
+                <Zap className="w-6 h-6 text-emerald-400" />
               </div>
-              <h3 className="text-xl font-bold mb-2 text-white">Download Anytime</h3>
-              <p className="text-zinc-400 text-sm leading-relaxed">Export your full source code with one click. It&apos;s your code from day one.</p>
+              <h3 className="text-xl font-bold mb-2 text-white">Live Preview</h3>
+              <p className="text-zinc-400 text-sm leading-relaxed">Watch your React components render in real-time. Refine with words until it&apos;s exactly right.</p>
             </div>
             <div className="p-6 bg-zinc-900/50 border border-zinc-800 sm:border-zinc-800 border-teal-500/20 rounded-md hover:border-teal-500/30 transition-all group">
               <div className="w-12 h-12 bg-teal-500/10 rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                <Shield className="w-6 h-6 text-teal-400" />
+                <Code2 className="w-6 h-6 text-teal-400" />
               </div>
-              <h3 className="text-xl font-bold mb-2 text-white">No Lock-in</h3>
-              <p className="text-zinc-400 text-sm leading-relaxed">Host it yourself, use any deployment platform. We don&apos;t trap your code.</p>
+              <h3 className="text-xl font-bold mb-2 text-white">Real Code</h3>
+              <p className="text-zinc-400 text-sm leading-relaxed">Not mockups. Actual React + Tailwind components you can download and use anywhere.</p>
             </div>
             <div className="p-6 bg-zinc-900/50 border border-zinc-800 sm:border-zinc-800 border-teal-500/20 rounded-md hover:border-teal-500/30 transition-all group">
               <div className="w-12 h-12 bg-teal-500/10 rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                <Layout className="w-6 h-6 text-teal-400" />
+                <Globe className="w-6 h-6 text-teal-400" />
               </div>
-              <h3 className="text-xl font-bold mb-2 text-white">Standard Stack</h3>
-              <p className="text-zinc-400 text-sm leading-relaxed">React 19 + Tailwind CSS. Industry standard. Any developer can work with it.</p>
+              <h3 className="text-xl font-bold mb-2 text-white">Your Choice</h3>
+              <p className="text-zinc-400 text-sm leading-relaxed">Deploy to our hosting for quick sharing, or export the source and host it yourself.</p>
             </div>
           </div>
 
@@ -493,7 +493,7 @@ export default function Home() {
             <h2 className="text-3xl sm:text-4xl font-bold mb-3">
               How it works
             </h2>
-            <p className="text-lg text-zinc-400">From idea to deployed site in minutes</p>
+            <p className="text-lg text-zinc-400">You drive. We generate.</p>
           </div>
 
           {/* 3-step process */}
@@ -502,83 +502,26 @@ export default function Home() {
               <div className="w-14 h-14 mx-auto bg-emerald-500/10 border border-emerald-500/20 rounded-md flex items-center justify-center mb-4">
                 <span className="text-2xl font-bold text-emerald-400">1</span>
               </div>
-              <h3 className="text-lg font-bold mb-2">Describe your site</h3>
-              <p className="text-zinc-400 text-sm">Tell us what you&apos;re building. A landing page, portfolio, SaaS app — whatever you need.</p>
+              <h3 className="text-lg font-bold mb-2">Describe a section</h3>
+              <p className="text-zinc-400 text-sm">&quot;A pricing table with 3 tiers and a monthly/yearly toggle&quot;</p>
             </div>
             <div className="text-center p-6">
               <div className="w-14 h-14 mx-auto bg-teal-500/10 border border-teal-500/20 rounded-md flex items-center justify-center mb-4">
                 <span className="text-2xl font-bold text-teal-400">2</span>
               </div>
-              <h3 className="text-lg font-bold mb-2">AI builds each section</h3>
-              <p className="text-zinc-400 text-sm">Our multi-model pipeline generates, refines, and audits real React + Tailwind code.</p>
+              <h3 className="text-lg font-bold mb-2">Preview and refine</h3>
+              <p className="text-zinc-400 text-sm">See it render live. Say &quot;make the buttons rounder&quot; — watch it update.</p>
             </div>
             <div className="text-center p-6">
               <div className="w-14 h-14 mx-auto bg-amber-500/10 border border-amber-500/20 rounded-md flex items-center justify-center mb-4">
                 <span className="text-2xl font-bold text-amber-400">3</span>
               </div>
-              <h3 className="text-lg font-bold mb-2">Export or deploy</h3>
-              <p className="text-zinc-400 text-sm">Download the source code or deploy instantly. Your code, your choice.</p>
+              <h3 className="text-lg font-bold mb-2">Ship it</h3>
+              <p className="text-zinc-400 text-sm">Deploy to share instantly, or download the React code and own it forever.</p>
             </div>
           </div>
         </div>
       </Section>
-
-      {/* THE AI PIPELINE */}
-      <Section className="px-4 sm:px-6 py-24 bg-zinc-900/20 border-y border-zinc-900">
-        <div className="max-w-6xl mx-auto">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl sm:text-5xl font-bold mb-4 tracking-tight">Multi-model AI pipeline</h2>
-            <p className="text-zinc-400 text-lg">Specialized models for each stage: generate, refine, audit.</p>
-          </div>
-
-          <div className="relative grid md:grid-cols-4 gap-8">
-            {/* Connecting Line (Desktop) */}
-            <div className="hidden md:block absolute top-10 left-[12%] right-[12%] h-px bg-gradient-to-r from-emerald-500/20 via-teal-500/20 to-cyan-500/20" />
-            
-            {/* Step 1: You */}
-            <div className="relative z-10 bg-zinc-950 border border-zinc-800 p-6 rounded-md hover:border-white/30 transition-colors group">
-              <div className="w-14 h-14 bg-white/5 rounded-md flex items-center justify-center mb-6 border border-white/10 shadow-lg shadow-white/5">
-                <Terminal className="w-6 h-6 text-white" />
-              </div>
-              <div className="text-xs font-mono text-white/60 mb-2 tracking-wider">STEP 1</div>
-              <h3 className="text-xl font-bold mb-2">Describe</h3>
-              <p className="text-sm text-zinc-400 leading-relaxed">Tell us what you need. You&apos;re in control. Speak your intent.</p>
-            </div>
-
-            {/* Step 2: Generate */}
-            <div className="relative z-10 bg-zinc-950 border border-zinc-800 p-6 rounded-md hover:border-emerald-500/30 transition-colors group">
-              <div className="w-14 h-14 bg-emerald-500/5 rounded-md flex items-center justify-center mb-6 border border-emerald-500/10 shadow-lg shadow-emerald-500/5">
-                <Cpu className="w-6 h-6 text-emerald-500" />
-              </div>
-              <div className="text-xs font-mono text-emerald-400 mb-2 tracking-wider">STEP 2</div>
-              <h3 className="text-xl font-bold mb-2">Generate</h3>
-              <p className="text-sm text-zinc-400 leading-relaxed">Our AI builds the initial code fast. React + Tailwind.</p>
-            </div>
-
-            {/* Step 3: Refine */}
-            <div className="relative z-10 bg-zinc-950 border border-zinc-800 p-6 rounded-md hover:border-teal-500/30 transition-colors group">
-              <div className="w-14 h-14 bg-teal-500/5 rounded-md flex items-center justify-center mb-6 border border-teal-500/10 shadow-lg shadow-teal-500/5">
-                <Wand2 className="w-6 h-6 text-teal-500" />
-              </div>
-              <div className="text-xs font-mono text-teal-400 mb-2 tracking-wider">STEP 3</div>
-              <h3 className="text-xl font-bold mb-2">Refine</h3>
-              <p className="text-sm text-zinc-400 leading-relaxed">Polish UI, ensure accessibility, fix edge cases automatically.</p>
-            </div>
-
-            {/* Step 4: Audit */}
-            <div className="relative z-10 bg-zinc-950 border border-zinc-800 p-6 rounded-md hover:border-amber-500/30 transition-colors group">
-              <div className="w-14 h-14 bg-amber-500/5 rounded-md flex items-center justify-center mb-6 border border-amber-500/10 shadow-lg shadow-amber-500/5">
-                <Shield className="w-6 h-6 text-amber-500" />
-              </div>
-              <div className="text-xs font-mono text-amber-400 mb-2 tracking-wider">STEP 4</div>
-              <h3 className="text-xl font-bold mb-2">Audit</h3>
-              <p className="text-sm text-zinc-400 leading-relaxed">Security check and performance audit before you ship.</p>
-            </div>
-          </div>
-        </div>
-      </Section>
-
-
 
 
 
@@ -611,9 +554,9 @@ export default function Home() {
               viewport={{ once: true }}
               className="text-4xl sm:text-5xl font-bold mb-4 tracking-tight"
             >
-              Choose your reality.
+              Simple pricing
             </motion.h2>
-            <p className="text-xl text-zinc-400">Access the Singularity Engine.</p>
+            <p className="text-xl text-zinc-400">Start free. Upgrade when you need more.</p>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 max-w-sm sm:max-w-none mx-auto">
@@ -625,7 +568,7 @@ export default function Home() {
               <div className="absolute inset-0 bg-gradient-to-b from-emerald-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
               
               <div className="relative z-10">
-                <div className="text-xs font-mono text-zinc-500 uppercase tracking-widest mb-4">Initiate</div>
+                <div className="text-xs font-mono text-zinc-500 uppercase tracking-widest mb-4">Starter</div>
                 <h3 className="text-2xl font-bold text-white mb-2">Architect</h3>
                 <div className="flex items-baseline gap-1 mb-6">
                   <span className="text-4xl font-mono font-bold text-white tracking-tighter">$19</span>
@@ -636,12 +579,12 @@ export default function Home() {
                 
                 <ul className="space-y-4 mb-8">
                   {[
-                    { text: 'Singularity Engine Access', included: true },
-                    { text: 'Unlimited AI Generations', included: true },
-                    { text: 'Live Neural Preview', included: true },
-                    { text: 'Deploy to hatchitsites.dev', included: true },
-                    { text: 'Download Source Code', included: false },
-                    { text: 'Custom Domain', included: false },
+                    { text: 'Unlimited generations', included: true },
+                    { text: 'Live preview', included: true },
+                    { text: 'Deploy to hatchit.dev', included: true },
+                    { text: '3 projects', included: true },
+                    { text: 'Download source code', included: false },
+                    { text: 'Custom domain', included: false },
                   ].map((item, i) => (
                     <li key={i} className={`flex items-center gap-3 text-sm ${item.included ? 'text-zinc-300' : 'text-zinc-700'}`}>
                       <div className={`w-1.5 h-1.5 rounded-full ${item.included ? 'bg-emerald-500' : 'bg-zinc-800'}`} />
@@ -676,12 +619,12 @@ export default function Home() {
                 
                 <ul className="space-y-4 mb-8">
                   {[
-                    'Unlimited AI Generations',
-                    'Full Source Code Export',
-                    'Custom Domain Deployment',
-                    'White Label (No Branding)',
-                    'Commercial License',
-                    'Priority Neural Processing',
+                    'Everything in Architect',
+                    'Download source code',
+                    'Custom domain',
+                    'No HatchIt branding',
+                    'Commercial license',
+                    '10 projects',
                   ].map((item, i) => (
                     <li key={i} className="flex items-center gap-3 text-sm text-white">
                       <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0" />
@@ -700,7 +643,7 @@ export default function Home() {
               <div className="absolute inset-0 bg-gradient-to-b from-amber-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
               
               <div className="relative z-10">
-                <div className="text-xs font-mono text-amber-500 uppercase tracking-widest mb-4">God Mode</div>
+                <div className="text-xs font-mono text-amber-500 uppercase tracking-widest mb-4">Unlimited</div>
                 <h3 className="text-2xl font-bold text-white mb-2">Singularity</h3>
                 <div className="flex items-baseline gap-1 mb-6">
                   <span className="text-4xl font-mono font-bold text-white tracking-tighter">$199</span>
@@ -750,38 +693,11 @@ export default function Home() {
         </div>
       </Section>
 
-      {/* MANIFESTO TEASER - THE SIGNAL */}
-      <Section className="py-12 border-t border-zinc-900/50 bg-black overflow-hidden relative">
-        <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-5" />
-        <div className="max-w-4xl mx-auto px-6 relative z-10">
-          <Link href="/manifesto" className="group block w-full">
-            <div className="flex flex-col items-center gap-4 p-8 rounded-md border border-zinc-900 bg-zinc-950/50 hover:border-emerald-500/30 hover:bg-zinc-900/80 transition-all duration-500">
-              <div className="flex items-center gap-3 text-emerald-500/50 group-hover:text-emerald-400 transition-colors">
-                <Terminal className="w-5 h-5" />
-                <span className="font-mono text-sm tracking-widest uppercase">System Message</span>
-              </div>
-              <p className="font-mono text-zinc-500 text-center max-w-lg group-hover:text-zinc-300 transition-colors">
-                &quot;We are not building websites. We are building the interface for the next intelligence.&quot;
-              </p>
-              <div className="text-xs font-mono text-emerald-500/0 group-hover:text-emerald-500 transition-all duration-500 transform translate-y-2 group-hover:translate-y-0 opacity-0 group-hover:opacity-100">
-                [ DECRYPT MANIFESTO ]
-              </div>
-            </div>
-          </Link>
-        </div>
-      </Section>
-
-      {/* FINAL CTA - THE PORTAL */}
-      <Section className="px-4 sm:px-6 py-32 relative overflow-hidden">
-        {/* Void background for CTA */}
-        <div className="absolute inset-0 bg-zinc-950" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-emerald-500/[0.05] rounded-full blur-[150px] glow-pulse" />
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] bg-teal-500/[0.07] rounded-full blur-[100px] glow-pulse" style={{ animationDelay: '1s' }} />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_0%,rgba(9,9,11,0.6)_70%,rgba(9,9,11,1)_100%)]" />
-        
+      {/* FINAL CTA */}
+      <Section className="px-4 sm:px-6 py-24 relative overflow-hidden border-t border-zinc-900">
         <div className="max-w-3xl mx-auto text-center relative z-10">
-          <h2 className="text-4xl sm:text-6xl font-black mb-6 tracking-tighter">Enter the void.</h2>
-          <p className="text-xl text-zinc-400 mb-10">Your website is waiting to be born.</p>
+          <h2 className="text-3xl sm:text-4xl font-bold mb-4">Ready to try it?</h2>
+          <p className="text-lg text-zinc-400 mb-8">Build your first section in under a minute. No signup required.</p>
           <div className="flex justify-center">
             <VoidButton isSignedIn={isSignedIn} router={router} onLaunch={triggerTransition} />
           </div>
