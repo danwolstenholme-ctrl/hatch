@@ -702,16 +702,6 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
 
     setBuildState(newState)
     
-    // Show success modal for guests with credit tracking
-    if (guestMode) {
-      setLastCompletedSection(currentSection.name)
-      setShowBuildSuccess(true)
-      track('Section Complete - Guest', { 
-        sectionName: currentSection.name,
-        buildsRemaining: Math.max(0, 3 - guestBuildsUsed)
-      })
-    }
-    
     // No auto-advance to review - user clicks "Finish & Review" button
   }
 
@@ -788,8 +778,13 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
   const handleNextSection = () => {
     if (!buildState) return
 
-    // REMOVED: Guest lock at Hero section
-    // Guests can now advance freely - paywall is at deploy/export only
+    // Guest Mode: Force signup after Hero (or any section) to save progress
+    if (guestMode) {
+      track('Guest Handoff - Signup Triggered')
+      const returnUrl = '/dashboard/projects'
+      router.push(`/sign-up?redirect_url=${encodeURIComponent(returnUrl)}`)
+      return
+    }
 
     const nextIndex = buildState.currentSectionIndex + 1
     
