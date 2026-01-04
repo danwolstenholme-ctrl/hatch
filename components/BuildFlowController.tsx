@@ -1393,46 +1393,20 @@ export default function GeneratedPage() {
           >
             {/* Singularity Sidebar - Desktop Only */}
             <div className="hidden lg:block w-64 border-r border-zinc-900 bg-zinc-950 flex flex-col h-full overflow-y-auto">
-              {!guestMode ? (
-                <SingularitySidebar
-                  currentSection={buildState.currentSectionIndex + 1}
-                  totalSections={sectionsForBuild.length}
-                  isGenerating={false}
-                  thought={getCurrentSection()?.name ? `Building ${getCurrentSection()?.name}...` : 'Analyzing...'}
-                  promptsUsed={0}
-                  promptsLimit={-1}
-                  isPaid={isPaid}
-                  onUpgrade={() => {
-                    setHatchModalReason('generation_limit')
-                    setShowHatchModal(true)
-                  }}
-                  onOpenSettings={() => setIsSettingsOpen(true)}
-                />
-              ) : (
-                <div className="p-6 space-y-6">
-                  {/* Guest Credit Badge */}
-                  <GuestCreditBadge
-                    buildsUsed={guestBuildsUsed}
-                    buildsLimit={3}
-                    refinementsUsed={guestRefinementsUsed}
-                    refinementsLimit={3}
-                    onUpgrade={() => {
-                      track('Guest Sidebar - Upgrade Badge Clicked')
-                      setHatchModalReason('generation_limit')
-                      setShowHatchModal(true)
-                    }}
-                  />
-
-                  {/* Premium Features Showcase */}
-                  <PremiumFeaturesShowcase
-                    onFeatureClick={(featureId, tier) => {
-                      track('Guest Sidebar - Feature Clicked', { featureId, tier })
-                      setHatchModalReason('proactive')
-                      setShowHatchModal(true)
-                    }}
-                  />
-                </div>
-              )}
+              <SingularitySidebar
+                currentSection={buildState.currentSectionIndex + 1}
+                totalSections={sectionsForBuild.length}
+                isGenerating={false}
+                thought={getCurrentSection()?.name ? `Building ${getCurrentSection()?.name}...` : 'Analyzing...'}
+                promptsUsed={guestMode ? guestBuildsUsed : 0}
+                promptsLimit={guestMode ? 3 : -1}
+                isPaid={isPaid}
+                onUpgrade={() => {
+                  setHatchModalReason('generation_limit')
+                  setShowHatchModal(true)
+                }}
+                onOpenSettings={() => setIsSettingsOpen(true)}
+              />
             </div>
 
             {/* Main Build Area */}

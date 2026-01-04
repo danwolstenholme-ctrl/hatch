@@ -267,8 +267,11 @@ export default function ProjectsPage() {
           </div>
         </div>
 
-        {/* Search & View Controls */}
-        <div className="flex items-center gap-3 mb-6">
+        <div className="flex flex-col lg:flex-row gap-8">
+          {/* Main Content */}
+          <div className="flex-1">
+            {/* Search & View Controls */}
+            <div className="flex items-center gap-3 mb-6">
           <div className="relative flex-1 max-w-md">
             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
             <input 
@@ -545,6 +548,29 @@ export default function ProjectsPage() {
             </AnimatePresence>
           </div>
         )}
+          </div>
+
+          {/* Sidebar - Upgrades & Stats (Only for Free/Trial users) */}
+          {isFreeTier && (
+            <div className="w-full lg:w-80 space-y-6">
+              <div className="bg-slate-900 rounded-2xl p-1 shadow-xl">
+                <GuestCreditBadge 
+                  buildsUsed={projects.length}
+                  buildsLimit={3}
+                  refinementsUsed={0}
+                  refinementsLimit={10}
+                  onUpgrade={() => setShowLimitModal(true)}
+                />
+              </div>
+
+              <div className="bg-white border border-slate-200 rounded-2xl p-4 shadow-sm">
+                <PremiumFeaturesShowcase 
+                  onFeatureClick={() => setShowLimitModal(true)}
+                />
+              </div>
+            </div>
+          )}
+        </div>
       
       {/* Limit Modal - Redesigned */}
       {showLimitModal && (
