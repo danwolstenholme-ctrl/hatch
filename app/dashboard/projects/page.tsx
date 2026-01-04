@@ -305,13 +305,6 @@ export default function ProjectsPage() {
               <MoreHorizontal className="w-4 h-4" />
             </button>
           </div>
-        </div>                  ? 'bg-emerald-100 text-emerald-600' 
-                  : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50'
-              }`}
-            >
-              <MoreHorizontal className="w-4 h-4" />
-            </button>
-          </div>
         </div>
 
         {/* Project Grid/List */}
