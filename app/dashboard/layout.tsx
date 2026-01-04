@@ -22,19 +22,18 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
         {/* Minimal Top Bar */}
         <header className="border-b border-zinc-900 bg-zinc-950/80 backdrop-blur-xl sticky top-0 z-50">
           <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
-            {/* Logo */}
+            {/* Logo - Minimalist, no text */}
             <Link href="/" className="flex items-center gap-3 group">
               <div className="relative">
                 <div className="absolute -inset-2 bg-emerald-500/20 rounded-full blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                 <Image 
                   src="/assets/hatchit_definitive.svg" 
                   alt="HatchIt" 
-                  width={28}
-                  height={28}
-                  className="relative w-7 h-7"
+                  width={24}
+                  height={24}
+                  className="relative w-6 h-6 opacity-80 group-hover:opacity-100 transition-opacity"
                 />
               </div>
-              <span className="font-bold text-base tracking-tight">HatchIt</span>
             </Link>
 
             {/* Nav */}

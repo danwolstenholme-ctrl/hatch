@@ -37,6 +37,14 @@ We are not a "hacker tool" anymore. We are a **Professional Studio**.
 - Animations should be cinematic (framer-motion), not jittery.
 - Glassmorphism (`backdrop-blur`, `bg-white/5`) is our texture.
 
+### 4. THE PROXIMITY PROTOCOL
+**"The closer to the projects folder, the more premium we get."**
+- The Dashboard is not a playground. It is a cockpit.
+- **NO EMOJIS** in the dashboard or builder UI. Use Lucide icons only.
+- **Typography:** Small, technical, precise (JetBrains Mono / Inter Tight).
+- **Shapes:** Sharp corners (`rounded-sm` or `rounded-md`), not playful (`rounded-xl`).
+- **Branding:** "HatchIt" branding fades away. The user's work takes center stage. We are the background workers.
+
 ---
 
 ## 🧠 SYSTEM MEMORY (The Truth)

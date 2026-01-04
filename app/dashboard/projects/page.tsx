@@ -140,17 +140,17 @@ export default function ProjectsPage() {
         <div className="max-w-7xl mx-auto px-6 py-12">
           <div className="flex items-center justify-center h-[60vh]">
             <div className="text-center">
-              <div className="w-16 h-16 mx-auto mb-6 relative">
-                <div className="absolute inset-0 bg-emerald-500/20 rounded-2xl blur-xl animate-pulse" />
-                <div className="relative w-16 h-16 bg-zinc-900 border border-zinc-800 rounded-2xl flex items-center justify-center shadow-lg">
-                  <Database className="w-8 h-8 text-emerald-500 animate-pulse" />
+              <div className="w-12 h-12 mx-auto mb-6 relative">
+                <div className="absolute inset-0 bg-emerald-500/20 rounded-full blur-xl animate-pulse" />
+                <div className="relative w-12 h-12 bg-zinc-900 border border-zinc-800 rounded-lg flex items-center justify-center">
+                  <Database className="w-5 h-5 text-emerald-500 animate-pulse" />
                 </div>
               </div>
-              <h2 className="text-xl font-semibold text-white mb-2">
-                {isMigrating ? 'Migrating your workspace' : 'Loading projects'}
+              <h2 className="text-sm font-mono text-zinc-400 mb-2 uppercase tracking-wider">
+                {isMigrating ? 'Migrating Workspace' : 'Initializing System'}
               </h2>
-              <p className="text-sm text-zinc-500">
-                {isMigrating ? 'Converting guest projects to your account...' : 'Just a moment...'}
+              <p className="text-xs text-zinc-600 font-mono">
+                {isMigrating ? 'Converting guest protocols...' : 'Accessing database...'}
               </p>
             </div>
           </div>
@@ -160,30 +160,30 @@ export default function ProjectsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-zinc-950">
+    <div className="min-h-screen bg-zinc-950 font-mono">
       <div className="max-w-7xl mx-auto px-6 py-8">
         
         {/* Professional Header with Stats */}
-        <div className="mb-8">
+        <div className="mb-8 border-b border-zinc-900 pb-6">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-6">
             <div>
-              <h1 className="text-3xl font-bold text-white tracking-tight mb-2">Projects</h1>
-              <p className="text-zinc-400">
-                Your workspace • {projects.length} {projects.length === 1 ? 'project' : 'projects'}
+              <h1 className="text-xl font-bold text-white tracking-tight mb-1 uppercase">Workspace Index</h1>
+              <p className="text-xs text-zinc-500 font-mono">
+                ID: {user?.id?.slice(0, 8) || 'UNKNOWN'} • {projects.length} ACTIVE {projects.length === 1 ? 'UNIT' : 'UNITS'}
               </p>
             </div>
 
             <div className="flex items-center gap-3">
               {/* Tier Badge */}
-              <div className="hidden md:flex items-center gap-2 px-4 py-2.5 bg-zinc-900 border border-zinc-800 rounded-xl shadow-sm">
-                <div className={`w-2 h-2 rounded-full ${
-                  tierConfig.color === 'amber' ? 'bg-amber-500 shadow-amber-500/50' : 
-                  tierConfig.color === 'teal' ? 'bg-teal-500 shadow-teal-500/50' : 
-                  tierConfig.color === 'emerald' ? 'bg-emerald-500 shadow-emerald-500/50' : 'bg-zinc-500'
-                } shadow-[0_0_8px]`} />
-                <span className="text-sm font-semibold text-zinc-300">{tierConfig.name}</span>
+              <div className="hidden md:flex items-center gap-2 px-3 py-1.5 bg-zinc-900 border border-zinc-800 rounded-md">
+                <div className={`w-1.5 h-1.5 rounded-full ${
+                  tierConfig.color === 'amber' ? 'bg-amber-500' : 
+                  tierConfig.color === 'teal' ? 'bg-teal-500' : 
+                  tierConfig.color === 'emerald' ? 'bg-emerald-500' : 'bg-zinc-500'
+                }`} />
+                <span className="text-xs font-medium text-zinc-400 uppercase tracking-wider">{tierConfig.name}</span>
                 {tierConfig.limit !== Infinity && (
-                  <span className="text-xs text-zinc-500 ml-1">• {projectsRemaining} slots</span>
+                  <span className="text-[10px] text-zinc-600 ml-1 font-mono">[{projectsRemaining} REMAINING]</span>
                 )}
               </div>
 
@@ -191,10 +191,10 @@ export default function ProjectsPage() {
               <button
                 onClick={handleCreate}
                 disabled={isCreating || isAtLimit}
-                className={`group flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-sm transition-all duration-200 shadow-lg ${
+                className={`group flex items-center gap-2 px-4 py-2 rounded-md font-medium text-xs uppercase tracking-wider transition-all duration-200 ${
                   isAtLimit 
-                    ? 'bg-zinc-800 text-zinc-500 cursor-not-allowed shadow-none' 
-                    : 'bg-gradient-to-br from-emerald-600 to-teal-600 text-white hover:from-emerald-500 hover:to-teal-500 hover:shadow-xl hover:shadow-emerald-500/25 hover:scale-105 active:scale-100'
+                    ? 'bg-zinc-900 text-zinc-600 border border-zinc-800 cursor-not-allowed' 
+                    : 'bg-emerald-600 hover:bg-emerald-500 text-white border border-emerald-500/50 hover:shadow-[0_0_15px_rgba(16,185,129,0.2)]'
                 }`}
               >
                 {isCreating ? (

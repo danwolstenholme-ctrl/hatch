@@ -42,7 +42,7 @@ export default function Navigation() {
               whileHover={{ scale: 1.1, rotate: 15 }}
               transition={{ type: 'spring', stiffness: 400, damping: 17 }}
             >
-              <Image src="/assets/hatchit_definitive.svg" alt="HatchIt" width={32} height={32} className="w-8 h-8" />
+              <Image src="/assets/hatchit_definitive.svg" alt="HatchIt" width={28} height={28} className="w-7 h-7 opacity-90 group-hover:opacity-100 transition-opacity" />
             </motion.div>
           </Link>
           
