@@ -29,7 +29,7 @@ export default function FeaturesPage() {
       id: 'ai-generation',
       icon: <Cpu className="w-6 h-6" />,
       title: 'Unified Genesis Architecture',
-      subtitle: 'Powered by Gemini 2.0 Flash',
+      subtitle: 'Powered by Claude 3.5 Sonnet',
       description: "It's not just a chatbot. It's a full-stack engineer. The Genesis Engine writes the code, tests it, fixes bugs, and optimizes for mobile—all in one go. You describe the result; it handles the implementation.",
       details: [
         'Genesis Engine: Instant logic generation',

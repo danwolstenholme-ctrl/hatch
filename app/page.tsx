@@ -33,13 +33,13 @@ function VoidButton({ isSignedIn, router, onLaunch }: { isSignedIn: boolean | un
   return (
     <button
       onClick={handleClick}
-      className="group relative w-full sm:w-auto inline-flex justify-center items-center gap-3 px-8 sm:px-10 py-4 sm:py-5 bg-zinc-900/80 hover:bg-zinc-900 border border-emerald-500/30 hover:border-emerald-500/60 rounded-2xl font-bold text-lg transition-all duration-300 hover:scale-105 active:scale-95 shadow-[0_0_60px_rgba(16,185,129,0.15)] hover:shadow-[0_0_80px_rgba(16,185,129,0.25)] overflow-hidden"
+      className="group relative w-full sm:w-auto inline-flex justify-center items-center gap-3 px-8 sm:px-10 py-4 sm:py-5 bg-zinc-900/80 hover:bg-zinc-900 border border-emerald-500/30 hover:border-emerald-500/60 rounded-md font-bold text-lg transition-all duration-300 hover:scale-105 active:scale-95 shadow-[0_0_60px_rgba(16,185,129,0.15)] hover:shadow-[0_0_80px_rgba(16,185,129,0.25)] overflow-hidden"
     >
       {/* Glow ring on hover - Always active on mobile via CSS animation */}
-      <div className="absolute -inset-[2px] rounded-2xl bg-gradient-to-r from-emerald-500/40 via-teal-500/40 to-emerald-500/40 opacity-50 sm:opacity-0 sm:group-hover:opacity-100 blur-md transition-opacity duration-500 animate-pulse sm:animate-none" />
+      <div className="absolute -inset-[2px] rounded-md bg-gradient-to-r from-emerald-500/40 via-teal-500/40 to-emerald-500/40 opacity-50 sm:opacity-0 sm:group-hover:opacity-100 blur-md transition-opacity duration-500 animate-pulse sm:animate-none" />
       
       <div className="relative z-10 flex items-center gap-3">
-        <span className="text-white tracking-wide">START BUILDING</span>
+        <span className="text-white tracking-wide font-mono uppercase">Initialize System</span>
         <ArrowRight className="w-5 h-5 text-emerald-400 group-hover:translate-x-1 transition-transform" />
       </div>
     </button>
@@ -298,14 +298,14 @@ export default function Home() {
               transition={{ delay: 0.6 }}
               className="relative w-full max-w-lg mb-10 hidden sm:block"
             >
-              <div className="bg-zinc-900/80 border border-zinc-800 rounded-xl p-4 font-mono text-sm overflow-hidden backdrop-blur-sm">
+              <div className="bg-zinc-900/80 border border-zinc-800 rounded-md p-4 font-mono text-sm overflow-hidden backdrop-blur-sm">
                 <div className="flex items-center gap-2 mb-3 text-zinc-500">
                   <div className="flex gap-1.5">
-                    <div className="w-3 h-3 rounded-full bg-red-500/50" />
-                    <div className="w-3 h-3 rounded-full bg-yellow-500/50" />
-                    <div className="w-3 h-3 rounded-full bg-green-500/50" />
+                    <div className="w-2 h-2 rounded-full bg-zinc-700" />
+                    <div className="w-2 h-2 rounded-full bg-zinc-700" />
+                    <div className="w-2 h-2 rounded-full bg-zinc-700" />
                   </div>
-                  <span className="text-xs">prompt.tsx</span>
+                  <span className="text-xs uppercase tracking-wider">architect_protocol.tsx</span>
                 </div>
                 <motion.div
                   initial={{ opacity: 0 }}
@@ -316,7 +316,7 @@ export default function Home() {
                 </motion.div>
               </div>
               {/* Glow effect */}
-              <div className="absolute -inset-1 bg-gradient-to-r from-emerald-500/20 to-teal-500/20 rounded-xl blur-xl opacity-50 -z-10" />
+              <div className="absolute -inset-1 bg-gradient-to-r from-emerald-500/20 to-teal-500/20 rounded-md blur-xl opacity-50 -z-10" />
             </motion.div>
 
             {/* CTA */}
@@ -334,33 +334,33 @@ export default function Home() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.9 }}
-              className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 text-sm text-zinc-500"
+              className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 text-xs font-mono text-zinc-500 uppercase tracking-wider"
             >
               <motion.span 
                 className="flex items-center gap-2"
                 whileHover={{ scale: 1.05, color: '#10b981' }}
                 transition={{ type: 'spring', stiffness: 400 }}
               >
-                <Zap className="w-4 h-4 text-emerald-500/70" />
-                ~15 sec builds
+                <Zap className="w-3 h-3 text-emerald-500/70" />
+                ~15s Build Time
               </motion.span>
-              <span className="w-1 h-1 rounded-full bg-zinc-700 hidden sm:block" />
+              <span className="w-0.5 h-3 bg-zinc-800 hidden sm:block" />
               <motion.span 
                 className="flex items-center gap-2"
                 whileHover={{ scale: 1.05, color: '#10b981' }}
                 transition={{ type: 'spring', stiffness: 400 }}
               >
-                <Code2 className="w-4 h-4 text-emerald-500/70" />
-                Export anytime
+                <Code2 className="w-3 h-3 text-emerald-500/70" />
+                Full Source Export
               </motion.span>
-              <span className="w-1 h-1 rounded-full bg-zinc-700 hidden sm:block" />
+              <span className="w-0.5 h-3 bg-zinc-800 hidden sm:block" />
               <motion.span 
                 className="flex items-center gap-2"
                 whileHover={{ scale: 1.05, color: '#10b981' }}
                 transition={{ type: 'spring', stiffness: 400 }}
               >
-                <Shield className="w-4 h-4 text-emerald-500/70" />
-                Your code
+                <Shield className="w-3 h-3 text-emerald-500/70" />
+                Zero Lock-in
               </motion.span>
             </motion.div>
         </div>
