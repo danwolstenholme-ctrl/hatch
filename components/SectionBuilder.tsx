@@ -2055,7 +2055,7 @@ export default function SectionBuilder({
             onClick={() => setMobileTab('preview')}
             className={`flex-1 py-2.5 text-sm font-semibold rounded-lg transition-all duration-200 flex items-center justify-center gap-2 ${
               mobileTab === 'preview' 
-                ? 'bg-gradient-to-r from-indigo-500/70 to-purple-500/70 text-white shadow-lg shadow-purple-500/20 border border-purple-400/30' 
+                ? 'bg-gradient-to-r from-emerald-500/70 to-teal-500/70 text-white shadow-lg shadow-emerald-500/20 border border-emerald-400/30' 
                 : 'text-zinc-400 hover:text-zinc-200'
             }`}
           >
@@ -2093,7 +2093,7 @@ export default function SectionBuilder({
           </div>
           
           <div className="relative group">
-            <div className="absolute -inset-0.5 bg-gradient-to-r from-purple-500/20 to-blue-500/20 rounded-xl opacity-0 group-focus-within:opacity-100 transition-opacity duration-500 blur-sm" />
+            <div className="absolute -inset-0.5 bg-gradient-to-r from-emerald-500/20 to-teal-500/20 rounded-xl opacity-0 group-focus-within:opacity-100 transition-opacity duration-500 blur-sm" />
             <textarea
               ref={textareaRef}
               value={prompt}
@@ -2106,7 +2106,7 @@ export default function SectionBuilder({
               }}
                 disabled={stage !== 'input' || isLocked}
               placeholder={placeholderText}
-              className="relative w-full min-h-[120px] bg-zinc-900/80 border border-zinc-800 rounded-xl p-3 text-sm font-mono text-zinc-200 placeholder-zinc-600 focus:outline-none focus:ring-0 focus:border-purple-500/50 disabled:opacity-50 resize-none transition-all"
+              className="relative w-full min-h-[120px] bg-zinc-900/80 border border-zinc-800 rounded-xl p-3 text-sm font-mono text-zinc-200 placeholder-zinc-600 focus:outline-none focus:ring-0 focus:border-emerald-500/50 disabled:opacity-50 resize-none transition-all"
             />
           </div>
 
@@ -2201,9 +2201,9 @@ export default function SectionBuilder({
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   exit={{ opacity: 0 }}
-                  className="w-full py-3 rounded-xl bg-violet-500/10 border border-violet-500/20 text-center"
+                  className="w-full py-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-center"
                 >
-                  <div className="flex items-center justify-center gap-3 text-violet-300">
+                  <div className="flex items-center justify-center gap-3 text-emerald-300">
                     <motion.div
                       animate={{ scale: [1, 1.05, 1], opacity: [0.7, 1, 0.7] }}
                       transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
@@ -2343,20 +2343,20 @@ export default function SectionBuilder({
                           <button
                             onClick={handleArchitectPolish}
                             disabled={isArchitectPolishing}
-                            className="w-full py-2 bg-violet-500/10 hover:bg-violet-500/20 border border-violet-500/30 text-violet-300 text-xs font-medium rounded-lg transition-all flex items-center justify-center gap-1.5 disabled:opacity-60 disabled:cursor-not-allowed"
+                            className="w-full py-2 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 text-xs font-medium rounded-lg transition-all flex items-center justify-center gap-1.5 disabled:opacity-60 disabled:cursor-not-allowed"
                           >
                             <Wand2 className="w-3 h-3" />
                             <span>Architect Polish</span>
-                            <span className="text-[10px] text-violet-400/60">∞</span>
+                            <span className="text-[10px] text-emerald-400/60">∞</span>
                           </button>
                         </div>
                       )}
 
                       {/* Polishing state */}
                       {isArchitectPolishing && (
-                        <div className="py-2 bg-violet-500/10 border border-violet-500/20 rounded-lg flex items-center justify-center gap-2">
-                          <RefreshCw className="w-3 h-3 text-violet-400 animate-spin" />
-                          <span className="text-xs text-violet-300 font-mono">Architect polishing...</span>
+                        <div className="py-2 bg-emerald-500/10 border border-emerald-500/20 rounded-lg flex items-center justify-center gap-2">
+                          <RefreshCw className="w-3 h-3 text-emerald-400 animate-spin" />
+                          <span className="text-xs text-emerald-300 font-mono">Architect polishing...</span>
                         </div>
                       )}
 

@@ -63,7 +63,7 @@ export function SectionCompleteIndicator({
         
         {wasRefined ? (
           <div className="group relative inline-block">
-            <span className="text-xs text-violet-400 flex items-center gap-1 cursor-help font-mono mt-1">
+            <span className="text-xs text-emerald-400 flex items-center gap-1 cursor-help font-mono mt-1">
               <CheckCircle2 className="w-3 h-3" />
               Refined
               {changes.length > 0 && (
@@ -75,7 +75,7 @@ export function SectionCompleteIndicator({
             {changes.length > 0 && (
               <div className="absolute bottom-full left-0 mb-2 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
                 <div className="bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-xs whitespace-nowrap shadow-xl">
-                  <div className="font-medium text-violet-400 mb-1 font-mono">Changes:</div>
+                  <div className="font-medium text-emerald-400 mb-1 font-mono">Changes:</div>
                   <ul className="text-zinc-400 space-y-0.5 font-mono">
                     {changes.map((change, i) => (
                       <li key={i}>• {change}</li>

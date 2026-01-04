@@ -50,7 +50,7 @@ export default function BuildSuccessModal({
             className="relative bg-zinc-900 border border-zinc-800 rounded-2xl p-8 w-full max-w-md overflow-hidden shadow-2xl"
           >
             {/* Ambient Glow */}
-            <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 via-transparent to-violet-500/5 pointer-events-none" />
+            <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 via-transparent to-zinc-500/5 pointer-events-none" />
             
             {/* Success Icon */}
             <motion.div
