@@ -144,11 +144,11 @@ export default function DemoPage() {
     router.push(`/builder?${params.toString()}`)
   }
 
-  // Quick prompt suggestions
+  // Quick prompt suggestions - showcase specific, impressive capabilities
   const suggestions = [
-    'SaaS landing page with pricing',
-    'Portfolio with dark mode',
-    'Blog with newsletter signup',
+    'Hero with animated gradient background and floating particles',
+    'Pricing table with 3 tiers and a "Most Popular" badge',
+    'Testimonial carousel with star ratings and avatars',
   ]
 
   return (
@@ -254,12 +254,11 @@ export default function DemoPage() {
                   animate={{ opacity: [1, 0.7, 1] }}
                   transition={{ duration: 2, repeat: Infinity }}
                 >
-                  Build it.
+                  Watch it build.
                 </motion.span>
               </h1>
               <p className="text-zinc-400 text-lg max-w-md mx-auto">
-                Transform your ideas into production-ready React components. 
-                <span className="text-zinc-500"> Powered by Claude 4.5.</span>
+                Type what you want. Get production-ready React + Tailwind in seconds.
               </p>
             </motion.div>
 
@@ -321,12 +320,9 @@ export default function DemoPage() {
                 
                 {/* Action Row */}
                 <div className="p-4 flex items-center justify-between">
-                  <div className="flex items-center gap-4 text-xs text-zinc-500">
-                    <span className="flex items-center gap-1.5">
-                      <Sparkles className="w-3 h-3 text-emerald-500" />
-                      3 free builds
-                    </span>
-                    <span>No signup</span>
+                  <div className="flex items-center gap-2 text-xs text-zinc-500">
+                    <Sparkles className="w-3 h-3 text-emerald-500" />
+                    <span>Try it free — no account needed</span>
                   </div>
                   
                   <motion.button
