@@ -12,7 +12,10 @@ import {
   isMultiPageProject, 
   getCurrentPage
 } from '@/lib/project-utils'
-import { showSuccessToast, showErrorToast } from '@/app/lib/toast'
+
+// Simple console-based toast replacement (toast lib removed)
+const showSuccessToast = (msg: string) => console.log('✓', msg)
+const showErrorToast = (msg: string) => console.warn('✗', msg)
 
 interface UseProjectsReturn {
   // Project state
