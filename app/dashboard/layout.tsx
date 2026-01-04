@@ -66,7 +66,6 @@ function NavLink({ href, isActive, children }: { href: string; isActive: boolean
           : 'text-zinc-400 hover:text-white hover:bg-zinc-900'
       }`}
     >
-      {children}
       {isActive && (
         <motion.div
           layoutId="activeNav"
