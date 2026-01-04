@@ -1,7 +1,36 @@
 # HatchIt Site Map & Interactive Logic
 
-> Last updated: January 4, 2026
+> **Last updated:** January 4, 2026, 7:50 PM
 > Click any file path to jump to the code.
+
+---
+
+## ✅ Sanity Check Summary
+
+### 🟢 Working & Production-Ready
+- ✅ **Homepage** - Single "Sign Up Free" CTA, display-only pricing
+- ✅ **Demo Page** - Matrix aesthetic, void transition, reddit link
+- ✅ **Builder** - Guest mode + authenticated mode with Supabase
+- ✅ **Projects Dashboard** - Professional light theme, grid/list views, auto-migration
+- ✅ **Guest → User Migration** - localStorage projects auto-migrate on first dashboard visit
+- ✅ **Stripe Integration** - 3 tiers (Architect $19, Visionary $49, Singularity $199)
+- ✅ **AI Models** - Claude Sonnet 4.5 (build/refine), Claude Haiku 4.5 (Witness), Gemini 2.0 Flash (Replicator/Chronosphere)
+- ✅ **Manifesto Page** - AI-generated cyberpunk aesthetic with kernel integration
+
+### 🟡 Partially Implemented / Needs Review
+- ⚠️ **Dashboard Routes** - agency, genesis, brand, strategy, chronosphere pages exist but may be empty/concept-only
+- ⚠️ **Singularity Features** - Replicator, Chronosphere, The Witness APIs exist but need dedicated UI showcase
+
+### 🔴 Action Items
+- ❌ Delete fake dashboard pages OR repurpose them
+- ❌ Create `/dashboard/features` page to showcase Replicator, Chronosphere, The Witness (locked to Singularity tier)
+- ❌ Update dashboard sidebar navigation: Projects → Features → Upgrade
+
+### 🎨 Recent Design Changes (Jan 4, 2026)
+- **Projects Page**: Complete redesign with light theme (slate/violet gradients)
+- **Stats Dashboard**: 4 gradient cards (Total, Deployed, Capacity, Active Today)
+- **View Modes**: Grid (with gradient headers) + List (compact rows)
+- **Professional Aesthetic**: Figma/Linear/Vercel style with smooth animations
 
 ---
 
@@ -27,12 +56,13 @@ Homepage (/) → Demo (/demo) → Builder (/builder?mode=guest) → Sign Up (/si
 | "Try the Demo" button | Opens HomepageWelcome modal | [components/HomepageWelcome.tsx](../components/HomepageWelcome.tsx) |
 | "Start Building" CTA | Routes to `/demo` | [app/page.tsx](../app/page.tsx) |
 | Navigation links | Standard routing | [components/Navigation.tsx](../components/Navigation.tsx) |
-| Pricing cards | Opens checkout or routes to sign-up | [app/page.tsx](../app/page.tsx) - `handlePricingClick()` |
+| Pricing cards (display-only) | Shows tier info only | [app/page.tsx](../app/page.tsx) |
+| "Sign Up Free" button | Routes to `/sign-up` | [app/page.tsx](../app/page.tsx) |
 
 **Key Components:**
 - [components/Navigation.tsx](../components/Navigation.tsx) - Top nav bar
 - [components/Footer.tsx](../components/Footer.tsx) - Site footer
-- [components/HomepageWelcome.tsx](../components/HomepageWelcome.tsx) - Welcome modal with prompt input
+- [components/HomepageWelcome.tsx](../components/HomepageWelcome.tsx) - Welcome modal with prompt input (includes cached project restoration)
 
 ---
 
@@ -204,24 +234,35 @@ Uses Clerk's `<SignIn />` component.
 
 ### Projects `/dashboard/projects`
 **File:** [app/dashboard/projects/page.tsx](../app/dashboard/projects/page.tsx)
+**Design:** Professional light theme with Figma/Linear aesthetic
 
 | Element | Action | Logic |
 |---------|--------|-------|
-| Project cards | Click to open in builder | `router.push('/builder?project=${id}')` |
-| "New Project" button | Creates new project | `handleCreateProject()` |
-| Delete button | Deletes project | `handleDeleteProject(id)` |
+| Project cards (grid/list view) | Click to open in builder | `router.push('/builder?project=${id}')` |
+| "New Project" button | Creates new project via API | `handleCreate()` → POST `/api/project` |
+| Delete button | Deletes project | `handleDelete(id)` → DELETE `/api/project/${id}` |
+| View mode toggle | Switch grid/list | `setViewMode('grid'|'list')` |
+| Search bar | Filter projects | Real-time search by name/ID |
+| Stats cards | Show metrics | Total, Deployed, Capacity, Active Today |
+
+**Auto-Migration:**
+- On first visit, checks `localStorage` for `hatchit-projects`
+- Migrates guest projects via POST `/api/project/migrate-guest`
+- Clears localStorage after successful migration
 
 ---
 
-### Other Dashboard Routes
+### ⚠️ Dashboard Routes (Status Check Required)
 
-| Route | File | Purpose |
-|-------|------|---------|
-| `/dashboard/genesis` | [app/dashboard/genesis/page.tsx](../app/dashboard/genesis/page.tsx) | Project creation wizard |
-| `/dashboard/brand` | [app/dashboard/brand/page.tsx](../app/dashboard/brand/page.tsx) | Brand settings |
-| `/dashboard/chronosphere` | [app/dashboard/chronosphere/page.tsx](../app/dashboard/chronosphere/page.tsx) | Version history |
-| `/dashboard/agency` | [app/dashboard/agency/page.tsx](../app/dashboard/agency/page.tsx) | Agency tools |
-| `/dashboard/strategy` | [app/dashboard/strategy/page.tsx](../app/dashboard/strategy/page.tsx) | Strategy planning |
+| Route | File | Purpose | Status |
+|-------|------|---------|--------|
+| `/dashboard/agency` | [app/dashboard/agency/page.tsx](../app/dashboard/agency/page.tsx) | Agency tools | ❓ Empty/concept page |
+| `/dashboard/genesis` | [app/dashboard/genesis/page.tsx](../app/dashboard/genesis/page.tsx) | Project wizard | ❓ Non-functional |
+| `/dashboard/brand` | [app/dashboard/brand/page.tsx](../app/dashboard/brand/page.tsx) | Brand settings | ❓ Placeholder |
+| `/dashboard/strategy` | [app/dashboard/strategy/page.tsx](../app/dashboard/strategy/page.tsx) | Strategy planning | ❓ Empty |
+| `/dashboard/chronosphere` | [app/dashboard/chronosphere/page.tsx](../app/dashboard/chronosphere/page.tsx) | Version history | ❓ Concept page |
+
+**Note:** These pages exist but may not be fully implemented. Consider creating `/dashboard/features` to showcase working tools (Replicator, Chronosphere API, The Witness) behind Singularity tier.
 
 ---
 
@@ -230,18 +271,19 @@ Uses Clerk's `<SignIn />` component.
 ### Checkout Trigger
 **File:** [app/api/checkout/route.ts](../app/api/checkout/route.ts)
 
-| Tier | Price ID Env Var | Monthly Price |
-|------|------------------|---------------|
-| Architect | `STRIPE_ARCHITECT_PRICE_ID` | $19 |
-| Visionary | `STRIPE_VISIONARY_PRICE_ID` | $49 |
-| Singularity | `STRIPE_SINGULARITY_PRICE_ID` | $199 |
+| Tier | Price ID Env Var | Monthly Price | Features |
+|------|------------------|---------------|----------|
+| Architect | `STRIPE_ARCHITECT_PRICE_ID` | $19 | 3 sites, unlimited builds/refinements |
+| Visionary | `STRIPE_VISIONARY_PRICE_ID` | $49 | Unlimited sites, priority support |
+| Singularity | `STRIPE_SINGULARITY_PRICE_ID` | $199 | White label, Replicator, Chronosphere, The Witness |
 
 **Flow:**
-1. User clicks pricing button
-2. `POST /api/checkout` with `{ tier: 'architect' }`
-3. Creates Stripe Checkout Session
-4. Redirects to Stripe
+1. User clicks pricing card or upgrade CTA
+2. `GET /api/checkout?priceId=price_architect` (or visionary/singularity)
+3. Creates Stripe Checkout Session with user metadata
+4. Redirects to Stripe hosted checkout
 5. Stripe redirects to `/post-payment?session_id=...`
+6. Post-payment page shows success and routes to dashboard
 
 ---
 
@@ -315,11 +357,23 @@ Uses Clerk's `<SignIn />` component.
 ---
 
 ### Project CRUD
-| Route | File | Methods |
-|-------|------|---------|
-| `/api/project` | [app/api/project/route.ts](../app/api/project/route.ts) | POST (create) |
-| `/api/project/[id]` | [app/api/project/[id]/route.ts](../app/api/project/[id]/route.ts) | GET, PUT, DELETE |
-| `/api/project/import` | [app/api/project/import/route.ts](../app/api/project/import/route.ts) | POST (guest → user migration) |
+| Route | File | Methods | Purpose |
+|-------|------|---------|---------|
+| `/api/project` | [app/api/project/route.ts](../app/api/project/route.ts) | POST | Create new project |
+| `/api/project/[id]` | [app/api/project/[id]/route.ts](../app/api/project/[id]/route.ts) | GET, PUT, DELETE | CRUD operations |
+| `/api/project/list` | [app/api/project/list/route.ts](../app/api/project/list/route.ts) | GET | Fetch user's projects from Supabase |
+| `/api/project/migrate-guest` | [app/api/project/migrate-guest/route.ts](../app/api/project/migrate-guest/route.ts) | POST | Migrate localStorage projects to Supabase |
+| `/api/project/import` | [app/api/project/import/route.ts](../app/api/project/import/route.ts) | POST | Import external project |
+
+---
+
+### Advanced AI Features
+| Route | Purpose | Model |
+|-------|---------|-------|
+| `/api/replicator` | Clone any website with AI | Gemini 2.0 Flash |
+| `/api/chronosphere` | Style DNA evolution system | Gemini 2.0 Flash |
+| `/api/witness` | AI feedback on build quality | Claude Haiku 4.5 |
+| `/api/consciousness` | Kernel thought stream | Custom consciousness system |
 
 ---
 
@@ -330,7 +384,9 @@ Uses Clerk's `<SignIn />` component.
 | `/api/deploy` | Deploy to Vercel |
 | `/api/audit` | Run site audit |
 | `/api/heal` | Auto-fix runtime errors |
-| `/api/witness` | AI feedback on component |
+| `/api/assistant` | AI assistant chat |
+| `/api/launch-pack` | Launch preparation |
+| `/api/singularity` | Singularity-tier features |
 
 ---
 
@@ -391,20 +447,29 @@ Uses Clerk's `<SignIn />` component.
 
 ## 🔄 State Management
 
-### Local Storage Keys
-| Key | Purpose | Location |
-|-----|---------|----------|
-| `hatch_current_project` | Current project ID | BuildFlowController |
-| `hatch_guest_handoff` | Guest build data for migration | SectionBuilder |
-| `hatch_intro_v2_seen` | Welcome modal shown | BuildFlowController |
-| `pendingUpgradeTier` | Tier for post-OAuth checkout | builder/page.tsx |
+### Local Storage Keys (Guest Mode)
+| Key | Purpose | Location | Migration Status |
+|-----|---------|----------|------------------|
+| `hatchit-projects` | Guest projects array | Dashboard Projects | ✅ Auto-migrated on signup |
+| `hatchit-current-project` | Current project ID | BuildFlowController | ✅ Cleared after migration |
+| `hatch_preview_*` | Cached preview data | HomepageWelcome | ✅ Restored on return |
+| `hatch_last_prompt` | Last entered prompt | HomepageWelcome | ✅ Used for restoration |
+| `hatch_intro_v2_seen` | Welcome modal shown | WelcomeModal | Persists |
+
+**Migration Flow:**
+1. User signs up after building as guest
+2. Dashboard Projects page detects `hatchit-projects` in localStorage
+3. Calls POST `/api/project/migrate-guest` with projects array
+4. Projects inserted into Supabase with proper user_id
+5. localStorage cleared on success
+6. User sees their projects in dashboard
 
 ### Clerk Metadata
-| Key | Purpose |
-|-----|---------|
-| `publicMetadata.accountSubscription` | Subscription status & tier |
-| `publicMetadata.freeCreditsUsed` | Build credits used |
-| `publicMetadata.architectRefinementsUsed` | Refine credits used |
+| Key | Purpose | Updated By |
+|-----|---------|-----------|
+| `publicMetadata.accountSubscription` | Subscription status & tier | Stripe webhook |
+| `publicMetadata.freeCreditsUsed` | Build credits used (Free tier) | build-section API |
+| `publicMetadata.architectRefinementsUsed` | Refine credits (Architect tier) | refine-section API |
 
 ---
 

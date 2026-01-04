@@ -56,7 +56,7 @@ Moving away from the "Hacker/Terminal" aesthetic towards a clean, high-end SaaS 
 **Design Philosophy:**
 - **Homepage:** Dramatic, depth, "void" aesthetic.
 - **Builder:** Bright, clean, functional "Studio" aesthetic.
-- **Transitions:** Smooth, cinematic, but not distracting.
+- **Transitions:** Smoothr, cinematic, but not distracting.
 
 ---
 

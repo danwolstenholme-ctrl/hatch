@@ -6,8 +6,8 @@ import Navigation from './Navigation'
 export default function ConditionalNavigation() {
   const pathname = usePathname()
   
-  // Don't show navigation on builder, canvas, demo, or contact pages
-  if (pathname?.startsWith('/builder') || pathname?.startsWith('/canvas') || pathname?.startsWith('/demo') || pathname === '/contact') {
+  // Don't show navigation on builder, canvas, demo, dashboard, or contact pages
+  if (pathname?.startsWith('/builder') || pathname?.startsWith('/canvas') || pathname?.startsWith('/demo') || pathname?.startsWith('/dashboard') || pathname === '/contact') {
     return null
   }
   

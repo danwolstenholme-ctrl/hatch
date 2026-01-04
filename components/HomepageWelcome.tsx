@@ -69,11 +69,29 @@ export default function HomepageWelcome({ onStart }: { onStart?: () => void }) {
     const hasSeen = localStorage.getItem(SEEN_KEY)
     
     // Check if user has a cached preview - if so, skip welcome and go to builder
-    const hasCachedPreview = Object.keys(localStorage).some(key => key.startsWith(PREVIEW_PREFIX))
-    if (hasCachedPreview) {
-      // User has work in progress - send them straight to builder
-      router.push('/builder?mode=guest')
-      return
+    const cachedKey = Object.keys(localStorage).find(key => key.startsWith(PREVIEW_PREFIX))
+    if (cachedKey) {
+      // User has work in progress - extract the cached data and restore their session
+      try {
+        const cached = localStorage.getItem(cachedKey)
+        if (cached) {
+          const { code, timestamp } = JSON.parse(cached)
+          // Check if cache is still valid (within 1 hour)
+          if (Date.now() - timestamp < 60 * 60 * 1000 && code) {
+            // Also check if they have a last prompt stored
+            const lastPrompt = localStorage.getItem('hatch_last_prompt') || ''
+            // Send them straight to builder with their cached prompt
+            router.push(`/builder?mode=guest${lastPrompt ? `&prompt=${encodeURIComponent(lastPrompt)}` : ''}`)
+            return
+          } else {
+            // Cache expired, remove it
+            localStorage.removeItem(cachedKey)
+          }
+        }
+      } catch {
+        // Invalid cache data, remove it
+        localStorage.removeItem(cachedKey)
+      }
     }
     
     if (!hasSeen) {

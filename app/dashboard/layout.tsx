@@ -2,6 +2,7 @@
 
 import { ReactNode } from 'react'
 import Link from 'next/link'
+import Image from 'next/image'
 import { usePathname } from 'next/navigation'
 import { Activity, Box, Cpu, FlaskConical, Globe, History, LayoutGrid, Palette, Settings, Shield, Target, Users, Terminal } from 'lucide-react'
 
@@ -18,10 +19,14 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
         {/* Sidebar - hidden on mobile */}
         <aside className="hidden md:flex w-64 border-r border-zinc-800 bg-zinc-950/50 backdrop-blur-xl flex-col shrink-0">
           <div className="p-6 border-b border-zinc-800">
-            <Link href="/" className="flex items-center gap-2 group">
-              <div className="w-8 h-8 bg-zinc-900 border border-zinc-800 rounded-lg flex items-center justify-center group-hover:border-emerald-500/50 transition-colors">
-                <Box className="w-5 h-5 text-zinc-100 group-hover:text-emerald-500 transition-colors" />
-              </div>
+            <Link href="/" className="flex items-center gap-3 group">
+              <Image 
+                src="/assets/hatchit_definitive.svg" 
+                alt="HatchIt" 
+                width={32}
+                height={32}
+                className="w-8 h-8 transition-transform group-hover:scale-105"
+              />
               <span className="font-sans font-bold text-lg tracking-tight text-zinc-100">HatchIt</span>
             </Link>
           </div>

@@ -46,34 +46,6 @@ function VoidButton({ isSignedIn, router, onLaunch }: { isSignedIn: boolean | un
   )
 }
 
-// Pricing button that handles auth + checkout
-function PricingButton({ tier, className, children }: { tier: 'architect' | 'visionary' | 'singularity', className: string, children: React.ReactNode }) {
-  const { isSignedIn } = useUser()
-  const [isLoading, setIsLoading] = useState(false)
-  const router = useRouter()
-  
-  const handleClick = (e: React.MouseEvent) => {
-    e.preventDefault()
-    setIsLoading(true)
-    
-    const targetUrl = `/builder?upgrade=${tier}`
-    
-    if (isSignedIn) {
-      router.push(targetUrl)
-    } else {
-      // Redirect to signup with return URL so they land on builder -> checkout
-      const signUpUrl = `/sign-up?redirect_url=${encodeURIComponent(targetUrl)}`
-      router.push(signUpUrl)
-    }
-  }
-  
-  return (
-    <button onClick={handleClick} disabled={isLoading} className={className}>
-      {children}
-    </button>
-  )
-}
-
 // Section wrapper - simple fade-in on scroll
 function Section({ children, className = '', id = '' }: { children: React.ReactNode; className?: string; id?: string }) {
   const ref = useRef(null)
@@ -567,10 +539,10 @@ export default function Home() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 max-w-sm sm:max-w-none mx-auto">
             {/* Starter ($19/mo) */}
             <motion.div 
-              className="p-6 sm:p-8 bg-zinc-900/50 backdrop-blur-sm border border-zinc-800 rounded-2xl hover:border-emerald-500/30 transition-all group flex flex-col relative sm:col-span-1"
+              className="p-6 sm:p-8 bg-zinc-900/50 backdrop-blur-sm border border-zinc-800 rounded-2xl hover:border-emerald-500/20 transition-all flex flex-col relative sm:col-span-1"
               whileHover={{ 
-                y: -8, 
-                boxShadow: '0 20px 40px -20px rgba(16,185,129,0.2)',
+                y: -4, 
+                borderColor: 'rgba(16,185,129,0.2)',
                 transition: { type: 'spring', stiffness: 300, damping: 20 }
               }}
             >
@@ -581,7 +553,7 @@ export default function Home() {
                 <span className="text-zinc-500">/month</span>
               </div>
               <div className="text-zinc-500 text-sm mb-8">Begin the transformation</div>
-              <ul className="space-y-4 mb-8 flex-grow">
+              <ul className="space-y-4 flex-grow">
                 {[
                   { text: 'Singularity Engine Access', included: true },
                   { text: 'Unlimited AI Generations', included: true },
@@ -601,20 +573,14 @@ export default function Home() {
                   </li>
                 ))}
               </ul>
-              <PricingButton 
-                tier="architect" 
-                className="block w-full py-4 text-center bg-zinc-800 hover:bg-emerald-900/50 hover:text-white text-zinc-300 rounded-xl font-semibold transition-all"
-              >
-                Initialize
-              </PricingButton>
             </motion.div>
 
             {/* Pro ($49) */}
             <motion.div 
               className="relative p-6 sm:p-8 bg-gradient-to-b from-zinc-900 to-zinc-900/80 backdrop-blur-sm border-2 border-emerald-500/60 rounded-2xl overflow-hidden shadow-[0_0_60px_rgba(16,185,129,0.2)] transform lg:-translate-y-4 flex flex-col sm:col-span-2 lg:col-span-1 order-first sm:order-none"
               whileHover={{ 
-                y: -12, 
-                boxShadow: '0 30px 60px -20px rgba(16,185,129,0.4)',
+                y: -8, 
+                boxShadow: '0 30px 60px -20px rgba(16,185,129,0.3)',
                 transition: { type: 'spring', stiffness: 300, damping: 20 }
               }}
             >
@@ -632,7 +598,7 @@ export default function Home() {
                 <div className="text-emerald-400/80 text-sm mb-8 font-medium">Total creative control</div>
               </div>
               
-              <ul className="space-y-4 mb-8 flex-grow">
+              <ul className="space-y-4 flex-grow">
                 {[
                   'Unlimited AI Generations',
                   'Full Source Code Export',
@@ -647,20 +613,14 @@ export default function Home() {
                   </li>
                 ))}
               </ul>
-              <PricingButton 
-                tier="visionary" 
-                className="block w-full py-4 text-center bg-emerald-500 hover:bg-emerald-400 text-black rounded-xl font-bold transition-all shadow-[0_0_25px_rgba(16,185,129,0.4)] hover:shadow-[0_0_35px_rgba(16,185,129,0.6)]"
-              >
-                Ascend
-              </PricingButton>
             </motion.div>
 
             {/* Agency ($199) */}
             <motion.div 
-              className="relative p-6 sm:p-8 bg-zinc-900/50 backdrop-blur-sm border border-zinc-800 rounded-2xl hover:border-violet-500/30 transition-all group flex flex-col"
+              className="relative p-6 sm:p-8 bg-zinc-900/50 backdrop-blur-sm border border-zinc-800 rounded-2xl hover:border-violet-500/20 transition-all flex flex-col"
               whileHover={{ 
-                y: -8, 
-                boxShadow: '0 20px 40px -20px rgba(139,92,246,0.2)',
+                y: -4, 
+                borderColor: 'rgba(139,92,246,0.2)',
                 transition: { type: 'spring', stiffness: 300, damping: 20 }
               }}
             >
@@ -671,7 +631,7 @@ export default function Home() {
                 <span className="text-zinc-500">/month</span>
               </div>
               <div className="text-zinc-500 text-sm mb-8">For those who build worlds</div>
-              <ul className="space-y-4 mb-8 flex-grow">
+              <ul className="space-y-4 flex-grow">
                 {[
                   'Everything in Visionary',
                   'Unlimited Projects',
@@ -686,15 +646,28 @@ export default function Home() {
                   </li>
                 ))}
               </ul>
-              <PricingButton 
-                tier="singularity" 
-                className="block w-full py-4 text-center bg-zinc-800 hover:bg-violet-600 hover:text-white text-zinc-300 rounded-xl font-semibold transition-all"
-              >
-                Enter God Mode
-              </PricingButton>
             </motion.div>
           </div>
-          <p className="text-center text-sm text-zinc-600 mt-12">Cancel anytime. The code belongs to you.</p>
+
+          {/* Single Sign Up CTA */}
+          <motion.div 
+            className="flex flex-col items-center gap-6 mt-16"
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            transition={{ delay: 0.3 }}
+          >
+            <Link 
+              href="/sign-up"
+              className="group relative inline-flex items-center gap-3 px-12 py-5 bg-emerald-500 hover:bg-emerald-400 text-black rounded-xl font-bold text-lg transition-all shadow-[0_0_40px_rgba(16,185,129,0.3)] hover:shadow-[0_0_60px_rgba(16,185,129,0.5)] hover:scale-105 active:scale-95"
+            >
+              <span>Sign Up Free</span>
+              <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
+            </Link>
+            <p className="text-sm text-zinc-500">Start building now • Upgrade anytime from your dashboard</p>
+          </motion.div>
+          
+          <p className="text-center text-sm text-zinc-600 mt-8">Cancel anytime. The code belongs to you.</p>
         </div>
       </Section>
 
