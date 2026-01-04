@@ -8,8 +8,8 @@ import { usePathname } from 'next/navigation'
 export default function ContactButton() {
   const pathname = usePathname()
   
-  // Don't show on the contact page itself
-  if (pathname === '/contact') return null
+  // Don't show on the contact page, builder, or demo pages
+  if (pathname === '/contact' || pathname?.startsWith('/builder') || pathname?.startsWith('/demo')) return null
 
   const contactUrl = `/contact?returnUrl=${encodeURIComponent(pathname)}`
 

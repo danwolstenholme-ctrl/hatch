@@ -9,28 +9,33 @@
 
 ```
 HOMEPAGE (depth, void, dramatic)
-    ↓ Click "Try it Free" or pricing CTA
+    ↓ HomepageWelcome (Popup) → "Start Building Free"
     
-/demo (transitional - entering something, but professional)
+/builder?mode=guest (ARRIVAL - clean, bright studio)
+    ↓ GuestPromptModal (Cinematic entry)
     ↓ Enter prompt → VoidTransition plays
     
-/builder (ARRIVAL - clean, bright studio)
+/builder (WORKSPACE)
     Professional workspace. The journey lands here.
     This is where real work happens.
 ```
 
 ### Design Philosophy
-- **Homepage/Marketing:** Deep, dramatic, void-like depth with perspective grids
-- **Demo Entry:** Transitional moment - "entering something" but NOT dark web/creepy
-- **Builder:** **BRIGHT. PROFESSIONAL. STUDIO.** Clean zinc grays, minimal decoration, functional
+- **Homepage/Marketing:** Deep, dramatic, void-like depth with perspective grids.
+- **First Contact:** `HomepageWelcome` popup - dismissible, high-tech but friendly.
+- **Guest Entry:** `GuestPromptModal` - replaces the old `/demo` page for direct builder access.
+- **Builder:** **BRIGHT. PROFESSIONAL. STUDIO.** Clean zinc grays, minimal decoration, functional.
 
 ---
 
 ## 🔄 USER FLOW MATRIX (All Paths Verified)
 
-### Flow 1: Guest Demo
+### Flow 1: Guest Demo (Updated Jan 5)
 ```
-Homepage → /demo → VoidTransition → /builder?mode=guest
+Homepage → HomepageWelcome Popup → Click "Start Building"
+    ↓ /builder?mode=guest
+    ↓ GuestPromptModal appears (Matrix rain, cinematic input)
+    ↓ Enter prompt → Build starts
     ↓ Build unlimited sections (free)
     ↓ Try to deploy
     ↓ HatchModal shows pricing (paywall)

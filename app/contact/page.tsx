@@ -9,6 +9,7 @@ import { useSearchParams, useRouter } from 'next/navigation'
 // =============================================================================
 // CONTACT PAGE - Professional Studio Edition
 // Clean, minimal, and functional. No hacker vibes.
+// Fits on one screen (desktop).
 // =============================================================================
 
 function ContactForm() {
@@ -53,16 +54,16 @@ function ContactForm() {
   }
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-zinc-200 font-sans selection:bg-emerald-500/30">
+    <div className="h-screen w-full bg-zinc-950 text-zinc-200 font-sans selection:bg-emerald-500/30 overflow-hidden flex flex-col">
       {/* Subtle Ambient Background */}
       <div className="fixed inset-0 pointer-events-none">
         <div className="absolute top-[-20%] right-[-10%] w-[800px] h-[800px] bg-emerald-500/5 rounded-full blur-3xl" />
         <div className="absolute bottom-[-20%] left-[-10%] w-[600px] h-[600px] bg-blue-500/5 rounded-full blur-3xl" />
       </div>
 
-      <div className="max-w-6xl mx-auto px-6 py-12 relative z-10">
+      <div className="flex-1 flex flex-col max-w-6xl mx-auto w-full px-6 py-8 relative z-10 h-full">
         {/* Header / Nav */}
-        <div className="mb-12">
+        <div className="shrink-0 mb-8">
           <Link 
             href={returnUrl}
             className="inline-flex items-center gap-2 text-zinc-500 hover:text-white transition-colors group text-sm font-medium px-4 py-2 rounded-full hover:bg-zinc-900/50 border border-transparent hover:border-zinc-800"
@@ -72,38 +73,39 @@ function ContactForm() {
           </Link>
         </div>
 
-        <div className="grid lg:grid-cols-[1fr_400px] gap-16 items-start">
+        <div className="flex-1 grid lg:grid-cols-[1fr_400px] gap-16 items-center content-center min-h-0">
           {/* Left Column: Form */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.5 }}
+            className="flex flex-col justify-center h-full max-h-[800px]"
           >
-            <div className="mb-10">
-              <h1 className="text-4xl md:text-5xl font-bold text-white mb-4 tracking-tight">
+            <div className="mb-8 shrink-0">
+              <h1 className="text-4xl md:text-5xl font-bold text-white mb-3 tracking-tight">
                 Get in touch
               </h1>
               <p className="text-zinc-400 text-lg leading-relaxed max-w-xl">
                 Have a question about the platform? Need help with a project? 
-                Drop us a line and our team will get back to you.
+                Drop us a line.
               </p>
             </div>
 
-            <form onSubmit={handleSubmit} className="space-y-8">
-              <div className="grid md:grid-cols-2 gap-6">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-zinc-400">Name</label>
+            <form onSubmit={handleSubmit} className="space-y-5 shrink-0">
+              <div className="grid md:grid-cols-2 gap-5">
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium text-zinc-400 uppercase tracking-wider">Name</label>
                   <input
                     name="name"
                     value={form.name}
                     onChange={handleChange}
                     required
                     placeholder="Jane Doe"
-                    className="w-full bg-zinc-900/30 border border-zinc-800 rounded-xl px-4 py-3 text-white focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50 outline-none transition-all placeholder:text-zinc-700"
+                    className="w-full bg-zinc-900/30 border border-zinc-800 rounded-xl px-4 py-2.5 text-white focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50 outline-none transition-all placeholder:text-zinc-700"
                   />
                 </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-zinc-400">Email</label>
+                <div className="space-y-1.5">
+                  <label className="text-xs font-medium text-zinc-400 uppercase tracking-wider">Email</label>
                   <input
                     name="email"
                     type="email"
@@ -111,19 +113,19 @@ function ContactForm() {
                     onChange={handleChange}
                     required
                     placeholder="jane@example.com"
-                    className="w-full bg-zinc-900/30 border border-zinc-800 rounded-xl px-4 py-3 text-white focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50 outline-none transition-all placeholder:text-zinc-700"
+                    className="w-full bg-zinc-900/30 border border-zinc-800 rounded-xl px-4 py-2.5 text-white focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50 outline-none transition-all placeholder:text-zinc-700"
                   />
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-zinc-400">Topic</label>
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-zinc-400 uppercase tracking-wider">Topic</label>
                 <div className="relative">
                   <select
                     name="topic"
                     value={form.topic}
                     onChange={handleChange}
-                    className="w-full bg-zinc-900/30 border border-zinc-800 rounded-xl px-4 py-3 text-white focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50 outline-none transition-all appearance-none cursor-pointer"
+                    className="w-full bg-zinc-900/30 border border-zinc-800 rounded-xl px-4 py-2.5 text-white focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50 outline-none transition-all appearance-none cursor-pointer"
                   >
                     <option>General Inquiry</option>
                     <option>Technical Support</option>
@@ -147,8 +149,8 @@ function ContactForm() {
                 />
               </div>
 
-              <div className="space-y-2">
-                <label className="text-sm font-medium text-zinc-400">Message</label>
+              <div className="space-y-1.5">
+                <label className="text-xs font-medium text-zinc-400 uppercase tracking-wider">Message</label>
                 <textarea
                   name="message"
                   value={form.message}
@@ -156,7 +158,7 @@ function ContactForm() {
                   required
                   minLength={10}
                   placeholder="How can we help you?"
-                  className="w-full bg-zinc-900/30 border border-zinc-800 rounded-xl px-4 py-3 text-white focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50 outline-none transition-all h-40 resize-none placeholder:text-zinc-700"
+                  className="w-full bg-zinc-900/30 border border-zinc-800 rounded-xl px-4 py-3 text-white focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50 outline-none transition-all h-32 resize-none placeholder:text-zinc-700"
                 />
               </div>
 
@@ -164,9 +166,9 @@ function ContactForm() {
                 <motion.div 
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="flex items-center gap-3 text-sm text-red-400 bg-red-500/5 border border-red-500/10 rounded-xl px-4 py-3"
+                  className="flex items-center gap-3 text-sm text-red-400 bg-red-500/5 border border-red-500/10 rounded-xl px-4 py-2"
                 >
-                  <AlertCircle className="w-5 h-5 shrink-0" />
+                  <AlertCircle className="w-4 h-4 shrink-0" />
                   {error}
                 </motion.div>
               )}
@@ -175,20 +177,20 @@ function ContactForm() {
                 <motion.div 
                   initial={{ opacity: 0, y: -10 }}
                   animate={{ opacity: 1, y: 0 }}
-                  className="flex items-center gap-3 text-sm text-emerald-400 bg-emerald-500/5 border border-emerald-500/10 rounded-xl px-4 py-3"
+                  className="flex items-center gap-3 text-sm text-emerald-400 bg-emerald-500/5 border border-emerald-500/10 rounded-xl px-4 py-2"
                 >
-                  <CheckCircle2 className="w-5 h-5 shrink-0" />
+                  <CheckCircle2 className="w-4 h-4 shrink-0" />
                   <div>
                     <span className="font-medium">Message sent!</span> We'll get back to you shortly.
                   </div>
                 </motion.div>
               )}
 
-              <div className="pt-4">
+              <div className="pt-2">
                 <button
                   type="submit"
                   disabled={status === 'sending'}
-                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-3.5 rounded-xl bg-white hover:bg-zinc-200 text-black font-semibold text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-white/5"
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-8 py-3 rounded-xl bg-white hover:bg-zinc-200 text-black font-semibold text-sm transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg shadow-white/5"
                 >
                   {status === 'sending' ? (
                     <>
@@ -211,7 +213,7 @@ function ContactForm() {
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.5, delay: 0.2 }}
-            className="space-y-8 lg:pt-24"
+            className="space-y-6 lg:pt-0 flex flex-col justify-center"
           >
             <div className="bg-zinc-900/20 border border-zinc-800/50 rounded-2xl p-6 backdrop-blur-sm">
               <h3 className="font-semibold text-white mb-6 flex items-center gap-2">
@@ -219,7 +221,7 @@ function ContactForm() {
                 Support Channels
               </h3>
               
-              <div className="space-y-6">
+              <div className="space-y-5">
                 <a 
                   href="mailto:support@hatchit.dev" 
                   className="flex items-start gap-4 group"
@@ -265,7 +267,7 @@ function ContactForm() {
 
 export default function ContactPage() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-zinc-950" />}>
+    <Suspense fallback={<div className="h-screen bg-zinc-950" />}>
       <ContactForm />
     </Suspense>
   )

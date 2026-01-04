@@ -38,11 +38,11 @@ const sanitizeSvgDataUrls = (input: string) => {
 
 // Fix JSX text with literal < followed by non-tag characters (e.g., "< 3min")
 // Babel interprets `< 3` as the start of a JSX element, which breaks parsing
-const sanitizeLessThanInText = (input: string) => {
-  // Match < followed by space or digit (not a valid tag start)
-  // This handles cases like "< 3min", "< 50%", etc.
-  return input.replace(/<\s+(\d)/g, '&lt; $1')
-}
+// const sanitizeLessThanInText = (input: string) => {
+//   // Match < followed by space or digit (not a valid tag start)
+//   // This handles cases like "< 3min", "< 50%", etc.
+//   return input.replace(/<\s+(\d)/g, '&lt; $1')
+// }
 
 export default function SectionPreview({ code, darkMode = true, onRuntimeError, inspectorMode = false, onElementSelect, captureTrigger = 0, onScreenshotCaptured, editMode = false, onTextEdit, allowCodeView = false, onUpgradeClick, hideToolbar = false }: SectionPreviewProps) {
   // Default to desktop on desktop, mobile on mobile devices
@@ -148,7 +148,7 @@ export default function SectionPreview({ code, darkMode = true, onRuntimeError, 
         }
       }
 
-      const sanitizedCode = sanitizeLessThanInText(sanitizeSvgDataUrls(cleanCode))
+      const sanitizedCode = sanitizeSvgDataUrls(cleanCode)
 
       // Use Babel to transform the code safely (No more Regex!)
       let transformedCode = ''
