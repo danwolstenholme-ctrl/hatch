@@ -27,9 +27,9 @@ export const metadata: Metadata = {
   metadataBase: new URL('https://hatchit.dev'),
   title: 'HatchIt | The Singularity Interface',
   description: 'Not just a website builder. A recursive, self-healing architectural system. Speak your intent, watch the code evolve. Welcome to the post-prompt era.',
-  keywords: ['AI website builder', 'React', 'Tailwind CSS', 'The Architect', 'Singularity', 'Self-Healing Code', 'Direct Line API'],
-  authors: [{ name: 'The Architect' }],
-  creator: 'The Architect',
+  keywords: ['AI website builder', 'React', 'Tailwind CSS', 'Singularity', 'Self-Healing Code', 'Direct Line API'],
+  authors: [{ name: 'HatchIt' }],
+  creator: 'HatchIt',
   manifest: '/manifest.json',
   appleWebApp: {
     capable: true,

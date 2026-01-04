@@ -28,7 +28,7 @@ const TIERS = [
   {
     id: 'architect',
     name: 'Architect',
-    price: '$9/2wks',
+    price: '$19',
     period: '/month',
     description: 'For personal projects',
     features: [
@@ -44,7 +44,7 @@ const TIERS = [
   {
     id: 'visionary',
     name: 'Visionary',
-    price: '$29',
+    price: '$49',
     period: '/month',
     description: 'For professionals',
     features: [
@@ -61,7 +61,7 @@ const TIERS = [
   {
     id: 'singularity',
     name: 'Singularity',
-    price: '$99',
+    price: '$199',
     period: '/month',
     description: 'For teams & agencies',
     features: [
