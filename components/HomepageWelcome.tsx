@@ -61,6 +61,7 @@ function TypewriterText({ text, delay = 0 }: { text: string; delay?: number }) {
 export default function HomepageWelcome({ onStart }: { onStart?: () => void }) {
   const [isOpen, setIsOpen] = useState(false)
   const [phase, setPhase] = useState<'init' | 'ready'>('init')
+  const [resumeUrl, setResumeUrl] = useState<string | null>(null)
   const router = useRouter()
   const SEEN_KEY = 'hatch_homepage_welcome_seen'
   const PREVIEW_PREFIX = 'hatch_preview_'
@@ -68,21 +69,19 @@ export default function HomepageWelcome({ onStart }: { onStart?: () => void }) {
   useEffect(() => {
     const hasSeen = localStorage.getItem(SEEN_KEY)
     
-    // Check if user has a cached preview - if so, skip welcome and go to builder
+    // Check if user has a cached preview - if so, offer to resume
     const cachedKey = Object.keys(localStorage).find(key => key.startsWith(PREVIEW_PREFIX))
     if (cachedKey) {
-      // User has work in progress - extract the cached data and restore their session
+      // User has work in progress - extract the cached data
       try {
         const cached = localStorage.getItem(cachedKey)
         if (cached) {
           const { code, timestamp } = JSON.parse(cached)
-          // Check if cache is still valid (within 1 hour)
-          if (Date.now() - timestamp < 60 * 60 * 1000 && code) {
+          // Check if cache is still valid (within 24 hours to be generous)
+          if (Date.now() - timestamp < 24 * 60 * 60 * 1000 && code) {
             // Also check if they have a last prompt stored
             const lastPrompt = localStorage.getItem('hatch_last_prompt') || ''
-            // Send them straight to builder with their cached prompt
-            router.push(`/builder?mode=guest${lastPrompt ? `&prompt=${encodeURIComponent(lastPrompt)}` : ''}`)
-            return
+            setResumeUrl(`/builder?mode=guest${lastPrompt ? `&prompt=${encodeURIComponent(lastPrompt)}` : ''}`)
           } else {
             // Cache expired, remove it
             localStorage.removeItem(cachedKey)
@@ -204,12 +203,30 @@ export default function HomepageWelcome({ onStart }: { onStart?: () => void }) {
                 transition={{ delay: 0.2 }}
                 className="flex flex-col gap-3"
               >
+                {resumeUrl && (
+                  <button
+                    onClick={() => {
+                      localStorage.setItem(SEEN_KEY, 'true')
+                      setIsOpen(false)
+                      router.push(resumeUrl)
+                    }}
+                    className="w-full py-3.5 px-6 bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-bold text-base rounded-xl transition-all shadow-[0_0_20px_rgba(16,185,129,0.3)] hover:shadow-[0_0_30px_rgba(16,185,129,0.5)] flex items-center justify-center gap-2 group"
+                  >
+                    Resume Session
+                    <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                  </button>
+                )}
+
                 <button
                   onClick={handleStart}
-                  className="w-full py-3.5 px-6 bg-white hover:bg-zinc-100 text-black font-semibold text-base rounded-xl transition-all shadow-[0_0_20px_rgba(255,255,255,0.1)] hover:shadow-[0_0_30px_rgba(255,255,255,0.2)] flex items-center justify-center gap-2 group"
+                  className={`w-full py-3.5 px-6 font-semibold text-base rounded-xl transition-all flex items-center justify-center gap-2 group ${
+                    resumeUrl 
+                      ? 'bg-zinc-800 hover:bg-zinc-700 text-zinc-300 border border-zinc-700' 
+                      : 'bg-white hover:bg-zinc-100 text-black shadow-[0_0_20px_rgba(255,255,255,0.1)] hover:shadow-[0_0_30px_rgba(255,255,255,0.2)]'
+                  }`}
                 >
-                  Start Building Free
-                  <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                  {resumeUrl ? 'Start New Project' : 'Start Building Free'}
+                  {!resumeUrl && <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />}
                 </button>
                 
                 <button
