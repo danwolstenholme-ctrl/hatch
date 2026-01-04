@@ -1723,7 +1723,7 @@ export default function GeneratedPage() {
                     {isAuditRunning ? (
                       <>
                         <RefreshCw className="w-4 h-4 animate-spin" />
-                        <span className="font-mono">Running Gemini 2.5 Diagnostics...</span>
+                        <span className="font-mono">Running AI Diagnostics...</span>
                       </>
                     ) : (
                       <>

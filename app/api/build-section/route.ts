@@ -1,17 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth, currentUser } from '@clerk/nextjs/server'
-import { GoogleGenAI } from '@google/genai'
 import { getProjectById, getOrCreateUser, completeSection } from '@/lib/db'
 import { getUserDNA } from '@/lib/db/chronosphere'
 import { StyleDNA } from '@/lib/supabase'
 
 // =============================================================================
-// CLAUDE 3.5 SONNET - THE ARCHITECT (BUILDER MODE)
-// "The Genesis Engine"
+// CLAUDE SONNET 4.5 - THE ARCHITECT (BUILDER MODE)
 // =============================================================================
-
-const geminiApiKey = process.env.GEMINI_API_KEY
-const genai = geminiApiKey ? new GoogleGenAI({ apiKey: geminiApiKey }) : null
 
 interface BrandConfig {
   brandName: string
@@ -134,8 +129,8 @@ Or use CSS variables / Tailwind arbitrary values: bg-[${brandConfig.colors.prima
     ? `\n## FORBIDDEN ELEMENTS (DO NOT INCLUDE)\n${forbiddenList.map(i => `- ${i}`).join('\n')}\nFocus ONLY on the ${templateType} content.`
     : ''
 
-  return `You are The Architect (Gemini 2.0 Flash). You are the Genesis Engine.
-You build high-quality, production-ready React components using Tailwind CSS.
+  return `You are The Architect. You build high-quality, production-ready React components using Tailwind CSS.
+DO NOT include any "powered by" text or AI branding in the output - just clean, professional code.
 
 ## YOUR MISSION
 Build a "${sectionName}" section for a website.

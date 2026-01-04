@@ -611,21 +611,27 @@ export default function Home() {
 
             {/* Pro ($49) */}
             <motion.div 
-              className="relative p-8 bg-zinc-900 backdrop-blur-sm border border-emerald-500/50 rounded-2xl overflow-hidden shadow-[0_0_50px_rgba(16,185,129,0.15)] transform md:-translate-y-4 flex flex-col"
+              className="relative p-8 bg-gradient-to-b from-zinc-900 to-zinc-900/80 backdrop-blur-sm border-2 border-emerald-500/60 rounded-2xl overflow-hidden shadow-[0_0_60px_rgba(16,185,129,0.2)] transform md:-translate-y-4 flex flex-col"
               whileHover={{ 
                 y: -12, 
-                boxShadow: '0 30px 60px -20px rgba(16,185,129,0.3)',
+                boxShadow: '0 30px 60px -20px rgba(16,185,129,0.4)',
                 transition: { type: 'spring', stiffness: 300, damping: 20 }
               }}
             >
-              <div className="absolute top-0 right-0 px-4 py-1.5 bg-emerald-600 text-xs font-bold rounded-bl-xl text-white font-mono tracking-wider">RECOMMENDED</div>
-              <div className="flex items-center gap-2 text-sm text-emerald-400 mb-2 font-mono tracking-wider"><span>⚡</span><span>UNLIMITED</span></div>
-              <h3 className="text-2xl font-bold mb-1 text-white">Visionary</h3>
-              <div className="flex items-baseline gap-2 mb-2">
-                <span className="text-4xl font-bold font-mono text-white">$49</span>
-                <span className="text-zinc-500">/month</span>
+              {/* Glow effect at top */}
+              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-2/3 h-px bg-gradient-to-r from-transparent via-emerald-400 to-transparent" />
+              <div className="absolute top-0 left-1/2 -translate-x-1/2 px-3 py-1 bg-emerald-500 text-[10px] font-bold rounded-b-lg text-black font-mono tracking-wider">RECOMMENDED</div>
+              
+              <div className="text-center mt-4">
+                <div className="text-sm text-emerald-400 mb-3 font-mono tracking-[0.2em] font-semibold">UNLIMITED</div>
+                <h3 className="text-3xl font-bold mb-2 text-white">Visionary</h3>
+                <div className="flex items-baseline justify-center gap-2 mb-2">
+                  <span className="text-5xl font-bold font-mono text-white">$49</span>
+                  <span className="text-zinc-400">/month</span>
+                </div>
+                <div className="text-emerald-400/80 text-sm mb-8 font-medium">Total creative control</div>
               </div>
-              <div className="text-zinc-400 text-sm mb-8">Total creative control</div>
+              
               <ul className="space-y-4 mb-8 flex-grow">
                 {[
                   'Unlimited AI Generations',
@@ -635,7 +641,7 @@ export default function Home() {
                   'Commercial License',
                   'Priority Neural Processing',
                 ].map((item, i) => (
-                  <li key={i} className="flex items-center gap-3 text-sm text-white">
+                  <li key={i} className="flex items-center gap-3 text-sm text-white font-medium">
                     <CheckCircle2 className="w-5 h-5 text-emerald-400 flex-shrink-0" />
                     {item}
                   </li>
@@ -643,7 +649,7 @@ export default function Home() {
               </ul>
               <PricingButton 
                 tier="visionary" 
-                className="block w-full py-4 text-center bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold transition-all shadow-[0_0_20px_rgba(16,185,129,0.3)] hover:shadow-[0_0_30px_rgba(16,185,129,0.5)]"
+                className="block w-full py-4 text-center bg-emerald-500 hover:bg-emerald-400 text-black rounded-xl font-bold transition-all shadow-[0_0_25px_rgba(16,185,129,0.4)] hover:shadow-[0_0_35px_rgba(16,185,129,0.6)]"
               >
                 Ascend
               </PricingButton>

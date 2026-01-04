@@ -44,6 +44,86 @@ const getSuggestions = (id: string) => {
   }
 }
 
+// =============================================================================
+// STREAMING CODE EFFECT - Fake code animation for loading state
+// =============================================================================
+const FAKE_CODE_LINES = [
+  { text: "'use client'", color: 'text-purple-400' },
+  { text: '', color: '' },
+  { text: "import { useState } from 'react'", color: 'text-blue-400' },
+  { text: "import { motion } from 'framer-motion'", color: 'text-blue-400' },
+  { text: "import { Check, Star, Zap } from 'lucide-react'", color: 'text-blue-400' },
+  { text: '', color: '' },
+  { text: 'export default function PricingSection() {', color: 'text-yellow-400' },
+  { text: '  const [selected, setSelected] = useState(1)', color: 'text-zinc-300' },
+  { text: '', color: '' },
+  { text: '  const tiers = [', color: 'text-zinc-300' },
+  { text: "    { name: 'Starter', price: 19, features: [...] },", color: 'text-emerald-400' },
+  { text: "    { name: 'Pro', price: 49, popular: true },", color: 'text-emerald-400' },
+  { text: "    { name: 'Enterprise', price: 99 },", color: 'text-emerald-400' },
+  { text: '  ]', color: 'text-zinc-300' },
+  { text: '', color: '' },
+  { text: '  return (', color: 'text-zinc-300' },
+  { text: '    <section className="py-24 bg-gradient-to-b">', color: 'text-green-400' },
+  { text: '      <div className="max-w-6xl mx-auto px-6">', color: 'text-green-400' },
+  { text: '        <motion.h2', color: 'text-yellow-400' },
+  { text: '          initial={{ opacity: 0, y: 20 }}', color: 'text-orange-400' },
+  { text: '          animate={{ opacity: 1, y: 0 }}', color: 'text-orange-400' },
+  { text: '          className="text-4xl font-bold text-center"', color: 'text-green-400' },
+  { text: '        >', color: 'text-yellow-400' },
+  { text: '          Choose Your Plan', color: 'text-zinc-100' },
+  { text: '        </motion.h2>', color: 'text-yellow-400' },
+  { text: '', color: '' },
+  { text: '        <div className="grid md:grid-cols-3 gap-8 mt-16">', color: 'text-green-400' },
+  { text: '          {tiers.map((tier, i) => (', color: 'text-zinc-300' },
+  { text: '            <motion.div', color: 'text-yellow-400' },
+  { text: '              key={tier.name}', color: 'text-orange-400' },
+  { text: '              whileHover={{ scale: 1.02 }}', color: 'text-orange-400' },
+  { text: '              className={`rounded-2xl p-8 ${', color: 'text-green-400' },
+  { text: "                tier.popular ? 'bg-emerald-500' : 'bg-zinc-900'", color: 'text-emerald-400' },
+  { text: '              }`}', color: 'text-green-400' },
+  { text: '            >', color: 'text-yellow-400' },
+]
+
+function StreamingCodeEffect() {
+  const [visibleLines, setVisibleLines] = useState(0)
+  
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setVisibleLines(prev => {
+        if (prev >= FAKE_CODE_LINES.length) {
+          return 0 // Reset and loop
+        }
+        return prev + 1
+      })
+    }, 400) // New line every 400ms
+    
+    return () => clearInterval(interval)
+  }, [])
+  
+  return (
+    <div className="text-[11px] leading-5">
+      {FAKE_CODE_LINES.slice(0, visibleLines).map((line, i) => (
+        <motion.div
+          key={i}
+          initial={{ opacity: 0, x: -5 }}
+          animate={{ opacity: 1, x: 0 }}
+          className={line.color || 'text-zinc-500'}
+        >
+          {line.text || '\u00A0'}
+        </motion.div>
+      ))}
+      {visibleLines < FAKE_CODE_LINES.length && (
+        <motion.span
+          animate={{ opacity: [1, 0] }}
+          transition={{ duration: 0.5, repeat: Infinity }}
+          className="inline-block w-2 h-4 bg-emerald-500 ml-0.5"
+        />
+      )}
+    </div>
+  )
+}
+
 import { Section } from '@/lib/templates'
 import { DbSection, DbBrandConfig } from '@/lib/supabase'
 import { SectionCompleteIndicator } from './SectionProgress'
@@ -1261,6 +1341,28 @@ export default function SectionBuilder({
   const canRevealRawCode = isProOrHigher // Only Visionary/Singularity can view code - Architect cannot
 
   // =============================================================================
+  // LOADING STAGE PROGRESS - for premium feel during generation
+  // =============================================================================
+  const [loadingStage, setLoadingStage] = useState(0)
+  const loadingStages = [
+    'Analyzing prompt',
+    'Designing structure', 
+    'Writing code',
+    'Adding polish',
+  ]
+  
+  // Progress through loading stages (loop to fill long waits)
+  useEffect(() => {
+    if (stage === 'generating' || (guestMode && !generatedCode && !!effectivePrompt)) {
+      setLoadingStage(0)
+      const interval = setInterval(() => {
+        setLoadingStage(prev => (prev + 1) % loadingStages.length) // Loop back to 0
+      }, 8000) // Move to next stage every 8 seconds
+      return () => clearInterval(interval)
+    }
+  }, [stage, guestMode, generatedCode, effectivePrompt])
+
+  // =============================================================================
   // GUEST MODE: Premium demo experience
   // Clean, minimal UI that shows our capability
   // =============================================================================
@@ -1285,37 +1387,134 @@ export default function SectionBuilder({
               hideToolbar={true}
             />
           ) : showGenerating ? (
-            // Generating state - show building animation (ALWAYS if we have a prompt)
-            <div className="h-full flex flex-col items-center justify-center px-6">
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.3 }}
-                className="text-center max-w-md"
-              >
-                {/* Spinning loader */}
-                <div className="w-20 h-20 mx-auto mb-6 relative">
+            // Generating state - split screen with blurred streaming code
+            <div className="h-full flex flex-col md:flex-row relative overflow-hidden">
+              {/* Left side - Blurred code streaming */}
+              <div className="flex-1 relative bg-zinc-950 overflow-hidden">
+                {/* Fake streaming code effect */}
+                <div className="absolute inset-0 p-4 font-mono text-xs leading-relaxed overflow-hidden">
+                  <StreamingCodeEffect />
+                </div>
+                
+                {/* Blur overlay */}
+                <div className="absolute inset-0 backdrop-blur-md bg-zinc-950/60" />
+                
+                {/* Lock overlay */}
+                <div className="absolute inset-0 flex flex-col items-center justify-center">
                   <motion.div
-                    animate={{ rotate: 360 }}
-                    transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
-                    className="absolute inset-0 rounded-full border-2 border-emerald-500/30 border-t-emerald-500"
-                  />
-                  <div className="absolute inset-2 rounded-full bg-zinc-900 flex items-center justify-center">
-                    <Sparkles className="w-6 h-6 text-emerald-500" />
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="text-center px-6"
+                  >
+                    <div className="w-12 h-12 mx-auto mb-4 rounded-xl bg-zinc-800/80 border border-zinc-700 flex items-center justify-center">
+                      <Eye className="w-5 h-5 text-zinc-400" />
+                    </div>
+                    <p className="text-sm font-medium text-white mb-1">Code generating...</p>
+                    <p className="text-xs text-zinc-500">Sign up to view & export</p>
+                  </motion.div>
+                </div>
+              </div>
+              
+              {/* Right side - Status & value props */}
+              <div className="w-full md:w-80 flex-shrink-0 bg-zinc-900/50 border-l border-zinc-800/50 flex flex-col">
+                {/* Progress section */}
+                <div className="p-6 border-b border-zinc-800/50">
+                  {/* Spinning loader */}
+                  <div className="flex items-center gap-4 mb-6">
+                    <div className="w-10 h-10 relative flex-shrink-0">
+                      <motion.div
+                        animate={{ rotate: 360 }}
+                        transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
+                        className="absolute inset-0 rounded-full border-2 border-emerald-500/20 border-t-emerald-500"
+                      />
+                      <div className="absolute inset-1.5 rounded-full bg-zinc-900 flex items-center justify-center">
+                        <Sparkles className="w-3.5 h-3.5 text-emerald-500" />
+                      </div>
+                    </div>
+                    <div className="flex-1">
+                      <motion.p 
+                        key={loadingStage}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        className="text-sm font-medium text-white"
+                      >
+                        {loadingStages[loadingStage]}
+                      </motion.p>
+                      <p className="text-xs text-zinc-500 mt-0.5">Building premium component...</p>
+                    </div>
+                  </div>
+                  
+                  {/* Progress bar */}
+                  <div className="h-1 bg-zinc-800 rounded-full overflow-hidden">
+                    <motion.div
+                      className="h-full bg-gradient-to-r from-emerald-600 to-emerald-400"
+                      initial={{ width: '5%' }}
+                      animate={{ width: `${Math.min(95, ((loadingStage + 1) / loadingStages.length) * 100)}%` }}
+                      transition={{ duration: 0.5, ease: 'easeOut' }}
+                    />
                   </div>
                 </div>
-                <h2 className="text-xl font-semibold text-white mb-2">
-                  Building your component
-                </h2>
-                <p className="text-sm text-zinc-500 leading-relaxed">
-                  This takes about 10-15 seconds...
-                </p>
+                
+                {/* Rotating value props */}
+                <div className="flex-1 p-6 flex flex-col justify-center">
+                  <AnimatePresence mode="wait">
+                    <motion.div
+                      key={loadingStage}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -10 }}
+                      transition={{ duration: 0.3 }}
+                    >
+                      {loadingStage === 0 && (
+                        <div>
+                          <h3 className="text-lg font-semibold text-white mb-2">Real code. Real ownership.</h3>
+                          <p className="text-sm text-zinc-400 leading-relaxed">
+                            No proprietary formats. Clean React + Tailwind you can run anywhere.
+                          </p>
+                        </div>
+                      )}
+                      {loadingStage === 1 && (
+                        <div>
+                          <h3 className="text-lg font-semibold text-white mb-3">Industry standard</h3>
+                          <div className="flex flex-wrap gap-2">
+                            {['React 19', 'Tailwind', 'TypeScript'].map((tech) => (
+                              <span key={tech} className="px-2.5 py-1 text-xs font-medium bg-zinc-800 text-zinc-300 rounded-md border border-zinc-700/50">
+                                {tech}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      {loadingStage === 2 && (
+                        <div>
+                          <h3 className="text-lg font-semibold text-white mb-2">AI pipeline</h3>
+                          <p className="text-sm text-zinc-400 leading-relaxed">
+                            Multiple specialized models generate, refine, and audit your code.
+                          </p>
+                        </div>
+                      )}
+                      {loadingStage === 3 && (
+                        <div>
+                          <h3 className="text-lg font-semibold text-white mb-2">Export anytime</h3>
+                          <p className="text-sm text-zinc-400 leading-relaxed">
+                            Download source code with one click. Host it anywhere.
+                          </p>
+                        </div>
+                      )}
+                    </motion.div>
+                  </AnimatePresence>
+                </div>
+                
+                {/* User's prompt at bottom */}
                 {prompt && (
-                  <p className="text-xs text-zinc-600 mt-4 italic truncate max-w-xs mx-auto">
-                    "{prompt.slice(0, 60)}{prompt.length > 60 ? '...' : ''}"
-                  </p>
+                  <div className="p-4 border-t border-zinc-800/50 bg-zinc-900/30">
+                    <p className="text-xs text-zinc-500 mb-1">Building:</p>
+                    <p className="text-xs text-zinc-400 font-mono truncate">
+                      "{prompt.slice(0, 40)}{prompt.length > 40 ? '...' : ''}"
+                    </p>
+                  </div>
                 )}
-              </motion.div>
+              </div>
             </div>
           ) : null}
         </div>
@@ -1328,22 +1527,18 @@ export default function SectionBuilder({
             transition={{ duration: 0.4, delay: 0.2 }}
             className="mx-auto max-w-2xl"
           >
-            {/* Generating Stage */}
+            {/* Generating Stage - minimal bottom bar */}
             {(stage === 'generating' || showGenerating) && (
-              <div className="bg-zinc-900/90 backdrop-blur-xl border border-zinc-800/80 rounded-2xl shadow-2xl shadow-black/60 p-5">
-                <div className="flex items-center gap-4">
-                  <div className="relative">
-                    <div className="absolute inset-0 bg-emerald-500/20 blur-xl rounded-full" />
-                    <motion.div
-                      animate={{ rotate: 360 }}
-                      transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-                      className="relative w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full"
-                    />
-                  </div>
-                  <div>
-                    <p className="text-sm font-medium text-white">Building your component</p>
-                    <p className="text-xs text-zinc-500 mt-0.5">This takes about 10-15 seconds...</p>
-                  </div>
+              <div className="bg-zinc-900/80 backdrop-blur-xl border border-zinc-800/60 rounded-xl shadow-xl shadow-black/40 px-4 py-3">
+                <div className="flex items-center justify-center gap-3">
+                  <motion.div
+                    animate={{ rotate: 360 }}
+                    transition={{ duration: 1.5, repeat: Infinity, ease: 'linear' }}
+                    className="w-4 h-4 border-2 border-emerald-500/30 border-t-emerald-500 rounded-full"
+                  />
+                  <p className="text-sm text-zinc-400">
+                    Writing production-ready code...
+                  </p>
                 </div>
               </div>
             )}

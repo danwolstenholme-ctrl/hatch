@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ArrowRight, Command, Sparkles } from 'lucide-react'
@@ -52,11 +52,19 @@ function FloatingCode({ delay, x, y }: { delay: number; x: string; y: string }) 
 
 // Matrix-style falling character
 function MatrixDrop({ column, speed }: { column: number; speed: number }) {
-  const chars = useMemo(() => {
-    return Array.from({ length: 20 }, () => 
+  const [mounted, setMounted] = useState(false)
+  const [chars, setChars] = useState<string[]>([])
+  const [delay, setDelay] = useState(0)
+  
+  useEffect(() => {
+    setChars(Array.from({ length: 20 }, () => 
       CODE_CHARS[Math.floor(Math.random() * CODE_CHARS.length)]
-    )
+    ))
+    setDelay(Math.random() * 5)
+    setMounted(true)
   }, [])
+  
+  if (!mounted) return null
   
   return (
     <motion.div
@@ -68,7 +76,7 @@ function MatrixDrop({ column, speed }: { column: number; speed: number }) {
         duration: speed,
         repeat: Infinity,
         ease: 'linear',
-        delay: Math.random() * 5,
+        delay: delay,
       }}
     >
       {chars.map((char, i) => (
