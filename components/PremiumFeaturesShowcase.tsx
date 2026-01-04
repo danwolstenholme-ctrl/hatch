@@ -27,7 +27,7 @@ export default function PremiumFeaturesShowcase({ onFeatureClick }: PremiumFeatu
       description: 'AI quality check for accessibility & performance',
       tier: 'visionary',
       stats: '1.2k audits today',
-      gradient: 'from-violet-500 to-purple-500'
+      gradient: 'from-violet-500/20 to-purple-500/20'
     },
     {
       id: 'healer',
@@ -36,7 +36,7 @@ export default function PremiumFeaturesShowcase({ onFeatureClick }: PremiumFeatu
       description: 'Auto-fix errors and optimize code',
       tier: 'visionary',
       stats: '847 fixes today',
-      gradient: 'from-violet-500 to-fuchsia-500'
+      gradient: 'from-violet-500/20 to-fuchsia-500/20'
     },
     {
       id: 'replicator',
@@ -45,7 +45,7 @@ export default function PremiumFeaturesShowcase({ onFeatureClick }: PremiumFeatu
       description: 'Clone any website from URL',
       tier: 'singularity',
       stats: '247 sites cloned',
-      gradient: 'from-amber-500 to-orange-500'
+      gradient: 'from-amber-500/20 to-orange-500/20'
     },
     {
       id: 'chronosphere',
@@ -54,7 +54,7 @@ export default function PremiumFeaturesShowcase({ onFeatureClick }: PremiumFeatu
       description: 'Evolve your style DNA over time',
       tier: 'singularity',
       stats: '89 evolutions',
-      gradient: 'from-amber-500 to-yellow-500'
+      gradient: 'from-amber-500/20 to-yellow-500/20'
     },
     {
       id: 'witness',
@@ -63,7 +63,7 @@ export default function PremiumFeaturesShowcase({ onFeatureClick }: PremiumFeatu
       description: 'AI deployment insights & reflections',
       tier: 'singularity',
       stats: '156 insights',
-      gradient: 'from-orange-500 to-red-500'
+      gradient: 'from-orange-500/20 to-red-500/20'
     }
   ]
 
@@ -122,7 +122,7 @@ export default function PremiumFeaturesShowcase({ onFeatureClick }: PremiumFeatu
                       {feature.name}
                     </span>
                     {feature.tier === 'singularity' && (
-                      <span className="text-[9px] font-bold text-amber-500/80 bg-amber-500/5 px-1.5 py-0.5 rounded uppercase tracking-wider border border-amber-500/10">
+                      <span className="text-[9px] font-bold text-amber-500/70 bg-amber-500/[0.03] px-1.5 py-0.5 rounded uppercase tracking-wider border border-amber-500/10">
                         Elite
                       </span>
                     )}

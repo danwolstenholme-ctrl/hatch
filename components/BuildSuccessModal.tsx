@@ -1,7 +1,7 @@
 'use client'
 
 import { motion, AnimatePresence } from 'framer-motion'
-import { Check, Sparkles, Zap, ArrowRight, TrendingUp } from 'lucide-react'
+import { Check, Sparkles, Zap, ArrowRight, TrendingUp, X } from 'lucide-react'
 import { track } from '@vercel/analytics'
 
 interface BuildSuccessModalProps {
@@ -56,8 +56,8 @@ export default function BuildSuccessModal({
               className="relative mx-auto w-16 h-16 mb-6"
             >
               <div className="absolute inset-0 bg-emerald-500/20 rounded-2xl blur-xl animate-pulse" />
-              <div className="relative w-16 h-16 bg-gradient-to-br from-emerald-500 to-teal-500 rounded-2xl flex items-center justify-center shadow-lg shadow-emerald-500/25">
-                <Check className="w-8 h-8 text-white" strokeWidth={3} />
+              <div className="relative w-16 h-16 bg-zinc-900 border border-emerald-500/30 rounded-2xl flex items-center justify-center shadow-lg shadow-emerald-500/10">
+                <Check className="w-8 h-8 text-emerald-400" strokeWidth={2} />
               </div>
             </motion.div>
 
@@ -68,16 +68,16 @@ export default function BuildSuccessModal({
               transition={{ delay: 0.3 }}
               className="text-center mb-6"
             >
-              <h3 className="text-2xl font-bold text-white mb-2">
-                {sectionName} Complete! 🎉
+              <h3 className="text-xl font-bold text-white mb-2 tracking-tight">
+                {sectionName} Complete
               </h3>
               <p className="text-sm text-zinc-400">
                 {isGuest ? (
                   <>
                     {isOut ? (
-                      <span className="text-red-400 font-semibold">Trial complete. Sign up to continue!</span>
+                      <span className="text-red-400 font-medium">Trial complete. Sign up to continue.</span>
                     ) : isLow ? (
-                      <span className="text-amber-400 font-semibold">{buildsRemaining} build remaining</span>
+                      <span className="text-amber-400 font-medium">{buildsRemaining} build remaining</span>
                     ) : (
                       <span>{buildsRemaining} builds left in your trial</span>
                     )}
@@ -160,11 +160,11 @@ export default function BuildSuccessModal({
                       })
                       onUpgrade()
                     }}
-                    className="group w-full py-3.5 px-6 bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-500 hover:to-fuchsia-500 text-white font-semibold rounded-xl transition-all duration-200 flex items-center justify-center gap-2 shadow-lg shadow-violet-500/25 hover:shadow-violet-500/40 hover:scale-105 active:scale-100"
+                    className="group w-full py-3.5 px-6 bg-zinc-900 border border-emerald-500/50 hover:border-emerald-500 hover:bg-emerald-500/10 text-white font-semibold rounded-xl transition-all duration-300 flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(16,185,129,0.1)] hover:shadow-[0_0_30px_rgba(16,185,129,0.2)]"
                   >
-                    <Sparkles className="w-4 h-4" />
+                    <Sparkles className="w-4 h-4 text-emerald-400" />
                     <span>{isOut ? 'Unlock Unlimited' : 'Upgrade Now'}</span>
-                    <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
+                    <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform text-emerald-400" />
                   </button>
                   
                   {/* Secondary: Continue if builds remain */}
@@ -214,9 +214,9 @@ export default function BuildSuccessModal({
             {/* Close Button */}
             <button
               onClick={onClose}
-              className="absolute top-4 right-4 w-8 h-8 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-400 hover:text-white transition-all flex items-center justify-center"
+              className="absolute top-4 right-4 w-8 h-8 rounded-lg bg-zinc-800/50 hover:bg-zinc-800 text-zinc-400 hover:text-white transition-all flex items-center justify-center"
             >
-              <span className="text-lg leading-none">×</span>
+              <X className="w-4 h-4" />
             </button>
           </motion.div>
         </motion.div>
