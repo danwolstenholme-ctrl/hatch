@@ -307,6 +307,11 @@
 			"label": "commit-contact-polish",
 			"type": "shell",
 			"command": "git add . && git commit -m \"feat: polish contact page with Singularity aesthetic (grid, scanlines, gradients)\" && git push"
+		},
+		{
+			"label": "commit-dashboard-overhaul",
+			"type": "shell",
+			"command": "git add . && git commit -m \"feat: overhaul dashboard design to match Singularity dark theme\" && git push"
 		}
 	]
 }

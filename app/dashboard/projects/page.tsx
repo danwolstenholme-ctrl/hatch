@@ -136,20 +136,20 @@ export default function ProjectsPage() {
   // Show loading state
   if (isLoading || isMigrating) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-emerald-50/30 to-slate-50">
+      <div className="min-h-screen bg-zinc-950">
         <div className="max-w-7xl mx-auto px-6 py-12">
           <div className="flex items-center justify-center h-[60vh]">
             <div className="text-center">
               <div className="w-16 h-16 mx-auto mb-6 relative">
-                <div className="absolute inset-0 bg-gradient-to-br from-emerald-500 to-teal-500 rounded-2xl blur-xl opacity-40 animate-pulse" />
-                <div className="relative w-16 h-16 bg-white border border-slate-200 rounded-2xl flex items-center justify-center shadow-lg">
+                <div className="absolute inset-0 bg-emerald-500/20 rounded-2xl blur-xl animate-pulse" />
+                <div className="relative w-16 h-16 bg-zinc-900 border border-zinc-800 rounded-2xl flex items-center justify-center shadow-lg">
                   <Database className="w-8 h-8 text-emerald-500 animate-pulse" />
                 </div>
               </div>
-              <h2 className="text-xl font-semibold text-slate-900 mb-2">
+              <h2 className="text-xl font-semibold text-white mb-2">
                 {isMigrating ? 'Migrating your workspace' : 'Loading projects'}
               </h2>
-              <p className="text-sm text-slate-500">
+              <p className="text-sm text-zinc-500">
                 {isMigrating ? 'Converting guest projects to your account...' : 'Just a moment...'}
               </p>
             </div>
@@ -160,30 +160,30 @@ export default function ProjectsPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-emerald-50/30 to-slate-50">
+    <div className="min-h-screen bg-zinc-950">
       <div className="max-w-7xl mx-auto px-6 py-8">
         
         {/* Professional Header with Stats */}
         <div className="mb-8">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 mb-6">
             <div>
-              <h1 className="text-3xl font-bold text-slate-900 tracking-tight mb-2">Projects</h1>
-              <p className="text-slate-600">
+              <h1 className="text-3xl font-bold text-white tracking-tight mb-2">Projects</h1>
+              <p className="text-zinc-400">
                 Your workspace • {projects.length} {projects.length === 1 ? 'project' : 'projects'}
               </p>
             </div>
 
             <div className="flex items-center gap-3">
               {/* Tier Badge */}
-              <div className="hidden md:flex items-center gap-2 px-4 py-2.5 bg-white border border-slate-200 rounded-xl shadow-sm">
+              <div className="hidden md:flex items-center gap-2 px-4 py-2.5 bg-zinc-900 border border-zinc-800 rounded-xl shadow-sm">
                 <div className={`w-2 h-2 rounded-full ${
-                  tierConfig.color === 'amber' ? 'bg-amber-400 shadow-amber-400/50' : 
-                  tierConfig.color === 'teal' ? 'bg-teal-400 shadow-teal-400/50' : 
-                  tierConfig.color === 'emerald' ? 'bg-emerald-400 shadow-emerald-400/50' : 'bg-slate-300'
+                  tierConfig.color === 'amber' ? 'bg-amber-500 shadow-amber-500/50' : 
+                  tierConfig.color === 'teal' ? 'bg-teal-500 shadow-teal-500/50' : 
+                  tierConfig.color === 'emerald' ? 'bg-emerald-500 shadow-emerald-500/50' : 'bg-zinc-500'
                 } shadow-[0_0_8px]`} />
-                <span className="text-sm font-semibold text-slate-700">{tierConfig.name}</span>
+                <span className="text-sm font-semibold text-zinc-300">{tierConfig.name}</span>
                 {tierConfig.limit !== Infinity && (
-                  <span className="text-xs text-slate-500 ml-1">• {projectsRemaining} slots</span>
+                  <span className="text-xs text-zinc-500 ml-1">• {projectsRemaining} slots</span>
                 )}
               </div>
 
@@ -193,7 +193,7 @@ export default function ProjectsPage() {
                 disabled={isCreating || isAtLimit}
                 className={`group flex items-center gap-2 px-5 py-2.5 rounded-xl font-semibold text-sm transition-all duration-200 shadow-lg ${
                   isAtLimit 
-                    ? 'bg-slate-200 text-slate-400 cursor-not-allowed shadow-none' 
+                    ? 'bg-zinc-800 text-zinc-500 cursor-not-allowed shadow-none' 
                     : 'bg-gradient-to-br from-emerald-600 to-teal-600 text-white hover:from-emerald-500 hover:to-teal-500 hover:shadow-xl hover:shadow-emerald-500/25 hover:scale-105 active:scale-100'
                 }`}
               >
@@ -214,53 +214,53 @@ export default function ProjectsPage() {
 
           {/* Stats Row */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
-            <div className="bg-white/80 backdrop-blur-sm border border-slate-200 rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow">
+            <div className="bg-zinc-900/50 backdrop-blur-sm border border-zinc-800 rounded-xl p-4 shadow-sm hover:border-zinc-700 transition-colors">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center shadow-lg shadow-emerald-500/25">
-                  <Layout className="w-5 h-5 text-white" />
+                <div className="w-10 h-10 rounded-lg bg-zinc-800 border border-zinc-700 flex items-center justify-center shadow-lg">
+                  <Layout className="w-5 h-5 text-emerald-500" />
                 </div>
                 <div>
-                  <div className="text-2xl font-bold text-slate-900">{projects.length}</div>
-                  <div className="text-xs text-slate-500 font-medium">Total Projects</div>
+                  <div className="text-2xl font-bold text-white">{projects.length}</div>
+                  <div className="text-xs text-zinc-500 font-medium">Total Projects</div>
                 </div>
               </div>
             </div>
 
-            <div className="bg-white/80 backdrop-blur-sm border border-slate-200 rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow">
+            <div className="bg-zinc-900/50 backdrop-blur-sm border border-zinc-800 rounded-xl p-4 shadow-sm hover:border-zinc-700 transition-colors">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center shadow-lg shadow-emerald-500/25">
-                  <Globe className="w-5 h-5 text-white" />
+                <div className="w-10 h-10 rounded-lg bg-zinc-800 border border-zinc-700 flex items-center justify-center shadow-lg">
+                  <Globe className="w-5 h-5 text-teal-500" />
                 </div>
                 <div>
-                  <div className="text-2xl font-bold text-slate-900">{projects.filter(p => p.slug).length}</div>
-                  <div className="text-xs text-slate-500 font-medium">Deployed</div>
+                  <div className="text-2xl font-bold text-white">{projects.filter(p => p.slug).length}</div>
+                  <div className="text-xs text-zinc-500 font-medium">Deployed</div>
                 </div>
               </div>
             </div>
 
-            <div className="bg-white/80 backdrop-blur-sm border border-slate-200 rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow">
+            <div className="bg-zinc-900/50 backdrop-blur-sm border border-zinc-800 rounded-xl p-4 shadow-sm hover:border-zinc-700 transition-colors">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-amber-500 to-orange-500 flex items-center justify-center shadow-lg shadow-amber-500/25">
-                  <Sparkles className="w-5 h-5 text-white" />
+                <div className="w-10 h-10 rounded-lg bg-zinc-800 border border-zinc-700 flex items-center justify-center shadow-lg">
+                  <Sparkles className="w-5 h-5 text-amber-500" />
                 </div>
                 <div>
-                  <div className="text-2xl font-bold text-slate-900">{tierConfig.limit === Infinity ? '∞' : tierConfig.limit}</div>
-                  <div className="text-xs text-slate-500 font-medium">Capacity</div>
+                  <div className="text-2xl font-bold text-white">{tierConfig.limit === Infinity ? '∞' : tierConfig.limit}</div>
+                  <div className="text-xs text-zinc-500 font-medium">Capacity</div>
                 </div>
               </div>
             </div>
 
-            <div className="bg-white/80 backdrop-blur-sm border border-slate-200 rounded-xl p-4 shadow-sm hover:shadow-md transition-shadow">
+            <div className="bg-zinc-900/50 backdrop-blur-sm border border-zinc-800 rounded-xl p-4 shadow-sm hover:border-zinc-700 transition-colors">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center shadow-lg shadow-blue-500/25">
-                  <Activity className="w-5 h-5 text-white" />
+                <div className="w-10 h-10 rounded-lg bg-zinc-800 border border-zinc-700 flex items-center justify-center shadow-lg">
+                  <Activity className="w-5 h-5 text-blue-500" />
                 </div>
                 <div>
-                  <div className="text-2xl font-bold text-slate-900">{projects.filter(p => {
+                  <div className="text-2xl font-bold text-white">{projects.filter(p => {
                     const hourAgo = Date.now() - 3600000
                     return p.updated_at && new Date(p.updated_at).getTime() > hourAgo
                   }).length}</div>
-                  <div className="text-xs text-slate-500 font-medium">Active Today</div>
+                  <div className="text-xs text-zinc-500 font-medium">Active Today</div>
                 </div>
               </div>
             </div>
@@ -273,23 +273,23 @@ export default function ProjectsPage() {
             {/* Search & View Controls */}
             <div className="flex items-center gap-3 mb-6">
           <div className="relative flex-1 max-w-md">
-            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
             <input 
               type="text"
               placeholder="Search projects by name or ID..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full bg-white border border-slate-200 rounded-xl pl-11 pr-4 py-3 text-sm text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-emerald-400 focus:ring-2 focus:ring-emerald-100 transition-all shadow-sm"
+              className="w-full bg-zinc-900 border border-zinc-800 rounded-xl pl-11 pr-4 py-3 text-sm text-white placeholder:text-zinc-600 focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50 transition-all shadow-sm"
             />
           </div>
 
-          <div className="flex items-center gap-1 bg-white border border-slate-200 rounded-xl p-1 shadow-sm">
+          <div className="flex items-center gap-1 bg-zinc-900 border border-zinc-800 rounded-xl p-1 shadow-sm">
             <button
               onClick={() => setViewMode('grid')}
               className={`p-2 rounded-lg transition-all ${
                 viewMode === 'grid' 
-                  ? 'bg-emerald-100 text-emerald-600' 
-                  : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50'
+                  ? 'bg-zinc-800 text-emerald-400' 
+                  : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/50'
               }`}
             >
               <Layout className="w-4 h-4" />
@@ -298,7 +298,14 @@ export default function ProjectsPage() {
               onClick={() => setViewMode('list')}
               className={`p-2 rounded-lg transition-all ${
                 viewMode === 'list' 
-                  ? 'bg-emerald-100 text-emerald-600' 
+                  ? 'bg-zinc-800 text-emerald-400' 
+                  : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/50'
+              }`}
+            >
+              <MoreHorizontal className="w-4 h-4" />
+            </button>
+          </div>
+        </div>                  ? 'bg-emerald-100 text-emerald-600' 
                   : 'text-slate-400 hover:text-slate-600 hover:bg-slate-50'
               }`}
             >
@@ -312,15 +319,15 @@ export default function ProjectsPage() {
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="text-center py-24 bg-white border-2 border-dashed border-slate-200 rounded-2xl"
+            className="text-center py-24 bg-zinc-900/50 border-2 border-dashed border-zinc-800 rounded-2xl"
           >
-            <div className="w-20 h-20 bg-gradient-to-br from-emerald-100 to-teal-100 rounded-2xl flex items-center justify-center mx-auto mb-6 border border-emerald-200">
+            <div className="w-20 h-20 bg-zinc-800 rounded-2xl flex items-center justify-center mx-auto mb-6 border border-zinc-700 shadow-lg">
               <Box className="w-10 h-10 text-emerald-500" />
             </div>
-            <h3 className="text-xl font-semibold text-slate-900 mb-2">
+            <h3 className="text-xl font-semibold text-white mb-2">
               {searchQuery ? "No projects found" : "Your first project awaits"}
             </h3>
-            <p className="text-slate-500 text-sm mb-8 max-w-md mx-auto">
+            <p className="text-zinc-500 text-sm mb-8 max-w-md mx-auto">
               {searchQuery 
                 ? "Try adjusting your search terms or create a new project." 
                 : "Start building something amazing. HatchIt will handle the code."}
@@ -349,7 +356,7 @@ export default function ProjectsPage() {
                     animate={{ opacity: 1, scale: 1, y: 0 }}
                     exit={{ opacity: 0, scale: 0.9 }}
                     transition={{ delay: index * 0.05 }}
-                    className={`group relative bg-white border-2 border-slate-200 hover:border-emerald-300 rounded-2xl overflow-hidden transition-all duration-300 hover:shadow-xl hover:shadow-emerald-500/10 ${
+                    className={`group relative bg-zinc-900 border-2 border-zinc-800 hover:border-emerald-500/50 rounded-2xl overflow-hidden transition-all duration-300 hover:shadow-xl hover:shadow-emerald-500/10 ${
                       isLocked ? 'opacity-50 cursor-not-allowed' : 'hover:-translate-y-1'
                     }`}
                   >
@@ -358,24 +365,24 @@ export default function ProjectsPage() {
                     )}
 
                     {/* Gradient Header */}
-                    <div className="h-24 bg-gradient-to-br from-emerald-500 via-teal-500 to-cyan-500 relative overflow-hidden">
-                      <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZGVmcz48cGF0dGVybiBpZD0iZ3JpZCIgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiBwYXR0ZXJuVW5pdHM9InVzZXJTcGFjZU9uVXNlIj48cGF0aCBkPSJNIDQwIDAgTCAwIDAgMCA0MCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLW9wYWNpdHk9IjAuMSIgc3Ryb2tlLXdpZHRoPSIxIi8+PC9wYXR0ZXJuPjwvZGVmcz48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSJ1cmwoI2dyaWQpIi8+PC9zdmc+')] opacity-30" />
+                    <div className="h-24 bg-gradient-to-br from-emerald-900/50 via-teal-900/50 to-zinc-900 relative overflow-hidden">
+                      <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZGVmcz48cGF0dGVybiBpZD0iZ3JpZCIgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiBwYXR0ZXJuVW5pdHM9InVzZXJTcGFjZU9uVXNlIj48cGF0aCBkPSJNIDQwIDAgTCAwIDAgMCA0MCIgZmlsbD0ibm9uZSIgc3Ryb2tlPSJ3aGl0ZSIgc3Ryb2tlLW9wYWNpdHk9IjAuMSIgc3Ryb2tlLXdpZHRoPSIxIi8+PC9wYXR0ZXJuPjwvZGVmcz48cmVjdCB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiBmaWxsPSJ1cmwoI2dyaWQpIi8+PC9zdmc+')] opacity-10" />
                       {project.slug && (
-                        <div className="absolute top-3 right-3 px-2 py-1 bg-white/20 backdrop-blur-sm border border-white/30 rounded-lg flex items-center gap-1.5">
+                        <div className="absolute top-3 right-3 px-2 py-1 bg-emerald-500/20 backdrop-blur-sm border border-emerald-500/30 rounded-lg flex items-center gap-1.5">
                           <div className="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-pulse shadow-[0_0_8px_rgba(52,211,153,0.6)]" />
-                          <span className="text-[10px] font-bold text-white tracking-wide">LIVE</span>
+                          <span className="text-[10px] font-bold text-emerald-200 tracking-wide">LIVE</span>
                         </div>
                       )}
                     </div>
 
                     <div className="p-5 relative z-10 pointer-events-none">
                       <div className="flex items-start justify-between mb-4">
-                        <div className={`-mt-8 w-14 h-14 rounded-xl border-4 border-white flex items-center justify-center transition-all shadow-lg ${
+                        <div className={`-mt-8 w-14 h-14 rounded-xl border-4 border-zinc-900 flex items-center justify-center transition-all shadow-lg ${
                           isLocked 
-                            ? 'bg-slate-200' 
-                            : 'bg-gradient-to-br from-emerald-500 to-teal-500 group-hover:scale-110'
+                            ? 'bg-zinc-800' 
+                            : 'bg-zinc-800 group-hover:bg-zinc-700 group-hover:scale-110'
                         }`}>
-                          <Code2 className={`w-6 h-6 ${isLocked ? 'text-slate-400' : 'text-white'}`} />
+                          <Code2 className={`w-6 h-6 ${isLocked ? 'text-zinc-600' : 'text-emerald-500'}`} />
                         </div>
                         
                         <div className="flex items-center gap-1 pointer-events-auto">
@@ -384,7 +391,7 @@ export default function ProjectsPage() {
                               href={`https://${project.slug}.hatchitsites.dev`}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="p-2 text-slate-400 hover:text-emerald-500 hover:bg-emerald-50 rounded-lg transition-all"
+                              className="p-2 text-zinc-500 hover:text-emerald-400 hover:bg-emerald-500/10 rounded-lg transition-all"
                               title="View Live"
                               onClick={(e) => e.stopPropagation()}
                             >
@@ -395,7 +402,7 @@ export default function ProjectsPage() {
                           {!isLocked && (
                             <button 
                               onClick={(e) => handleDelete(e, project.id)}
-                              className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all opacity-0 group-hover:opacity-100"
+                              className="p-2 text-zinc-500 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all opacity-0 group-hover:opacity-100"
                               title="Delete Project"
                             >
                               <Trash2 className="w-4 h-4" />
@@ -404,12 +411,12 @@ export default function ProjectsPage() {
                         </div>
                       </div>
 
-                      <h3 className="text-lg font-bold text-slate-900 truncate mb-2 group-hover:text-emerald-600 transition-colors">
+                      <h3 className="text-lg font-bold text-white truncate mb-2 group-hover:text-emerald-400 transition-colors">
                         {project.name || 'Untitled Project'}
                       </h3>
                       
                       <div className="flex items-center gap-2 mb-4">
-                        <div className="flex-1 px-2 py-1 bg-slate-50 border border-slate-200 rounded-lg font-mono text-[10px] text-slate-500 truncate">
+                        <div className="flex-1 px-2 py-1 bg-zinc-800/50 border border-zinc-800 rounded-lg font-mono text-[10px] text-zinc-500 truncate">
                           {project.id}
                         </div>
                         <button 
@@ -419,25 +426,25 @@ export default function ProjectsPage() {
                             setCopiedId(project.id)
                             setTimeout(() => setCopiedId(null), 2000)
                           }}
-                          className="p-1.5 hover:bg-slate-100 rounded-lg transition-all pointer-events-auto group/copy"
+                          className="p-1.5 hover:bg-zinc-800 rounded-lg transition-all pointer-events-auto group/copy"
                           title="Copy ID"
                         >
                           {copiedId === project.id ? (
                             <Check className="w-3.5 h-3.5 text-emerald-500" />
                           ) : (
-                            <Copy className="w-3.5 h-3.5 text-slate-400 group-hover/copy:text-slate-600" />
+                            <Copy className="w-3.5 h-3.5 text-zinc-600 group-hover/copy:text-zinc-400" />
                           )}
                         </button>
                       </div>
 
-                      <div className="flex items-center justify-between pt-4 border-t border-slate-100">
-                        <div className="flex items-center gap-1.5 text-xs text-slate-500">
+                      <div className="flex items-center justify-between pt-4 border-t border-zinc-800">
+                        <div className="flex items-center gap-1.5 text-xs text-zinc-500">
                           <Clock className="w-3.5 h-3.5" />
                           <span>{project.updated_at ? formatDistanceToNow(new Date(project.updated_at), { addSuffix: true }) : 'Just now'}</span>
                         </div>
                         
                         {!isLocked && (
-                          <div className="flex items-center gap-2 text-xs font-semibold text-emerald-600 group-hover:gap-3 transition-all">
+                          <div className="flex items-center gap-2 text-xs font-semibold text-emerald-500 group-hover:gap-3 transition-all">
                             <span>Open</span>
                             <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
                           </div>
@@ -464,7 +471,7 @@ export default function ProjectsPage() {
                     animate={{ opacity: 1, x: 0 }}
                     exit={{ opacity: 0, x: 20 }}
                     transition={{ delay: index * 0.03 }}
-                    className={`group relative bg-white border border-slate-200 hover:border-emerald-300 rounded-xl overflow-hidden transition-all hover:shadow-lg ${
+                    className={`group relative bg-zinc-900 border border-zinc-800 hover:border-emerald-500/50 rounded-xl overflow-hidden transition-all hover:shadow-lg ${
                       isLocked ? 'opacity-50 cursor-not-allowed' : ''
                     }`}
                   >
@@ -476,29 +483,29 @@ export default function ProjectsPage() {
                       {/* Icon */}
                       <div className={`w-12 h-12 rounded-xl flex items-center justify-center flex-shrink-0 ${
                         isLocked 
-                          ? 'bg-slate-100' 
-                          : 'bg-gradient-to-br from-emerald-500 to-teal-500 group-hover:scale-110 transition-transform'
+                          ? 'bg-zinc-800' 
+                          : 'bg-zinc-800 group-hover:bg-zinc-700 group-hover:scale-110 transition-transform'
                       }`}>
-                        <Code2 className={`w-6 h-6 ${isLocked ? 'text-slate-400' : 'text-white'}`} />
+                        <Code2 className={`w-6 h-6 ${isLocked ? 'text-zinc-600' : 'text-emerald-500'}`} />
                       </div>
 
                       {/* Project Info */}
                       <div className="flex-1 min-w-0">
-                        <h3 className="font-semibold text-slate-900 truncate group-hover:text-emerald-600 transition-colors">
+                        <h3 className="font-semibold text-white truncate group-hover:text-emerald-400 transition-colors">
                           {project.name || 'Untitled Project'}
                         </h3>
                         <div className="flex items-center gap-3 mt-1">
-                          <span className="text-xs font-mono text-slate-500 truncate max-w-[200px]">{project.id}</span>
-                          <span className="text-xs text-slate-400">•</span>
-                          <span className="text-xs text-slate-500">{project.updated_at ? formatDistanceToNow(new Date(project.updated_at), { addSuffix: true }) : 'Just now'}</span>
+                          <span className="text-xs font-mono text-zinc-500 truncate max-w-[200px]">{project.id}</span>
+                          <span className="text-xs text-zinc-600">•</span>
+                          <span className="text-xs text-zinc-500">{project.updated_at ? formatDistanceToNow(new Date(project.updated_at), { addSuffix: true }) : 'Just now'}</span>
                         </div>
                       </div>
 
                       {/* Status Badge */}
                       {project.slug && (
-                        <div className="hidden md:flex items-center gap-2 px-3 py-1.5 bg-emerald-50 border border-emerald-200 rounded-lg">
+                        <div className="hidden md:flex items-center gap-2 px-3 py-1.5 bg-emerald-500/10 border border-emerald-500/20 rounded-lg">
                           <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
-                          <span className="text-xs font-semibold text-emerald-700">Live</span>
+                          <span className="text-xs font-semibold text-emerald-400">Live</span>
                         </div>
                       )}
 
@@ -509,7 +516,7 @@ export default function ProjectsPage() {
                             href={`https://${project.slug}.hatchitsites.dev`}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="p-2 text-slate-400 hover:text-emerald-500 hover:bg-emerald-50 rounded-lg transition-all"
+                            className="p-2 text-zinc-500 hover:text-emerald-400 hover:bg-emerald-500/10 rounded-lg transition-all"
                             onClick={(e) => e.stopPropagation()}
                           >
                             <Globe className="w-4 h-4" />
@@ -523,7 +530,7 @@ export default function ProjectsPage() {
                             setCopiedId(project.id)
                             setTimeout(() => setCopiedId(null), 2000)
                           }}
-                          className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 rounded-lg transition-all"
+                          className="p-2 text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800 rounded-lg transition-all"
                         >
                           {copiedId === project.id ? <Check className="w-4 h-4 text-emerald-500" /> : <Copy className="w-4 h-4" />}
                         </button>
@@ -531,14 +538,14 @@ export default function ProjectsPage() {
                         {!isLocked && (
                           <button 
                             onClick={(e) => handleDelete(e, project.id)}
-                            className="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-all opacity-0 group-hover:opacity-100"
+                            className="p-2 text-zinc-500 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-all opacity-0 group-hover:opacity-100"
                           >
                             <Trash2 className="w-4 h-4" />
                           </button>
                         )}
 
                         {!isLocked && (
-                          <ArrowRight className="w-4 h-4 text-slate-400 group-hover:text-emerald-600 group-hover:translate-x-1 transition-all ml-2" />
+                          <ArrowRight className="w-4 h-4 text-zinc-500 group-hover:text-emerald-400 group-hover:translate-x-1 transition-all ml-2" />
                         )}
                       </div>
                     </div>
