@@ -553,7 +553,7 @@ export default function ProjectsPage() {
           {/* Sidebar - Upgrades & Stats (Only for Free/Trial users) */}
           {isFreeTier && (
             <div className="w-full lg:w-80 space-y-6">
-              <div className="bg-slate-900 rounded-2xl p-1 shadow-xl">
+              <div className="bg-zinc-900 border border-zinc-800 rounded-2xl p-1 shadow-xl">
                 <GuestCreditBadge 
                   buildsUsed={projects.length}
                   buildsLimit={3}

@@ -297,6 +297,11 @@
 			"label": "commit-dashboard-redesign",
 			"type": "shell",
 			"command": "git add . && git commit -m \"feat: redesign dashboard upgrade modal to match Singularity aesthetic\" && git push"
+		},
+		{
+			"label": "commit-sidebar-fix",
+			"type": "shell",
+			"command": "git add . && git commit -m \"fix: align dashboard sidebar colors with Singularity aesthetic\" && git push"
 		}
 	]
 }
