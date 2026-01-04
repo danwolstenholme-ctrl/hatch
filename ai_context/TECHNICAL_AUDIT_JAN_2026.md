@@ -25,7 +25,7 @@ The tier naming is now **fully consistent** across the codebase:
 
 ## 🏗️ 2. ARCHITECTURE: The "God Component"
 **Severity:** MEDIUM (Maintenance Debt)
-**Location:** `components/BuildFlowController.tsx` (~2300 lines)
+**Location:** `components/BuildFlowController.tsx` (~2013 lines)
 
 ### The Issue
 This file has become a gravitational singularity for the frontend logic. It handles:
@@ -51,30 +51,34 @@ Refactor into smaller hooks and components:
 ## 👻 3. GHOST CODE: The "Singularity" Remnants
 **Severity:** LOW (Bloat)
 **Location:** `components/singularity/` & `app/api/`
+**Last Verified:** 4 January 2026
 
 ### The Issue
 The `components/singularity/` folder has been **cleaned up**. It now only contains:
-*   `SingularityEngine.tsx`
 *   `SingularitySidebar.tsx` (Active)
-*   `SingularityTransition.tsx`
+*   `SingularityTransition.tsx` (Active)
 *   `TheWitness.tsx` (Active - used after deploy)
-*   `ThinkingLog.tsx`
+*   `ThinkingLog.tsx` (Active)
+*   `VoidTransition.tsx` (Active - demo→builder transition)
 
 The following legacy components have been **deleted**:
+*   ~~`SingularityEngine.tsx`~~ (deleted 4 Jan)
 *   ~~`TheDream.tsx`~~
 *   ~~`TheSubconscious.tsx`~~
 *   ~~`DirectLine.tsx`~~
 *   ~~`HatchCharacter.tsx`~~
 
-**Suspected Dead API Routes (Needs Verification):**
-*   `app/api/chronosphere/`
-*   `app/api/consciousness/`
-*   `app/api/direct-line/`
-*   `app/api/heal/`
-*   `app/api/replicator/`
+**API Routes - VERIFIED ACTIVE (Do NOT Delete):**
+*   `app/api/chronosphere/` - Used by SectionBuilder, BuildFlowController for logging
+*   `app/api/heal/` - Used by ErrorBoundary for auto-fix
+*   `app/api/replicator/` - Used by ReplicatorModal
+
+**Deleted API Routes:**
+*   ~~`app/api/consciousness/`~~ (deleted)
+*   ~~`app/api/direct-line/`~~ (deleted)
 
 ### Recommendation
-Verify these API routes are unused and delete them.
+These routes are active and in use. No cleanup needed here.
 
 ---
 
@@ -105,6 +109,20 @@ Recent changes in the diff:
 ## ✅ SUMMARY & NEXT STEPS
 
 1.  ~~**FIX THE MONEY LOOP:**~~ ✅ **RESOLVED.** Types are aligned.
-2.  **COMMIT MOBILE CHANGES:** Stage and commit the dashboard mobile fixes.
-3.  **DELETE GHOST API ROUTES:** Verify and remove unused API routes.
-4.  **REFACTOR BUILDER:** Break down `BuildFlowController` over time (Tech Debt).
+2.  ~~**DELETE GHOST API ROUTES:**~~ ✅ **VERIFIED.** chronosphere/heal/replicator are ACTIVE.
+3.  **REFACTOR BUILDER:** Break down `BuildFlowController` over time (Tech Debt).
+4.  **Unstaged changes:** 3 files modified (demo/page.tsx, SectionBuilder.tsx, UserSync.tsx)
+
+---
+
+## 📋 COMMIT LOG (Latest)
+```
+6f78d61 fix: skip empty state when prompt passed from demo + add SITE_MAP.md
+c6a13b4 feat: cinematic demo page + auto-start builder flow
+e6ed3ed fix: eliminate loading flash - unified bg-black across transition states
+f92ce1d refactor: major repo cleanup and stabilization
+65d2c2b fix: correct Architect tier feature list - code download is Visionary+ only
+c3bf0e0 fix: immersive full-screen preview for guest mode
+97643c0 fix: guest mode preview layout + faster transitions
+0ac4166 chore: remove dead code - 7 unused API routes, 3 unused components
+```

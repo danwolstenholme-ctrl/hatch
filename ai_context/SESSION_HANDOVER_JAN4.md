@@ -55,8 +55,9 @@ Homepage (dramatic) → /demo (transitional) → /builder (professional studio)
 ### Files You MUST Know:
 | File | Lines | What It Does |
 |------|-------|--------------|
-| `components/BuildFlowController.tsx` | 2300 | GOD COMPONENT - all builder state, deploy, paywall |
-| `components/SectionBuilder.tsx` | 2400 | Build stages, guest vs signed-in UI branches |
+| `components/BuildFlowController.tsx` | ~2013 | GOD COMPONENT - all builder state, deploy, paywall |
+| `components/SectionBuilder.tsx` | ~2360 | Build stages, guest vs signed-in UI branches |
+| `components/SectionPreview.tsx` | ~765 | Live preview iframe, device switching |
 | `hooks/useProjects.ts` | 500 | Project CRUD, tier limits enforcement |
 | `app/builder/page.tsx` | 176 | Auth gating, upgrade param handling |
 
@@ -86,18 +87,19 @@ const projectLimit = !tier ? 1 : tier === 'architect' ? 3 : Infinity
 
 ---
 
-## 🚨 SUSPECTED DEAD CODE (Verify Before Delete)
+## 🚨 API ROUTES STATUS (Verified 4 Jan)
 
-**API Routes:**
-- `/api/chronosphere/` - May be dead
-- `/api/consciousness/` - DELETED in earlier session
-- `/api/direct-line/` - DELETED in earlier session
-- `/api/heal/` - May be dead
-- `/api/replicator/` - May be dead
+**ACTIVE - Do NOT Delete:**
+- `/api/chronosphere/` - Used by SectionBuilder, BuildFlowController for logging
+- `/api/heal/` - Used by ErrorBoundary for auto-fix
+- `/api/replicator/` - Used by ReplicatorModal
 
-**Components:**
+**DELETED:**
+- ~~`/api/consciousness/`~~ - Deleted
+- ~~`/api/direct-line/`~~ - Deleted
+
+**Components Deleted:**
 - `components/singularity/SingularityEngine.tsx` - DELETED
-- Check for unused imports in BuildFlowController
 
 ---
 

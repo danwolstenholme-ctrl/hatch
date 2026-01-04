@@ -1265,6 +1265,9 @@ export default function SectionBuilder({
   // Clean, minimal UI that shows our capability
   // =============================================================================
   if (guestMode) {
+    // If we have an initial prompt from demo, always show generating (never empty state)
+    const showGenerating = !generatedCode && (stage === 'generating' || !!effectivePrompt)
+    
     return (
       <div className="relative h-screen w-full bg-zinc-950 overflow-hidden flex flex-col">
         {/* Preview Area - takes full height minus bottom panel */}
@@ -1281,8 +1284,8 @@ export default function SectionBuilder({
               allowCodeView={false}
               hideToolbar={true}
             />
-          ) : stage === 'generating' ? (
-            // Generating state - show building animation (not empty state)
+          ) : showGenerating ? (
+            // Generating state - show building animation (ALWAYS if we have a prompt)
             <div className="h-full flex flex-col items-center justify-center px-6">
               <motion.div
                 initial={{ opacity: 0, scale: 0.95 }}
@@ -1314,30 +1317,10 @@ export default function SectionBuilder({
                 )}
               </motion.div>
             </div>
-          ) : (
-            // Empty state - user needs to type a prompt
-            <div className="h-full flex flex-col items-center justify-center px-6">
-              <motion.div
-                initial={{ opacity: 0, scale: 0.95 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.5 }}
-                className="text-center max-w-md"
-              >
-                <div className="w-16 h-16 mx-auto mb-6 rounded-2xl bg-gradient-to-br from-emerald-500/20 to-emerald-500/5 border border-emerald-500/20 flex items-center justify-center">
-                  <Sparkles className="w-7 h-7 text-emerald-500" />
-                </div>
-                <h2 className="text-xl font-semibold text-white mb-2">
-                  Describe what you want to build
-                </h2>
-                <p className="text-sm text-zinc-500 leading-relaxed">
-                  Type a description below and watch it transform into a live React component in seconds.
-                </p>
-              </motion.div>
-            </div>
-          )}
+          ) : null}
         </div>
 
-        {/* Bottom Panel - fixed at bottom */}
+        {/* Bottom Panel - fixed at bottom (NO INPUT STAGE - prompt comes from /demo) */}
         <div className="flex-shrink-0 p-4 sm:p-6 bg-gradient-to-t from-zinc-950 via-zinc-950/95 to-transparent">
           <motion.div
             initial={{ y: 30, opacity: 0 }}
@@ -1345,59 +1328,8 @@ export default function SectionBuilder({
             transition={{ duration: 0.4, delay: 0.2 }}
             className="mx-auto max-w-2xl"
           >
-            {/* Input Stage */}
-            {stage === 'input' && (
-              <div className="bg-zinc-900/90 backdrop-blur-xl border border-zinc-800/80 rounded-2xl shadow-2xl shadow-black/60">
-                <div className="p-4 sm:p-5">
-                  <div className="relative">
-                    <textarea
-                      ref={textareaRef}
-                      value={prompt}
-                      onChange={(e) => setPrompt(e.target.value)}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter' && !e.shiftKey) {
-                          e.preventDefault()
-                          if (prompt.trim()) handleBuildSection()
-                        }
-                      }}
-                      placeholder="A modern hero section with gradient background, bold headline, and CTA button..."
-                      autoFocus
-                      rows={2}
-                      className="w-full bg-transparent text-white text-sm sm:text-base placeholder-zinc-600 focus:outline-none resize-none leading-relaxed"
-                    />
-                  </div>
-                  <div className="flex items-center justify-between mt-4 pt-4 border-t border-zinc-800/50">
-                    <div className="hidden sm:flex items-center gap-2">
-                      {['Hero', 'Features', 'Pricing'].map((example) => (
-                        <button
-                          key={example}
-                          onClick={() => setPrompt(`A ${example.toLowerCase()} section with modern styling and animations`)}
-                          className="px-3 py-1.5 rounded-lg bg-zinc-800/50 text-xs text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800 transition-all"
-                        >
-                          {example}
-                        </button>
-                      ))}
-                    </div>
-                    <div className="flex items-center gap-3 ml-auto">
-                      <span className="text-xs text-zinc-600 hidden sm:block">
-                        Press Enter to build
-                      </span>
-                      <button
-                        onClick={() => handleBuildSection()}
-                        disabled={!prompt.trim()}
-                        className="px-5 py-2.5 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black text-sm font-semibold disabled:opacity-40 disabled:cursor-not-allowed transition-all flex items-center gap-2"
-                      >
-                        <Zap className="w-4 h-4" />
-                        Build
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-
             {/* Generating Stage */}
-            {stage === 'generating' && (
+            {(stage === 'generating' || showGenerating) && (
               <div className="bg-zinc-900/90 backdrop-blur-xl border border-zinc-800/80 rounded-2xl shadow-2xl shadow-black/60 p-5">
                 <div className="flex items-center gap-4">
                   <div className="relative">

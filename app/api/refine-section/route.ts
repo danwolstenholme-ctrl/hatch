@@ -360,7 +360,7 @@ ${code}`
       refined: wasRefined,
       code: refinedCode,
       changes,
-      model: 'claude-3.5-sonnet',
+      model: 'claude-sonnet-4-5-20250929',
     })
 
   } catch (error) {

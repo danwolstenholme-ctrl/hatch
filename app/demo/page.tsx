@@ -237,29 +237,6 @@ export default function DemoPage() {
             transition={{ duration: 0.5 }}
             className="relative z-10 w-full max-w-lg"
           >
-            {/* Logo entrance */}
-            <motion.div 
-              className="flex justify-center mb-8"
-              initial={{ opacity: 0, y: -30, scale: 0.8 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              transition={{ duration: 0.8, delay: 0.2, ease: [0.16, 1, 0.3, 1] }}
-            >
-              <div className="relative">
-                <motion.div
-                  className="absolute inset-0 bg-emerald-500/30 rounded-full blur-xl"
-                  animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.5, 0.3] }}
-                  transition={{ duration: 3, repeat: Infinity }}
-                />
-                <Image 
-                  src="/assets/hatchit_definitive.svg" 
-                  alt="HatchIt" 
-                  width={48} 
-                  height={48}
-                  className="relative"
-                />
-              </div>
-            </motion.div>
-
             {/* Headline */}
             <motion.div
               className="text-center mb-8"

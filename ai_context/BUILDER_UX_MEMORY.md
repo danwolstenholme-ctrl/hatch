@@ -75,9 +75,9 @@ Homepage → Click pricing CTA
 | `app/page.tsx` | Homepage with pricing | ~730 | Hero animations, pricing cards |
 | `app/demo/page.tsx` | Demo entry point | ~240 | Entry experience, VoidTransition trigger |
 | `app/builder/page.tsx` | Builder wrapper | ~180 | Auth flow, subscription checks |
-| `components/BuildFlowController.tsx` | Main builder orchestrator | ~2300 | ⚠️ CAREFUL - God component |
-| `components/SectionBuilder.tsx` | Input/output for each section | ~2100 | Section creation UI |
-| `components/SectionPreview.tsx` | Live preview iframe | ~600 | Preview panel, device switching |
+| `components/BuildFlowController.tsx` | Main builder orchestrator | ~2013 | ⚠️ CAREFUL - God component |
+| `components/SectionBuilder.tsx` | Input/output for each section | ~2360 | Section creation UI |
+| `components/SectionPreview.tsx` | Live preview iframe | ~765 | Preview panel, device switching |
 
 ### The "God Component" Problem
 `BuildFlowController.tsx` handles:
@@ -87,6 +87,7 @@ Homepage → Click pricing CTA
 - Subscription gating
 - Code sanitization
 
+**Lines:** ~2013 (was 2300, cleaned up)
 **Risk:** Changes can cascade unexpectedly. Always test full flow after edits.
 
 ---

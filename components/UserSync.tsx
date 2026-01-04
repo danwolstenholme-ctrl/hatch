@@ -13,7 +13,9 @@ export default function UserSync() {
       if (!isLoaded || !user) return
 
       try {
-        const token = await getToken({ template: 'supabase' })
+        // Note: Requires "supabase" JWT template in Clerk dashboard
+        // If template doesn't exist, silently skip sync
+        const token = await getToken({ template: 'supabase' }).catch(() => null)
         if (!token) return
 
         const supabase = createClerkSupabaseClient(token)
@@ -34,7 +36,8 @@ export default function UserSync() {
           console.error('Error syncing user to Supabase:', error)
         }
       } catch (err) {
-        console.error('Failed to sync user:', err)
+        // Silently fail - user sync is not critical
+        console.debug('User sync skipped:', err)
       }
     }
 

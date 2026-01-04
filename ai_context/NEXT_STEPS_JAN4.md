@@ -6,15 +6,8 @@
 
 ## 🔴 IMMEDIATE (Before Any More Ads)
 
-### 1. Dead Code Cleanup (30 mins)
-**Why:** Reduce attack surface, simplify codebase
-```bash
-# Verify these are unused:
-grep -r "chronosphere" app/ components/ --include="*.tsx" --include="*.ts"
-grep -r "heal" app/ components/ --include="*.tsx" --include="*.ts"
-grep -r "replicator" app/ components/ --include="*.tsx" --include="*.ts"
-```
-**Action:** Delete confirmed dead routes, run build, verify
+### 1. ~~Dead Code Cleanup~~ ✅ DONE (4 Jan)
+**Status:** Verified - chronosphere/heal/replicator are ACTIVE (used by SectionBuilder, ErrorBoundary, ReplicatorModal)
 
 ### 2. Marketing Page Audit (1 hour)
 **Why:** Payment links MUST work, redirects MUST be correct
