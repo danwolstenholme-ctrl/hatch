@@ -260,31 +260,25 @@ function ContactForm() {
                     <div className="text-sm text-zinc-500 mt-0.5">support@hatchit.dev</div>
                   </div>
                 </a>
+
+                <a 
+                  href="https://www.reddit.com/r/HatchIt/" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="flex items-start gap-4 group"
+                >
+                  <div className="w-10 h-10 rounded-lg bg-zinc-800/50 flex items-center justify-center group-hover:bg-zinc-800 transition-colors border border-zinc-700/50">
+                    <MessageSquare className="w-5 h-5 text-zinc-400 group-hover:text-white transition-colors" />
+                  </div>
+                  <div>
+                    <div className="text-sm font-medium text-white group-hover:text-orange-400 transition-colors">Community</div>
+                    <div className="text-sm text-zinc-500 mt-0.5">Join r/HatchIt</div>
+                  </div>
+                </a>
               </div>
             </div>
 
-            {/* Community Hub - Reddit Focus */}
-            <a 
-              href="https://www.reddit.com/r/HatchIt/" 
-              target="_blank" 
-              rel="noopener noreferrer"
-              className="block p-6 rounded-2xl bg-gradient-to-br from-[#FF4500]/10 to-zinc-900/50 border border-[#FF4500]/20 hover:border-[#FF4500]/40 transition-all group"
-            >
-              <div className="flex items-center gap-3 mb-3">
-                <div className="p-2 bg-[#FF4500]/10 rounded-lg text-[#FF4500]">
-                  <MessageSquare className="w-5 h-5" />
-                </div>
-                <h3 className="font-bold text-white group-hover:text-[#FF4500] transition-colors">Join the Community</h3>
-              </div>
-              <p className="text-sm text-zinc-400 leading-relaxed mb-4">
-                Connect with other builders, share your creations, and get direct updates from the team on r/HatchIt.
-              </p>
-              <div className="flex items-center gap-2 text-xs font-medium text-[#FF4500] uppercase tracking-wider">
-                Join Discussion <ArrowRight className="w-3 h-3 group-hover:translate-x-1 transition-transform" />
-              </div>
-            </a>
-
-            <div className="p-6 rounded-2xl bg-zinc-900/20 border border-zinc-800/50">
+            <div className="p-6 rounded-2xl bg-gradient-to-br from-zinc-900/50 to-zinc-900/10 border border-zinc-800/50">
               <h3 className="font-medium text-white mb-2">Response Time</h3>
               <p className="text-sm text-zinc-400 leading-relaxed">
                 We're a small team but we move fast. Expect a response within 24 hours on business days.

@@ -312,16 +312,6 @@
 			"label": "commit-dashboard-overhaul",
 			"type": "shell",
 			"command": "git add . && git commit -m \"feat: overhaul dashboard design to match Singularity dark theme\" && git push"
-		},
-		{
-			"label": "commit-studio-refactor",
-			"type": "shell",
-			"command": "git add app/page.tsx app/features/page.tsx && git commit -m \"refactor: upgrade homepage and features to professional studio standard\" && git push"
-		},
-		{
-			"label": "commit-sharp-corners",
-			"type": "shell",
-			"command": "git add app/page.tsx app/features/page.tsx && git commit -m \"style: enforce sharp corners (rounded-md) on homepage and features\" && git push"
 		}
 	]
 }
