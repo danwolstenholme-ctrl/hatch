@@ -28,7 +28,12 @@ import {
   CopyPlus,
   Info,
   Eye,
-  ArrowRight
+  ArrowRight,
+  Lock,
+  Settings,
+  Palette,
+  Image as ImageIcon,
+  Code2 as Code
 } from 'lucide-react'
 import GuestPromptModal from './GuestPromptModal'
 
@@ -1523,143 +1528,165 @@ export default function SectionBuilder({
               hideToolbar={true}
             />
           ) : showGenerating ? (
-            // Generating state - split screen with blurred streaming code
-            <div className="h-full flex flex-col md:flex-row relative overflow-hidden">
-              {/* Left side - Blurred code streaming */}
-              <div className="flex-1 relative bg-zinc-950 overflow-hidden">
-                {/* Fake streaming code effect */}
-                <div className="absolute inset-0 p-4 font-mono text-xs leading-relaxed overflow-hidden">
-                  <StreamingCodeEffect />
+            // Generating state - Full Studio Interface
+            <div className="h-full flex relative overflow-hidden bg-zinc-950">
+              
+              {/* Left Sidebar - Tools Panel (compact) */}
+              <div className="hidden md:flex w-12 flex-col border-r border-zinc-800/50 bg-zinc-900/30">
+                <div className="flex-1 py-2 space-y-0.5">
+                  {[
+                    { icon: Layers, label: 'Sections', active: true },
+                    { icon: Cpu, label: 'Logo AI', locked: true },
+                    { icon: Palette, label: 'Brand', locked: true },
+                    { icon: ImageIcon, label: 'Assets', locked: true },
+                    { icon: Code, label: 'Code', locked: true },
+                  ].map((tool, i) => (
+                    <div key={i} className="relative group px-1.5">
+                      <button
+                        className={`w-9 h-9 rounded-md flex items-center justify-center transition-all relative ${
+                          tool.active 
+                            ? 'bg-zinc-800 text-white' 
+                            : tool.locked 
+                            ? 'text-zinc-600 hover:text-zinc-500 cursor-not-allowed' 
+                            : 'text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/50'
+                        }`}
+                      >
+                        <tool.icon className="w-4 h-4" />
+                        {tool.locked && (
+                          <div className="absolute top-0.5 right-0.5 w-2.5 h-2.5 bg-zinc-700 rounded-full flex items-center justify-center">
+                            <Lock className="w-1.5 h-1.5 text-zinc-400" />
+                          </div>
+                        )}
+                      </button>
+                      {/* Tooltip */}
+                      <div className="absolute left-full ml-2 top-1/2 -translate-y-1/2 px-2 py-1 bg-zinc-800 rounded text-[10px] text-white whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-50">
+                        {tool.label} {tool.locked && '• Pro'}
+                      </div>
+                    </div>
+                  ))}
                 </div>
-                
-                {/* Blur overlay */}
-                <div className="absolute inset-0 backdrop-blur-md bg-zinc-950/60" />
-                
-                {/* Lock overlay */}
-                <div className="absolute inset-0 flex flex-col items-center justify-center">
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    className="text-center px-6"
-                  >
-                    {/* Breathing logo animation */}
-                    <motion.div
-                      animate={{ scale: [1, 1.05, 1], opacity: [0.6, 0.9, 0.6] }}
-                      transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-                      className="w-12 h-12 mx-auto mb-4"
-                    >
-                      <Image 
-                        src="/assets/hatchit_definitive.svg" 
-                        alt="Building" 
-                        width={48} 
-                        height={48}
-                        className="w-full h-full"
-                      />
-                    </motion.div>
-                    <p className="text-xs text-zinc-500">Sign up to view & export code</p>
-                  </motion.div>
+                <div className="p-1.5 border-t border-zinc-800/50">
+                  <button className="w-9 h-9 rounded-md flex items-center justify-center text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/50 transition-all">
+                    <Settings className="w-4 h-4" />
+                  </button>
                 </div>
               </div>
-              
-              {/* Right side - Status & value props */}
-              <div className="w-full md:w-80 flex-shrink-0 bg-zinc-900/50 border-l border-zinc-800/50 flex flex-col">
-                {/* Progress section */}
-                <div className="p-6 border-b border-zinc-800/50">
-                  {/* Spinning loader */}
-                  <div className="flex items-center gap-4 mb-6">
+
+              {/* Main Canvas Area */}
+              <div className="flex-1 flex flex-col min-w-0">
+                {/* Top Bar - File tabs style (compact) */}
+                <div className="h-8 border-b border-zinc-800/50 bg-zinc-900/30 flex items-center px-1.5 gap-0.5">
+                  <div className="flex items-center gap-1 px-2 py-1 bg-zinc-800 rounded-t text-xs border-b-2 border-emerald-500">
+                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                    <span className="text-[11px] font-medium text-white">Hero Section</span>
+                  </div>
+                  <div className="flex items-center gap-1 px-2 py-1 text-zinc-500 rounded-t hover:bg-zinc-800/50 cursor-not-allowed">
+                    <Lock className="w-2.5 h-2.5" />
+                    <span className="text-[11px]">Features</span>
+                  </div>
+                  <div className="flex items-center gap-1 px-2 py-1 text-zinc-500 rounded-t hover:bg-zinc-800/50 cursor-not-allowed">
+                    <Lock className="w-2.5 h-2.5" />
+                    <span className="text-[11px]">Pricing</span>
+                  </div>
+                </div>
+
+                {/* Canvas with code preview */}
+                <div className="flex-1 relative">
+                  {/* Fake streaming code effect */}
+                  <div className="absolute inset-0 p-4 font-mono text-[10px] leading-relaxed overflow-hidden">
+                    <StreamingCodeEffect />
+                  </div>
+                  
+                  {/* Blur overlay */}
+                  <div className="absolute inset-0 backdrop-blur-md bg-zinc-950/70" />
+                  
+                  {/* Center status */}
+                  <div className="absolute inset-0 flex flex-col items-center justify-center">
                     <motion.div
-                      animate={{ scale: [1, 1.08, 1], opacity: [0.7, 1, 0.7] }}
-                      transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-                      className="w-10 h-10 flex-shrink-0"
+                      initial={{ opacity: 0, scale: 0.9 }}
+                      animate={{ opacity: 1, scale: 1 }}
+                      className="text-center px-6"
                     >
-                      <Image 
-                        src="/assets/hatchit_definitive.svg" 
-                        alt="Building" 
-                        width={40} 
-                        height={40}
-                        className="w-full h-full"
-                      />
-                    </motion.div>
-                    <div className="flex-1">
+                      <motion.div
+                        animate={{ scale: [1, 1.05, 1], opacity: [0.6, 1, 0.6] }}
+                        transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                        className="w-12 h-12 mx-auto mb-3"
+                      >
+                        <Image 
+                          src="/assets/hatchit_definitive.svg" 
+                          alt="Building" 
+                          width={48} 
+                          height={48}
+                          className="w-full h-full"
+                        />
+                      </motion.div>
                       <motion.p 
                         key={loadingStage}
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
-                        className="text-sm font-medium text-white"
+                        className="text-sm font-medium text-white mb-1"
                       >
                         {loadingStages[loadingStage]}
                       </motion.p>
-                      <p className="text-xs text-zinc-500 mt-0.5">Building premium component...</p>
-                    </div>
+                      <p className="text-xs text-zinc-500">Claude Sonnet 4.5</p>
+                    </motion.div>
                   </div>
-                  
-                  {/* Progress bar */}
-                  <div className="h-1 bg-zinc-800 rounded-full overflow-hidden">
+                </div>
+              </div>
+
+              {/* Right Sidebar - Properties Panel */}
+              <div className="hidden lg:flex w-56 flex-col border-l border-zinc-800/50 bg-zinc-900/20">
+                {/* Panel Header */}
+                <div className="px-3 py-2 border-b border-zinc-800/50">
+                  <h3 className="text-[10px] font-medium text-zinc-500 uppercase tracking-wider">Properties</h3>
+                </div>
+                
+                {/* Build Progress */}
+                <div className="px-3 py-2 border-b border-zinc-800/50">
+                  <div className="flex items-center justify-between mb-1.5">
+                    <span className="text-[10px] text-zinc-500">Progress</span>
+                    <span className="text-[10px] font-mono text-emerald-400">{Math.min(95, ((loadingStage + 1) / loadingStages.length) * 100).toFixed(0)}%</span>
+                  </div>
+                  <div className="h-0.5 bg-zinc-800 rounded-full overflow-hidden">
                     <motion.div
-                      className="h-full bg-gradient-to-r from-emerald-600 to-emerald-400"
+                      className="h-full bg-emerald-500"
                       initial={{ width: '5%' }}
                       animate={{ width: `${Math.min(95, ((loadingStage + 1) / loadingStages.length) * 100)}%` }}
                       transition={{ duration: 0.5, ease: 'easeOut' }}
                     />
                   </div>
                 </div>
-                
-                {/* Rotating value props */}
-                <div className="flex-1 p-6 flex flex-col justify-center">
-                  <AnimatePresence mode="wait">
-                    <motion.div
-                      key={loadingStage}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -10 }}
-                      transition={{ duration: 0.3 }}
-                    >
-                      {loadingStage === 0 && (
-                        <div>
-                          <h3 className="text-lg font-semibold text-white mb-2">Real code. Real ownership.</h3>
-                          <p className="text-sm text-zinc-400 leading-relaxed">
-                            No proprietary formats. Clean React + Tailwind you can run anywhere.
-                          </p>
+
+                {/* Locked Features Preview */}
+                <div className="flex-1 px-3 py-2 space-y-1.5 overflow-auto">
+                  <p className="text-[9px] text-zinc-600 uppercase tracking-wider mb-1">Coming with Pro</p>
+                  
+                  {[
+                    { icon: Cpu, name: 'AI Logo Generator', desc: 'Generate matching logos' },
+                    { icon: Palette, name: 'Brand Kit', desc: 'Colors, fonts, assets' },
+                    { icon: Layers, name: 'Full Site Builder', desc: '10+ section templates' },
+                    { icon: Zap, name: 'One-Click Deploy', desc: 'Live in 30 seconds' },
+                  ].map((feature, i) => (
+                    <div key={i} className="p-2 rounded-md bg-zinc-800/30 border border-zinc-800/50 opacity-50">
+                      <div className="flex items-center gap-2">
+                        <div className="w-6 h-6 rounded bg-zinc-700/50 flex items-center justify-center flex-shrink-0">
+                          <feature.icon className="w-3 h-3 text-zinc-500" />
                         </div>
-                      )}
-                      {loadingStage === 1 && (
-                        <div>
-                          <h3 className="text-lg font-semibold text-white mb-3">Industry standard</h3>
-                          <div className="flex flex-wrap gap-2">
-                            {['React 19', 'Tailwind', 'TypeScript'].map((tech) => (
-                              <span key={tech} className="px-2.5 py-1 text-xs font-medium bg-zinc-800 text-zinc-300 rounded-md border border-zinc-700/50">
-                                {tech}
-                              </span>
-                            ))}
-                          </div>
+                        <div className="min-w-0">
+                          <p className="text-[10px] font-medium text-zinc-400 truncate">{feature.name}</p>
+                          <p className="text-[9px] text-zinc-600 truncate">{feature.desc}</p>
                         </div>
-                      )}
-                      {loadingStage === 2 && (
-                        <div>
-                          <h3 className="text-lg font-semibold text-white mb-2">AI pipeline</h3>
-                          <p className="text-sm text-zinc-400 leading-relaxed">
-                            Multiple specialized models generate, refine, and audit your code.
-                          </p>
-                        </div>
-                      )}
-                      {loadingStage === 3 && (
-                        <div>
-                          <h3 className="text-lg font-semibold text-white mb-2">Export anytime</h3>
-                          <p className="text-sm text-zinc-400 leading-relaxed">
-                            Download source code with one click. Host it anywhere.
-                          </p>
-                        </div>
-                      )}
-                    </motion.div>
-                  </AnimatePresence>
+                      </div>
+                    </div>
+                  ))}
                 </div>
-                
+
                 {/* User's prompt at bottom */}
                 {prompt && (
-                  <div className="p-4 border-t border-zinc-800/50 bg-zinc-900/30">
-                    <p className="text-xs text-zinc-500 mb-1">Building:</p>
-                    <p className="text-xs text-zinc-400 font-mono truncate">
-                      "{prompt.slice(0, 40)}{prompt.length > 40 ? '...' : ''}"
+                  <div className="px-3 py-2 border-t border-zinc-800/50 bg-zinc-900/30">
+                    <p className="text-[9px] text-zinc-600 uppercase tracking-wider mb-0.5">Prompt</p>
+                    <p className="text-[10px] text-zinc-400 font-mono leading-relaxed line-clamp-2">
+                      {prompt}
                     </p>
                   </div>
                 )}
@@ -1709,28 +1736,61 @@ export default function SectionBuilder({
               </div>
             )}
 
-            {/* Complete Stage */}
+            {/* Complete Stage - Premium Studio Panel */}
             {stage === 'complete' && (
-              <div className="bg-zinc-900/90 backdrop-blur-xl border border-emerald-500/30 rounded-2xl shadow-2xl shadow-black/60 p-5">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center">
-                      <CheckCircle2 className="w-5 h-5 text-emerald-400" />
-                    </div>
-                    <div>
-                      <h3 className="text-sm font-semibold text-white">Component built</h3>
-                      <p className="text-xs text-zinc-500">Sign up to export, edit, and build more</p>
-                    </div>
+              <motion.div 
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="bg-zinc-950/95 backdrop-blur-xl border border-zinc-800/80 rounded-xl shadow-2xl shadow-black/50"
+              >
+                {/* Compact toolbar row - Figma/Studio style */}
+                <div className="flex items-center gap-2 px-3 py-2.5">
+                  {/* Status indicator - matches generating sidebar */}
+                  <div className="flex items-center gap-1.5 px-2 py-1 bg-zinc-900/50 rounded-md border border-zinc-800/50">
+                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                    <span className="text-[10px] font-medium text-zinc-400 uppercase tracking-wider">Ready</span>
                   </div>
+                  
+                  {/* Divider */}
+                  <div className="w-px h-5 bg-zinc-800/50" />
+                  
+                  {/* Refine input - main focus */}
+                  <div className="flex-1 relative">
+                    <input
+                      type="text"
+                      value={refinePrompt}
+                      onChange={(e) => setRefinePrompt(e.target.value)}
+                      onKeyDown={(e) => e.key === 'Enter' && refinePrompt.trim() && handleUserRefine()}
+                      disabled={isUserRefining}
+                      placeholder="Describe changes... (colors, layout, animations)"
+                      className="w-full bg-zinc-900/50 border border-zinc-800/50 rounded-md px-3 py-1.5 text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-zinc-700 disabled:opacity-50 font-mono"
+                    />
+                  </div>
+                  
+                  {/* Refine button - matches sidebar aesthetic */}
+                  <button
+                    onClick={handleUserRefine}
+                    disabled={!refinePrompt.trim() || isUserRefining}
+                    className="px-3 py-1.5 rounded-md bg-zinc-900/50 hover:bg-zinc-800 border border-zinc-800/50 text-zinc-300 text-[10px] font-medium uppercase tracking-wider transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1.5"
+                  >
+                    {isUserRefining ? (
+                      <RefreshCw className="w-3 h-3 animate-spin" />
+                    ) : (
+                      <Edit3 className="w-3 h-3" />
+                    )}
+                    <span>Refine</span>
+                  </button>
+                  
+                  {/* Export CTA - emerald accent */}
                   <button
                     onClick={() => goToSignUp()}
-                    className="px-5 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black text-sm font-semibold transition-all flex items-center gap-2"
+                    className="px-3 py-1.5 rounded-md bg-emerald-600 hover:bg-emerald-500 text-white text-[10px] font-medium uppercase tracking-wider transition-all flex items-center gap-1.5"
                   >
-                    Sign up free
-                    <ArrowRight className="w-4 h-4" />
+                    <span>Export</span>
+                    <ArrowRight className="w-3 h-3" />
                   </button>
                 </div>
-              </div>
+              </motion.div>
             )}
 
             {/* Refining Stage */}

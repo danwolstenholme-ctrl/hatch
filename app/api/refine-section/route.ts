@@ -99,100 +99,117 @@ Return ONLY valid JSON (no markdown code blocks, no explanation):
 
 export async function POST(request: NextRequest) {
   try {
-    const { userId } = await auth()
-    if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    }
-
-    // Parse body early to check for self-healing (which is free)
+    // Parse body early to check for demo mode
     const body = await request.json()
     const { sectionId, projectId, code, sectionType, sectionName, userPrompt, refineRequest, screenshot } = body
+
+    // Guest/Demo mode bypass - projectId starting with 'demo-' skips auth
+    const isDemoMode = projectId && typeof projectId === 'string' && projectId.startsWith('demo-')
+
+    const { userId } = await auth()
+    
+    // Only require auth for non-demo requests
+    if (!isDemoMode && !userId) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
 
     // Self-healing check: If the request is to fix a runtime error, it's free.
     // "FIX RUNTIME ERROR" is the prefix used in SectionBuilder.tsx
     const isSelfHealing = refineRequest && refineRequest.startsWith('FIX RUNTIME ERROR')
 
-    // Check user tier and Architect usage limits
-    const client = await clerkClient()
-    const user = await client.users.getUser(userId)
-    const accountSub = user.publicMetadata?.accountSubscription as { 
-      status?: string
-      tier?: 'architect' | 'visionary' | 'singularity'
-    } | undefined
-    
-    const freeCreditsUsed = (user.publicMetadata?.freeCreditsUsed as number) || 0
-    const hasActiveSub = accountSub?.status === 'active'
-    const architectUsed = (user.publicMetadata?.architectRefinementsUsed as number) || 0
-
-    // Free users: allow up to FREE_REFINE_LIMIT (1), then block
-    const FREE_REFINE_LIMIT = 1
-    
-    if (!isSelfHealing && !hasActiveSub && architectUsed >= FREE_REFINE_LIMIT) {
-      return NextResponse.json({
-        error: 'Free refinement limit reached. Upgrade to Architect for unlimited polish.',
-        limitReached: true,
-        used: architectUsed,
-        limit: FREE_REFINE_LIMIT,
-      }, { status: 429 })
-    }
-
-    // Check Architect usage for paid tiers (Singularity is unlimited)
-    // Skip check if self-healing
-    if (!isSelfHealing && hasActiveSub && accountSub?.tier && accountSub.tier !== 'singularity') {
-      const resetDate = user.publicMetadata?.architectRefinementsResetDate as string | undefined
-      const today = new Date().toISOString().split('T')[0]
+    // Skip usage checks for demo mode
+    if (!isDemoMode) {
+      // Check user tier and Architect usage limits
+      const client = await clerkClient()
+      const user = await client.users.getUser(userId!)
+      const accountSub = user.publicMetadata?.accountSubscription as { 
+        status?: string
+        tier?: 'architect' | 'visionary' | 'singularity'
+      } | undefined
       
-      // Check if we need to reset (new month or past reset date)
-      const shouldReset = !resetDate || new Date(resetDate) <= new Date(today)
-      const currentUsage = shouldReset ? 0 : architectUsed
-      
-      const limit = accountSub.tier === 'architect'
-        ? ARCHITECT_REFINEMENT_LIMIT
-        : parseInt(process.env.PRO_ARCHITECT_MONTHLY_LIMIT || '30', 10)
+      const freeCreditsUsed = (user.publicMetadata?.freeCreditsUsed as number) || 0
+      const hasActiveSub = accountSub?.status === 'active'
+      const architectUsed = (user.publicMetadata?.architectRefinementsUsed as number) || 0
 
-      if (currentUsage >= limit) {
-        return NextResponse.json({ 
-          error: `Monthly refinement limit reached (${limit}/month). ${accountSub?.tier === 'architect' ? 'Upgrade to Visionary for 30/month.' : 'Upgrade to Singularity for unlimited.'}`,
+      // Free users: allow up to FREE_REFINE_LIMIT (1), then block
+      const FREE_REFINE_LIMIT = 1
+      
+      if (!isSelfHealing && !hasActiveSub && architectUsed >= FREE_REFINE_LIMIT) {
+        return NextResponse.json({
+          error: 'Free refinement limit reached. Upgrade to Architect for unlimited polish.',
           limitReached: true,
-          used: currentUsage,
-          limit: limit
+          used: architectUsed,
+          limit: FREE_REFINE_LIMIT,
         }, { status: 429 })
       }
-    }
 
-    const clerkUser = await currentUser()
-    const email = clerkUser?.emailAddresses?.[0]?.emailAddress
-    const dbUser = await getOrCreateUser(userId, email)
-    if (!dbUser) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 })
-    }
+      // Check Architect usage for paid tiers (Singularity is unlimited)
+      // Skip check if self-healing
+      if (!isSelfHealing && hasActiveSub && accountSub?.tier && accountSub.tier !== 'singularity') {
+        const resetDate = user.publicMetadata?.architectRefinementsResetDate as string | undefined
+        const today = new Date().toISOString().split('T')[0]
+        
+        // Check if we need to reset (new month or past reset date)
+        const shouldReset = !resetDate || new Date(resetDate) <= new Date(today)
+        const currentUsage = shouldReset ? 0 : architectUsed
+        
+        const limit = accountSub.tier === 'architect'
+          ? ARCHITECT_REFINEMENT_LIMIT
+          : parseInt(process.env.PRO_ARCHITECT_MONTHLY_LIMIT || '30', 10)
 
-    if (!sectionId || !code) {
-      return NextResponse.json(
-        { error: 'Missing required fields: sectionId, code' },
-        { status: 400 }
-      )
-    }
+        if (currentUsage >= limit) {
+          return NextResponse.json({ 
+            error: `Monthly refinement limit reached (${limit}/month). ${accountSub?.tier === 'architect' ? 'Upgrade to Visionary for 30/month.' : 'Upgrade to Singularity for unlimited.'}`,
+            limitReached: true,
+            used: currentUsage,
+            limit: limit
+          }, { status: 429 })
+        }
+      }
 
-    // Verify ownership: section -> project -> user (using internal ID)
-    let section = await getSectionById(sectionId)
-    
-    // Fallback: Try to find by projectId + sectionType if sectionId lookup failed
-    if (!section && projectId && sectionType) {
-      const projectSections = await getSectionsByProjectId(projectId)
-      section = projectSections.find(s => s.section_id === sectionType) || null
-    }
+      const clerkUser = await currentUser()
+      const email = clerkUser?.emailAddresses?.[0]?.emailAddress
+      const dbUser = await getOrCreateUser(userId!, email)
+      if (!dbUser) {
+        return NextResponse.json({ error: 'User not found' }, { status: 404 })
+      }
 
-    console.log('[Refine] Found section:', section ? section.id : 'null')
-    if (!section) {
-      return NextResponse.json({ error: `Section not found for ID: ${sectionId}` }, { status: 404 })
-    }
-    const project = await getProjectById(section.project_id)
-    if (!project) {
-      return NextResponse.json({ error: 'Project not found' }, { status: 404 })
-    }
-    if (project.user_id !== dbUser.id) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
+      // Verify code is provided
+      if (!code) {
+        return NextResponse.json(
+          { error: 'Missing required field: code' },
+          { status: 400 }
+        )
+      }
+
+      // Verify ownership: section -> project -> user (using internal ID)
+      let section = await getSectionById(sectionId)
+      
+      // Fallback: Try to find by projectId + sectionType if sectionId lookup failed
+      if (!section && projectId && sectionType) {
+        const projectSections = await getSectionsByProjectId(projectId)
+        section = projectSections.find(s => s.section_id === sectionType) || null
+      }
+
+      console.log('[Refine] Found section:', section ? section.id : 'null')
+      if (!section) {
+        return NextResponse.json({ error: `Section not found for ID: ${sectionId}` }, { status: 404 })
+      }
+      const project = await getProjectById(section.project_id)
+      if (!project) {
+        return NextResponse.json({ error: 'Project not found' }, { status: 404 })
+      }
+      if (project.user_id !== dbUser.id) {
+        return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
+      }
+    } else {
+      // Demo mode - just verify code is provided
+      if (!code) {
+        return NextResponse.json(
+          { error: 'Missing required field: code' },
+          { status: 400 }
+        )
+      }
     }
 
     // Determine if this is a user-directed refinement or auto-polish
@@ -306,53 +323,60 @@ ${code}`
     }
 
     // Increment Refinement usage for paid tiers after successful refinement
-    // Skip if self-healing (free)
-    if (!isSelfHealing && hasActiveSub && accountSub?.tier && accountSub.tier !== 'singularity' && wasRefined) {
+    // Skip if self-healing (free) or demo mode
+    if (!isDemoMode && !isSelfHealing && wasRefined && userId) {
       try {
-        const currentUsed = (user.publicMetadata?.architectRefinementsUsed as number) || 0
-        const resetDate = user.publicMetadata?.architectRefinementsResetDate as string | undefined
-        const today = new Date()
+        const client = await clerkClient()
+        const user = await client.users.getUser(userId)
+        const accountSub = user.publicMetadata?.accountSubscription as { 
+          status?: string
+          tier?: 'architect' | 'visionary' | 'singularity'
+        } | undefined
+        const hasActiveSub = accountSub?.status === 'active'
+        const freeCreditsUsed = (user.publicMetadata?.freeCreditsUsed as number) || 0
         
-        // Calculate next month's reset date if needed
-        let newResetDate = resetDate
-        if (!resetDate || new Date(resetDate) <= today) {
-          // Set reset to first of next month
-          const nextMonth = new Date(today.getFullYear(), today.getMonth() + 1, 1)
-          newResetDate = nextMonth.toISOString().split('T')[0]
-        }
-        
-        const shouldReset = !resetDate || new Date(resetDate) <= today
-        const newUsed = shouldReset ? 1 : currentUsed + 1
-        
-        await client.users.updateUser(userId, {
-          publicMetadata: {
-            ...user.publicMetadata,
-            architectRefinementsUsed: newUsed,
-            architectRefinementsResetDate: newResetDate,
+        if (hasActiveSub && accountSub?.tier && accountSub.tier !== 'singularity') {
+          const currentUsed = (user.publicMetadata?.architectRefinementsUsed as number) || 0
+          const resetDate = user.publicMetadata?.architectRefinementsResetDate as string | undefined
+          const today = new Date()
+          
+          // Calculate next month's reset date if needed
+          let newResetDate = resetDate
+          if (!resetDate || new Date(resetDate) <= today) {
+            // Set reset to first of next month
+            const nextMonth = new Date(today.getFullYear(), today.getMonth() + 1, 1)
+            newResetDate = nextMonth.toISOString().split('T')[0]
           }
-        })
+          
+          const shouldReset = !resetDate || new Date(resetDate) <= today
+          const newUsed = shouldReset ? 1 : currentUsed + 1
+          
+          await client.users.updateUser(userId, {
+            publicMetadata: {
+              ...user.publicMetadata,
+              architectRefinementsUsed: newUsed,
+              architectRefinementsResetDate: newResetDate,
+            }
+          })
+        }
+
+        // Track free credit usage for non-paid users
+        if (!hasActiveSub) {
+          await client.users.updateUser(userId, {
+            publicMetadata: {
+              ...user.publicMetadata,
+              freeCreditsUsed: freeCreditsUsed + 1,
+            },
+          })
+        }
       } catch (updateError) {
-        console.error('[refine-section] Failed to update Refinement usage:', updateError)
+        console.error('[refine-section] Failed to update usage:', updateError)
         // Don't fail the request, just log
       }
     }
 
-    // Track free credit usage for non-paid users
-    if (!isSelfHealing && !hasActiveSub && wasRefined) {
-      try {
-        await client.users.updateUser(userId, {
-          publicMetadata: {
-            ...user.publicMetadata,
-            freeCreditsUsed: freeCreditsUsed + 1,
-          },
-        })
-      } catch (updateError) {
-        console.error('[refine-section] Failed to update free credit usage:', updateError)
-      }
-    }
-
-    // SAVE TO DATABASE - persist the refined code
-    if (wasRefined) {
+    // SAVE TO DATABASE - persist the refined code (skip for demo mode)
+    if (wasRefined && !isDemoMode && sectionId) {
       await updateSectionRefinement(sectionId, true, refinedCode, changes)
     }
 

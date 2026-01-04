@@ -63,9 +63,19 @@ export default function HomepageWelcome({ onStart }: { onStart?: () => void }) {
   const [phase, setPhase] = useState<'init' | 'ready'>('init')
   const router = useRouter()
   const SEEN_KEY = 'hatch_homepage_welcome_seen'
+  const PREVIEW_PREFIX = 'hatch_preview_'
 
   useEffect(() => {
     const hasSeen = localStorage.getItem(SEEN_KEY)
+    
+    // Check if user has a cached preview - if so, skip welcome and go to builder
+    const hasCachedPreview = Object.keys(localStorage).some(key => key.startsWith(PREVIEW_PREFIX))
+    if (hasCachedPreview) {
+      // User has work in progress - send them straight to builder
+      router.push('/builder?mode=guest')
+      return
+    }
+    
     if (!hasSeen) {
       // Open after a brief delay to let the homepage load first
       const timer = setTimeout(() => {
@@ -76,7 +86,7 @@ export default function HomepageWelcome({ onStart }: { onStart?: () => void }) {
 
       return () => clearTimeout(timer)
     }
-  }, [])
+  }, [router])
 
   const handleStart = () => {
     localStorage.setItem(SEEN_KEY, 'true')

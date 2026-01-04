@@ -676,13 +676,8 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
       })
     }
 
-    // TRIGGER SIGNUP GATE FOR GUESTS AFTER FIRST SECTION (HERO)
-    if (guestMode && buildState.currentSectionIndex === 0) {
-      // Small delay to let them see the preview update first
-      setTimeout(() => {
-        setShowSignupGate(true)
-      }, 1500)
-    }
+    // REMOVED: Signup gate after first section
+    // Guests can now build unlimited - paywall is at deploy/export only
 
     // NO MORE GENERATION COUNTING - users can generate freely
     // Paywall is at deploy/export only
@@ -764,11 +759,8 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
   const handleNextSection = () => {
     if (!buildState) return
 
-    // STRICT GUEST LOCK: Prevent advancing past Hero (index 0)
-    if (guestMode && buildState.currentSectionIndex === 0) {
-      setShowSignupGate(true)
-      return
-    }
+    // REMOVED: Guest lock at Hero section
+    // Guests can now advance freely - paywall is at deploy/export only
 
     const nextIndex = buildState.currentSectionIndex + 1
     
