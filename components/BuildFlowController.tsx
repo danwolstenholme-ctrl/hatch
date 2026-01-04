@@ -52,6 +52,9 @@ import TheWitness from './singularity/TheWitness'
 import WelcomeModal from './WelcomeModal'
 import SiteSettingsModal, { SiteSettings } from './SiteSettingsModal'
 import FullSitePreviewFrame from './builder/FullSitePreviewFrame'
+import GuestCreditBadge from './GuestCreditBadge'
+import PremiumFeaturesShowcase from './PremiumFeaturesShowcase'
+import BuildSuccessModal from './BuildSuccessModal'
 import { chronosphere } from '@/lib/chronosphere'
 import { Template, Section, getTemplateById, getSectionById, createInitialBuildState, BuildState, websiteTemplate } from '@/lib/templates'
 import { DbProject, DbSection, DbBrandConfig } from '@/lib/supabase'
@@ -150,6 +153,27 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
   const [showReset, setShowReset] = useState(false)
   const [isReplicationReady, setIsReplicationReady] = useState(false)
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
+  const [showBuildSuccess, setShowBuildSuccess] = useState(false)
+  const [lastCompletedSection, setLastCompletedSection] = useState<string>('')
+  const [guestBuildsUsed, setGuestBuildsUsed] = useState(0)
+  const [guestRefinementsUsed, setGuestRefinementsUsed] = useState(0)
+
+  // Sync guest credit counts from localStorage
+  useEffect(() => {
+    if (!guestMode) return
+    
+    const syncCredits = () => {
+      const builds = parseInt(localStorage.getItem('hatch_guest_builds') || '0', 10)
+      const refinements = parseInt(localStorage.getItem('hatch_guest_refinements') || '0', 10)
+      setGuestBuildsUsed(builds)
+      setGuestRefinementsUsed(refinements)
+    }
+    
+    syncCredits()
+    // Listen for storage changes from SectionBuilder
+    window.addEventListener('storage', syncCredits)
+    return () => window.removeEventListener('storage', syncCredits)
+  }, [guestMode])
 
   const handleSaveSettings = async (settings: SiteSettings) => {
     if (!project) return
@@ -677,6 +701,17 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
     // Paywall is at deploy/export only
 
     setBuildState(newState)
+    
+    // Show success modal for guests with credit tracking
+    if (guestMode) {
+      setLastCompletedSection(currentSection.name)
+      setShowBuildSuccess(true)
+      track('Section Complete - Guest', { 
+        sectionName: currentSection.name,
+        buildsRemaining: Math.max(0, 3 - guestBuildsUsed)
+      })
+    }
+    
     // No auto-advance to review - user clicks "Finish & Review" button
   }
 
@@ -1356,9 +1391,9 @@ export default function GeneratedPage() {
             exit={{ opacity: 0 }}
             className="flex h-screen overflow-hidden bg-black"
           >
-            {/* Singularity Sidebar - Desktop Only, Hidden for Guests */}
-            {!guestMode && (
-              <div className="hidden lg:block">
+            {/* Singularity Sidebar - Desktop Only */}
+            <div className="hidden lg:block w-64 border-r border-zinc-900 bg-zinc-950 flex flex-col h-full overflow-y-auto">
+              {!guestMode ? (
                 <SingularitySidebar
                   currentSection={buildState.currentSectionIndex + 1}
                   totalSections={sectionsForBuild.length}
@@ -1373,8 +1408,32 @@ export default function GeneratedPage() {
                   }}
                   onOpenSettings={() => setIsSettingsOpen(true)}
                 />
-              </div>
-            )}
+              ) : (
+                <div className="p-6 space-y-6">
+                  {/* Guest Credit Badge */}
+                  <GuestCreditBadge
+                    buildsUsed={guestBuildsUsed}
+                    buildsLimit={3}
+                    refinementsUsed={guestRefinementsUsed}
+                    refinementsLimit={3}
+                    onUpgrade={() => {
+                      track('Guest Sidebar - Upgrade Badge Clicked')
+                      setHatchModalReason('generation_limit')
+                      setShowHatchModal(true)
+                    }}
+                  />
+
+                  {/* Premium Features Showcase */}
+                  <PremiumFeaturesShowcase
+                    onFeatureClick={(featureId, tier) => {
+                      track('Guest Sidebar - Feature Clicked', { featureId, tier })
+                      setHatchModalReason('proactive')
+                      setShowHatchModal(true)
+                    }}
+                  />
+                </div>
+              )}
+            </div>
 
             {/* Main Build Area */}
             <div className="flex-1 flex flex-col overflow-hidden">
@@ -1988,6 +2047,25 @@ export default function GeneratedPage() {
         isOpen={showHatchModal}
         onClose={() => setShowHatchModal(false)}
         reason={hatchModalReason}
+      />
+
+      {/* Build Success Modal - celebration + upgrade nudge for guests */}
+      <BuildSuccessModal
+        isOpen={showBuildSuccess}
+        onClose={() => setShowBuildSuccess(false)}
+        onContinue={() => {
+          setShowBuildSuccess(false)
+          track('Build Success Modal - Continue')
+        }}
+        onUpgrade={() => {
+          setShowBuildSuccess(false)
+          setHatchModalReason('proactive')
+          setShowHatchModal(true)
+          track('Build Success Modal - Upgrade')
+        }}
+        sectionName={lastCompletedSection}
+        buildsRemaining={Math.max(0, 3 - guestBuildsUsed)}
+        isGuest={guestMode || false}
       />
 
       <TheWitness
