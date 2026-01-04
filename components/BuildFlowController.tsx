@@ -47,7 +47,6 @@ import SectionBuilder from './SectionBuilder'
 import SingularitySidebar from './singularity/SingularitySidebar'
 import PaywallTransition from './PaywallTransition'
 import HatchModal from './HatchModal'
-import Scorecard from './Scorecard'
 import TheWitness from './singularity/TheWitness'
 import WelcomeModal from './WelcomeModal'
 import SiteSettingsModal, { SiteSettings } from './SiteSettingsModal'
@@ -1837,39 +1836,7 @@ export default function GeneratedPage() {
               </div>
             </div>
 
-            {/* Scorecard Modal */}
-            <AnimatePresence>
-              {showScorecard && buildState.auditScores && (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-                  onClick={() => setShowScorecard(false)}
-                >
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.9, y: 20 }}
-                    animate={{ opacity: 1, scale: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                    className="bg-zinc-950 border border-zinc-800 rounded-2xl max-w-lg w-full shadow-2xl relative overflow-hidden"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <Scorecard 
-                      scores={buildState.auditScores} 
-                      passed={buildState.auditPassed ?? false} 
-                    />
-                    <div className="p-4 bg-zinc-900/50 border-t border-zinc-800 flex justify-end">
-                      <button
-                        onClick={() => setShowScorecard(false)}
-                        className="px-4 py-2 bg-zinc-800 text-white rounded-lg hover:bg-zinc-700 text-sm font-medium"
-                      >
-                        Close Report
-                      </button>
-                    </div>
-                  </motion.div>
-                </motion.div>
-              )}
-            </AnimatePresence>
+
 
             {/* Success Modal after Deploy - "Ship it. Share it." */}
             <AnimatePresence>

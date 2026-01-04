@@ -595,113 +595,112 @@ export default function Home() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 max-w-sm sm:max-w-none mx-auto">
             {/* Starter ($19/mo) */}
             <motion.div 
-              className="p-6 sm:p-8 bg-zinc-900/50 backdrop-blur-sm border border-zinc-800 rounded-2xl hover:border-emerald-500/20 transition-all flex flex-col relative sm:col-span-1"
-              whileHover={{ 
-                y: -4, 
-                borderColor: 'rgba(16,185,129,0.2)',
-                transition: { type: 'spring', stiffness: 300, damping: 20 }
-              }}
+              className="group relative p-8 bg-zinc-950 border border-zinc-800 rounded-2xl hover:border-emerald-500/30 transition-all duration-500 flex flex-col overflow-hidden"
+              whileHover={{ y: -4 }}
             >
-              <div className="text-sm text-emerald-500/70 mb-2 font-mono tracking-wider">INITIATE</div>
-              <h3 className="text-2xl font-bold mb-1 text-white">Architect</h3>
-              <div className="flex items-baseline gap-2 mb-2">
-                <span className="text-4xl font-bold font-mono text-white">$19</span>
-                <span className="text-zinc-500">/month</span>
+              <div className="absolute inset-0 bg-gradient-to-b from-emerald-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              
+              <div className="relative z-10">
+                <div className="text-xs font-mono text-zinc-500 uppercase tracking-widest mb-4">Initiate</div>
+                <h3 className="text-2xl font-bold text-white mb-2">Architect</h3>
+                <div className="flex items-baseline gap-1 mb-6">
+                  <span className="text-4xl font-mono font-bold text-white tracking-tighter">$19</span>
+                  <span className="text-zinc-600 font-mono text-sm">/mo</span>
+                </div>
+                
+                <div className="h-px w-full bg-zinc-900 mb-6" />
+                
+                <ul className="space-y-4 mb-8">
+                  {[
+                    { text: 'Singularity Engine Access', included: true },
+                    { text: 'Unlimited AI Generations', included: true },
+                    { text: 'Live Neural Preview', included: true },
+                    { text: 'Deploy to hatchitsites.dev', included: true },
+                    { text: 'Download Source Code', included: false },
+                    { text: 'Custom Domain', included: false },
+                  ].map((item, i) => (
+                    <li key={i} className={`flex items-center gap-3 text-sm ${item.included ? 'text-zinc-300' : 'text-zinc-700'}`}>
+                      <div className={`w-1.5 h-1.5 rounded-full ${item.included ? 'bg-emerald-500' : 'bg-zinc-800'}`} />
+                      <span className={item.included ? '' : 'line-through decoration-zinc-800'}>{item.text}</span>
+                    </li>
+                  ))}
+                </ul>
               </div>
-              <div className="text-zinc-500 text-sm mb-8">Begin the transformation</div>
-              <ul className="space-y-4 flex-grow">
-                {[
-                  { text: 'Singularity Engine Access', included: true },
-                  { text: 'Unlimited AI Generations', included: true },
-                  { text: 'Live Neural Preview', included: true },
-                  { text: 'Deploy to hatchitsites.dev', included: true },
-                  { text: 'Download Source Code', included: false },
-                  { text: 'Custom Domain', included: false },
-                  { text: 'Remove Branding', included: false },
-                ].map((item, i) => (
-                  <li key={i} className={`flex items-center gap-3 text-sm ${item.included ? 'text-zinc-300' : 'text-zinc-700'}`}>
-                    {item.included ? (
-                      <CheckCircle2 className="w-5 h-5 text-emerald-500/70 flex-shrink-0" />
-                    ) : (
-                      <div className="w-5 h-5 rounded-full border border-zinc-800 flex-shrink-0" />
-                    )}
-                    {item.text}
-                  </li>
-                ))}
-              </ul>
             </motion.div>
 
             {/* Pro ($49) */}
             <motion.div 
-              className="relative p-6 sm:p-8 bg-gradient-to-b from-zinc-900 to-zinc-900/80 backdrop-blur-sm border-2 border-emerald-500/60 rounded-2xl overflow-hidden shadow-[0_0_60px_rgba(16,185,129,0.2)] transform lg:-translate-y-4 flex flex-col sm:col-span-2 lg:col-span-1 order-first sm:order-none"
-              whileHover={{ 
-                y: -8, 
-                boxShadow: '0 30px 60px -20px rgba(16,185,129,0.3)',
-                transition: { type: 'spring', stiffness: 300, damping: 20 }
-              }}
+              className="group relative p-8 bg-zinc-950 border border-emerald-500/50 rounded-2xl shadow-[0_0_50px_rgba(16,185,129,0.1)] hover:shadow-[0_0_80px_rgba(16,185,129,0.2)] transition-all duration-500 flex flex-col overflow-hidden lg:-translate-y-4"
+              whileHover={{ y: -12 }}
             >
-              {/* Glow effect at top */}
-              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-2/3 h-px bg-gradient-to-r from-transparent via-emerald-400 to-transparent" />
-              <div className="absolute top-0 left-1/2 -translate-x-1/2 px-3 py-1 bg-emerald-500 text-[10px] font-bold rounded-b-lg text-black font-mono tracking-wider">RECOMMENDED</div>
+              <div className="absolute inset-0 bg-gradient-to-b from-emerald-500/10 via-emerald-500/5 to-transparent opacity-100" />
+              <div className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-emerald-500 to-transparent opacity-50" />
               
-              <div className="text-center mt-4">
-                <div className="text-sm text-emerald-400 mb-3 font-mono tracking-[0.2em] font-semibold">UNLIMITED</div>
-                <h3 className="text-3xl font-bold mb-2 text-white">Visionary</h3>
-                <div className="flex items-baseline justify-center gap-2 mb-2">
-                  <span className="text-5xl font-bold font-mono text-white">$49</span>
-                  <span className="text-zinc-400">/month</span>
+              <div className="relative z-10">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="text-xs font-mono text-emerald-400 uppercase tracking-widest">Recommended</div>
+                  <div className="px-2 py-0.5 rounded bg-emerald-500/20 border border-emerald-500/30 text-[10px] font-mono text-emerald-300 uppercase">Unlimited</div>
                 </div>
-                <div className="text-emerald-400/80 text-sm mb-8 font-medium">Total creative control</div>
+                
+                <h3 className="text-3xl font-bold text-white mb-2">Visionary</h3>
+                <div className="flex items-baseline gap-1 mb-6">
+                  <span className="text-5xl font-mono font-bold text-white tracking-tighter">$49</span>
+                  <span className="text-zinc-500 font-mono text-sm">/mo</span>
+                </div>
+                
+                <div className="h-px w-full bg-emerald-500/20 mb-6" />
+                
+                <ul className="space-y-4 mb-8">
+                  {[
+                    'Unlimited AI Generations',
+                    'Full Source Code Export',
+                    'Custom Domain Deployment',
+                    'White Label (No Branding)',
+                    'Commercial License',
+                    'Priority Neural Processing',
+                  ].map((item, i) => (
+                    <li key={i} className="flex items-center gap-3 text-sm text-white">
+                      <CheckCircle2 className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
               </div>
-              
-              <ul className="space-y-4 flex-grow">
-                {[
-                  'Unlimited AI Generations',
-                  'Full Source Code Export',
-                  'Custom Domain Deployment',
-                  'White Label (No Branding)',
-                  'Commercial License',
-                  'Priority Neural Processing',
-                ].map((item, i) => (
-                  <li key={i} className="flex items-center gap-3 text-sm text-white font-medium">
-                    <CheckCircle2 className="w-5 h-5 text-emerald-400 flex-shrink-0" />
-                    {item}
-                  </li>
-                ))}
-              </ul>
             </motion.div>
 
             {/* Agency ($199) */}
             <motion.div 
-              className="relative p-6 sm:p-8 bg-zinc-900/50 backdrop-blur-sm border border-zinc-800 rounded-2xl hover:border-amber-500/20 transition-all flex flex-col"
-              whileHover={{ 
-                y: -4, 
-                borderColor: 'rgba(245,158,11,0.2)',
-                transition: { type: 'spring', stiffness: 300, damping: 20 }
-              }}
+              className="group relative p-8 bg-zinc-950 border border-zinc-800 rounded-2xl hover:border-amber-500/30 transition-all duration-500 flex flex-col overflow-hidden"
+              whileHover={{ y: -4 }}
             >
-              <div className="text-sm text-amber-500 mb-2 font-mono tracking-wider">GOD MODE</div>
-              <h3 className="text-2xl font-bold mb-1 text-white">Singularity</h3>
-              <div className="flex items-baseline gap-2 mb-2">
-                <span className="text-4xl font-bold font-mono text-white">$199</span>
-                <span className="text-zinc-500">/month</span>
+              <div className="absolute inset-0 bg-gradient-to-b from-amber-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              
+              <div className="relative z-10">
+                <div className="text-xs font-mono text-amber-500 uppercase tracking-widest mb-4">God Mode</div>
+                <h3 className="text-2xl font-bold text-white mb-2">Singularity</h3>
+                <div className="flex items-baseline gap-1 mb-6">
+                  <span className="text-4xl font-mono font-bold text-white tracking-tighter">$199</span>
+                  <span className="text-zinc-600 font-mono text-sm">/mo</span>
+                </div>
+                
+                <div className="h-px w-full bg-zinc-900 mb-6" />
+                
+                <ul className="space-y-4 mb-8">
+                  {[
+                    'Everything in Visionary',
+                    'Unlimited Projects',
+                    'Direct Line to Founders',
+                    'Early Access to New Models',
+                    'API Access (Coming Soon)',
+                    'Dedicated Infrastructure',
+                  ].map((item, i) => (
+                    <li key={i} className="flex items-center gap-3 text-sm text-zinc-300">
+                      <div className="w-1.5 h-1.5 rounded-full bg-amber-500" />
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
               </div>
-              <div className="text-zinc-500 text-sm mb-8">For those who build worlds</div>
-              <ul className="space-y-4 flex-grow">
-                {[
-                  'Everything in Visionary',
-                  'Unlimited Projects',
-                  'Direct Line to Founders',
-                  'Early Access to New Models',
-                  'API Access (Coming Soon)',
-                  'Dedicated Infrastructure',
-                ].map((item, i) => (
-                  <li key={i} className="flex items-center gap-3 text-sm text-zinc-300">
-                    <CheckCircle2 className="w-5 h-5 text-amber-500 flex-shrink-0" />
-                    {item}
-                  </li>
-                ))}
-              </ul>
             </motion.div>
           </div>
 

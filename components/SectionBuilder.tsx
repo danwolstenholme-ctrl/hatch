@@ -1288,7 +1288,8 @@ export default function SectionBuilder({
     
     chronosphere.log('refinement', { prompt: refinePrompt, section: section.name }, section.id)
 
-    // Demo mode - simulate refinement
+    // Demo mode simulation removed - all users get real AI
+    /*
     if (demoMode) {
       const refinedCode = generatedCode.replace(
         'Feature One',
@@ -1310,6 +1311,7 @@ export default function SectionBuilder({
       onComplete(refinedCode, true, [...refinementChanges, refinePrompt])
       return
     }
+    */
 
     try {
       // Capture screenshot for visual context (The Retina)
@@ -1400,7 +1402,8 @@ export default function SectionBuilder({
     setIsArchitectPolishing(true)
     setError(null)
 
-    // Demo mode - simulate architect polish
+    // Demo mode simulation removed - all users get real AI
+    /*
     if (demoMode) {
       await new Promise(resolve => setTimeout(resolve, 3000))
       setRefined(true)
@@ -1409,6 +1412,7 @@ export default function SectionBuilder({
       setIsArchitectPolishing(false)
       return
     }
+    */
     
     try {
       const response = await fetch('/api/refine-section', {
@@ -1722,16 +1726,29 @@ export default function SectionBuilder({
           >
             {/* Generating Stage - minimal bottom bar */}
             {(stage === 'generating' || showGenerating) && (
-              <div className="bg-zinc-900/80 backdrop-blur-xl border border-zinc-800/60 rounded-xl shadow-xl shadow-black/40 px-4 py-3">
-                <div className="flex items-center justify-center gap-3">
-                  <motion.div
-                    animate={{ rotate: 360 }}
-                    transition={{ duration: 1.5, repeat: Infinity, ease: 'linear' }}
-                    className="w-4 h-4 border-2 border-emerald-500/30 border-t-emerald-500 rounded-full"
-                  />
-                  <p className="text-sm text-zinc-400">
-                    Writing production-ready code...
-                  </p>
+              <div className="bg-zinc-950/90 backdrop-blur-xl border border-emerald-500/20 rounded-full shadow-[0_0_30px_rgba(16,185,129,0.1)] px-6 py-4 relative overflow-hidden group">
+                {/* Animated border gradient */}
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-emerald-500/10 to-transparent -translate-x-full group-hover:translate-x-full transition-transform duration-1000" />
+                
+                <div className="flex items-center justify-center gap-4 relative z-10">
+                  <div className="relative">
+                    <div className="w-2 h-2 bg-emerald-500 rounded-full animate-ping absolute inset-0" />
+                    <div className="w-2 h-2 bg-emerald-500 rounded-full relative" />
+                  </div>
+                  <div className="flex flex-col items-start">
+                    <p className="text-sm font-medium text-white tracking-wide">
+                      Constructing Reality...
+                    </p>
+                    <p className="text-[10px] text-emerald-500/70 font-mono uppercase tracking-wider">
+                      {loadingStages[loadingStage]}
+                    </p>
+                  </div>
+                  <div className="ml-4 flex gap-1">
+                    <div className="w-1 h-4 bg-emerald-500/20 rounded-full animate-pulse" style={{ animationDelay: '0ms' }} />
+                    <div className="w-1 h-4 bg-emerald-500/40 rounded-full animate-pulse" style={{ animationDelay: '150ms' }} />
+                    <div className="w-1 h-4 bg-emerald-500/60 rounded-full animate-pulse" style={{ animationDelay: '300ms' }} />
+                    <div className="w-1 h-4 bg-emerald-500/80 rounded-full animate-pulse" style={{ animationDelay: '450ms' }} />
+                  </div>
                 </div>
               </div>
             )}

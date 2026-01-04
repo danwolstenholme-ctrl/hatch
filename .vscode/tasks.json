@@ -272,6 +272,26 @@
 			"label": "commit-contact-redesign",
 			"type": "shell",
 			"command": "git add . && git commit -m \"feat: redesign contact page (professional studio style) + fix back button logic + polish homepage welcome\""
+		},
+		{
+			"label": "commit-brand-unification",
+			"type": "shell",
+			"command": "git commit -m \"feat: unify site aesthetic - replace legacy colors with Singularity palette (Emerald/Teal/Zinc)\""
+		},
+		{
+			"label": "fix-homepage-redirect",
+			"type": "shell",
+			"command": "git add components/HomepageWelcome.tsx && git commit -m \"fix: prevent automatic redirect on homepage for returning users - add Resume Session option instead\" && git push"
+		},
+		{
+			"label": "consolidate-context",
+			"type": "shell",
+			"command": "git add ai_context/ && git commit -m \"chore: consolidate AI context - establish Singularity Identity and restore Transmission Logs\" && git push"
+		},
+		{
+			"label": "commit-singularity-polish",
+			"type": "shell",
+			"command": "git add . && git commit -m \"feat: Singularity Polish - Redesigned Pricing, Fixed Refine Tool, Enhanced Demo UI, and Cleanup\""
 		}
 	]
 }
