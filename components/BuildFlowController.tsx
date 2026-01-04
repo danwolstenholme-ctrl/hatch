@@ -1695,7 +1695,7 @@ export default function GeneratedPage() {
                             <Edit3 className="w-3.5 h-3.5 text-zinc-600 group-hover:text-zinc-400" />
                           )}
                           {isLocked && (
-                            <Sparkles className="w-3.5 h-3.5 text-emerald-500/50 group-hover:text-emerald-400" />
+                            <Zap className="w-3.5 h-3.5 text-emerald-500/50 group-hover:text-emerald-400" />
                           )}
                         </div>
                       </button>

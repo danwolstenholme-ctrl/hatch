@@ -416,7 +416,7 @@ const BuilderGuide = ({ onClose }: { onClose: () => void }) => (
           
           <div className="flex gap-3">
             <div className="w-8 h-8 rounded-lg bg-purple-500/10 flex items-center justify-center shrink-0">
-              <Sparkles className="w-4 h-4 text-purple-400" />
+              <Wand2 className="w-4 h-4 text-purple-400" />
             </div>
             <div>
               <h4 className="text-sm font-medium text-zinc-200">Refine & Polish</h4>
@@ -2116,7 +2116,7 @@ export default function SectionBuilder({
                   onClick={() => goToSignUp()}
                   className="px-2.5 py-1 rounded-full bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/20 text-[10px] text-amber-400 hover:text-amber-300 transition-all whitespace-nowrap flex-shrink-0 flex items-center gap-1"
                 >
-                  <Sparkles className="w-3 h-3" />
+                  <Zap className="w-3 h-3" />
                   <span>Unlock Pro Suggestions</span>
                 </button>
               )}
@@ -2194,10 +2194,11 @@ export default function SectionBuilder({
                 >
                   <div className="flex items-center justify-center gap-3 text-violet-300">
                     <motion.div
-                      animate={{ scale: [1, 1.1, 1] }}
-                      transition={{ duration: 1.5, repeat: Infinity }}
+                      animate={{ scale: [1, 1.05, 1], opacity: [0.7, 1, 0.7] }}
+                      transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                      className="w-5 h-5"
                     >
-                      <Sparkles className="w-5 h-5" />
+                      <Image src="/assets/hatchit_definitive.svg" alt="" width={20} height={20} className="w-full h-full" />
                     </motion.div>
                     <span className="font-mono text-sm">Architect Polishing...</span>
                   </div>
@@ -2333,7 +2334,7 @@ export default function SectionBuilder({
                             disabled={isArchitectPolishing}
                             className="w-full py-2 bg-violet-500/10 hover:bg-violet-500/20 border border-violet-500/30 text-violet-300 text-xs font-medium rounded-lg transition-all flex items-center justify-center gap-1.5 disabled:opacity-60 disabled:cursor-not-allowed"
                           >
-                            <Sparkles className="w-3 h-3" />
+                            <Wand2 className="w-3 h-3" />
                             <span>Architect Polish</span>
                             <span className="text-[10px] text-violet-400/60">∞</span>
                           </button>
@@ -2375,7 +2376,7 @@ export default function SectionBuilder({
                         >
                           <div className="flex items-start gap-3">
                             <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
-                              <Sparkles className="w-4 h-4 text-emerald-400" />
+                              <Image src="/assets/hatchit_definitive.svg" alt="" width={16} height={16} />
                             </div>
                             <div className="flex-1">
                               <h4 className="text-sm font-semibold text-emerald-300 mb-1">Evolution Proposed</h4>
@@ -2424,7 +2425,7 @@ export default function SectionBuilder({
                               disabled={isDreaming}
                               className="w-full py-2.5 bg-emerald-900/30 hover:bg-emerald-900/50 border border-emerald-500/50 hover:border-emerald-400 text-emerald-300 text-xs font-mono uppercase tracking-widest rounded transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed group-hover:shadow-[0_0_20px_rgba(16,185,129,0.2)]"
                             >
-                              <Sparkles className="w-4 h-4" />
+                              <Image src="/assets/hatchit_definitive.svg" alt="" width={16} height={16} />
                               <span>Invoke Singularity</span>
                             </button>
                             {/* Unlimited evolutions - The Architect's gift */}
@@ -2443,8 +2444,9 @@ export default function SectionBuilder({
                             <motion.div
                               animate={{ rotate: 360 }}
                               transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
+                              className="w-5 h-5"
                             >
-                              <Sparkles className="w-5 h-5 text-emerald-400" />
+                              <Image src="/assets/hatchit_definitive.svg" alt="" width={20} height={20} className="w-full h-full" />
                             </motion.div>
                             <div>
                               <p className="text-sm font-medium text-emerald-300 font-mono">The Singularity is dreaming...</p>
@@ -2641,11 +2643,11 @@ export default function SectionBuilder({
                 ) : (
                   <>
                     <motion.div
-                      animate={{ rotate: 180 }}
-                      transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-                      className="text-violet-400"
+                      animate={{ scale: [1, 1.1, 1], opacity: [0.7, 1, 0.7] }}
+                      transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                      className="w-4 h-4"
                     >
-                      <Sparkles className="w-4 h-4" />
+                      <Image src="/assets/hatchit_definitive.svg" alt="" width={16} height={16} className="w-full h-full" />
                     </motion.div>
                     <span className="text-sm font-medium bg-gradient-to-r from-violet-400 to-purple-400 bg-clip-text text-transparent">
                       {isUserRefining ? 'Applying changes...' : 'Polishing...'}

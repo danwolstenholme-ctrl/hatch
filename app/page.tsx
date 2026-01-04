@@ -8,7 +8,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useUser } from '@clerk/nextjs'
 import { motion, useInView, AnimatePresence } from 'framer-motion'
-import { Cpu, Terminal, Layers, Shield, Zap, Code2, Globe, ArrowRight, CheckCircle2, Layout, Sparkles, Smartphone, Brain } from 'lucide-react'
+import { Cpu, Terminal, Layers, Shield, Zap, Code2, Globe, ArrowRight, CheckCircle2, Layout, Wand2, Smartphone, Brain } from 'lucide-react'
 import type { AppRouterInstance } from 'next/dist/shared/lib/app-router-context.shared-runtime'
 import HomepageWelcome from '@/components/HomepageWelcome'
 import SingularityTransition from '@/components/singularity/SingularityTransition'
@@ -506,7 +506,7 @@ export default function Home() {
             {/* Step 3: Refine */}
             <div className="relative z-10 bg-zinc-950 border border-zinc-800 p-6 rounded-xl hover:border-teal-500/30 transition-colors group">
               <div className="w-14 h-14 bg-teal-500/5 rounded-xl flex items-center justify-center mb-6 border border-teal-500/10 shadow-lg shadow-teal-500/5">
-                <Sparkles className="w-6 h-6 text-teal-500" />
+                <Wand2 className="w-6 h-6 text-teal-500" />
               </div>
               <div className="text-xs font-mono text-teal-400 mb-2 tracking-wider">STEP 3</div>
               <h3 className="text-xl font-bold mb-2">Refine</h3>
