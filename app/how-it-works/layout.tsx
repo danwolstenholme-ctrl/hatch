@@ -1,31 +1,27 @@
 import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: 'How It Works - HatchIt | Build Websites with AI in 4 Simple Steps',
-  description: 'Learn how to build professional websites with HatchIt in 4 simple steps: Describe, Generate, Refine, Deploy. No coding required. AI-powered React code generation from natural language descriptions.',
+  title: 'Execution Sequence - HatchIt | The Singularity',
+  description: 'The operational protocol of the Singularity Engine. From natural language directive to deployed entity in four phases.',
   keywords: [
-    'how to build website with AI',
-    'AI website builder tutorial',
-    'no-code website creation',
-    'website generator guide',
-    'HatchIt tutorial',
-    'build website without coding',
-    'AI web development guide',
-    'website builder instructions',
-    'create website fast',
-    'website in minutes',
+    'AI website builder',
+    'Singularity Engine',
+    'autonomous coding',
+    'React generation',
+    'AI architect',
+    'HatchIt protocol',
   ],
   openGraph: {
-    title: 'How It Works - HatchIt | Build Websites with AI',
-    description: 'Build professional websites in 4 simple steps: Describe, Generate, Refine, Deploy. No coding required.',
+    title: 'Execution Sequence - HatchIt | The Singularity',
+    description: 'From Concept to Entity in T-Minus Seconds. The Singularity Protocol.',
     url: 'https://hatchit.dev/how-it-works',
     siteName: 'HatchIt',
     type: 'website',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'How It Works - HatchIt | Build Websites with AI',
-    description: 'Build professional websites in 4 simple steps. No coding required.',
+    title: 'Execution Sequence - HatchIt | The Singularity',
+    description: 'From Concept to Entity in T-Minus Seconds. The Singularity Protocol.',
     creator: '@HatchItD',
   },
   alternates: {

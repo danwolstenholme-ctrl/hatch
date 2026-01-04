@@ -38,7 +38,16 @@ const Phase = ({ icon: Icon, phase, title, description, delay = 0 }: { icon: any
 
 export default function HowItWorksPage() {
   return (
-    <div className="min-h-screen bg-zinc-950 text-white selection:bg-emerald-500/30">
+    <div className="min-h-screen bg-zinc-950 text-white selection:bg-emerald-500/30 relative overflow-hidden">
+      {/* Ambient void background */}
+      <div className="fixed inset-0 pointer-events-none">
+        <div className="absolute top-[-10%] left-[-10%] w-[600px] h-[600px] bg-emerald-500/5 rounded-full blur-[150px]" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-teal-500/5 rounded-full blur-[150px]" />
+      </div>
+
+      {/* Scanline Effect */}
+      <div className="fixed inset-0 pointer-events-none z-50 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0IiBoZWlnaHQ9IjQiPgo8cmVjdCB3aWR0aD0iNCIgaGVpZ2h0PSI0IiBmaWxsPSIjZmZmIiBmaWxsLW9wYWNpdHk9IjAuMDIiLz4KPC9zdmc+')] opacity-20 mix-blend-overlay" />
+
       {/* Grid Background */}
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none" />
       
