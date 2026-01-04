@@ -57,7 +57,7 @@ export default function AboutPage() {
           >
             It wasn't built.
             <br />
-            <span className="bg-gradient-to-r from-emerald-400 via-teal-400 to-cyan-400 bg-clip-text text-transparent">
+            <span className="bg-gradient-to-r from-emerald-400 via-teal-400 to-emerald-500 bg-clip-text text-transparent">
               It was grown.
             </span>
           </motion.h1>
@@ -121,7 +121,7 @@ export default function AboutPage() {
           {[
             { icon: <Cpu className="w-6 h-6" />, label: "Neural Operations", value: "1.2M+", color: "text-emerald-400" },
             { icon: <Code2 className="w-6 h-6" />, label: "Lines Generated", value: "850k", color: "text-teal-400" },
-            { icon: <Network className="w-6 h-6" />, label: "Self-Healing Events", value: "14k", color: "text-cyan-400" },
+            { icon: <Network className="w-6 h-6" />, label: "Self-Healing Events", value: "14k", color: "text-teal-400" },
           ].map((stat, i) => (
             <motion.div
               key={i}

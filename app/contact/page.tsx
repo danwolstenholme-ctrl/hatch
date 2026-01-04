@@ -58,7 +58,7 @@ function ContactForm() {
       {/* Subtle Ambient Background */}
       <div className="fixed inset-0 pointer-events-none">
         <div className="absolute top-[-20%] right-[-10%] w-[800px] h-[800px] bg-emerald-500/5 rounded-full blur-3xl" />
-        <div className="absolute bottom-[-20%] left-[-10%] w-[600px] h-[600px] bg-blue-500/5 rounded-full blur-3xl" />
+        <div className="absolute bottom-[-20%] left-[-10%] w-[600px] h-[600px] bg-teal-500/5 rounded-full blur-3xl" />
       </div>
 
       <div className="flex-1 flex flex-col max-w-6xl mx-auto w-full px-6 py-8 relative z-10 h-full">

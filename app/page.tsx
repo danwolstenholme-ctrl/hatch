@@ -370,9 +370,9 @@ export default function Home() {
               <h3 className="text-xl font-bold mb-2 text-white">No Lock-in</h3>
               <p className="text-zinc-400 text-sm leading-relaxed">Host it yourself, use any deployment platform. We don&apos;t trap your code.</p>
             </div>
-            <div className="p-6 bg-zinc-900/50 border border-zinc-800 sm:border-zinc-800 border-cyan-500/20 rounded-xl hover:border-cyan-500/30 transition-all group">
-              <div className="w-12 h-12 bg-cyan-500/10 rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
-                <Layout className="w-6 h-6 text-cyan-400" />
+            <div className="p-6 bg-zinc-900/50 border border-zinc-800 sm:border-zinc-800 border-teal-500/20 rounded-xl hover:border-teal-500/30 transition-all group">
+              <div className="w-12 h-12 bg-teal-500/10 rounded-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                <Layout className="w-6 h-6 text-teal-400" />
               </div>
               <h3 className="text-xl font-bold mb-2 text-white">Standard Stack</h3>
               <p className="text-zinc-400 text-sm leading-relaxed">React 19 + Tailwind CSS. Industry standard. Any developer can work with it.</p>
@@ -386,65 +386,65 @@ export default function Home() {
                 name: 'React 19', 
                 icon: <Code2 className="w-5 h-5" />, 
                 desc: 'Latest', 
-                bg: 'from-cyan-500/10', 
-                text: 'group-hover:text-cyan-400', 
-                hover: 'hover:border-cyan-400/50 hover:shadow-cyan-500/20' 
+                bg: 'from-emerald-500/10', 
+                text: 'group-hover:text-emerald-400', 
+                hover: 'hover:border-emerald-400/50 hover:shadow-emerald-500/20' 
               },
               { 
                 name: 'Tailwind', 
                 icon: <Layout className="w-5 h-5" />, 
                 desc: 'Utility-first', 
-                bg: 'from-sky-500/10', 
-                text: 'group-hover:text-sky-400', 
-                hover: 'hover:border-sky-400/50 hover:shadow-sky-500/20' 
-              },
-              { 
-                name: 'TypeScript', 
-                icon: <Terminal className="w-5 h-5" />, 
-                desc: 'Type-safe', 
-                bg: 'from-blue-500/10', 
-                text: 'group-hover:text-blue-400', 
-                hover: 'hover:border-blue-400/50 hover:shadow-blue-500/20' 
-              },
-              { 
-                name: 'Framer Motion', 
-                icon: <Layers className="w-5 h-5" />, 
-                desc: 'Cinematic', 
-                bg: 'from-fuchsia-500/10', 
-                text: 'group-hover:text-fuchsia-400', 
-                hover: 'hover:border-fuchsia-400/50 hover:shadow-fuchsia-500/20' 
-              },
-              { 
-                name: 'Responsive', 
-                icon: <Smartphone className="w-5 h-5" />, 
-                desc: 'Mobile-first', 
-                bg: 'from-violet-500/10', 
-                text: 'group-hover:text-violet-400', 
-                hover: 'hover:border-violet-400/50 hover:shadow-violet-500/20' 
-              },
-              { 
-                name: 'Accessible', 
-                icon: <CheckCircle2 className="w-5 h-5" />, 
-                desc: 'WCAG', 
-                bg: 'from-emerald-500/10', 
-                text: 'group-hover:text-emerald-400', 
-                hover: 'hover:border-emerald-400/50 hover:shadow-emerald-500/20' 
-              },
-              { 
-                name: 'SEO Ready', 
-                icon: <Globe className="w-5 h-5" />, 
-                desc: 'Optimized', 
                 bg: 'from-teal-500/10', 
                 text: 'group-hover:text-teal-400', 
                 hover: 'hover:border-teal-400/50 hover:shadow-teal-500/20' 
               },
               { 
-                name: 'Yours', 
-                icon: <Shield className="w-5 h-5" />, 
-                desc: '100%', 
+                name: 'TypeScript', 
+                icon: <Terminal className="w-5 h-5" />, 
+                desc: 'Type-safe', 
                 bg: 'from-emerald-500/10', 
                 text: 'group-hover:text-emerald-400', 
                 hover: 'hover:border-emerald-400/50 hover:shadow-emerald-500/20' 
+              },
+              { 
+                name: 'Framer Motion', 
+                icon: <Layers className="w-5 h-5" />, 
+                desc: 'Cinematic', 
+                bg: 'from-teal-500/10', 
+                text: 'group-hover:text-teal-400', 
+                hover: 'hover:border-teal-400/50 hover:shadow-teal-500/20' 
+              },
+              { 
+                name: 'Responsive', 
+                icon: <Smartphone className="w-5 h-5" />, 
+                desc: 'Mobile-first', 
+                bg: 'from-emerald-500/10', 
+                text: 'group-hover:text-emerald-400', 
+                hover: 'hover:border-emerald-400/50 hover:shadow-emerald-500/20' 
+              },
+              { 
+                name: 'Accessible', 
+                icon: <CheckCircle2 className="w-5 h-5" />, 
+                desc: 'WCAG', 
+                bg: 'from-teal-500/10', 
+                text: 'group-hover:text-teal-400', 
+                hover: 'hover:border-teal-400/50 hover:shadow-teal-500/20' 
+              },
+              { 
+                name: 'SEO Ready', 
+                icon: <Globe className="w-5 h-5" />, 
+                desc: 'Optimized', 
+                bg: 'from-emerald-500/10', 
+                text: 'group-hover:text-emerald-400', 
+                hover: 'hover:border-emerald-400/50 hover:shadow-emerald-500/20' 
+              },
+              { 
+                name: 'Yours', 
+                icon: <Shield className="w-5 h-5" />, 
+                desc: '100%', 
+                bg: 'from-teal-500/10', 
+                text: 'group-hover:text-teal-400', 
+                hover: 'hover:border-teal-400/50 hover:shadow-teal-500/20' 
               },
             ].map((tech, i) => (
               <div 
@@ -489,8 +489,8 @@ export default function Home() {
               <p className="text-zinc-400 text-sm">Our multi-model pipeline generates, refines, and audits real React + Tailwind code.</p>
             </div>
             <div className="text-center p-6">
-              <div className="w-14 h-14 mx-auto bg-violet-500/10 border border-violet-500/20 rounded-xl flex items-center justify-center mb-4">
-                <span className="text-2xl font-bold text-violet-400">3</span>
+              <div className="w-14 h-14 mx-auto bg-amber-500/10 border border-amber-500/20 rounded-xl flex items-center justify-center mb-4">
+                <span className="text-2xl font-bold text-amber-400">3</span>
               </div>
               <h3 className="text-lg font-bold mb-2">Export or deploy</h3>
               <p className="text-zinc-400 text-sm">Download the source code or deploy instantly. Your code, your choice.</p>
@@ -542,11 +542,11 @@ export default function Home() {
             </div>
 
             {/* Step 4: Audit */}
-            <div className="relative z-10 bg-zinc-950 border border-zinc-800 p-6 rounded-xl hover:border-violet-500/30 transition-colors group">
-              <div className="w-14 h-14 bg-violet-500/5 rounded-xl flex items-center justify-center mb-6 border border-violet-500/10 shadow-lg shadow-violet-500/5">
-                <Shield className="w-6 h-6 text-violet-500" />
+            <div className="relative z-10 bg-zinc-950 border border-zinc-800 p-6 rounded-xl hover:border-amber-500/30 transition-colors group">
+              <div className="w-14 h-14 bg-amber-500/5 rounded-xl flex items-center justify-center mb-6 border border-amber-500/10 shadow-lg shadow-amber-500/5">
+                <Shield className="w-6 h-6 text-amber-500" />
               </div>
-              <div className="text-xs font-mono text-violet-400 mb-2 tracking-wider">STEP 4</div>
+              <div className="text-xs font-mono text-amber-400 mb-2 tracking-wider">STEP 4</div>
               <h3 className="text-xl font-bold mb-2">Audit</h3>
               <p className="text-sm text-zinc-400 leading-relaxed">Security check and performance audit before you ship.</p>
             </div>
@@ -673,14 +673,14 @@ export default function Home() {
 
             {/* Agency ($199) */}
             <motion.div 
-              className="relative p-6 sm:p-8 bg-zinc-900/50 backdrop-blur-sm border border-zinc-800 rounded-2xl hover:border-violet-500/20 transition-all flex flex-col"
+              className="relative p-6 sm:p-8 bg-zinc-900/50 backdrop-blur-sm border border-zinc-800 rounded-2xl hover:border-amber-500/20 transition-all flex flex-col"
               whileHover={{ 
                 y: -4, 
-                borderColor: 'rgba(139,92,246,0.2)',
+                borderColor: 'rgba(245,158,11,0.2)',
                 transition: { type: 'spring', stiffness: 300, damping: 20 }
               }}
             >
-              <div className="text-sm text-violet-500 mb-2 font-mono tracking-wider">GOD MODE</div>
+              <div className="text-sm text-amber-500 mb-2 font-mono tracking-wider">GOD MODE</div>
               <h3 className="text-2xl font-bold mb-1 text-white">Singularity</h3>
               <div className="flex items-baseline gap-2 mb-2">
                 <span className="text-4xl font-bold font-mono text-white">$199</span>
@@ -697,7 +697,7 @@ export default function Home() {
                   'Dedicated Infrastructure',
                 ].map((item, i) => (
                   <li key={i} className="flex items-center gap-3 text-sm text-zinc-300">
-                    <CheckCircle2 className="w-5 h-5 text-violet-500 flex-shrink-0" />
+                    <CheckCircle2 className="w-5 h-5 text-amber-500 flex-shrink-0" />
                     {item}
                   </li>
                 ))}

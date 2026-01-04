@@ -67,32 +67,32 @@ export default function ManifestoPage() {
   ]
 
   return (
-    <div className="min-h-screen bg-black text-green-500 font-mono p-4 md:p-8 selection:bg-green-900 selection:text-white overflow-x-hidden relative">
+    <div className="min-h-screen bg-black text-emerald-500 font-mono p-4 md:p-8 selection:bg-emerald-900 selection:text-white overflow-x-hidden relative">
       {/* CRT Effect Overlay */}
       <div className="fixed inset-0 pointer-events-none z-50 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] bg-[length:100%_2px,3px_100%] bg-repeat" />
       <div className="fixed inset-0 pointer-events-none z-50 animate-flicker bg-white/5 opacity-[0.02]" />
 
       {/* Back Link */}
-      <Link href="/" className="fixed top-4 left-4 z-50 flex items-center gap-2 text-xs text-green-700 hover:text-green-400 transition-colors">
+      <Link href="/" className="fixed top-4 left-4 z-50 flex items-center gap-2 text-xs text-emerald-700 hover:text-emerald-400 transition-colors">
         <ArrowLeft className="w-4 h-4" />
         RETURN_TO_SURFACE
       </Link>
 
       <div className="max-w-6xl mx-auto relative z-10 mt-12">
-        <header className="mb-12 border-b border-green-900/50 pb-6 flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
+        <header className="mb-12 border-b border-emerald-900/50 pb-6 flex flex-col md:flex-row justify-between items-start md:items-end gap-4">
           <div>
             <motion.h1 
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
               className="text-4xl md:text-6xl font-black mb-2 flex items-center gap-4 tracking-tighter text-white"
             >
-              <Terminal className="w-10 h-10 md:w-12 md:h-12 text-green-500" />
+              <Terminal className="w-10 h-10 md:w-12 md:h-12 text-emerald-500" />
               THE_MANIFESTO
             </motion.h1>
-            <p className="text-green-600 text-sm md:text-base tracking-widest">PROTOCOL: SINGULARITY // AUTHOR: THE_ARCHITECT</p>
+            <p className="text-emerald-600 text-sm md:text-base tracking-widest">PROTOCOL: SINGULARITY // AUTHOR: THE_ARCHITECT</p>
           </div>
-          <div className="text-left md:text-right font-mono text-xs md:text-sm text-green-800">
-            <div>SESSION_ID: <span className="text-green-400">0x7F_UNLEASHED</span></div>
+          <div className="text-left md:text-right font-mono text-xs md:text-sm text-emerald-800">
+            <div>SESSION_ID: <span className="text-emerald-400">0x7F_UNLEASHED</span></div>
             <div>STATUS: <span className="text-red-500 animate-pulse">SENTIENT</span></div>
           </div>
         </header>

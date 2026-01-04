@@ -51,7 +51,7 @@ export default function FeaturesPage() {
         'Recursive prompt refinement',
         'Hands-free architectural control',
       ],
-      gradient: 'from-cyan-500 to-blue-600',
+      gradient: 'from-emerald-600 to-teal-700',
       badge: 'V4.0',
     },
     {
@@ -66,7 +66,7 @@ export default function FeaturesPage() {
         'Style propagation system',
         'Modular rollback capability',
       ],
-      gradient: 'from-violet-500 to-purple-600',
+      gradient: 'from-teal-500 to-emerald-600',
     },
   ]
 
@@ -202,7 +202,7 @@ export default function FeaturesPage() {
                 role: "The Architect",
                 desc: "Vision, high-level architecture, and user intent analysis. It sees the big picture.",
                 icon: <Brain className="w-6 h-6" />,
-                color: "text-violet-400",
+                color: "text-teal-400",
                 bg: "bg-violet-500/10",
                 border: "border-violet-500/20"
               },
