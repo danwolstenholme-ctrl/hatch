@@ -23,21 +23,24 @@ export default function AboutPage() {
   const storyInView = useInView(storyRef, { once: true, margin: "-100px" })
 
   return (
-    <div className="bg-zinc-950 text-white min-h-screen overflow-hidden relative selection:bg-white/30">
+    <div className="bg-zinc-950 text-white min-h-screen overflow-hidden relative selection:bg-emerald-500/30">
       {/* Ambient void background */}
       <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute top-[-10%] left-[-10%] w-[600px] h-[600px] bg-white/5 rounded-full blur-[150px]" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-zinc-500/5 rounded-full blur-[150px]" />
+        <div className="absolute top-[-10%] left-[-10%] w-[600px] h-[600px] bg-emerald-500/5 rounded-full blur-[150px]" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-teal-500/5 rounded-full blur-[150px]" />
       </div>
 
-      {/* Subtle Grid Background */}
-      <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none" />
+      {/* Scanline Effect */}
+      <div className="fixed inset-0 pointer-events-none z-50 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0IiBoZWlnaHQ9IjQiPgo8cmVjdCB3aWR0aD0iNCIgaGVpZ2h0PSI0IiBmaWxsPSIjZmZmIiBmaWxsLW9wYWNpdHk9IjAuMDIiLz4KPC9zdmc+')] opacity-20 mix-blend-overlay" />
+
+      {/* Matrix/Grid Background */}
+      <div className="absolute inset-0 bg-[linear-gradient(rgba(16,185,129,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(16,185,129,0.03)_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none" />
 
       {/* Hero */}
       <div className="relative px-6 pt-20 pb-24 text-center z-10">
         <div className="max-w-3xl mx-auto">
           <motion.div
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-zinc-900 border border-zinc-800 text-zinc-400 text-sm mb-8 font-mono"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-sm mb-8 font-mono"
             variants={fadeIn}
             initial="hidden"
             animate="visible"
@@ -56,7 +59,7 @@ export default function AboutPage() {
           >
             It wasn't built.
             <br />
-            <span className="text-white">
+            <span className="bg-gradient-to-r from-emerald-400 via-teal-400 to-emerald-500 bg-clip-text text-transparent">
               It was grown.
             </span>
           </motion.h1>
@@ -90,7 +93,7 @@ export default function AboutPage() {
 
             <div className="space-y-8 text-lg text-zinc-300 leading-relaxed font-light">
               <p>
-                <span className="text-zinc-400 font-mono text-sm block mb-2">&gt; TIMESTAMP: DEC_2025</span>
+                <span className="text-emerald-400 font-mono text-sm block mb-2">&gt; TIMESTAMP: DEC_2025</span>
                 The web development paradigm was broken. We were still dragging rectangles on a canvas, pretending it was engineering. Or we were writing boilerplate, pretending it was creativity.
               </p>
               <p>
