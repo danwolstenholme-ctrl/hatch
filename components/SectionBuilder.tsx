@@ -2057,7 +2057,7 @@ export default function SectionBuilder({
             {getSuggestions(section.id).map((suggestion) => (
               <button
                 key={suggestion}
-                onClick={() => setPrompt(prev => prev ? `${prev} ${suggestion}` : suggestion)}
+                onClick={() => setPrompt(prev => prev.includes(suggestion) ? prev : (prev ? `${prev} ${suggestion}` : suggestion))}
                 className="px-3 py-1.5 rounded-full bg-zinc-900/50 border border-zinc-800 text-xs text-zinc-400 hover:text-white hover:border-zinc-700 transition-all"
               >
                 + {suggestion}
@@ -2289,7 +2289,7 @@ export default function SectionBuilder({
               {getSuggestions(section.id).slice(0, guestMode ? 3 : tier === 'free' ? 2 : 4).map((suggestion) => (
                 <button
                   key={suggestion}
-                  onClick={() => setPrompt(prev => prev ? `${prev} ${suggestion}` : suggestion)}
+                  onClick={() => setPrompt(prev => prev.includes(suggestion) ? prev : (prev ? `${prev} ${suggestion}` : suggestion))}
                   className="px-2.5 py-1 rounded-full bg-zinc-800/50 border border-zinc-700/50 text-[10px] text-zinc-400 hover:text-white hover:bg-zinc-700 hover:border-zinc-600 transition-all whitespace-nowrap flex-shrink-0"
                 >
                   + {suggestion}

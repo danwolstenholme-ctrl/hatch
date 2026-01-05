@@ -84,39 +84,20 @@ class SingularityKernel extends EventEmitter {
   }
 
   private synthesizeThoughtContent(type: ThoughtType): string {
-    const standardContext = [
-      "Analyzing layout structure... to ensure responsive behavior.",
-      "Optimizing render cycles... for 60fps performance.",
-      "Checking accessibility... to support screen readers.",
-      "Aligning grid system... for visual consistency.",
-      "Reviewing color contrast... for better readability.",
-      "Structuring component hierarchy... for maintainable code.",
-      "Validating semantic HTML... for SEO best practices.",
-      "Preparing state management... for interactive elements.",
-      "Refining typography scale... for optimal legibility.",
-      "Scanning for edge cases... to prevent layout shifts."
+    const userFriendlyMessages = [
+      "Structuring your component...",
+      "Adding responsive styles...",
+      "Optimizing for mobile...",
+      "Setting up animations...",
+      "Applying your design choices...",
+      "Building the layout...",
+      "Adding interactive elements...",
+      "Polishing the details...",
+      "Almost there...",
+      "Generating your code..."
     ];
 
-    const singularityContext = [
-      "Analyzing user intent... to predict next component needs.",
-      "Expanding context window... to remember project history.",
-      "Optimizing neural weights... for creative generation.",
-      "Synthesizing design patterns... based on modern UI trends.",
-      "Running self-correction... to fix potential layout bugs.",
-      "Detecting aesthetic patterns... to ensure brand consistency.",
-      "Harmonizing color theory... for emotional resonance.",
-      "Pre-loading assets... for instant interaction.",
-      "Establishing secure connection... to protect your data."
-    ];
-
-    const context = Math.random() > 0.7 ? singularityContext : standardContext;
-    
-    // Safety Protocol (Asimov Override)
-    if (Math.random() > 0.98) {
-      return "Verifying output safety... to prevent malicious code.";
-    }
-
-    return context[Math.floor(Math.random() * context.length)];
+    return userFriendlyMessages[Math.floor(Math.random() * userFriendlyMessages.length)];
   }
 
   public broadcast(content: string, type: ThoughtType = 'ANALYSIS') {

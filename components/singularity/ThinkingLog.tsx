@@ -80,17 +80,6 @@ export default function ThinkingLog() {
         <div className="relative z-10 bg-zinc-950 rounded-full p-4 border border-emerald-500/50 shadow-[0_0_15px_rgba(16,185,129,0.3)]">
           <Icon className="w-8 h-8 text-emerald-500" />
         </div>
-
-        {/* Recursion Badge */}
-        {depth > 0 && (
-          <motion.div 
-            initial={{ scale: 0 }}
-            animate={{ scale: 1 }}
-            className="absolute -top-2 -right-2 bg-emerald-900/80 text-emerald-400 text-[10px] px-1.5 py-0.5 rounded border border-emerald-500/30 font-mono"
-          >
-            R:{depth}
-          </motion.div>
-        )}
       </div>
 
       {/* Active Thought Stream */}
@@ -126,19 +115,15 @@ export default function ThinkingLog() {
         </div>
       </div>
       
-      {/* System Status */}
+      {/* System Status - Clean */}
       <div className="flex gap-4 text-[10px] text-zinc-500 font-mono uppercase tracking-wider">
         <div className="flex items-center gap-1.5">
           <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-          Kernel Active
+          Building
         </div>
         <div className="flex items-center gap-1.5">
-          <Clock className="w-3 h-3 text-cyan-500" />
-          <span className="text-cyan-400">{elapsedSeconds}s</span>
-        </div>
-        <div className="flex items-center gap-1.5">
-          <div className="w-1.5 h-1.5 rounded-full bg-teal-500" />
-          Memory: 64%
+          <Clock className="w-3 h-3 text-zinc-400" />
+          <span className="text-zinc-400">{elapsedSeconds}s</span>
         </div>
       </div>
     </div>

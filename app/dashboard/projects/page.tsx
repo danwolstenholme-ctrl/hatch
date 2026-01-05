@@ -149,19 +149,19 @@ export default function ProjectsPage() {
             </button>
           </div>
 
-          {/* Builder CTA for free users */}
+          {/* Upgrade banner for free users */}
           {isFreeTier && (
             <div className="mb-8 p-5 bg-white/[0.02] border border-white/[0.06] rounded-xl">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
-                  <h3 className="text-white font-medium mb-1">Start building</h3>
-                  <p className="text-zinc-500 text-sm">Free access while we polish things up. Paid plans coming soon.</p>
+                  <h3 className="text-white font-medium mb-1">Upgrade your plan</h3>
+                  <p className="text-zinc-500 text-sm">Get more projects, code export, and custom domains.</p>
                 </div>
                 <Link
-                  href="/builder"
+                  href="/dashboard/billing"
                   className="flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-black text-sm font-medium rounded-lg transition-colors whitespace-nowrap"
                 >
-                  Open Builder
+                  View plans
                   <ArrowRight className="w-4 h-4" />
                 </Link>
               </div>
@@ -339,7 +339,7 @@ export default function ProjectsPage() {
           )}
         </div>
 
-      {/* Upgrade Modal - Coming Soon */}
+      {/* Upgrade Modal */}
       <AnimatePresence>
         {showUpgradeModal && (
           <motion.div 
@@ -353,22 +353,55 @@ export default function ProjectsPage() {
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
               exit={{ opacity: 0, scale: 0.95 }}
-              className="bg-[#111] rounded-2xl p-6 w-full max-w-md border border-white/10 text-center"
+              className="bg-[#111] rounded-2xl p-6 w-full max-w-lg border border-white/10"
               onClick={(e) => e.stopPropagation()}
             >
-              <div className="w-12 h-12 bg-emerald-500/10 border border-emerald-500/20 rounded-xl flex items-center justify-center mx-auto mb-4">
-                <Clock className="w-6 h-6 text-emerald-500" />
-              </div>
-              <h2 className="text-xl font-semibold text-white mb-2">Coming Soon</h2>
+              <h2 className="text-xl font-semibold text-white mb-2">Upgrade your plan</h2>
               <p className="text-zinc-400 text-sm mb-6">
-                Paid plans are coming soon. For now, enjoy free access while we finish polishing the builder.
+                You&apos;ve reached the {tierConfig.limit} project limit. Choose a plan to continue.
               </p>
+              
+              <div className="space-y-3 mb-6">
+                <a 
+                  href="/api/checkout?tier=architect"
+                  className="flex items-center justify-between p-4 bg-white/[0.03] hover:bg-white/[0.06] border border-white/[0.06] rounded-xl transition-colors"
+                >
+                  <div>
+                    <p className="text-white font-medium">Architect</p>
+                    <p className="text-zinc-500 text-sm">3 projects, deploy to hatchit.dev</p>
+                  </div>
+                  <p className="text-white font-semibold">$19<span className="text-zinc-500 font-normal">/mo</span></p>
+                </a>
+
+                <a 
+                  href="/api/checkout?tier=visionary"
+                  className="flex items-center justify-between p-4 bg-emerald-500/10 border border-emerald-500/30 rounded-xl hover:bg-emerald-500/20 transition-colors relative"
+                >
+                  <div className="absolute -top-2 left-4 px-2 py-0.5 bg-emerald-500 text-black text-[10px] font-bold rounded">RECOMMENDED</div>
+                  <div>
+                    <p className="text-white font-medium">Visionary</p>
+                    <p className="text-zinc-400 text-sm">10 projects + download code</p>
+                  </div>
+                  <p className="text-white font-semibold">$49<span className="text-zinc-400 font-normal">/mo</span></p>
+                </a>
+
+                <a 
+                  href="/api/checkout?tier=singularity"
+                  className="flex items-center justify-between p-4 bg-white/[0.03] hover:bg-white/[0.06] border border-white/[0.06] rounded-xl transition-colors"
+                >
+                  <div>
+                    <p className="text-white font-medium">Singularity</p>
+                    <p className="text-zinc-500 text-sm">Unlimited projects + API</p>
+                  </div>
+                  <p className="text-white font-semibold">$199<span className="text-zinc-500 font-normal">/mo</span></p>
+                </a>
+              </div>
 
               <button
                 onClick={() => setShowUpgradeModal(false)}
-                className="w-full py-2.5 bg-white/[0.06] hover:bg-white/[0.1] text-white text-sm font-medium rounded-lg transition-colors"
+                className="w-full py-2.5 text-zinc-500 hover:text-white text-sm transition-colors"
               >
-                Got it
+                Maybe later
               </button>
             </motion.div>
           </motion.div>

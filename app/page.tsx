@@ -680,16 +680,16 @@ export default function Home() {
             transition={{ delay: 0.3 }}
           >
             <Link 
-              href="/demo"
+              href="/sign-up"
               className="group relative inline-flex items-center gap-3 px-12 py-5 bg-emerald-500 hover:bg-emerald-400 text-black rounded-md font-bold text-lg transition-all shadow-[0_0_40px_rgba(16,185,129,0.3)] hover:shadow-[0_0_60px_rgba(16,185,129,0.5)] hover:scale-105 active:scale-95"
             >
-              <span>Try it Free</span>
+              <span>Start Building Free</span>
               <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
             </Link>
-            <p className="text-sm text-zinc-500">Paid plans coming soon • Free while we polish things up</p>
+            <p className="text-sm text-zinc-500">Free tier included • Upgrade anytime</p>
           </motion.div>
           
-          <p className="text-center text-sm text-zinc-600 mt-8">The code belongs to you.</p>
+          <p className="text-center text-sm text-zinc-600 mt-8">Cancel anytime. The code belongs to you.</p>
         </div>
       </Section>
 

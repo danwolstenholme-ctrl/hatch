@@ -1,33 +1,12 @@
 'use client'
 
 import { useUser } from '@clerk/nextjs'
-import { Check, Clock } from 'lucide-react'
-import Link from 'next/link'
+import { Check } from 'lucide-react'
 
 export default function BillingPage() {
   const { user } = useUser()
   const accountSubscription = user?.publicMetadata?.accountSubscription as any
   const currentTier = accountSubscription?.tier || 'free'
-  
-  // PAYMENTS GATED - Show coming soon
-  return (
-    <div className="max-w-2xl mx-auto px-6 py-20 text-center">
-      <div className="w-16 h-16 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl flex items-center justify-center mx-auto mb-6">
-        <Clock className="w-8 h-8 text-emerald-500" />
-      </div>
-      <h1 className="text-2xl font-semibold text-white mb-3">Paid Plans Coming Soon</h1>
-      <p className="text-zinc-400 mb-8">
-        We&apos;re putting the finishing touches on the builder. <br />
-        For now, enjoy free access while we polish things up.
-      </p>
-      <Link 
-        href="/builder"
-        className="inline-flex items-center gap-2 px-6 py-3 bg-emerald-500 hover:bg-emerald-400 text-black font-medium rounded-lg transition-colors"
-      >
-        Try the Builder
-      </Link>
-    </div>
-  )
 
   const plans = [
     {

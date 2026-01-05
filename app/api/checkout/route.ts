@@ -29,9 +29,6 @@ async function handleCheckout(
   projectName: string = '',
   reqUrl: string
 ): Promise<{ url?: string, error?: string, status?: number, redirect?: string }> {
-  // PAYMENTS GATED - Product not ready yet
-  return { error: 'Payments are temporarily disabled. Coming soon!', status: 503 }
-  
   const stripe = getStripe()
   const client = await clerkClient()
   const user = await client.users.getUser(userId)
