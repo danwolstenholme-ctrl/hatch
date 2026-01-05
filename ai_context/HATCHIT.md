@@ -37,7 +37,7 @@
 | `/` | No | Homepage with pricing |
 | `/demo` | No | **Sandbox builder** - localStorage only, premium actions show signup modal |
 | `/builder` | **Yes** | **Real builder** - projects persist to Supabase |
-| `/dashboard/projects` | Yes | Project list |
+| `/dashboard/studio` | Yes | Project list (renamed from "Projects") |
 | `/dashboard/billing` | Yes | Subscription management |
 | `/sign-up`, `/sign-in` | No | Clerk auth |
 

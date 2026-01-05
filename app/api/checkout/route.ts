@@ -37,14 +37,14 @@ async function handleCheckout(
   // Check for existing active subscription
   if (existingSubscription?.status === 'active') {
     if (existingSubscription!.tier === tier) {
-      return { redirect: '/dashboard/projects?error=already_subscribed' }
+      return { redirect: '/dashboard/studio?error=already_subscribed' }
     }
 
     // Block downgrades through this endpoint
     const tierRank = { architect: 1, visionary: 2, singularity: 3 } as const
     // @ts-ignore
     if (tierRank[tier] < tierRank[existingSubscription!.tier]) {
-      return { redirect: '/dashboard/projects?error=downgrade_not_allowed' }
+      return { redirect: '/dashboard/studio?error=downgrade_not_allowed' }
     }
 
     // Upgrade path
@@ -78,10 +78,10 @@ async function handleCheckout(
         publicMetadata: { ...user.publicMetadata, accountSubscription },
       })
 
-      return { redirect: '/dashboard/projects?success=upgraded' }
+      return { redirect: '/dashboard/studio?success=upgraded' }
     } catch (err) {
       console.error('Stripe upgrade error:', err)
-      return { redirect: '/dashboard/projects?error=upgrade_failed' }
+      return { redirect: '/dashboard/studio?error=upgrade_failed' }
     }
   }
 
@@ -97,7 +97,7 @@ async function handleCheckout(
     line_items: [{ price: priceId, quantity: 1 }],
     allow_promotion_codes: true,
     success_url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/post-payment?session_id={CHECKOUT_SESSION_ID}&tier=${tier}${projectSlug ? `&project=${encodeURIComponent(projectSlug)}` : ''}`,
-    cancel_url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/dashboard/projects?canceled=true`,
+    cancel_url: `${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'}/dashboard/studio?canceled=true`,
     metadata: { userId, tier, projectSlug, projectName, type: 'account_subscription' },
     subscription_data: { metadata: { userId, tier, type: 'account_subscription' } },
   })

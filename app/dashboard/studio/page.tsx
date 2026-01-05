@@ -9,7 +9,7 @@ import { useUser } from '@clerk/nextjs'
 import { formatDistanceToNow } from 'date-fns'
 import { DbProject } from '@/lib/supabase'
 
-export default function ProjectsPage() {
+export default function StudioPage() {
   const { user } = useUser()
   const [projects, setProjects] = useState<DbProject[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -127,7 +127,7 @@ export default function ProjectsPage() {
           {/* Header */}
           <div className="flex items-start justify-between mb-8">
             <div>
-              <h1 className="text-2xl font-semibold text-white mb-2">Projects</h1>
+              <h1 className="text-2xl font-semibold text-white mb-2">Studio</h1>
               <p className="text-zinc-500 text-sm">
                 Build and deploy React components with AI
                 {tierConfig.limit !== Infinity && (

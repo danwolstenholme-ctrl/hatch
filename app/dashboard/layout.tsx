@@ -26,14 +26,14 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
 
             <nav className="flex items-center gap-1">
               <Link 
-                href="/dashboard/projects"
+                href="/dashboard/studio"
                 className={`px-3 py-1.5 rounded-md text-sm transition-colors ${
-                  pathname.startsWith('/dashboard/projects') 
+                  pathname.startsWith('/dashboard/studio') 
                     ? 'text-white bg-white/[0.06]' 
                     : 'text-zinc-400 hover:text-white'
                 }`}
               >
-                Projects
+                Studio
               </Link>
               <Link 
                 href="/dashboard/billing"

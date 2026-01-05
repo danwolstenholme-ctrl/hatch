@@ -7,7 +7,7 @@ import { Sparkles } from 'lucide-react'
 
 export default function SignInPage() {
   const searchParams = useSearchParams()
-  const redirectUrl = searchParams.get('redirect_url') || '/dashboard/projects'
+  const redirectUrl = searchParams.get('redirect_url') || '/dashboard/studio'
   
   return (
     <div className="min-h-screen bg-zinc-950 flex flex-col items-center justify-center relative overflow-hidden p-4">
