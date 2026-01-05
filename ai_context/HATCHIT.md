@@ -37,7 +37,7 @@
 | `/` | No | Homepage with pricing |
 | `/demo` | No | **Sandbox builder** - localStorage only, premium actions show signup modal |
 | `/builder` | **Yes** | **Real builder** - projects persist to Supabase |
-| `/dashboard/studio` | Yes | Project list (renamed from "Projects") |
+| `/dashboard` | Yes | Project list / studio |
 | `/dashboard/billing` | Yes | Subscription management |
 | `/sign-up`, `/sign-in` | No | Clerk auth |
 
@@ -53,12 +53,12 @@ Demo user builds → Clicks Deploy → Signup modal → Signs up → Work migrat
 
 | Tier | Price | Limits |
 |------|-------|--------|
-| Free | $0 | 10 builds, 1 refinement, 1 project |
+| Free | $0 | 3 builds, 0 refinements, 1 project |
 | Architect | $19/mo | Unlimited builds, 3 projects, deploy |
 | Visionary | $49/mo | + Code download, custom domain, 10 projects |
 | Singularity | $199/mo | Unlimited everything |
 
-**Type:** `types/subscriptions.ts` → `tier: 'architect' | 'visionary' | 'singularity'`
+**Type:** `types/subscriptions.ts` → `tier: 'free' | 'trial' | 'architect' | 'visionary' | 'singularity'`
 
 ---
 

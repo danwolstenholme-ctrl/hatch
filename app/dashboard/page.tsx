@@ -11,7 +11,7 @@ import { formatDistanceToNow } from 'date-fns'
 import { DbProject } from '@/lib/supabase'
 
 export default function StudioPage() {
-  const { user } = useUser()
+  const { user, isLoaded, isSignedIn } = useUser()
   const router = useRouter()
   const [projects, setProjects] = useState<DbProject[]>([])
   const [isLoading, setIsLoading] = useState(true)
@@ -35,6 +35,16 @@ export default function StudioPage() {
   const isAtLimit = tierConfig.limit !== Infinity && projects.length >= tierConfig.limit
 
   useEffect(() => {
+    if (!isLoaded) return
+
+    // Hard redirect if user is not authenticated
+    if (!isSignedIn) {
+      router.replace('/sign-in?redirect_url=/dashboard')
+      return
+    }
+
+    let cancelled = false
+
     async function init() {
       try {
         // Import guest work if exists
@@ -59,11 +69,12 @@ export default function StudioPage() {
               console.log('[Studio] Import successful:', data)
               localStorage.removeItem('hatch_guest_handoff')
               localStorage.removeItem('hatch_last_prompt')
+            } else if (res.status === 401) {
+              router.replace('/sign-in?redirect_url=/dashboard')
+              return
             } else {
-              // Try to get error text if JSON fails
               const text = await res.text()
               console.error('[Studio] Import failed:', res.status, text)
-              // Don't clear handoff if import failed - they might need to retry
             }
           } catch (err) {
             console.error('[Studio] Import error:', err)
@@ -72,18 +83,27 @@ export default function StudioPage() {
         }
 
         const res = await fetch('/api/project/list')
+        if (res.status === 401) {
+          router.replace('/sign-in?redirect_url=/dashboard')
+          return
+        }
         if (res.ok) {
           const data = await res.json()
-          setProjects(data.projects || [])
+          if (!cancelled) setProjects(data.projects || [])
         }
       } catch (error) {
         console.error('Error:', error)
       } finally {
-        setIsLoading(false)
+        if (!cancelled) setIsLoading(false)
       }
     }
+
     init()
-  }, [])
+
+    return () => {
+      cancelled = true
+    }
+  }, [isLoaded, isSignedIn, router])
 
   const filteredProjects = useMemo(() => {
     if (!searchQuery) return projects
@@ -123,7 +143,7 @@ export default function StudioPage() {
     }
   }
 
-  if (isLoading || isMigrating) {
+  if (!isLoaded || !isSignedIn || isLoading || isMigrating) {
     return (
       <div className="min-h-screen bg-zinc-950 flex items-center justify-center">
         <div className="w-6 h-6 border-2 border-zinc-800 border-t-emerald-500 rounded-full animate-spin" />

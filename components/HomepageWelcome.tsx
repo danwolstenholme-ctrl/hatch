@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { ArrowRight, X } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import { useUser } from '@clerk/nextjs'
 import Image from 'next/image'
 
 // =============================================================================
@@ -63,33 +64,44 @@ export default function HomepageWelcome({ onStart }: { onStart?: () => void }) {
   const [phase, setPhase] = useState<'init' | 'ready'>('init')
   const [resumeUrl, setResumeUrl] = useState<string | null>(null)
   const router = useRouter()
+  const { isSignedIn, isLoaded } = useUser()
   const SEEN_KEY = 'hatch_homepage_welcome_seen'
   const PREVIEW_PREFIX = 'hatch_preview_'
 
   useEffect(() => {
+    // Wait for auth to load before checking resume options
+    if (!isLoaded) return
+    
     const hasSeen = localStorage.getItem(SEEN_KEY)
     
-    // Check if user has a cached preview - if so, offer to resume
-    const cachedKey = Object.keys(localStorage).find(key => key.startsWith(PREVIEW_PREFIX))
-    if (cachedKey) {
-      // User has work in progress - extract the cached data
-      try {
-        const cached = localStorage.getItem(cachedKey)
-        if (cached) {
-          const { code, timestamp } = JSON.parse(cached)
-          // Check if cache is still valid (within 24 hours to be generous)
-          if (Date.now() - timestamp < 24 * 60 * 60 * 1000 && code) {
-            // Also check if they have a last prompt stored
-            const lastPrompt = localStorage.getItem('hatch_last_prompt') || ''
-            setResumeUrl(`/builder?mode=guest${lastPrompt ? `&prompt=${encodeURIComponent(lastPrompt)}` : ''}`)
-          } else {
-            // Cache expired, remove it
-            localStorage.removeItem(cachedKey)
+    // For signed-in users: check for a real project
+    if (isSignedIn) {
+      const savedProjectId = localStorage.getItem('hatch_current_project')
+      if (savedProjectId) {
+        setResumeUrl(`/builder?project=${savedProjectId}`)
+      }
+    } else {
+      // For guests: check for cached preview
+      const cachedKey = Object.keys(localStorage).find(key => key.startsWith(PREVIEW_PREFIX))
+      if (cachedKey) {
+        // User has work in progress - extract the cached data
+        try {
+          const cached = localStorage.getItem(cachedKey)
+          if (cached) {
+            const { code, timestamp } = JSON.parse(cached)
+            // Check if cache is still valid (within 24 hours to be generous)
+            if (Date.now() - timestamp < 24 * 60 * 60 * 1000 && code) {
+              // Guest work - send to demo which will load it
+              setResumeUrl('/demo')
+            } else {
+              // Cache expired, remove it
+              localStorage.removeItem(cachedKey)
+            }
           }
+        } catch {
+          // Invalid cache data, remove it
+          localStorage.removeItem(cachedKey)
         }
-      } catch {
-        // Invalid cache data, remove it
-        localStorage.removeItem(cachedKey)
       }
     }
     
@@ -100,7 +112,7 @@ export default function HomepageWelcome({ onStart }: { onStart?: () => void }) {
       const phaseTimer = setTimeout(() => setPhase('ready'), 1500)
       return () => clearTimeout(phaseTimer)
     }
-  }, [router])
+  }, [isLoaded, isSignedIn])
 
   const handleStart = () => {
     localStorage.setItem(SEEN_KEY, 'true')
@@ -134,29 +146,37 @@ export default function HomepageWelcome({ onStart }: { onStart?: () => void }) {
           exit={{ opacity: 0 }}
           className="fixed inset-0 z-[100] flex items-center justify-center px-4"
         >
-          {/* Semi-transparent backdrop - allows seeing the homepage behind */}
+          {/* Semi-transparent backdrop with blur */}
           <div 
-            className="absolute inset-0 bg-black/60 backdrop-blur-sm transition-opacity" 
+            className="absolute inset-0 bg-black/50 backdrop-blur-md transition-opacity" 
             onClick={handleDismiss}
           />
           
-          {/* Main content - Glass Card */}
+          {/* Main content - Premium Glass Card */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+            initial={{ opacity: 0, scale: 0.95, y: 10 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.9, y: 20 }}
-            transition={{ type: "spring", duration: 0.6, bounce: 0.3 }}
-            className="relative z-10 w-full max-w-xl bg-black/90 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden shadow-2xl shadow-black/50"
+            exit={{ opacity: 0, scale: 0.95, y: 10 }}
+            transition={{ type: "spring", duration: 0.4, bounce: 0.2 }}
+            className="relative z-10 w-full max-w-xl"
           >
-            {/* Close button */}
-            <button 
-              onClick={handleDismiss}
-              className="absolute top-4 right-4 p-2 text-zinc-500 hover:text-white transition-colors rounded-full hover:bg-white/10 z-20"
-            >
-              <X className="w-5 h-5" />
-            </button>
+            {/* Outer glow */}
+            <div className="absolute -inset-1 bg-gradient-to-r from-emerald-500/20 via-teal-500/10 to-emerald-500/20 rounded-3xl blur-2xl opacity-60" />
+            
+            {/* Glass card */}
+            <div className="relative bg-zinc-900/70 backdrop-blur-2xl backdrop-saturate-150 border border-white/10 rounded-2xl overflow-hidden shadow-2xl shadow-black/50">
+              {/* Top highlight */}
+              <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent" />
+              
+              {/* Close button */}
+              <button 
+                onClick={handleDismiss}
+                className="absolute top-4 right-4 p-2 text-zinc-500 hover:text-white transition-colors rounded-full hover:bg-white/10 z-20"
+              >
+                <X className="w-5 h-5" />
+              </button>
 
-            <div className="p-8 md:p-10 text-center">
+              <div className="relative p-8 md:p-10 text-center">
               {/* Logo */}
               <motion.div
                 initial={{ scale: 0.8, opacity: 0 }}
@@ -233,6 +253,7 @@ export default function HomepageWelcome({ onStart }: { onStart?: () => void }) {
                   No thanks, I'm just browsing
                 </button>
               </motion.div>
+              </div>
             </div>
             
             {/* Bottom decorative line */}

@@ -7,7 +7,7 @@ import { Sparkles } from 'lucide-react'
 
 export default function SignInPage() {
   const searchParams = useSearchParams()
-  const redirectUrl = searchParams.get('redirect_url') || '/dashboard'
+  const redirectUrl = searchParams.get('redirect_url') || '/builder'
   
   return (
     <div className="min-h-screen bg-zinc-950 flex flex-col items-center justify-center relative overflow-hidden p-4">
@@ -19,21 +19,8 @@ export default function SignInPage() {
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.5 }}
-        className="w-full max-w-md relative z-10"
+        className="w-full max-w-md relative z-10 mt-20"
       >
-        {/* Header Branding */}
-        <div className="text-center mb-8">
-          <div className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-white/5 border border-white/10 mb-4 shadow-lg shadow-emerald-500/10">
-            <Sparkles className="w-6 h-6 text-emerald-500" />
-          </div>
-          <h1 className="text-2xl font-bold text-white tracking-tight mb-2">
-            Welcome Back
-          </h1>
-          <p className="text-zinc-400 text-sm">
-            Resume your session
-          </p>
-        </div>
-
         {/* Clerk Sign In */}
         <div className="flex justify-center">
           <SignIn 

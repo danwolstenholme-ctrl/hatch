@@ -9,28 +9,37 @@ import { Section } from '../templates'
  * Create sections for a project from template
  * Called when a project is first created
  * @param initialPrompt - Optional prompt to set on the first section (from First Contact)
+ * @param guestSections - Optional array of guest sections with code to import
  */
 export async function createSectionsFromTemplate(
   projectId: string,
   sections: Section[],
-  initialPrompt?: string
+  initialPrompt?: string,
+  guestSections?: Array<{ sectionId: string; code?: string; userPrompt?: string; refined?: boolean; refinementChanges?: string[] }>
 ): Promise<DbSection[]> {
   if (!supabaseAdmin) {
     console.error('Supabase admin client not configured')
     return []
   }
 
-  const sectionRows = sections.map((section, index) => ({
-    project_id: projectId,
-    section_id: section.id,
-    order_index: index,
-    status: 'pending' as const,
-    code: null,
-    // Set the initial prompt on the first section only
-    user_prompt: (index === 0 && initialPrompt) ? initialPrompt : null,
-    refined: false,
-    refinement_changes: null,
-  }))
+  // Create a map of guest section data for quick lookup
+  const guestMap = new Map(guestSections?.map(s => [s.sectionId, s]) || [])
+
+  const sectionRows = sections.map((section, index) => {
+    const guestData = guestMap.get(section.id)
+    const hasCode = guestData?.code && guestData.code.length > 0
+    
+    return {
+      project_id: projectId,
+      section_id: section.id,
+      order_index: index,
+      status: hasCode ? 'complete' as const : 'pending' as const,
+      code: guestData?.code || null,
+      user_prompt: guestData?.userPrompt || ((index === 0 && initialPrompt) ? initialPrompt : null),
+      refined: guestData?.refined || false,
+      refinement_changes: guestData?.refinementChanges || null,
+    }
+  })
 
   const { data, error } = await supabaseAdmin
     .from('sections')

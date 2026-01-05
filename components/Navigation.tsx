@@ -25,11 +25,14 @@ export default function Navigation() {
   return (
     <>
       <motion.nav 
-        className="fixed top-0 left-0 right-0 z-50 w-full bg-black/80 backdrop-blur-md border-b border-white/10"
+        className="fixed top-0 left-0 right-0 z-50 w-full bg-zinc-900/60 backdrop-blur-2xl backdrop-saturate-150 border-b border-white/10 shadow-lg shadow-black/20"
         initial={{ y: -100, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.5, ease: [0.25, 0.1, 0.25, 1] }}
       >
+        {/* Top highlight */}
+        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
+        
         <div className="relative max-w-7xl mx-auto px-6 py-3 flex justify-between items-center gap-3">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2.5 group">
@@ -39,8 +42,9 @@ export default function Navigation() {
               whileHover={{ scale: 1.05 }}
               transition={{ type: 'spring', stiffness: 400, damping: 17 }}
             >
-              <Image src="/assets/hatchit_definitive.svg" alt="HatchIt" width={26} height={26} className="w-[26px] h-[26px]" />
+              <Image src="/assets/hatchit_definitive.svg" alt="HatchIt" width={28} height={28} className="w-7 h-7" />
             </motion.div>
+            <span className="text-white font-semibold tracking-tight">HatchIt</span>
           </Link>
           
           {/* Desktop Nav Links */}

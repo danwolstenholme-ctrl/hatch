@@ -1,6 +1,6 @@
 'use client'
 
-import { Suspense } from 'react'
+import { Suspense, useEffect } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { useUser } from '@clerk/nextjs'
 import BuildFlowController from '@/components/BuildFlowController'
@@ -20,15 +20,16 @@ function BuilderContent() {
   const prompt = searchParams.get('prompt')
 
   // Redirect unauthenticated users to demo
-  if (isLoaded && !isSignedIn) {
-    const demoUrl = prompt ? `/demo?prompt=${encodeURIComponent(prompt)}` : '/demo'
-    router.replace(demoUrl)
-    return <SingularityLoader text="REDIRECTING TO DEMO" />
-  }
+  useEffect(() => {
+    if (isLoaded && !isSignedIn) {
+      const demoUrl = prompt ? `/demo?prompt=${encodeURIComponent(prompt)}` : '/demo'
+      router.replace(demoUrl)
+    }
+  }, [isLoaded, isSignedIn, prompt, router])
 
-  // Show loading while checking auth
-  if (!isLoaded) {
-    return <SingularityLoader text="VERIFYING IDENTITY" />
+  // Show loading while checking auth or redirecting
+  if (!isLoaded || (isLoaded && !isSignedIn)) {
+    return <SingularityLoader text={!isLoaded ? "VERIFYING IDENTITY" : "REDIRECTING TO DEMO"} />
   }
 
   // Authenticated user - same UI as demo, just with persistence
@@ -36,7 +37,7 @@ function BuilderContent() {
     <BuildFlowController 
       existingProjectId={projectId || undefined}
       initialPrompt={prompt || undefined}
-      isDemo={false} // Explicitly NOT demo mode for authenticated users
+      isDemo={false}
     />
   )
 }

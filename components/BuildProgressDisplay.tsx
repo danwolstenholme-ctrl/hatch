@@ -13,11 +13,11 @@ import { buildProgress, BuildStage } from '@/lib/build-progress'
 
 const STAGE_LABELS: Record<BuildStage, string> = {
   idle: 'Ready',
-  analyzing: 'Analyzing',
-  structuring: 'Planning',
-  generating: 'Generating',
-  styling: 'Styling',
-  optimizing: 'Polishing',
+  analyzing: 'Analyzing prompt',
+  structuring: 'Designing structure',
+  generating: 'Writing code',
+  styling: 'Adding polish',
+  optimizing: 'Final touches',
   complete: 'Complete',
 };
 

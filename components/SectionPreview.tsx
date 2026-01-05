@@ -632,15 +632,15 @@ export default function SectionPreview({ code, darkMode = true, onRuntimeError, 
     <div className="flex-1 flex flex-col min-h-0">
       {/* View + Device Bar - hidden when hideToolbar is true */}
       {!hideToolbar && (
-        <div className="flex items-center justify-between gap-2 px-3 py-2 bg-black/60 border-b border-white/10">
+        <div className="flex items-center justify-between gap-2 px-3 py-2 bg-zinc-900/95 border-b border-zinc-800">
           {!isMobileDevice && (
-            <div className="inline-flex bg-white/5 border border-white/10 rounded-lg p-1 shadow-sm">
+            <div className="inline-flex bg-zinc-800/50 border border-zinc-700/50 rounded-lg p-0.5">
               <button
                 onClick={() => setViewMode('preview')}
-                className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all ${
+                className={`px-3 py-1.5 text-xs font-mono uppercase tracking-wider rounded-md transition-all ${
                   viewMode === 'preview'
-                    ? 'bg-gradient-to-r from-emerald-600/70 to-teal-500/70 text-white shadow-lg shadow-emerald-500/20'
-                    : 'text-zinc-500 hover:text-zinc-200'
+                    ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                    : 'text-zinc-500 hover:text-zinc-300'
                 }`}
               >
                 Visual
@@ -653,14 +653,14 @@ export default function SectionPreview({ code, darkMode = true, onRuntimeError, 
                     setShowCodePaywall(true)
                   }
                 }}
-                className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-all flex items-center gap-1.5 ${
+                className={`px-3 py-1.5 text-xs font-mono uppercase tracking-wider rounded-md transition-all flex items-center gap-1.5 ${
                   viewMode === 'code'
-                    ? 'bg-gradient-to-r from-emerald-600/70 to-teal-500/70 text-white shadow-lg shadow-emerald-500/20'
-                    : 'text-zinc-500 hover:text-zinc-200'
+                    ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                    : 'text-zinc-500 hover:text-zinc-300'
                 }`}
               >
                 Code
-                {!allowCodeView && <span className="text-amber-400">🔒</span>}
+                {!allowCodeView && <span className="text-amber-500/80 text-[10px]">PRO</span>}
               </button>
             </div>
           )}
@@ -670,10 +670,10 @@ export default function SectionPreview({ code, darkMode = true, onRuntimeError, 
               {/* Edit Mode Toggle */}
               <button
                 onClick={() => setIsEditModeActive(!isEditModeActive)}
-                className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all flex items-center gap-1.5 border ${
+                className={`px-3 py-1.5 rounded-lg text-xs font-mono uppercase tracking-wider transition-all flex items-center gap-1.5 border ${
                   isEditModeActive
-                    ? 'bg-violet-500/20 text-violet-400 border-violet-500/50'
-                    : 'bg-white/5 text-zinc-500 border-white/10 hover:text-zinc-200 hover:border-white/20'
+                    ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/50'
+                    : 'bg-zinc-800/50 text-zinc-500 border-zinc-700/50 hover:text-zinc-300 hover:border-zinc-600'
                 }`}
                 title="Double-click text to edit"
               >
@@ -682,21 +682,21 @@ export default function SectionPreview({ code, darkMode = true, onRuntimeError, 
               </button>
               
               {/* Device Selector */}
-              <div className="flex items-center gap-1 bg-white/5 border border-white/10 rounded-lg p-1">
+              <div className="flex items-center gap-0.5 bg-zinc-800/50 border border-zinc-700/50 rounded-lg p-0.5">
                 {(Object.keys(deviceSizes) as DeviceView[]).map((device) => {
                   const Icon = deviceSizes[device].icon
                   return (
                     <button
                       key={device}
                       onClick={() => setDeviceView(device)}
-                      className={`px-3 py-1.5 rounded-md text-xs font-semibold transition-all flex items-center gap-1.5 ${
+                      className={`px-2.5 py-1.5 rounded-md text-xs font-mono transition-all flex items-center gap-1.5 ${
                         deviceView === device
-                          ? 'bg-white/10 text-white border border-emerald-400/30'
-                          : 'text-zinc-500 hover:text-zinc-200'
+                          ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                          : 'text-zinc-500 hover:text-zinc-300'
                       }`}
                     >
                       <Icon className="w-3.5 h-3.5" />
-                      <span>{deviceSizes[device].label}</span>
+                      <span className="hidden lg:inline">{deviceSizes[device].label}</span>
                     </button>
                   )
                 })}

@@ -1,14 +1,46 @@
 # Project Status & Handover
-**Last Updated:** January 5, 2026
+**Last Updated:** January 5, 2026 (Evening)
 **Current Phase:** Pre-Launch Polish & Marketing Prep
 
 ---
 
+## 🏗️ Builder Architecture (IMPORTANT)
+
+### Routes
+| Route | Who | Storage | Premium Actions |
+|-------|-----|---------|-----------------|
+| `/demo` | **Guests** (not signed in) | localStorage | Show signup modal |
+| `/builder` | **Auth users** (signed in) | Supabase | Full access |
+
+### Component Hierarchy
+```
+/demo OR /builder (pages)
+  └── BuildFlowController.tsx (isDemo prop controls behavior)
+        └── SectionBuilder.tsx (the actual builder UI)
+              └── isInitialState block (line ~2092) - the input UI
+```
+
+**Key Insight:** There's only ONE builder UI. Both routes render the same `BuildFlowController` → `SectionBuilder` chain. The `isDemo` prop just controls storage and paywall behavior.
+
+### Generation Limits (as of Jan 5 evening)
+**ALL REMOVED** - Infinite generations for everyone. Paywall only at:
+- **Deploy** → Requires Architect ($19+)
+- **Download** → Requires Visionary ($49+)
+
+---
+
 ## 🎯 Current Focus
-**"Professional Studio" Polish**
-Moving away from the "Hacker/Terminal" aesthetic towards a clean, high-end SaaS look ("Singularity" theme: Zinc-950, Emerald-500, Glassmorphism).
+**"Singularity" Brand Compliance**
+Clean, professional aesthetic per SINGULARITY_CORE.md brand guidelines.
+
+### Brand Rules (from SINGULARITY_CORE.md)
+- ✅ `bg-zinc-900 border border-zinc-800` for cards
+- ✅ `bg-emerald-600 hover:bg-emerald-500` for CTA buttons (flat, no glow)
+- ❌ NO gradients, NO teal, NO glowing shadows, NO backdrop-blur everywhere
 
 ### Recent Achievements
+- **Builder Input UI:** Redesigned to brand spec (zinc palette, flat emerald button)
+- **Generation Limits:** Removed all limits - free builds for everyone
 - **Singularity Visual Overhaul:** Complete site-wide audit. All pages now use `bg-zinc-950`, Ambient Void effects, and Scanlines.
 - **Homepage Welcome:** Redesigned as a dismissible "Glass Card" popup with shimmering "Text → React" animation.
 - **Contact Page:** Complete redesign to remove "Matrix" vibes; now clean studio aesthetic with robust back-button logic.

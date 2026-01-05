@@ -4,11 +4,11 @@ import { ReactNode } from 'react'
 import ErrorBoundary from '@/components/ErrorBoundary'
 
 // =============================================================================
-// BUILDER LAYOUT - Authenticated builder experience
-// Singularity aesthetic, Supabase persistence, full features
+// DEMO LAYOUT - Guest builder experience
+// Singularity aesthetic, localStorage only, upgrade prompts
 // =============================================================================
 
-export default function BuilderLayout({ children }: { children: ReactNode }) {
+export default function DemoLayout({ children }: { children: ReactNode }) {
   return (
     <ErrorBoundary>
       <div className="min-h-screen bg-black text-white relative overflow-hidden">

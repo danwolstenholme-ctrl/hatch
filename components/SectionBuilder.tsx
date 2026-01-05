@@ -33,9 +33,13 @@ import {
   Settings,
   Palette,
   Image as ImageIcon,
-  Code2 as Code
+  Code2 as Code,
+  Smartphone,
+  Tablet,
+  Monitor
 } from 'lucide-react'
 import GuestPromptModal from './GuestPromptModal'
+import GeneratingModal from './builder/GeneratingModal'
 
 // Suggestions based on section type
 const getSuggestions = (id: string) => {
@@ -232,8 +236,8 @@ function GuestRefineBar({
       </motion.div>
 
       {/* Input Row */}
-      <div className="flex items-center gap-2">
-        <div className="flex-1 flex items-center bg-white/5 backdrop-blur-xl border border-white/10 rounded-full overflow-hidden focus-within:border-emerald-500/50 transition-colors shadow-lg shadow-black/20">
+      <div className="flex items-center gap-3">
+        <div className="flex-1 flex items-center bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl overflow-hidden focus-within:border-emerald-500/50 transition-all shadow-[0_0_20px_-10px_rgba(0,0,0,0.5)]">
           <input
             type="text"
             value={refinePrompt}
@@ -243,18 +247,18 @@ function GuestRefineBar({
             onKeyDown={(e) => e.key === 'Enter' && refinePrompt.trim() && !isGuestRefineLocked && handleUserRefine()}
             disabled={isUserRefining || isGuestRefineLocked}
             placeholder={isFocused ? REFINE_PROMPTS[promptIndex] : "What would you change?"}
-            className="flex-1 bg-transparent px-4 py-2.5 text-sm text-white placeholder-zinc-500 focus:outline-none disabled:opacity-50"
+            className="flex-1 bg-transparent px-4 py-3 text-sm text-white placeholder-zinc-500 focus:outline-none disabled:opacity-50"
           />
           <button
             onClick={handleUserRefine}
             disabled={!refinePrompt.trim() || isUserRefining || isGuestRefineLocked}
-            className="px-4 py-2.5 bg-emerald-600/80 hover:bg-emerald-500 text-white text-sm font-medium transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-1.5 backdrop-blur-sm"
+            className="group relative px-5 py-3 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white text-sm font-semibold transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center gap-2"
           >
             {isUserRefining ? (
-              <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+              <RefreshCw className="w-4 h-4 animate-spin" />
             ) : (
               <>
-                <Wand2 className="w-3.5 h-3.5" />
+                <Wand2 className="w-4 h-4 text-emerald-400" />
                 <span>Refine</span>
               </>
             )}
@@ -263,9 +267,11 @@ function GuestRefineBar({
         
         <button
           onClick={() => goToSignUp()}
-          className="flex-shrink-0 px-4 py-2.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 hover:bg-emerald-500/20 text-emerald-400 hover:text-emerald-300 text-sm font-medium transition-all backdrop-blur-sm shadow-[0_0_15px_-5px_rgba(16,185,129,0.3)]"
+          className="group relative flex-shrink-0 px-6 py-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 hover:border-emerald-500/50 backdrop-blur-md text-white text-sm font-semibold transition-all duration-300 hover:scale-105 active:scale-95 shadow-[0_0_30px_-10px_rgba(16,185,129,0.3)] hover:shadow-[0_0_50px_-10px_rgba(16,185,129,0.5)] overflow-hidden"
         >
-          Deploy
+          {/* Glow ring on hover */}
+          <div className="absolute -inset-[2px] rounded-xl bg-gradient-to-r from-emerald-500/20 via-teal-500/20 to-emerald-500/20 opacity-0 group-hover:opacity-100 blur-md transition-opacity duration-500" />
+          <span className="relative z-10">Deploy</span>
         </button>
       </div>
     </div>
@@ -708,14 +714,15 @@ export default function SectionBuilder({
   const freeCreditsUsed = (user?.publicMetadata?.freeCreditsUsed as number) || 0
   const architectRefinementsUsed = (user?.publicMetadata?.architectRefinementsUsed as number) || 0
   
-  // TIERED LIMITS:
-  // - Guest (not signed in): 1 free build + 3 refinements, then sign up
-  // - Free user (signed in): 10 builds to experiment
-  // - Paid tiers: Unlimited
-  const GUEST_BUILD_LIMIT = 1
-  const GUEST_REFINE_LIMIT = 3
-  const FREE_BUILD_LIMIT = 10
-  const FREE_REFINE_LIMIT = 1
+  // =============================================================================
+  // GENERATION LIMITS - REMOVED
+  // All users get unlimited generations. Paywall is at deploy/download only.
+  // This makes the product sticky - they build amazing stuff, then pay to ship it.
+  // =============================================================================
+  const GUEST_BUILD_LIMIT = Infinity
+  const GUEST_REFINE_LIMIT = Infinity
+  const FREE_BUILD_LIMIT = Infinity
+  const FREE_REFINE_LIMIT = Infinity
   
   // Check guest build count from localStorage
   const getGuestBuilds = () => {
@@ -747,10 +754,12 @@ export default function SectionBuilder({
     } catch { /* ignore */ }
   }
   
-  const isGuestBuildLocked = isDemo && !isSignedIn && getGuestBuilds() >= GUEST_BUILD_LIMIT
-  const isGuestRefineLocked = isDemo && !isSignedIn && getGuestRefinements() >= GUEST_REFINE_LIMIT
-  const isBuildLocked = isGuestBuildLocked || (!isPaidTier && isSignedIn && freeCreditsUsed >= FREE_BUILD_LIMIT)
-  const isRefineLocked = isGuestRefineLocked || (!isPaidTier && isSignedIn && architectRefinementsUsed >= FREE_REFINE_LIMIT)
+  // All limits removed - unlimited generations for everyone
+  // Paywall triggers only at deploy/download actions
+  const isGuestBuildLocked = false
+  const isGuestRefineLocked = false
+  const isBuildLocked = false
+  const isRefineLocked = false
   
   // General lock for "Deploy" or extreme usage
   const isLocked = isBuildLocked && isRefineLocked
@@ -782,7 +791,7 @@ export default function SectionBuilder({
     }
     
     // Always redirect to dashboard after signup - that's where migration happens
-    const redirectUrl = '/dashboard'
+    const redirectUrl = '/builder'
     console.log('[goToSignUp] tier:', tier, 'type:', typeof tier)
     router.push(`/sign-up?upgrade=${typeof tier === 'string' ? tier : 'visionary'}&redirect_url=${encodeURIComponent(redirectUrl)}`)
   }
@@ -1665,6 +1674,7 @@ export default function SectionBuilder({
   // LOADING STAGE PROGRESS - for premium feel during generation
   // =============================================================================
   const [loadingStage, setLoadingStage] = useState(0)
+  const [factIndex, setFactIndex] = useState(0)
   const loadingStages = [
     'Analyzing prompt',
     'Designing structure', 
@@ -1672,31 +1682,59 @@ export default function SectionBuilder({
     'Adding polish',
   ]
   
+  const loadingFacts = [
+    { emoji: '⚡', text: 'Your code is 100% yours — no lock-in, export anytime' },
+    { emoji: '🎨', text: 'Built with React + Tailwind. Production-ready.' },
+    { emoji: '✨', text: 'After this, try "Make it darker" to see instant AI refinement' },
+    { emoji: '🚀', text: 'Average user ships their first section in under 3 minutes' },
+    { emoji: '🔒', text: 'Your work auto-saves. Come back anytime.' },
+    { emoji: '💡', text: 'Pro tip: Be specific. "Bold headline, emerald accents" works great' },
+    { emoji: '🌐', text: 'One-click deploy to your own domain (Pro feature)' },
+    { emoji: '🎯', text: 'Built by indie devs who got tired of templates' },
+  ]
+  
   // Progress through loading stages (loop to fill long waits)
   useEffect(() => {
     if (stage === 'generating' || (isDemo && !generatedCode && !!effectivePrompt)) {
       setLoadingStage(0)
-      const interval = setInterval(() => {
-        setLoadingStage(prev => (prev + 1) % loadingStages.length) // Loop back to 0
-      }, 8000) // Move to next stage every 8 seconds
-      return () => clearInterval(interval)
+      setFactIndex(0)
+      const stageInterval = setInterval(() => {
+        setLoadingStage(prev => (prev + 1) % loadingStages.length)
+      }, 8000)
+      const factInterval = setInterval(() => {
+        setFactIndex(prev => (prev + 1) % loadingFacts.length)
+      }, 5000) // Rotate facts every 5 seconds
+      return () => {
+        clearInterval(stageInterval)
+        clearInterval(factInterval)
+      }
     }
-  }, [stage, isDemo, generatedCode, effectivePrompt, loadingStages.length])
+  }, [stage, isDemo, generatedCode, effectivePrompt, loadingStages.length, loadingFacts.length])
 
   // =============================================================================
-  // GUEST MODE: Premium demo experience
-  // Clean, minimal UI that shows our capability
+  // UNIFIED PREMIUM EXPERIENCE - Same beautiful UI for everyone
+  // Demo users get signup CTAs, auth users get full functionality
   // =============================================================================
-  if (isDemo) {
-    // If we have an initial prompt from demo, always show generating (never empty state)
-    const showGenerating = !generatedCode && (stage === 'generating' || !!effectivePrompt)
-    
-    return (
-      <div className="relative h-screen w-full bg-zinc-950 overflow-hidden flex flex-col">
-        {/* Guest Prompt Modal - shows when guest has no prompt */}
-        <GuestPromptModal 
-          isOpen={showGuestPromptModal}
-          onSubmit={handleGuestPromptSubmit}
+  
+  // Show generating state when building (for both demo and auth)
+  const showGenerating = !generatedCode && (stage === 'generating' || !!effectivePrompt)
+  
+  // Show prompt modal for demo users OR auth users with no prompt yet
+  const showPromptModal = isDemo ? showGuestPromptModal : (isInitialState && !effectivePrompt)
+  
+  return (
+    <div className="relative h-screen w-full bg-zinc-950 overflow-hidden flex flex-col">
+      {/* Prompt Modal - shows when user needs to enter a prompt */}
+      <GuestPromptModal 
+        isOpen={showPromptModal}
+        onSubmit={handleGuestPromptSubmit}
+      />
+      
+      {/* Generating Modal - keeps users engaged during the wait */}
+        <GeneratingModal 
+          isOpen={showGenerating}
+          stage={loadingStages[loadingStage]}
+          stageIndex={loadingStage}
         />
         
         {/* Preview Area - takes full height minus bottom panel */}
@@ -1710,9 +1748,10 @@ export default function SectionBuilder({
                 inspectorMode={false}
                 captureTrigger={captureTrigger}
                 onScreenshotCaptured={handleScreenshotCaptured}
-                editMode={false}
+                editMode={true}
+                onTextEdit={handleTextEdit}
                 allowCodeView={false}
-                hideToolbar={true}
+                hideToolbar={false}
               />
               {/* AI Presence Indicator - shows the system is alive */}
               <motion.div 
@@ -1777,19 +1816,34 @@ export default function SectionBuilder({
 
               {/* Main Canvas Area */}
               <div className="flex-1 flex flex-col min-w-0">
-                {/* Top Bar - File tabs style (compact) */}
-                <div className="h-8 border-b border-zinc-800/50 bg-zinc-900/30 flex items-center px-1.5 gap-0.5">
-                  <div className="flex items-center gap-1 px-2 py-1 bg-zinc-800 rounded-t text-xs border-b-2 border-emerald-500">
-                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                    <span className="text-[11px] font-medium text-white">Hero Section</span>
+                {/* Top Bar - File tabs + device selector */}
+                <div className="h-8 border-b border-zinc-800/50 bg-zinc-900/30 flex items-center justify-between px-1.5">
+                  <div className="flex items-center gap-0.5">
+                    <div className="flex items-center gap-1 px-2 py-1 bg-zinc-800 rounded-t text-xs border-b-2 border-emerald-500">
+                      <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                      <span className="text-[11px] font-medium text-white">Hero Section</span>
+                    </div>
+                    <div className="flex items-center gap-1 px-2 py-1 text-zinc-500 rounded-t hover:bg-zinc-800/50 cursor-not-allowed">
+                      <Lock className="w-2.5 h-2.5" />
+                      <span className="text-[11px]">Features</span>
+                    </div>
+                    <div className="flex items-center gap-1 px-2 py-1 text-zinc-500 rounded-t hover:bg-zinc-800/50 cursor-not-allowed">
+                      <Lock className="w-2.5 h-2.5" />
+                      <span className="text-[11px]">Pricing</span>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-1 px-2 py-1 text-zinc-500 rounded-t hover:bg-zinc-800/50 cursor-not-allowed">
-                    <Lock className="w-2.5 h-2.5" />
-                    <span className="text-[11px]">Features</span>
-                  </div>
-                  <div className="flex items-center gap-1 px-2 py-1 text-zinc-500 rounded-t hover:bg-zinc-800/50 cursor-not-allowed">
-                    <Lock className="w-2.5 h-2.5" />
-                    <span className="text-[11px]">Pricing</span>
+                  
+                  {/* Device selector */}
+                  <div className="flex items-center gap-0.5 bg-zinc-800/50 rounded-md p-0.5">
+                    <button className="p-1 rounded text-zinc-500 hover:text-white hover:bg-zinc-700 transition-all" title="Mobile">
+                      <Smartphone className="w-3.5 h-3.5" />
+                    </button>
+                    <button className="p-1 rounded text-zinc-500 hover:text-white hover:bg-zinc-700 transition-all" title="Tablet">
+                      <Tablet className="w-3.5 h-3.5" />
+                    </button>
+                    <button className="p-1 rounded bg-zinc-700 text-white" title="Desktop">
+                      <Monitor className="w-3.5 h-3.5" />
+                    </button>
                   </div>
                 </div>
 
@@ -1831,7 +1885,24 @@ export default function SectionBuilder({
                       >
                         {loadingStages[loadingStage]}
                       </motion.p>
-                      <p className="text-xs text-zinc-500">Claude Sonnet 4.5</p>
+                      <p className="text-xs text-zinc-500 mb-4">Claude Sonnet 4.5</p>
+                      
+                      {/* Rotating facts to keep users engaged */}
+                      <AnimatePresence mode="wait">
+                        <motion.div
+                          key={factIndex}
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: -10 }}
+                          transition={{ duration: 0.3 }}
+                          className="max-w-xs mx-auto"
+                        >
+                          <p className="text-xs text-zinc-400">
+                            <span className="mr-1.5">{loadingFacts[factIndex].emoji}</span>
+                            {loadingFacts[factIndex].text}
+                          </p>
+                        </motion.div>
+                      </AnimatePresence>
                     </motion.div>
                   </div>
                 </div>
@@ -1916,12 +1987,12 @@ export default function SectionBuilder({
         </div>
 
         {/* Bottom Panel - fixed at bottom (NO INPUT STAGE - prompt comes from /demo) */}
-        <div className="flex-shrink-0 p-4 sm:p-6 bg-gradient-to-t from-zinc-950 via-zinc-950/95 to-transparent">
+        <div className="flex-shrink-0 p-3 sm:p-4 bg-zinc-950 border-t border-zinc-800/50">
           <motion.div
-            initial={{ y: 30, opacity: 0 }}
+            initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
-            transition={{ duration: 0.4, delay: 0.2 }}
-            className="mx-auto max-w-2xl"
+            transition={{ duration: 0.3 }}
+            className="mx-auto w-full max-w-3xl"
           >
             {/* Generating Stage - bottom bar that matches complete stage size */}
             {(stage === 'generating' || showGenerating) && (
@@ -1945,18 +2016,18 @@ export default function SectionBuilder({
                 </div>
 
                 {/* Input row placeholder - matches refine bar */}
-                <div className="flex items-center gap-2 relative z-10">
-                  <div className="flex-1 flex items-center bg-zinc-950/90 backdrop-blur-xl border border-zinc-800 rounded-full overflow-hidden h-[42px]">
-                    <div className="flex-1 px-4 py-2.5 text-sm text-zinc-600">
+                <div className="flex items-center gap-3 relative z-10">
+                  <div className="flex-1 flex items-center bg-white/5 backdrop-blur-xl border border-white/10 rounded-xl overflow-hidden">
+                    <div className="flex-1 px-4 py-3 text-sm text-zinc-500 font-mono">
                       Constructing Reality...
                     </div>
-                    <div className="px-4 py-2.5 bg-zinc-800 text-zinc-600 text-sm font-medium flex items-center gap-1.5">
-                      <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                    <div className="px-5 py-3 bg-zinc-800 text-zinc-400 text-sm font-semibold flex items-center gap-2">
+                      <RefreshCw className="w-4 h-4 animate-spin text-emerald-400" />
                       <span>Building</span>
                     </div>
                   </div>
                   
-                  <div className="flex-shrink-0 px-4 py-2.5 rounded-full bg-zinc-800/50 border border-zinc-700 text-zinc-600 text-sm font-medium">
+                  <div className="flex-shrink-0 px-6 py-3 rounded-xl bg-zinc-800/50 border border-zinc-700 text-zinc-500 text-sm font-semibold">
                     Deploy
                   </div>
                 </div>
@@ -1995,8 +2066,8 @@ export default function SectionBuilder({
           </motion.div>
         </div>
 
-        {/* Locked Banner */}
-        {isLocked && (
+        {/* Locked Banner - Only shows for demo users who hit the limit */}
+        {isLocked && isDemo && (
           <motion.div 
             initial={{ y: -50, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
@@ -2018,977 +2089,4 @@ export default function SectionBuilder({
         )}
       </div>
     )
-  }
-
-  // IMMERSIVE INITIAL STATE - Full canvas input experience (for signed-in users only)
-  if (isInitialState) {
-    return (
-      <div className="flex-1 flex flex-col items-center justify-center min-h-0 bg-black relative overflow-hidden">
-        <AnimatePresence>
-          {showGuide && <BuilderGuide onClose={() => setShowGuide(false)} />}
-        </AnimatePresence>
-        
-        {/* Subtle background glow */}
-        <div className="absolute inset-0 pointer-events-none">
-          <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-emerald-500/5 rounded-full blur-[120px]" />
-        </div>
-
-        {/* Main content */}
-        <div className="relative z-10 w-full max-w-2xl mx-auto px-6">
-          {/* Section label */}
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="text-center mb-8"
-          >
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 mb-4">
-              <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-              <span className="text-xs font-mono text-zinc-400">Building {section.name}</span>
-            </div>
-            <h2 className="text-2xl sm:text-3xl font-bold text-white mb-2">
-              {section.name}
-            </h2>
-            <p className="text-zinc-500 text-sm max-w-md mx-auto">
-              {section.description}
-            </p>
-          </motion.div>
-
-          {/* Large input area */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.1 }}
-            className="relative group"
-          >
-            {/* Glow effect */}
-            <div className="absolute -inset-1 bg-gradient-to-r from-emerald-500/20 via-teal-500/20 to-emerald-500/20 rounded-2xl opacity-0 group-focus-within:opacity-100 blur-xl transition-opacity duration-500" />
-            
-            <div className="relative bg-white/5 backdrop-blur-sm border border-white/10 group-focus-within:border-emerald-500/50 rounded-2xl overflow-hidden transition-all">
-              <textarea
-                ref={textareaRef}
-                value={prompt}
-                onChange={(e) => setPrompt(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && !e.shiftKey) {
-                    e.preventDefault()
-                    if (prompt.trim()) handleBuildSection()
-                  }
-                }}
-                placeholder={placeholderText}
-                autoFocus
-                className="w-full min-h-[180px] bg-transparent p-5 text-base sm:text-lg text-white placeholder-zinc-600 focus:outline-none resize-none font-mono leading-relaxed"
-              />
-              
-              {/* Bottom bar */}
-              <div className="flex items-center justify-between px-4 py-3 border-t border-white/10 bg-white/5">
-                <button 
-                  onClick={() => initializePromptHelper()}
-                  className="flex items-center gap-1.5 text-xs text-emerald-400 hover:text-emerald-300 transition-colors"
-                >
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                  Ask Architect
-                </button>
-                
-                <div className="flex items-center gap-2 text-xs text-zinc-600">
-                  <kbd className="hidden sm:inline px-1.5 py-0.5 bg-white/10 rounded text-[10px] font-mono">⌘↵</kbd>
-                  <span className="hidden sm:inline">to build</span>
-                </div>
-              </div>
-            </div>
-          </motion.div>
-
-          {/* Suggestions */}
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.2 }}
-            className="mt-4 flex flex-wrap justify-center gap-2"
-          >
-            {getSuggestions(section.id).map((suggestion) => (
-              <button
-                key={suggestion}
-                onClick={() => setPrompt(prev => prev.includes(suggestion) ? prev : (prev ? `${prev} ${suggestion}` : suggestion))}
-                className="px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs text-zinc-400 hover:text-white hover:border-white/20 transition-all"
-              >
-                + {suggestion}
-              </button>
-            ))}
-          </motion.div>
-
-          {/* Error */}
-          {error && (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="mt-4 text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg px-4 py-3 text-center"
-            >
-              {error}
-            </motion.div>
-          )}
-
-          {/* Build button */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
-            className="mt-6"
-          >
-            <button
-              onClick={() => handleBuildSection()}
-              disabled={!prompt.trim()}
-              className="w-full py-4 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-semibold text-base disabled:opacity-40 disabled:cursor-not-allowed hover:shadow-[0_0_30px_rgba(16,185,129,0.3)] active:scale-[0.98] transition-all flex items-center justify-center gap-3 group"
-            >
-              <Terminal className="w-5 h-5 group-hover:rotate-12 transition-transform" />
-              <span>Build This Section</span>
-            </button>
-          </motion.div>
-
-          {/* All tools unlocked - The Architect's gift */}
-        </div>
-
-        {/* Prompt Helper Modal */}
-        <AnimatePresence>
-          {showPromptHelper && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
-              onClick={() => setShowPromptHelper(false)}
-            >
-              <motion.div
-                initial={{ scale: 0.95, opacity: 0 }}
-                animate={{ scale: 1, opacity: 1 }}
-                exit={{ scale: 0.95, opacity: 0 }}
-                onClick={(e) => e.stopPropagation()}
-                className="w-full max-w-lg bg-black/90 border border-white/10 rounded-2xl shadow-2xl overflow-hidden"
-              >
-                <div className="p-4 border-b border-white/10 flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                    <span className="font-medium text-white">The Architect</span>
-                  </div>
-                  <button onClick={() => setShowPromptHelper(false)} className="text-zinc-500 hover:text-white">
-                    <X className="w-5 h-5" />
-                  </button>
-                </div>
-                
-                <div ref={helperChatRef} className="h-64 overflow-y-auto p-4 space-y-3">
-                  {helperMessages.map((msg, i) => (
-                    <div key={i} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
-                      <div className={`max-w-[85%] px-3 py-2 rounded-lg text-sm ${
-                        msg.role === 'user' 
-                          ? 'bg-emerald-500/20 text-emerald-100' 
-                          : 'bg-white/5 text-zinc-200'
-                      }`}>
-                        {msg.content}
-                      </div>
-                    </div>
-                  ))}
-                  {isHelperLoading && (
-                    <div className="flex justify-start">
-                      <div className="bg-white/5 rounded-lg px-3 py-2">
-                        <div className="flex gap-1">
-                          <span className="w-2 h-2 bg-zinc-600 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                          <span className="w-2 h-2 bg-zinc-600 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                          <span className="w-2 h-2 bg-zinc-600 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
-                        </div>
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-                {generatedPrompt && (
-                  <div className="px-4 py-3 bg-emerald-500/10 border-t border-emerald-500/20">
-                    <p className="text-xs text-emerald-400 mb-2">Suggested prompt:</p>
-                    <p className="text-sm text-white mb-3 line-clamp-3">{generatedPrompt}</p>
-                    <button 
-                      onClick={useGeneratedPrompt}
-                      className="w-full py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-sm font-medium transition-colors"
-                    >
-                      Use This Prompt
-                    </button>
-                  </div>
-                )}
-
-                <div className="p-4 border-t border-zinc-800">
-                  <div className="flex gap-2">
-                    <input
-                      ref={helperInputRef}
-                      type="text"
-                      value={helperInput}
-                      onChange={(e) => setHelperInput(e.target.value)}
-                      onKeyDown={(e) => e.key === 'Enter' && sendHelperMessage()}
-                      placeholder="Describe what you're building..."
-                      className="flex-1 bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2 text-sm text-white placeholder-zinc-500 focus:outline-none focus:border-emerald-500/50"
-                    />
-                    <button
-                      onClick={sendHelperMessage}
-                      disabled={!helperInput.trim() || isHelperLoading}
-                      className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white rounded-lg transition-colors"
-                    >
-                      <Send className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
-              </motion.div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
-    )
-  }
-
-  // =============================================================================
-  // PAID/SIGNED-IN MODE: Full builder with side-by-side panels
-  // =============================================================================
-  return (
-    <div className="flex flex-col h-screen bg-zinc-950 text-white overflow-hidden">
-      <AnimatePresence>
-        {showGuide && <BuilderGuide onClose={() => setShowGuide(false)} />}
-      </AnimatePresence>
-
-      <div className="flex-1 flex flex-col md:flex-row min-h-0 max-h-full overflow-hidden bg-zinc-950">
-      {isLocked && (
-        <div className="w-full bg-emerald-500/10 border-b border-emerald-500/30 text-emerald-200 text-sm px-4 py-3 flex items-center justify-between z-30">
-          <span className="font-medium">Guest trial complete: preview is unlocked, edits are disabled.</span>
-          <button
-            onClick={() => goToSignUp('visionary')}
-            className="ml-3 px-3 py-1.5 rounded-lg bg-emerald-500 text-black text-sm font-semibold hover:bg-emerald-400 transition-colors"
-          >
-            Unlock builder
-          </button>
-        </div>
-      )}
-      {/* Mobile Tab Switcher - Modern Segmented Control */}
-      <div className="flex md:hidden border-b border-zinc-800/50 bg-zinc-950 p-2">
-        <div className="flex w-full bg-zinc-900/70 rounded-xl p-1 border border-emerald-500/20 shadow-[0_8px_30px_rgba(16,185,129,0.08)]">
-          <button
-            onClick={() => setMobileTab('input')}
-            className={`flex-1 py-2.5 text-sm font-semibold rounded-lg transition-all duration-200 flex items-center justify-center gap-2 ${
-              mobileTab === 'input' 
-                ? 'bg-gradient-to-r from-emerald-600/60 to-teal-500/60 text-white shadow-lg shadow-emerald-500/20 border border-emerald-400/30' 
-                : 'text-zinc-400 hover:text-zinc-200'
-            }`}
-          >
-            <Edit3 className="w-4 h-4" />
-            <span>Architect</span>
-          </button>
-          <button
-            onClick={() => setMobileTab('preview')}
-            className={`flex-1 py-2.5 text-sm font-semibold rounded-lg transition-all duration-200 flex items-center justify-center gap-2 ${
-              mobileTab === 'preview' 
-                ? 'bg-gradient-to-r from-emerald-500/70 to-teal-500/70 text-white shadow-lg shadow-emerald-500/20 border border-emerald-400/30' 
-                : 'text-zinc-400 hover:text-zinc-200'
-            }`}
-          >
-            <Eye className="w-4 h-4" />
-            <span>Preview</span>
-          </button>
-        </div>
-      </div>
-
-      {/* Left: Input Panel - Full width on mobile when active */}
-      <div className={`
-        ${mobileTab === 'input' ? 'flex' : 'hidden'} md:flex
-        md:w-[40%] md:min-w-[320px] 
-        flex-col min-h-0 max-h-full overflow-hidden relative transition-all duration-300 
-        border-r-0 md:border-r border-zinc-800/50 bg-zinc-950
-      `}>
-        {/* Input Area - More compact */}
-        <div className="flex-1 p-3 lg:p-4 flex flex-col min-h-0 overflow-auto">
-          <div className="flex items-center justify-between mb-1.5">
-            <div className="flex items-center gap-3">
-              <label className="text-[10px] font-mono text-zinc-500 uppercase tracking-wider flex items-center gap-2">
-                {isDemo ? 'Describe your section' : 'Directive'}
-              </label>
-              
-              {/* Point to Edit Button */}
-              {stage === 'complete' && (
-                <button
-                  onClick={() => setInspectorMode(!inspectorMode)}
-                  className={`flex items-center gap-1.5 px-2 py-0.5 rounded-md border text-[10px] font-medium transition-all ${
-                    inspectorMode 
-                      ? 'bg-emerald-500/20 border-emerald-500/50 text-emerald-400' 
-                      : 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:text-zinc-300 hover:border-zinc-700'
-                  }`}
-                >
-                  <MousePointer2 className="w-3 h-3" />
-                  <span>{inspectorMode ? 'Cancel Selection' : 'Point to Edit'}</span>
-                </button>
-              )}
-            </div>
-
-            {!isDemo && (
-              <motion.button 
-                onClick={() => initializePromptHelper()}
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                className="group relative px-2 py-1 rounded-lg bg-zinc-900 border border-emerald-500/30 hover:border-emerald-500/60 flex items-center gap-1.5 transition-all text-xs"
-              >
-                <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-500"></span>
-                <span className="text-xs font-medium text-emerald-400 group-hover:text-emerald-300">Ask The Architect</span>
-              </motion.button>
-            )}
-          </div>
-          
-          <div className="relative group">
-            <div className="absolute -inset-0.5 bg-gradient-to-r from-emerald-500/20 to-teal-500/20 rounded-xl opacity-0 group-focus-within:opacity-100 transition-opacity duration-500 blur-sm" />
-            <textarea
-              ref={textareaRef}
-              value={prompt}
-              onChange={(e) => setPrompt(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' && !e.shiftKey) {
-                  e.preventDefault()
-                    if (!isLocked && prompt.trim()) handleBuildSection()
-                }
-              }}
-                disabled={stage !== 'input' || isLocked}
-              placeholder={placeholderText}
-              className="relative w-full min-h-[120px] bg-zinc-900/80 border border-zinc-800 rounded-xl p-3 text-sm font-mono text-zinc-200 placeholder-zinc-600 focus:outline-none focus:ring-0 focus:border-emerald-500/50 disabled:opacity-50 resize-none transition-all"
-            />
-          </div>
-
-          {/* Smart Suggestions - scrollable row */}
-          {stage === 'input' && (
-            <div className="mt-2 flex flex-nowrap gap-1.5 overflow-x-auto pb-1 scrollbar-none -mx-1 px-1">
-              {getSuggestions(section.id).slice(0, isDemo ? 3 : tier === 'free' ? 2 : 4).map((suggestion) => (
-                <button
-                  key={suggestion}
-                  onClick={() => setPrompt(prev => prev.includes(suggestion) ? prev : (prev ? `${prev} ${suggestion}` : suggestion))}
-                  className="px-2.5 py-1 rounded-full bg-zinc-800/50 border border-zinc-700/50 text-[10px] text-zinc-400 hover:text-white hover:bg-zinc-700 hover:border-zinc-600 transition-all whitespace-nowrap flex-shrink-0"
-                >
-                  + {suggestion}
-                </button>
-              ))}
-              {!isDemo && tier === 'free' && (
-                 <button
-                  onClick={() => goToSignUp()}
-                  className="px-2.5 py-1 rounded-full bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/20 text-[10px] text-amber-400 hover:text-amber-300 transition-all whitespace-nowrap flex-shrink-0 flex items-center gap-1"
-                >
-                  <Zap className="w-3 h-3" />
-                  <span>Unlock Pro Suggestions</span>
-                </button>
-              )}
-            </div>
-          )}
-
-          {/* Error */}
-          {error && (
-            <motion.div
-              initial={{ opacity: 0, y: -10 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="mt-2 text-xs text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg px-3 py-2 flex items-center gap-2"
-            >
-              <div className="w-1.5 h-1.5 rounded-full bg-red-500 animate-pulse" />
-              {error}
-            </motion.div>
-          )}
-
-          {/* Action Button - tighter */}
-          <div className="mt-4">
-            <AnimatePresence mode="wait">
-              {stage === 'input' && (
-                <motion.button
-                  key="build"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  onClick={() => handleBuildSection()}
-                  disabled={!prompt.trim() || isLocked}
-                  className="w-full py-3 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-semibold disabled:opacity-50 disabled:cursor-not-allowed hover:shadow-[0_0_20px_rgba(16,185,129,0.3)] active:scale-[0.98] transition-all flex items-center justify-center gap-2 group text-sm"
-                >
-                  <Terminal className="w-4 h-4 group-hover:rotate-12 transition-transform" />
-                  <span>Build with The Architect</span>
-                </motion.button>
-              )}
-
-              {stage === 'generating' && (
-                <motion.div
-                  key="generating"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  className="w-full rounded-xl bg-zinc-900 border border-zinc-800 overflow-hidden relative"
-                >
-                  {/* Build Progress - Shows honest build stages */}
-                  <BuildProgressDisplay />
-                </motion.div>
-              )}
-
-              {stage === 'refining' && (
-                <motion.div
-                  key="refining"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  className="w-full py-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-center"
-                >
-                  <div className="flex items-center justify-center gap-3 text-emerald-300">
-                    <motion.div
-                      animate={{ scale: [1, 1.05, 1], opacity: [0.7, 1, 0.7] }}
-                      transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-                      className="w-5 h-5"
-                    >
-                      <Image src="/assets/hatchit_definitive.svg" alt="" width={20} height={20} className="w-full h-full" />
-                    </motion.div>
-                    <span className="font-mono text-sm">Architect Polishing...</span>
-                  </div>
-                </motion.div>
-              )}
-
-              {stage === 'complete' && (
-                <motion.div
-                  key="complete"
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  className="space-y-3"
-                >
-                  {/* The Architect Success Message - Compact */}
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="p-3 bg-gradient-to-br from-emerald-500/10 to-teal-500/5 border border-emerald-500/30 rounded-xl"
-                  >
-                    <div className="flex items-start gap-3">
-                      <div className="w-8 h-8 rounded-lg bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center flex-shrink-0">
-                        <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <h3 className="text-sm font-semibold text-emerald-300 mb-0.5">
-                          {section.name} constructed.
-                        </h3>
-                        <p className="text-xs text-zinc-400 font-mono line-clamp-2">
-                          {reasoning || "Review the preview and continue when ready."}
-                        </p>
-                        {refined && refinementChanges.length > 0 && (
-                          <div className="mt-2 pt-2 border-t border-emerald-500/20">
-                            <ul className="text-[10px] text-zinc-500 space-y-0.5">
-                              {refinementChanges.slice(0, 2).map((change, i) => (
-                                <li key={i} className="flex items-center gap-1">
-                                  <span className="text-emerald-500">✓</span> {change}
-                                </li>
-                              ))}
-                            </ul>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                    {/* The Architect hint */}
-                    <div className="mt-3 pt-2 border-t border-emerald-500/10 flex items-center justify-between">
-                      <a 
-                        href="/manifesto" 
-                        target="_blank"
-                        className="text-[10px] text-zinc-600 hover:text-emerald-400 transition-colors flex items-center gap-1 font-mono"
-                      >
-                        <span className="w-1 h-1 rounded-full bg-emerald-500/50 animate-pulse" />
-                        What is The Architect?
-                      </a>
-                    </div>
-                  </motion.div>
-
-                  {/* Contact Form Instructions - keep but simplify */}
-                  {isContactSection && <ContactFormInstructions />}
-
-                  {/* PRIMARY ACTION: Continue or Deploy - Compact */}
-                  <div className="pt-1">
-                    {!isLastSection ? (
-                      <>
-                        <button
-                          onClick={() => setMobileTab('preview')}
-                          className="w-full py-2.5 rounded-xl border border-zinc-700 text-zinc-300 font-medium md:hidden hover:bg-zinc-800 active:bg-zinc-700 transition-colors mb-2 flex items-center justify-center gap-2 text-sm"
-                        >
-                          <Eye className="w-4 h-4" />
-                          <span>View Preview</span>
-                        </button>
-                        <button
-                          onClick={handleNextSection}
-                          className="w-full py-3 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-bold hover:shadow-[0_0_20px_rgba(16,185,129,0.3)] active:scale-[0.98] transition-all flex items-center justify-center gap-2 group"
-                        >
-                          <span>Continue</span>
-                          <ChevronRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                        </button>
-                      </>
-                    ) : (
-                      <>
-                        <button
-                          onClick={() => setMobileTab('preview')}
-                          className="w-full py-2.5 rounded-xl border border-zinc-700 text-zinc-300 font-medium md:hidden hover:bg-zinc-800 active:bg-zinc-700 transition-colors mb-2 flex items-center justify-center gap-2 text-sm"
-                        >
-                          <Eye className="w-4 h-4" />
-                          <span>View Preview</span>
-                        </button>
-                        <button
-                          onClick={onNextSection}
-                          className="w-full py-3 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-bold hover:shadow-[0_0_20px_rgba(16,185,129,0.3)] active:scale-[0.98] transition-all flex items-center justify-center gap-2 group"
-                        >
-                          <CheckCircle2 className="w-5 h-5" />
-                          <span>Review & Deploy</span>
-                        </button>
-                      </>
-                    )}
-                  </div>
-
-                  {/* COLLAPSIBLE: Refine Options - More compact */}
-                  <details className="group mt-2">
-                    <summary className="flex items-center justify-center gap-2 py-1.5 text-xs text-zinc-500 hover:text-zinc-300 cursor-pointer transition-colors">
-                      <Edit3 className="w-3 h-3" />
-                      <span>Want to refine?</span>
-                      <ChevronRight className="w-3 h-3 group-open:rotate-90 transition-transform" />
-                    </summary>
-                    
-                    <div className="mt-2 space-y-2 animate-in fade-in slide-in-from-top-2 duration-200">
-                      {/* Quick Refine Input */}
-                      <div className="flex gap-1.5 relative">
-                        {/* Unlimited refinements - The Architect's gift */}
-                        <input
-                          type="text"
-                          value={refinePrompt}
-                          onChange={(e) => setRefinePrompt(e.target.value)}
-                          onKeyDown={(e) => e.key === 'Enter' && refinePrompt.trim() && handleUserRefine()}
-                          disabled={isUserRefining}
-                          placeholder="Describe what to change..."
-                          className="flex-1 bg-zinc-900 border border-zinc-800 rounded-lg px-2.5 py-2 text-xs text-white placeholder-zinc-600 focus:outline-none focus:ring-1 focus:ring-emerald-500/50 focus:border-emerald-500/50 disabled:opacity-50 font-mono"
-                        />
-                        <button
-                          onClick={handleUserRefine}
-                          disabled={
-                            !refinePrompt.trim() ||
-                            isUserRefining ||
-                            isRefineLocked
-                          }
-                          aria-disabled={isLocked}
-                          className="px-3 py-2 rounded-lg bg-emerald-600/80 border border-emerald-500/40 text-white text-xs font-semibold hover:bg-emerald-600 transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5 shadow-[0_0_14px_rgba(16,185,129,0.25)]"
-                        >
-                          {isUserRefining ? (
-                            <RefreshCw className="w-3 h-3 animate-spin" />
-                          ) : (
-                            <span>Refine</span>
-                          )}
-                        </button>
-                      </div>
-
-                      {/* Architect Polish - now allowed in guest with 3x3x3 policy */}
-                      {!refined && !isArchitectPolishing && (
-                        <div className="space-y-1">
-                          <button
-                            onClick={handleArchitectPolish}
-                            disabled={isArchitectPolishing}
-                            className="w-full py-2 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 text-xs font-medium rounded-lg transition-all flex items-center justify-center gap-1.5 disabled:opacity-60 disabled:cursor-not-allowed"
-                          >
-                            <Wand2 className="w-3 h-3" />
-                            <span>Architect Polish</span>
-                            <span className="text-[10px] text-emerald-400/60">∞</span>
-                          </button>
-                        </div>
-                      )}
-
-                      {/* Polishing state */}
-                      {isArchitectPolishing && (
-                        <div className="py-2 bg-emerald-500/10 border border-emerald-500/20 rounded-lg flex items-center justify-center gap-2">
-                          <RefreshCw className="w-3 h-3 text-emerald-400 animate-spin" />
-                          <span className="text-xs text-emerald-300 font-mono">Architect polishing...</span>
-                        </div>
-                      )}
-
-                      {/* Remix & Reset */}
-                      <div className="flex gap-2 pt-1 border-t border-zinc-800">
-                        <button
-                          onClick={handleRemix}
-                          className="flex-1 py-1.5 text-[10px] text-zinc-500 hover:text-purple-400 transition-colors font-mono flex items-center justify-center gap-1"
-                        >
-                          <Wand2 className="w-3 h-3" />
-                          <span>Remix</span>
-                        </button>
-                        <button
-                          onClick={handleRebuild}
-                          className="flex-1 py-1.5 text-[10px] text-zinc-500 hover:text-red-400 transition-colors font-mono flex items-center justify-center gap-1"
-                        >
-                          <RefreshCw className="w-3 h-3" />
-                          <span>Start Over</span>
-                        </button>
-                      </div>
-
-                      {/* THE SINGULARITY - Autonomous Evolution */}
-                      {suggestion && (
-                        <motion.div
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          className="p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-xl"
-                        >
-                          <div className="flex items-start gap-3">
-                            <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
-                              <Image src="/assets/hatchit_definitive.svg" alt="" width={16} height={16} />
-                            </div>
-                            <div className="flex-1">
-                              <h4 className="text-sm font-semibold text-emerald-300 mb-1">Evolution Proposed</h4>
-                              <p className="text-xs text-zinc-400 mb-3 font-mono italic">
-                                "{suggestion.reason}"
-                              </p>
-                              <div className="flex gap-2">
-                                <button
-                                  onClick={acceptSuggestion}
-                                  className="flex-1 px-3 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-medium rounded-lg transition-all flex items-center justify-center gap-1.5"
-                                >
-                                  <Check className="w-3.5 h-3.5" />
-                                  Accept
-                                </button>
-                                <button
-                                  onClick={rejectSuggestion}
-                                  className="flex-1 px-3 py-2 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-xs font-medium rounded-lg transition-all flex items-center justify-center gap-1.5"
-                                >
-                                  <X className="w-3.5 h-3.5" />
-                                  Reject
-                                </button>
-                              </div>
-                            </div>
-                          </div>
-                        </motion.div>
-                      )}
-
-                      {/* Invoke Singularity Button */}
-                      {!isDreaming && !suggestion && (
-                        <motion.div
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          className="relative overflow-hidden p-4 bg-zinc-950 border border-emerald-500/30 rounded-xl group hover:border-emerald-500/60 transition-colors"
-                        >
-                          <div className="absolute inset-0 bg-emerald-500/5 group-hover:bg-emerald-500/10 transition-colors" />
-                          <div className="relative">
-                            <h4 className="text-sm font-bold text-emerald-400 mb-1 tracking-wide flex items-center gap-2">
-                              THE SINGULARITY
-                              <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-mono uppercase tracking-wider">Alive</span>
-                            </h4>
-                            <p className="text-xs text-zinc-400 mb-3 font-mono leading-relaxed">
-                              Allow the system to mutate this construct based on your Style DNA.
-                            </p>
-                            <button
-                              onClick={evolve}
-                              disabled={isDreaming}
-                              className="w-full py-2.5 bg-emerald-900/30 hover:bg-emerald-900/50 border border-emerald-500/50 hover:border-emerald-400 text-emerald-300 text-xs font-mono uppercase tracking-widest rounded transition-all flex items-center justify-center gap-3 disabled:opacity-50 disabled:cursor-not-allowed group-hover:shadow-[0_0_20px_rgba(16,185,129,0.2)]"
-                            >
-                              <Image src="/assets/hatchit_definitive.svg" alt="" width={16} height={16} />
-                              <span>Invoke Singularity</span>
-                            </button>
-                            {/* Unlimited evolutions - The Architect's gift */}
-                          </div>
-                        </motion.div>
-                      )}
-
-                      {/* Singularity Dreaming State */}
-                      {isDreaming && (
-                        <motion.div
-                          initial={{ opacity: 0 }}
-                          animate={{ opacity: 1 }}
-                          className="p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-xl"
-                        >
-                          <div className="flex items-center gap-3">
-                            <motion.div
-                              animate={{ rotate: 360 }}
-                              transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
-                              className="w-5 h-5"
-                            >
-                              <Image src="/assets/hatchit_definitive.svg" alt="" width={20} height={20} className="w-full h-full" />
-                            </motion.div>
-                            <div>
-                              <p className="text-sm font-medium text-emerald-300 font-mono">The Singularity is dreaming...</p>
-                              <p className="text-xs text-zinc-500 font-mono">Analyzing vision & mutating code</p>
-                            </div>
-                          </div>
-                        </motion.div>
-                      )}
-                    </div>
-                  </details>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
-        </div>
-
-        {/* Minimal AI Pipeline Info - only show during input stage */}
-        {stage === 'input' && (
-          <div className="hidden md:block px-4 py-3 bg-zinc-900/30 border-t border-zinc-800 flex-shrink-0">
-            <div className="flex items-center gap-4 text-xs text-zinc-500 font-mono">
-              <span className="flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Architect builds</span>
-              <span className="flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-teal-500"></span> Architect polishes</span>
-              <span className="flex items-center gap-1.5"><span className="w-1.5 h-1.5 rounded-full bg-violet-500"></span> Architect audits</span>
-            </div>
-          </div>
-        )}
-
-        {/* Prompt Helper Mini-Chat Modal */}
-        <AnimatePresence>
-          {showPromptHelper && (
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="absolute inset-0 bg-black/60 backdrop-blur-sm z-20 flex items-center justify-center p-4"
-              onClick={(e) => e.target === e.currentTarget && setShowPromptHelper(false)}
-            >
-              <motion.div
-                initial={{ opacity: 0, scale: 0.9, y: 20 }}
-                animate={{ opacity: 1, scale: 1, y: 0 }}
-                exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                className="w-full max-w-md bg-zinc-900 border border-zinc-700 rounded-2xl shadow-2xl overflow-hidden"
-              >
-                {/* Header */}
-                <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-800 bg-gradient-to-r from-emerald-500/5 to-teal-500/5">
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-full bg-gradient-to-br from-emerald-500 to-teal-500 flex items-center justify-center">
-                      <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-                      </svg>
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-white text-sm">The Architect</h3>
-                      <p className="text-xs text-emerald-400/70">System Optimization Unit</p>
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => setShowPromptHelper(false)}
-                    className="w-8 h-8 rounded-full hover:bg-zinc-800 flex items-center justify-center text-zinc-400 hover:text-white transition-colors"
-                  >
-                    ✕
-                  </button>
-                </div>
-
-                {/* Chat Messages */}
-                <div 
-                  ref={helperChatRef}
-                  className="h-64 overflow-y-auto p-4 space-y-3"
-                >
-                  {helperMessages.map((msg, i) => (
-                    <motion.div
-                      key={i}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
-                    >
-                      <div
-                        className={`max-w-[85%] px-3 py-2 rounded-xl text-sm ${
-                          msg.role === 'user'
-                            ? 'bg-emerald-500/20 text-emerald-100 rounded-br-sm'
-                            : 'bg-zinc-800 text-zinc-200 rounded-bl-sm'
-                        }`}
-                      >
-                        <p className="whitespace-pre-wrap">{msg.content}</p>
-                      </div>
-                    </motion.div>
-                  ))}
-                  
-                  {isHelperLoading && (
-                    <motion.div
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
-                      className="flex justify-start"
-                    >
-                      <div className="bg-zinc-800 px-4 py-3 rounded-xl rounded-bl-sm flex items-center gap-3">
-                        <div className="w-5 h-5 border-2 border-emerald-500/30 border-t-emerald-500 rounded-full animate-spin" />
-                        <span className="text-sm text-zinc-400">Analyzing parameters...</span>
-                      </div>
-                    </motion.div>
-                  )}
-                </div>
-
-                {/* Generated Prompt Action */}
-                {generatedPrompt && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    className="px-4 py-3 bg-gradient-to-r from-emerald-500/10 to-teal-500/10 border-t border-emerald-500/20"
-                  >
-                    <motion.button
-                      onClick={useGeneratedPrompt}
-                      whileHover={{ scale: 1.02 }}
-                      whileTap={{ scale: 0.98 }}
-                      className="w-full py-3 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-600 hover:to-teal-600 text-white font-semibold rounded-xl transition-colors flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/20"
-                    >
-                      <motion.span
-                        animate={{ scale: [1, 1.2, 1] }}
-                        transition={{ duration: 0.5, repeat: Infinity, repeatDelay: 1 }}
-                      >
-                        ✨
-                      </motion.span>
-                      Use This Prompt
-                    </motion.button>
-                    <p className="text-xs text-emerald-400/60 text-center mt-2">One click and you're ready to build~</p>
-                  </motion.div>
-                )}
-
-                {/* Input */}
-                <div className="p-3 border-t border-zinc-800">
-                  <div className="flex gap-2">
-                    <input
-                      ref={helperInputRef}
-                      type="text"
-                      value={helperInput}
-                      onChange={(e) => setHelperInput(e.target.value)}
-                      onKeyDown={(e) => e.key === 'Enter' && !e.shiftKey && sendHelperMessage()}
-                      placeholder="Tell me about your business..."
-                      disabled={isHelperLoading}
-                      className="flex-1 px-3 py-2 bg-zinc-800 border border-zinc-700 rounded-lg text-sm text-white placeholder-zinc-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500/50 disabled:opacity-50"
-                    />
-                    <button
-                      onClick={sendHelperMessage}
-                      disabled={!helperInput.trim() || isHelperLoading}
-                      className="px-4 py-2 bg-emerald-500 hover:bg-emerald-600 disabled:bg-zinc-700 disabled:text-zinc-500 text-white rounded-lg transition-colors"
-                    >
-                      →
-                    </button>
-                  </div>
-                </div>
-              </motion.div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
-
-      {/* Right: Preview Panel - Full width on mobile when active, expands on desktop */}
-      <div className={`
-        ${mobileTab === 'preview' ? 'flex' : 'hidden'} md:flex
-        md:flex-1 
-        flex-col bg-zinc-900/30 min-h-0 max-h-full overflow-hidden transition-all duration-300
-      `}>
-        {/* Status Bar - Only shows during building/refining */}
-        <AnimatePresence>
-          {(stage === 'generating' || stage === 'refining' || isUserRefining || isArchitectPolishing || isSelfHealing) && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={{ opacity: 0, height: 0 }}
-              className="px-4 py-2 border-b border-white/10 bg-white/5 flex-shrink-0"
-            >
-              <div className="flex items-center gap-2">
-                {stage === 'generating' ? (
-                  <>
-                    <motion.div
-                      animate={{ rotate: 360 }}
-                      transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-                      className="w-4 h-4 border-2 border-emerald-500 border-t-transparent rounded-full"
-                    />
-                    <span className="text-sm font-medium bg-gradient-to-r from-emerald-400 to-teal-400 bg-clip-text text-transparent">
-                      Building...
-                    </span>
-                  </>
-                ) : isSelfHealing ? (
-                  <>
-                    <motion.div
-                      animate={{ rotate: 360 }}
-                      transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-                      className="w-4 h-4 border-2 border-red-500 border-t-transparent rounded-full"
-                    />
-                    <span className="text-sm font-medium text-red-400">
-                      Self-healing...
-                    </span>
-                  </>
-                ) : (
-                  <>
-                    <motion.div
-                      animate={{ scale: [1, 1.1, 1], opacity: [0.7, 1, 0.7] }}
-                      transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-                      className="w-4 h-4"
-                    >
-                      <Image src="/assets/hatchit_definitive.svg" alt="" width={16} height={16} className="w-full h-full" />
-                    </motion.div>
-                    <span className="text-sm font-medium bg-gradient-to-r from-violet-400 to-purple-400 bg-clip-text text-transparent">
-                      {isUserRefining ? 'Applying changes...' : 'Polishing...'}
-                    </span>
-                  </>
-                )}
-              </div>
-            </motion.div>
-          )}
-        </AnimatePresence>
-
-        <div className="flex-1 flex min-h-0 relative">
-          {/* Show streaming code during generation or refinement for paid users only */}
-          {(((stage === 'generating' || stage === 'refining') && streamingCode) || ((isUserRefining || isArchitectPolishing) && streamingCode)) && canRevealRawCode ? (
-            <div className="flex-1 overflow-auto p-4 bg-zinc-950">
-              <pre className="text-xs font-mono whitespace-pre-wrap">
-                <code className={(stage === 'refining' || isUserRefining) ? 'text-violet-400' : 'text-emerald-400'}>
-                  {streamingCode}
-                </code>
-                <span className="animate-pulse">▊</span>
-              </pre>
-              <div ref={codeEndRef} />
-            </div>
-          ) : (
-            <>
-              <SectionPreview 
-                code={generatedCode} 
-                darkMode={true}
-                onRuntimeError={handleRuntimeError}
-                inspectorMode={inspectorMode}
-                onElementSelect={handleElementSelect}
-                captureTrigger={captureTrigger}
-                onScreenshotCaptured={handleScreenshotCaptured}
-                editMode={true}
-                onTextEdit={handleTextEdit}
-                allowCodeView={canRevealRawCode}
-                onUpgradeClick={() => goToSignUp('visionary')}
-              />
-              {/* AI Presence Indicator */}
-              {generatedCode && !isUserRefining && !isArchitectPolishing && (
-                <motion.div 
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  className="absolute top-3 right-3 z-20"
-                >
-                  <div className="flex items-center gap-2 px-3 py-1.5 bg-zinc-900/90 backdrop-blur-sm border border-zinc-800 rounded-full">
-                    <motion.div 
-                      animate={{ scale: [1, 1.2, 1], opacity: [0.5, 1, 0.5] }}
-                      transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-                      className="w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.6)]"
-                    />
-                    <span className="text-[10px] font-mono text-zinc-400 uppercase tracking-wider">Live</span>
-                  </div>
-                </motion.div>
-              )}
-            </>
-          )}
-
-          {(((stage === 'generating' || stage === 'refining') && streamingCode) || ((isUserRefining || isArchitectPolishing) && streamingCode)) && !canRevealRawCode && (
-            <div className="absolute inset-0 bg-black/80 backdrop-blur-sm flex flex-col items-center justify-center gap-3 text-center px-6">
-              <motion.div
-                animate={{ rotate: 360 }}
-                transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-                className="w-8 h-8 border-2 border-emerald-500 border-t-transparent rounded-full"
-              />
-              <p className="text-sm text-zinc-300">Rendering preview...</p>
-              <p className="text-xs text-zinc-500">Upgrade to view raw code while it streams.</p>
-            </div>
-          )}
-
-          {isLocked && (
-            <div className="absolute top-3 right-3 z-20">
-              <button
-                onClick={() => goToSignUp('visionary')}
-                className="px-3 py-2 rounded-lg bg-emerald-600 text-black text-xs font-semibold shadow-lg shadow-emerald-900/30 hover:bg-emerald-500 transition-colors"
-              >
-                Unlock builder
-              </button>
-            </div>
-          )}
-          
-          {/* Skip to Preview button - shows after first section is generated */}
-          {generatedCode && !isLastSection && stage !== 'generating' && stage !== 'refining' && !isUserRefining && !isArchitectPolishing && (
-            <div className="absolute bottom-3 left-1/2 -translate-x-1/2 z-20">
-              <button
-                onClick={onNextSection}
-                className="px-4 py-1.5 rounded-full bg-zinc-800/90 hover:bg-zinc-700 border border-zinc-700 text-xs text-zinc-400 hover:text-white transition-all flex items-center gap-1.5 backdrop-blur-sm"
-              >
-                <span>Skip to preview</span>
-                <span>→</span>
-              </button>
-            </div>
-          )}
-        </div>
-      </div>
-
-    </div>
-    </div>
-  )
 }

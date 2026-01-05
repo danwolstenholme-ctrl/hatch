@@ -18,11 +18,10 @@ function DemoContent() {
   const { isSignedIn, isLoaded } = useUser()
   const prompt = searchParams.get('prompt')
   
-  // If user is signed in, redirect to dashboard to migrate their demo work
+  // If user is signed in, redirect to builder
   useEffect(() => {
     if (isLoaded && isSignedIn) {
-      // Always go to dashboard - that's where migration logic lives
-      router.replace('/dashboard')
+      router.replace('/builder')
     }
   }, [isLoaded, isSignedIn, router])
   

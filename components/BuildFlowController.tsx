@@ -461,7 +461,10 @@ export default function BuildFlowController({ existingProjectId, initialPrompt, 
 
   // AUTO-INITIALIZATION LOGIC
   useEffect(() => {
-    // If we have an existing project ID, load it
+    // Wait for auth to load before making decisions
+    if (!isLoaded) return
+    
+    // If we have an existing project ID from URL, load it
     if (existingProjectId) {
       // Optimization: If we already have this project loaded, skip
       if (project?.id === existingProjectId) {
@@ -487,11 +490,21 @@ export default function BuildFlowController({ existingProjectId, initialPrompt, 
       return
     }
 
+    // For signed-in users: Check for last project in localStorage
+    if (isSignedIn && !isDemo) {
+      const lastProjectId = localStorage.getItem('hatch_current_project')
+      if (lastProjectId) {
+        console.log('[Builder] Resuming last project:', lastProjectId)
+        loadExistingProject(lastProjectId)
+        return
+      }
+    }
+
     // Otherwise, INITIALIZE A NEW PROJECT IMMEDIATELY
     initializeProject()
     
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [existingProjectId, justCreatedProjectId, isCreatingProject, isLoaded, isReplicationReady, isDemo])
+  }, [existingProjectId, justCreatedProjectId, isCreatingProject, isLoaded, isReplicationReady, isDemo, isSignedIn])
 
   const initializeProject = async () => {
     setIsCreatingProject(true)
@@ -625,19 +638,45 @@ export default function BuildFlowController({ existingProjectId, initialPrompt, 
       return
     }
 
+    // Check for guest handoff data (user just signed up from demo)
+    let guestHandoff: any = null
+    try {
+      const savedGuestSession = localStorage.getItem('hatch_guest_handoff')
+      if (savedGuestSession) {
+        guestHandoff = JSON.parse(savedGuestSession)
+        console.log('[Builder] Found guest handoff:', {
+          projectName: guestHandoff?.projectName,
+          sectionsCount: guestHandoff?.sections?.length,
+        })
+      }
+    } catch (e) {
+      console.error('[Builder] Failed to parse guest handoff', e)
+    }
+
     try {
       const controller = new AbortController()
       const timeoutId = setTimeout(() => controller.abort(), 15000) // 15s timeout for creation
+
+      // Use guest handoff data if available
+      const projectBrand = guestHandoff?.brand || brand
+      const projectSections = guestHandoff?.sections || sections.map(s => ({
+        sectionId: s.id,
+        code: null,
+        userPrompt: null,
+        refined: false,
+      }))
 
       const response = await fetch('/api/project', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          templateId: template.id,
-          name: brand.brandName,
-          sections: sections,
-          brand: brand,
-          initialPrompt: projectPrompt, // Pass the prompt from First Contact
+          templateId: guestHandoff?.templateId || template.id,
+          name: projectBrand.brandName || brand.brandName,
+          sections: guestHandoff ? projectSections : sections,
+          brand: projectBrand,
+          initialPrompt: projectPrompt,
+          // Pass the guest sections with their code if they exist
+          guestSections: guestHandoff?.sections,
         }),
         signal: controller.signal
       })
@@ -645,15 +684,36 @@ export default function BuildFlowController({ existingProjectId, initialPrompt, 
 
       if (!response.ok) {
         console.warn('API failed, falling back to demo mode')
-        setupDemoMode()
+        setupDemoMode(guestHandoff)
         return
       }
 
       const { project: newProject, sections: dbSectionsData } = await response.json()
 
+      // Clear guest handoff after successful import
+      localStorage.removeItem('hatch_guest_handoff')
+      localStorage.removeItem('hatch_last_prompt')
+      localStorage.removeItem('hatch_guest_builds')
+      localStorage.removeItem('hatch_guest_refinements')
+      localStorage.removeItem('hatch_guest_generations')
+
       setProject(newProject)
       setDbSections(dbSectionsData)
-      setBuildState(createInitialBuildState(template.id))
+      
+      // Reconstruct build state from imported sections
+      const state = createInitialBuildState(guestHandoff?.templateId || template.id)
+      dbSectionsData.forEach((s: DbSection) => {
+        if (s.status === 'complete') {
+          state.completedSections.push(s.section_id)
+          if (s.code) state.sectionCode[s.section_id] = s.code
+          if (s.refined) state.sectionRefined[s.section_id] = true
+          if (s.refinement_changes) state.sectionChanges[s.section_id] = s.refinement_changes
+        }
+      })
+      const firstPending = dbSectionsData.findIndex((s: DbSection) => s.status === 'pending' || s.status === 'building')
+      state.currentSectionIndex = firstPending === -1 ? dbSectionsData.length : firstPending
+      
+      setBuildState(state)
       setPhase('building')
       
       setJustCreatedProjectId(newProject.id)
@@ -694,8 +754,10 @@ export default function BuildFlowController({ existingProjectId, initialPrompt, 
         }
         
         setJustCreatedProjectId(null)
-        setIsLoading(false) 
         loadingProjectIdRef.current = null
+
+        // Fall back to a fresh project so the UI doesn't stay blank
+        await initializeProject()
         return
       }
       

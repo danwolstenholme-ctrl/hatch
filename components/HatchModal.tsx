@@ -71,7 +71,7 @@ export default function HatchModal({ isOpen, onClose, reason, projectSlug = '', 
     if (!isSignedIn) {
       onClose()
       // Redirect to /dashboard after signup - that's where migration happens
-      const redirectUrl = '/dashboard'
+      const redirectUrl = '/builder'
       router.push(`/sign-up?upgrade=${selectedTier}&redirect_url=${encodeURIComponent(redirectUrl)}`)
       return
     }
