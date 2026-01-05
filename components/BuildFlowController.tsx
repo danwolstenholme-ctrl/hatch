@@ -420,7 +420,7 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
     initializeProject()
     
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [existingProjectId, justCreatedProjectId, isCreatingProject, isLoaded, isReplicationReady])
+  }, [existingProjectId, justCreatedProjectId, isCreatingProject, isLoaded, isReplicationReady, guestMode])
 
   const initializeProject = async () => {
     setIsCreatingProject(true)
@@ -486,7 +486,8 @@ export default function BuildFlowController({ existingProjectId, demoMode: force
     if (!isSignedIn || !user) {
       // ALLOW GUEST MODE IF EXPLICITLY REQUESTED
       if (guestMode) {
-        setTimeout(setupDemoMode, 1000)
+        // Run immediately to avoid stuck loading state
+        setupDemoMode()
         return
       }
 
@@ -1304,7 +1305,7 @@ export default function GeneratedPage() {
   // Show simple loading state while initializing (especially for guest mode)
   if (phase === 'initializing' || isLoading) {
     return (
-      <div className="min-h-screen bg-black flex items-center justify-center">
+      <div className="min-h-screen bg-black flex flex-col items-center justify-center gap-6">
         <motion.div
           animate={{ scale: [1, 1.05, 1], opacity: [0.6, 0.9, 0.6] }}
           transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
@@ -1316,6 +1317,26 @@ export default function GeneratedPage() {
             height={48}
           />
         </motion.div>
+        
+        {/* Escape hatch for stuck states */}
+        {showReset && (
+          <motion.div
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="text-center"
+          >
+            <button
+              onClick={() => {
+                localStorage.removeItem('hatch_current_project')
+                localStorage.removeItem('hatch_guest_handoff')
+                window.location.href = '/builder?mode=guest'
+              }}
+              className="text-xs text-zinc-500 hover:text-zinc-300 underline decoration-zinc-700 underline-offset-4 transition-colors"
+            >
+              Taking too long? Start fresh
+            </button>
+          </motion.div>
+        )}
       </div>
     )
   }
