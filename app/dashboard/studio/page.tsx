@@ -27,7 +27,7 @@ export default function StudioPage() {
     if (tier === 'singularity') return { name: 'Singularity', limit: Infinity, color: 'text-amber-400', bg: 'bg-amber-500/10' }
     if (tier === 'visionary') return { name: 'Visionary', limit: Infinity, color: 'text-emerald-400', bg: 'bg-emerald-500/10' }
     if (tier === 'architect') return { name: 'Architect', limit: 3, color: 'text-emerald-400', bg: 'bg-emerald-500/10' }
-    return { name: 'Free', limit: 1, color: 'text-zinc-400', bg: 'bg-zinc-500/10' }
+    return { name: 'Free', limit: 3, color: 'text-zinc-400', bg: 'bg-zinc-500/10' }
   }, [tier])
 
   const isAtLimit = tierConfig.limit !== Infinity && projects.length >= tierConfig.limit
@@ -41,17 +41,24 @@ export default function StudioPage() {
           setIsMigrating(true)
           try {
             const payload = JSON.parse(guestHandoff)
+            console.log('[Studio] Attempting to import guest work:', payload?.projectName)
             const res = await fetch('/api/project/import', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify(payload),
             })
             if (res.ok) {
+              const data = await res.json()
+              console.log('[Studio] Import successful:', data)
               localStorage.removeItem('hatch_guest_handoff')
               localStorage.removeItem('hatch_last_prompt')
+            } else {
+              const error = await res.json()
+              console.error('[Studio] Import failed:', error)
+              // Don't clear handoff if import failed - they might need to retry
             }
           } catch (err) {
-            console.error('Import failed:', err)
+            console.error('[Studio] Import error:', err)
           }
           setIsMigrating(false)
         }

@@ -37,7 +37,7 @@ export default function BuilderWelcome({ onClose }: BuilderWelcomeProps) {
       gradient: 'from-emerald-500 to-teal-500',
       perks: [
         { icon: Rocket, text: 'Unlimited builds & refinements' },
-        { icon: Globe, text: '1 project to experiment with' },
+        { icon: Globe, text: '3 projects to experiment with' },
         { icon: Zap, text: 'AI-powered generation' },
       ],
       upgradeHint: 'Upgrade to deploy your site live',
