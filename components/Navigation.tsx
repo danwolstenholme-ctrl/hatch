@@ -15,17 +15,19 @@ export default function Navigation() {
   const { isPaidUser, tier, tierColor } = useSubscription()
 
   const navLinks = [
+    { href: '/', label: 'Home' },
     { href: '/features', label: 'Features' },
     { href: '/how-it-works', label: 'How It Works' },
-    { href: '/roadmap', label: 'Roadmap' },
     { href: '/vision', label: 'Vision' },
+    { href: '/roadmap', label: 'Roadmap' },
     { href: '/about', label: 'About' },
+    { href: '/manifesto', label: 'Manifesto' },
   ]
 
   return (
     <>
       <motion.nav 
-        className="fixed top-0 left-0 right-0 z-50 w-full bg-zinc-900/60 backdrop-blur-2xl backdrop-saturate-150 border-b border-white/10 shadow-lg shadow-black/20"
+        className="fixed top-0 left-0 right-0 z-50 w-full bg-zinc-900/80 backdrop-blur-2xl backdrop-saturate-150 border-b border-zinc-800/70"
         initial={{ y: -100, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
         transition={{ duration: 0.5, ease: [0.25, 0.1, 0.25, 1] }}
@@ -35,7 +37,7 @@ export default function Navigation() {
         
         <div className="relative max-w-7xl mx-auto px-6 py-3 flex justify-between items-center gap-3">
           {/* Logo - Icon only */}
-          <Link href="/" className="flex items-center group">
+          <Link href="/" className="flex items-center gap-3 group">
             <motion.div
               className="inline-block"
               style={{ willChange: 'transform', backfaceVisibility: 'hidden' }}
@@ -44,20 +46,24 @@ export default function Navigation() {
             >
               <Image src="/assets/hatchit_definitive.svg" alt="HatchIt" width={28} height={28} className="w-7 h-7" />
             </motion.div>
+            <span className="hidden sm:inline-flex text-xs uppercase tracking-[0.25em] text-zinc-500">
+              Studio
+            </span>
           </Link>
           
           {/* Desktop Nav Links */}
-          <div className="hidden md:flex items-center gap-1">
+          <div className="hidden md:flex items-center gap-1 rounded-full border border-zinc-800/70 bg-zinc-900/70 px-2 py-1">
             {navLinks.map((link) => {
-              const isActive = pathname === link.href
+              const isActive = pathname === link.href || (link.href !== '/' && pathname?.startsWith(link.href))
               return (
                 <Link 
                   key={link.href}
                   href={link.href} 
-                  className={`px-3 py-1.5 rounded-md text-sm transition-colors ${
+                  aria-current={isActive ? 'page' : undefined}
+                  className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
                     isActive 
-                      ? 'text-white bg-white/10' 
-                      : 'text-zinc-400 hover:text-white hover:bg-white/5'
+                      ? 'text-zinc-100 bg-zinc-800/90 border border-zinc-700/70' 
+                      : 'text-zinc-400 hover:text-zinc-100 hover:bg-zinc-800/50'
                   }`}
                 >
                   {link.label}
@@ -149,7 +155,7 @@ export default function Navigation() {
               animate={{ x: 0 }}
               exit={{ x: '100%' }}
               transition={{ type: 'tween', duration: 0.2, ease: [0.32, 0.72, 0, 1] }}
-              className="absolute right-0 top-0 h-full w-80 bg-zinc-900 border-l border-zinc-800 shadow-2xl overflow-y-auto"
+              className="absolute right-0 top-0 h-full w-80 bg-zinc-950/95 border-l border-zinc-800 overflow-y-auto backdrop-blur"
               style={{ willChange: 'transform', backfaceVisibility: 'hidden', touchAction: 'pan-y' }}
             >
               <div className="p-4 border-b border-zinc-800 flex items-center justify-between">
@@ -169,7 +175,7 @@ export default function Navigation() {
               
               <div className="p-3 space-y-1">
                 {navLinks.map((link) => {
-                  const isActive = pathname === link.href
+                  const isActive = pathname === link.href || (link.href !== '/' && pathname?.startsWith(link.href))
                   return (
                     <Link
                       key={link.href}

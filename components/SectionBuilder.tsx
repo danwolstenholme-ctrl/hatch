@@ -1723,7 +1723,7 @@ export default function SectionBuilder({
   const showPromptModal = isDemo ? showGuestPromptModal : (isInitialState && !effectivePrompt)
   
   return (
-    <div className="relative h-screen w-full bg-zinc-950 overflow-hidden flex flex-col">
+    <div className="relative w-full flex-1 min-h-0 bg-zinc-950 overflow-hidden flex flex-col">
       {/* Prompt Modal - shows when user needs to enter a prompt */}
       <GuestPromptModal 
         isOpen={showPromptModal}

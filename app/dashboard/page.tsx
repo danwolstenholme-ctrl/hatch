@@ -414,7 +414,7 @@ export default function PortalPage() {
 
           <div className="flex flex-wrap items-center gap-4">
             <div className="relative flex-1 min-w-[240px] group">
-              <div className="absolute inset-0 rounded-xl bg-emerald-500/5 blur-2xl opacity-0 group-focus-within:opacity-100 transition" />
+              <div className="pointer-events-none absolute inset-0 rounded-xl bg-emerald-500/5 blur-2xl opacity-0 group-focus-within:opacity-100 transition" />
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
               <input
                 type="text"
