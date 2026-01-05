@@ -188,6 +188,48 @@ export default function BuildFlowController({ existingProjectId, initialPrompt, 
   const handleSaveSettings = async (settings: SiteSettings) => {
     if (!project) return
     
+    // Handle Demo Mode - Update local state only
+    if (demoMode) {
+      const updatedBrandConfig: DbBrandConfig = {
+        ...(project.brand_config || {}),
+        colors: {
+          primary: settings.brand.primaryColor,
+          secondary: '#000000',
+          accent: settings.brand.primaryColor
+        },
+        fontStyle: settings.brand.font,
+        brandName: settings.seo.title || project.name,
+        styleVibe: settings.brand.mode,
+        seo: settings.seo,
+        integrations: settings.integrations
+      }
+
+      setProject(prev => prev ? ({ ...prev, brand_config: updatedBrandConfig }) : null)
+      setBrandConfig(updatedBrandConfig)
+      
+      // Persist to guest handoff if needed
+      if (!isSignedIn) {
+        // Manually persist the updated brand config
+        const payload = {
+          templateId: selectedTemplate?.id || SINGULARITY_TEMPLATE.id,
+          projectName: updatedBrandConfig.brandName || 'Untitled Project',
+          brand: updatedBrandConfig,
+          sections: dbSections.map((s) => {
+            const code = buildState?.sectionCode?.[s.section_id] || s.code || ''
+            return {
+              sectionId: s.section_id,
+              code,
+              userPrompt: s.user_prompt || '',
+              refined: s.refined || false,
+              refinementChanges: s.refinement_changes || [],
+            }
+          }),
+        }
+        localStorage.setItem('hatch_guest_handoff', JSON.stringify(payload))
+      }
+      return
+    }
+
     try {
       const response = await fetch(`/api/project/${project.id}`, {
         method: 'PATCH',
@@ -474,21 +516,24 @@ export default function BuildFlowController({ existingProjectId, initialPrompt, 
       styleVibe: brandConfig?.styleVibe || 'modern'
     }
 
-    const setupDemoMode = () => {
+    const setupDemoMode = (restoredData?: any) => {
       const mockProjectId = `demo-${generateId()}`
-      const mockProject: DbProject = {
-        id: mockProjectId,
-        user_id: 'demo-user',
-        name: brand.brandName,
-        slug: mockProjectId,
-        template_id: template.id,
-        status: 'building',
-        brand_config: brand,
+      
+      // Use restored data if available
+      const finalBrand = restoredData?.brand || brand
+      const finalSections = restoredData?.sections ? restoredData.sections.map((s: any, i: number) => ({
+        id: generateId(),
+        project_id: mockProjectId,
+        section_id: s.sectionId,
+        code: s.code || null,
+        user_prompt: s.userPrompt || null,
+        refined: s.refined || false,
+        refinement_changes: s.refinementChanges || null,
+        status: s.code ? 'complete' : 'pending',
+        order_index: i,
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
-      }
-      
-      const mockSections: DbSection[] = sections.map((s, index) => ({
+      })) : sections.map((s, index) => ({
         id: generateId(),
         project_id: mockProjectId,
         section_id: s.id,
@@ -501,10 +546,39 @@ export default function BuildFlowController({ existingProjectId, initialPrompt, 
         created_at: new Date().toISOString(),
         updated_at: new Date().toISOString(),
       }))
+
+      const mockProject: DbProject = {
+        id: mockProjectId,
+        user_id: 'demo-user',
+        name: finalBrand.brandName,
+        slug: mockProjectId,
+        template_id: restoredData?.templateId || template.id,
+        status: 'building',
+        brand_config: finalBrand,
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      }
       
       setProject(mockProject)
-      setDbSections(mockSections)
-      setBuildState(createInitialBuildState(template.id))
+      setDbSections(finalSections)
+      setBrandConfig(finalBrand)
+      
+      // Reconstruct build state from restored sections
+      const state = createInitialBuildState(restoredData?.templateId || template.id)
+      finalSections.forEach((s: any) => {
+        if (s.status === 'complete') {
+          state.completedSections.push(s.section_id)
+          if (s.code) state.sectionCode[s.section_id] = s.code
+          if (s.refined) state.sectionRefined[s.section_id] = true
+          if (s.refinement_changes) state.sectionChanges[s.section_id] = s.refinement_changes
+        }
+      })
+      
+      // Find first pending section
+      const firstPending = finalSections.findIndex((s: any) => s.status === 'pending')
+      state.currentSectionIndex = firstPending === -1 ? finalSections.length : firstPending
+
+      setBuildState(state)
       setPhase('building')
       setDemoMode(true)
       setIsCreatingProject(false)
@@ -515,6 +589,19 @@ export default function BuildFlowController({ existingProjectId, initialPrompt, 
     if (!isSignedIn || !user) {
       // ALLOW GUEST MODE IF EXPLICITLY REQUESTED
       if (isDemo) {
+        // Check for restored guest session FIRST
+        try {
+          const savedGuestSession = localStorage.getItem('hatch_guest_handoff')
+          if (savedGuestSession) {
+            const parsedSession = JSON.parse(savedGuestSession)
+            console.log('[GuestHandoff] Restoring session:', parsedSession)
+            setupDemoMode(parsedSession)
+            return
+          }
+        } catch (e) {
+          console.error('Failed to restore guest session', e)
+        }
+
         // Run immediately to avoid stuck loading state
         setupDemoMode()
         return

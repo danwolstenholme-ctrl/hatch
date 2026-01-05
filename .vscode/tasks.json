@@ -312,6 +312,11 @@
 			"label": "commit-dashboard-overhaul",
 			"type": "shell",
 			"command": "git add . && git commit -m \"feat: overhaul dashboard design to match Singularity dark theme\" && git push"
+		},
+		{
+			"label": "commit-logic-fixes",
+			"type": "shell",
+			"command": "git add . && git commit -m \"feat: enable point-to-click editing and fix guest persistence logic\""
 		}
 	]
 }

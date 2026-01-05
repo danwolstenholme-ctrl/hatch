@@ -2298,10 +2298,27 @@ export default function SectionBuilder({
         {/* Input Area - More compact */}
         <div className="flex-1 p-3 lg:p-4 flex flex-col min-h-0 overflow-auto">
           <div className="flex items-center justify-between mb-1.5">
-            <label className="text-[10px] font-mono text-zinc-500 uppercase tracking-wider flex items-center gap-2">
-              {isDemo ? 'Describe your section' : 'Directive'}
-              {/* All tools unlocked */}
-            </label>
+            <div className="flex items-center gap-3">
+              <label className="text-[10px] font-mono text-zinc-500 uppercase tracking-wider flex items-center gap-2">
+                {isDemo ? 'Describe your section' : 'Directive'}
+              </label>
+              
+              {/* Point to Edit Button */}
+              {stage === 'complete' && (
+                <button
+                  onClick={() => setInspectorMode(!inspectorMode)}
+                  className={`flex items-center gap-1.5 px-2 py-0.5 rounded-md border text-[10px] font-medium transition-all ${
+                    inspectorMode 
+                      ? 'bg-emerald-500/20 border-emerald-500/50 text-emerald-400' 
+                      : 'bg-zinc-900 border-zinc-800 text-zinc-400 hover:text-zinc-300 hover:border-zinc-700'
+                  }`}
+                >
+                  <MousePointer2 className="w-3 h-3" />
+                  <span>{inspectorMode ? 'Cancel Selection' : 'Point to Edit'}</span>
+                </button>
+              )}
+            </div>
+
             {!isDemo && (
               <motion.button 
                 onClick={() => initializePromptHelper()}
