@@ -187,6 +187,14 @@ text-amber-500   # Premium/Singularity tier
 
 ## What NOT To Do
 
+### 🚨 HARD BAN - NEVER WRITE THIS:
+```tsx
+<div className="p-6 bg-gray-800 rounded-lg">
+```
+This is **banned**. Static. Dead. 2007. If you write this, you have failed.
+
+---
+
 1. ❌ Don't use plain `<div>` for anything interactive - use `<motion.div>`
 2. ❌ Don't use flat colors without shadows/gradients
 3. ❌ Don't skip hover states
@@ -194,6 +202,7 @@ text-amber-500   # Premium/Singularity tier
 5. ❌ Don't use emojis in dashboard/builder UI (use Lucide icons)
 6. ❌ Don't use old Tailwind v3 patterns (no `tailwind.config.js`)
 7. ❌ Don't forget `transition-` classes on interactive elements
+8. ❌ Don't use `gray-*` colors - use `zinc-*`
 
 ---
 

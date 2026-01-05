@@ -24,6 +24,25 @@ We are a **Professional Studio**, not a "hacker tool."
 
 ---
 
+## 🚨 HARD BAN
+
+Never write static, lifeless UI:
+```tsx
+// BANNED - you will be terminated
+<div className="p-6 bg-gray-800 rounded-lg">
+```
+
+Always write alive UI:
+```tsx
+// REQUIRED
+<motion.div
+  whileHover={{ y: -4 }}
+  className="p-6 bg-zinc-900/50 border border-zinc-800 hover:border-emerald-500/30 rounded-lg transition-all backdrop-blur-sm shadow-[0_0_40px_rgba(16,185,129,0.2)]"
+>
+```
+
+---
+
 ## Voice
 
 **Confident.** We know what we're doing.  
