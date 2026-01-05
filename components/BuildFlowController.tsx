@@ -1799,25 +1799,25 @@ export default function GeneratedPage() {
                         href={deployedUrl}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="inline-flex items-center gap-2 px-6 py-3 bg-zinc-900 border border-zinc-800 text-zinc-300 font-medium rounded-xl hover:bg-zinc-800 hover:text-white transition-all group"
+                        className="inline-flex items-center gap-2 px-6 py-3 bg-white/5 border border-white/10 text-zinc-300 font-medium rounded-xl hover:bg-white/10 hover:text-white transition-all group"
                       >
                         <Globe className="w-5 h-5" />
                         <span>View Live Site</span>
                         <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
                       </a>
                       
-                      <div className="mt-4 p-3 bg-zinc-900/50 border border-zinc-800 rounded-lg">
+                      <div className="mt-4 p-3 bg-white/5 border border-white/10 rounded-lg">
                         <code className="text-xs text-zinc-400 font-mono break-all">{deployedUrl}</code>
                       </div>
                     </div>
 
                     {/* Next Steps - Tier-aware */}
-                    <div className="mt-8 pt-6 border-t border-zinc-800 relative z-10">
+                    <div className="mt-8 pt-6 border-t border-white/10 relative z-10">
                       <h3 className="text-xs font-mono text-zinc-500 uppercase tracking-wider mb-4">What's Next</h3>
                       <div className="space-y-2">
                         <button
                           onClick={() => setDeployedUrl(null)}
-                          className="w-full flex items-center gap-3 p-3 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 rounded-lg transition-colors text-left group"
+                          className="w-full flex items-center gap-3 p-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg transition-colors text-left group"
                         >
                           <div className="w-8 h-8 rounded-lg bg-teal-500/10 flex items-center justify-center">
                             <Edit3 className="w-4 h-4 text-teal-400" />
@@ -1844,21 +1844,21 @@ export default function GeneratedPage() {
                             <span className="text-[10px] font-mono text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded">PRO</span>
                           </button>
                         ) : (
-                          <div className="w-full flex items-center gap-3 p-3 bg-zinc-900/50 border border-zinc-800 rounded-lg opacity-50 cursor-not-allowed">
-                            <div className="w-8 h-8 rounded-lg bg-zinc-800 flex items-center justify-center">
+                          <div className="w-full flex items-center gap-3 p-3 bg-white/5 border border-white/10 rounded-lg opacity-50 cursor-not-allowed">
+                            <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center">
                               <Globe className="w-4 h-4 text-zinc-500" />
                             </div>
                             <div className="flex-1">
                               <p className="text-sm font-medium text-zinc-500">Custom Domain</p>
                               <p className="text-xs text-zinc-600">Upgrade to Pro to unlock</p>
                             </div>
-                            <span className="text-[10px] font-mono text-zinc-500 bg-zinc-800 px-2 py-0.5 rounded">PRO</span>
+                            <span className="text-[10px] font-mono text-zinc-500 bg-white/10 px-2 py-0.5 rounded">PRO</span>
                           </div>
                         )}
                         
                         <button
                           onClick={handleStartFresh}
-                          className="w-full flex items-center gap-3 p-3 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 rounded-lg transition-colors text-left group"
+                          className="w-full flex items-center gap-3 p-3 bg-white/5 hover:bg-white/10 border border-white/10 rounded-lg transition-colors text-left group"
                         >
                           <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center">
                             <Plus className="w-4 h-4 text-emerald-400" />
@@ -1945,7 +1945,7 @@ export default function GeneratedPage() {
               animate={{ opacity: 1, scale: 1, y: 0 }}
               exit={{ opacity: 0, scale: 0.95, y: 20 }}
               onClick={(e) => e.stopPropagation()}
-              className="bg-zinc-900 border border-zinc-800 rounded-xl p-6 max-w-md w-full shadow-2xl"
+              className="bg-black/90 border border-white/10 rounded-xl p-6 max-w-md w-full shadow-2xl"
             >
               <div className="text-center mb-6">
                 <div className="w-12 h-12 bg-emerald-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -1970,7 +1970,7 @@ export default function GeneratedPage() {
                 </button>
                 <button
                   onClick={() => setShowDemoNudge(false)}
-                  className="w-full py-3 px-4 bg-zinc-800 hover:bg-zinc-700 text-white font-medium rounded-lg transition-colors"
+                  className="w-full py-3 px-4 bg-white/5 hover:bg-white/10 text-white font-medium rounded-lg transition-colors"
                 >
                   Keep Building
                 </button>

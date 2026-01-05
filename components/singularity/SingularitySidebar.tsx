@@ -37,12 +37,12 @@ export default function SingularitySidebar({
   }
 
   return (
-    <div className="w-64 border-r border-zinc-900 bg-zinc-950 flex flex-col h-full relative overflow-hidden">
+    <div className="w-64 border-r border-white/10 bg-black flex flex-col h-full relative overflow-hidden">
       {/* Subtle Void Gradient */}
       <div className="absolute inset-0 pointer-events-none bg-[radial-gradient(circle_at_top_left,rgba(16,185,129,0.03),transparent_40%)]" />
 
       {/* Header - Minimalist Logo & Context */}
-      <div className="relative p-6 flex items-center gap-4 border-b border-zinc-900/50 overflow-hidden">
+      <div className="relative p-6 flex items-center gap-4 border-b border-white/10 overflow-hidden">
         {/* Subtle ambient glow */}
         <div className="absolute top-0 left-0 w-32 h-full bg-gradient-to-r from-emerald-500/5 to-transparent opacity-50" />
         
@@ -59,7 +59,7 @@ export default function SingularitySidebar({
 
         {/* Project Context - Very subtle */}
         <div className="relative z-10 flex flex-col justify-center">
-          <div className="h-3 w-px bg-zinc-800 absolute -left-2 top-1/2 -translate-y-1/2" />
+          <div className="h-3 w-px bg-white/10 absolute -left-2 top-1/2 -translate-y-1/2" />
           <span className="text-xs font-medium text-zinc-300 tracking-wide truncate max-w-[140px]">
             {projectName}
           </span>
@@ -76,7 +76,7 @@ export default function SingularitySidebar({
       <div className="flex-1 overflow-y-auto py-8 px-6 custom-scrollbar">
         <div className="relative">
           {/* Vertical Line */}
-          <div className="absolute left-[11px] top-2 bottom-2 w-px bg-zinc-900" />
+          <div className="absolute left-[11px] top-2 bottom-2 w-px bg-white/10" />
 
           {Array.from({ length: totalSections }).map((_, i) => {
             const isActive = i === currentSection - 1
@@ -86,16 +86,16 @@ export default function SingularitySidebar({
               <div key={i} className="relative flex items-center gap-4 mb-6 last:mb-0 group">
                 {/* Status Dot */}
                 <div className={`relative z-10 flex items-center justify-center w-4 h-4 rounded-full border transition-all duration-500 ${
-                  isActive ? 'bg-zinc-950 border-emerald-500/50 shadow-[0_0_10px_rgba(16,185,129,0.15)]' : 
+                  isActive ? 'bg-black border-emerald-500/50 shadow-[0_0_10px_rgba(16,185,129,0.15)]' : 
                   isCompleted ? 'bg-emerald-500/5 border-emerald-500/30' : 
-                  'bg-zinc-950 border-zinc-800'
+                  'bg-black border-white/10'
                 }`}>
                   {isCompleted ? (
                     <Check className="w-2.5 h-2.5 text-emerald-500/70" />
                   ) : isActive ? (
                     <div className="w-1.5 h-1.5 bg-emerald-500/80 rounded-full animate-pulse" />
                   ) : (
-                    <div className="w-1 h-1 bg-zinc-800 rounded-full group-hover:bg-zinc-700 transition-colors" />
+                    <div className="w-1 h-1 bg-white/20 rounded-full group-hover:bg-white/30 transition-colors" />
                   )}
                 </div>
 

@@ -339,7 +339,7 @@ const ContactFormInstructions = () => (
 // Demo mode mock code generator
 const generateMockCode = (sectionType: string, sectionName: string, userPrompt: string): string => {
   return `{/* ${sectionName} Section */}
-<section className="py-20 px-6 bg-zinc-950">
+<section className="py-20 px-6 bg-black">
   <div className="max-w-6xl mx-auto">
     <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
       ${sectionName}
@@ -348,21 +348,21 @@ const generateMockCode = (sectionType: string, sectionName: string, userPrompt: 
       ${userPrompt.slice(0, 200)}${userPrompt.length > 200 ? '...' : ''}
     </p>
     <div className="mt-10 grid md:grid-cols-3 gap-6">
-      <div className="p-6 bg-zinc-900 rounded-2xl border border-zinc-800">
+      <div className="p-6 bg-white/5 rounded-2xl border border-white/10 backdrop-blur-sm">
         <div className="w-12 h-12 bg-purple-500/20 rounded-xl flex items-center justify-center mb-4">
           <span className="text-2xl">✨</span>
         </div>
         <h3 className="text-lg font-semibold text-white mb-2">Feature One</h3>
         <p className="text-zinc-400 text-sm">Demo content for ${sectionType}</p>
       </div>
-      <div className="p-6 bg-zinc-900 rounded-2xl border border-zinc-800">
+      <div className="p-6 bg-white/5 rounded-2xl border border-white/10 backdrop-blur-sm">
         <div className="w-12 h-12 bg-violet-500/20 rounded-xl flex items-center justify-center mb-4">
           <span className="text-2xl">🚀</span>
         </div>
         <h3 className="text-lg font-semibold text-white mb-2">Feature Two</h3>
         <p className="text-zinc-400 text-sm">Placeholder for your content</p>
       </div>
-      <div className="p-6 bg-zinc-900 rounded-2xl border border-zinc-800">
+      <div className="p-6 bg-white/5 rounded-2xl border border-white/10 backdrop-blur-sm">
         <div className="w-12 h-12 bg-blue-500/20 rounded-xl flex items-center justify-center mb-4">
           <span className="text-2xl">💡</span>
         </div>
@@ -380,12 +380,12 @@ function BrandQuickReference({ brandConfig }: { brandConfig: DbBrandConfig }) {
   
   return (
     <motion.div 
-      className="mt-4 bg-zinc-800/50 border border-zinc-700/50 rounded-xl overflow-hidden"
+      className="mt-4 bg-white/5 border border-white/10 rounded-xl overflow-hidden"
       initial={false}
     >
       <button
         onClick={() => setExpanded(!expanded)}
-        className="w-full px-3 py-2 flex items-center justify-between text-left hover:bg-zinc-800/80 transition-colors"
+        className="w-full px-3 py-2 flex items-center justify-between text-left hover:bg-white/5 transition-colors"
       >
         <div className="flex items-center gap-2">
           <span className="text-sm">🎨</span>
@@ -2023,7 +2023,7 @@ export default function SectionBuilder({
   // IMMERSIVE INITIAL STATE - Full canvas input experience (for signed-in users only)
   if (isInitialState) {
     return (
-      <div className="flex-1 flex flex-col items-center justify-center min-h-0 bg-zinc-950 relative overflow-hidden">
+      <div className="flex-1 flex flex-col items-center justify-center min-h-0 bg-black relative overflow-hidden">
         <AnimatePresence>
           {showGuide && <BuilderGuide onClose={() => setShowGuide(false)} />}
         </AnimatePresence>
@@ -2041,7 +2041,7 @@ export default function SectionBuilder({
             animate={{ opacity: 1, y: 0 }}
             className="text-center mb-8"
           >
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-zinc-900/50 border border-zinc-800 mb-4">
+            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/5 border border-white/10 mb-4">
               <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
               <span className="text-xs font-mono text-zinc-400">Building {section.name}</span>
             </div>
@@ -2063,7 +2063,7 @@ export default function SectionBuilder({
             {/* Glow effect */}
             <div className="absolute -inset-1 bg-gradient-to-r from-emerald-500/20 via-teal-500/20 to-emerald-500/20 rounded-2xl opacity-0 group-focus-within:opacity-100 blur-xl transition-opacity duration-500" />
             
-            <div className="relative bg-zinc-900/50 backdrop-blur-sm border border-zinc-800 group-focus-within:border-emerald-500/50 rounded-2xl overflow-hidden transition-all">
+            <div className="relative bg-white/5 backdrop-blur-sm border border-white/10 group-focus-within:border-emerald-500/50 rounded-2xl overflow-hidden transition-all">
               <textarea
                 ref={textareaRef}
                 value={prompt}
@@ -2080,7 +2080,7 @@ export default function SectionBuilder({
               />
               
               {/* Bottom bar */}
-              <div className="flex items-center justify-between px-4 py-3 border-t border-zinc-800/30 bg-zinc-900/30">
+              <div className="flex items-center justify-between px-4 py-3 border-t border-white/10 bg-white/5">
                 <button 
                   onClick={() => initializePromptHelper()}
                   className="flex items-center gap-1.5 text-xs text-emerald-400 hover:text-emerald-300 transition-colors"
@@ -2090,7 +2090,7 @@ export default function SectionBuilder({
                 </button>
                 
                 <div className="flex items-center gap-2 text-xs text-zinc-600">
-                  <kbd className="hidden sm:inline px-1.5 py-0.5 bg-zinc-800 rounded text-[10px] font-mono">⌘↵</kbd>
+                  <kbd className="hidden sm:inline px-1.5 py-0.5 bg-white/10 rounded text-[10px] font-mono">⌘↵</kbd>
                   <span className="hidden sm:inline">to build</span>
                 </div>
               </div>
@@ -2108,7 +2108,7 @@ export default function SectionBuilder({
               <button
                 key={suggestion}
                 onClick={() => setPrompt(prev => prev.includes(suggestion) ? prev : (prev ? `${prev} ${suggestion}` : suggestion))}
-                className="px-3 py-1.5 rounded-full bg-zinc-900/50 border border-zinc-800 text-xs text-zinc-400 hover:text-white hover:border-zinc-700 transition-all"
+                className="px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-xs text-zinc-400 hover:text-white hover:border-white/20 transition-all"
               >
                 + {suggestion}
               </button>
@@ -2161,9 +2161,9 @@ export default function SectionBuilder({
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0.95, opacity: 0 }}
                 onClick={(e) => e.stopPropagation()}
-                className="w-full max-w-lg bg-zinc-900 border border-zinc-800 rounded-2xl shadow-2xl overflow-hidden"
+                className="w-full max-w-lg bg-black/90 border border-white/10 rounded-2xl shadow-2xl overflow-hidden"
               >
-                <div className="p-4 border-b border-zinc-800 flex items-center justify-between">
+                <div className="p-4 border-b border-white/10 flex items-center justify-between">
                   <div className="flex items-center gap-2">
                     <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                     <span className="font-medium text-white">The Architect</span>
@@ -2179,7 +2179,7 @@ export default function SectionBuilder({
                       <div className={`max-w-[85%] px-3 py-2 rounded-lg text-sm ${
                         msg.role === 'user' 
                           ? 'bg-emerald-500/20 text-emerald-100' 
-                          : 'bg-zinc-800 text-zinc-200'
+                          : 'bg-white/5 text-zinc-200'
                       }`}>
                         {msg.content}
                       </div>
@@ -2187,7 +2187,7 @@ export default function SectionBuilder({
                   ))}
                   {isHelperLoading && (
                     <div className="flex justify-start">
-                      <div className="bg-zinc-800 rounded-lg px-3 py-2">
+                      <div className="bg-white/5 rounded-lg px-3 py-2">
                         <div className="flex gap-1">
                           <span className="w-2 h-2 bg-zinc-600 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
                           <span className="w-2 h-2 bg-zinc-600 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />

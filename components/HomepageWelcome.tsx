@@ -149,12 +149,12 @@ export default function HomepageWelcome({ onStart }: { onStart?: () => void }) {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.9, y: 20 }}
             transition={{ type: "spring", duration: 0.6, bounce: 0.3 }}
-            className="relative z-10 w-full max-w-xl bg-zinc-950/90 backdrop-blur-xl border border-zinc-800 rounded-2xl overflow-hidden shadow-2xl shadow-black/50"
+            className="relative z-10 w-full max-w-xl bg-black/90 backdrop-blur-xl border border-white/10 rounded-2xl overflow-hidden shadow-2xl shadow-black/50"
           >
             {/* Close button */}
             <button 
               onClick={handleDismiss}
-              className="absolute top-4 right-4 p-2 text-zinc-500 hover:text-white transition-colors rounded-full hover:bg-zinc-800/50 z-20"
+              className="absolute top-4 right-4 p-2 text-zinc-500 hover:text-white transition-colors rounded-full hover:bg-white/10 z-20"
             >
               <X className="w-5 h-5" />
             </button>
@@ -221,7 +221,7 @@ export default function HomepageWelcome({ onStart }: { onStart?: () => void }) {
                   onClick={handleStart}
                   className={`w-full py-3.5 px-6 font-semibold text-base rounded-xl transition-all flex items-center justify-center gap-2 group ${
                     resumeUrl 
-                      ? 'bg-zinc-800 hover:bg-zinc-700 text-zinc-300 border border-zinc-700' 
+                      ? 'bg-white/5 hover:bg-white/10 text-zinc-300 border border-white/10' 
                       : 'bg-white hover:bg-zinc-100 text-black shadow-[0_0_20px_rgba(255,255,255,0.1)] hover:shadow-[0_0_30px_rgba(255,255,255,0.2)]'
                   }`}
                 >

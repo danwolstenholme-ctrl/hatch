@@ -81,7 +81,7 @@ export default function SingularityTransition({ onComplete }: { onComplete: () =
         </div>
 
         {/* Minimal Progress Line */}
-        <div className="mt-8 w-48 h-0.5 bg-zinc-900/50 rounded-full overflow-hidden">
+        <div className="mt-8 w-48 h-0.5 bg-white/5 rounded-full overflow-hidden">
           <motion.div
             className="h-full bg-emerald-500/80"
             initial={{ width: "0%" }}
