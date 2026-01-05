@@ -1,16 +1,52 @@
 'use client'
 
-import { useState, useMemo, useEffect } from 'react'
+import { useEffect, useMemo, useState } from 'react'
+import type { MouseEvent } from 'react'
 import Link from 'next/link'
-import Image from 'next/image'
 import { useRouter } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Plus, ArrowRight, Trash2, Search, Globe, LayoutGrid, List, ExternalLink, MoreHorizontal, Clock, ChevronRight, Zap, Crown, Check, Code2, CreditCard, Home } from 'lucide-react'
-import { useUser, UserButton } from '@clerk/nextjs'
+import { Plus, ArrowRight, Trash2, Search, Globe, LayoutGrid, List, ExternalLink, Clock, ChevronRight, Zap, Code2, Database, ShieldCheck } from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
+import { useUser } from '@clerk/nextjs'
 import { formatDistanceToNow } from 'date-fns'
+
 import { DbProject } from '@/lib/supabase'
 
-export default function StudioPage() {
+type TierConfig = {
+  name: string
+  limit: number
+  color: string
+}
+
+type RoadmapFeature = {
+  title: string
+  description: string
+  status: string
+  icon: LucideIcon
+}
+
+const ROADMAP_FEATURES: RoadmapFeature[] = [
+  {
+    title: 'URL Replicator',
+    description: 'Paste any URL and rebuild the layout automatically.',
+    status: 'Built — Launching Soon',
+    icon: Zap,
+  },
+  {
+    title: 'Code Export',
+    description: 'Download clean React + Tailwind files with one click.',
+    status: 'Visionary+ Tier',
+    icon: Code2,
+  },
+  {
+    title: 'Custom Domains',
+    description: 'Map hatchitsites.dev deployments to your own domains.',
+    status: 'Q1 2026',
+    icon: Globe,
+  },
+]
+
+export default function PortalPage() {
   const { user, isLoaded, isSignedIn } = useUser()
   const router = useRouter()
   const [projects, setProjects] = useState<DbProject[]>([])
@@ -21,15 +57,15 @@ export default function StudioPage() {
   const [searchQuery, setSearchQuery] = useState('')
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
 
-  const accountSubscription = user?.publicMetadata?.accountSubscription as any
+  const accountSubscription = user?.publicMetadata?.accountSubscription as { tier?: string } | undefined
   const tier = accountSubscription?.tier || 'free'
-  const isFreeTier = !accountSubscription || tier === 'free' || tier === 'trial'
+  const isFreeTier = tier === 'free' || tier === 'trial'
 
-  const tierConfig = useMemo(() => {
-    if (tier === 'singularity') return { name: 'Singularity', limit: Infinity, color: 'text-amber-400', bg: 'bg-amber-500/10' }
-    if (tier === 'visionary') return { name: 'Visionary', limit: Infinity, color: 'text-emerald-400', bg: 'bg-emerald-500/10' }
-    if (tier === 'architect') return { name: 'Architect', limit: 3, color: 'text-emerald-400', bg: 'bg-emerald-500/10' }
-    return { name: 'Free', limit: 3, color: 'text-zinc-400', bg: 'bg-zinc-500/10' }
+  const tierConfig = useMemo<TierConfig>(() => {
+    if (tier === 'singularity') return { name: 'Singularity', limit: Infinity, color: 'text-amber-400' }
+    if (tier === 'visionary') return { name: 'Visionary', limit: Infinity, color: 'text-emerald-400' }
+    if (tier === 'architect') return { name: 'Architect', limit: 3, color: 'text-emerald-400' }
+    return { name: 'Free', limit: 3, color: 'text-zinc-400' }
   }, [tier])
 
   const isAtLimit = tierConfig.limit !== Infinity && projects.length >= tierConfig.limit
@@ -37,7 +73,6 @@ export default function StudioPage() {
   useEffect(() => {
     if (!isLoaded) return
 
-    // Hard redirect if user is not authenticated
     if (!isSignedIn) {
       router.replace('/sign-in?redirect_url=/dashboard')
       return
@@ -45,41 +80,39 @@ export default function StudioPage() {
 
     let cancelled = false
 
-    async function init() {
+    const bootstrap = async () => {
       try {
-        // Import guest work if exists
-        const guestHandoff = localStorage.getItem('hatch_guest_handoff')
+        const guestHandoff = typeof window !== 'undefined' ? localStorage.getItem('hatch_guest_handoff') : null
+
         if (guestHandoff) {
           setIsMigrating(true)
           try {
             const payload = JSON.parse(guestHandoff)
-            console.log('[Studio] Attempting to import guest work:', {
+            console.log('[Portal] Importing guest handoff', {
               projectName: payload?.projectName,
               templateId: payload?.templateId,
-              sectionsCount: payload?.sections?.length,
-              sectionsWithCode: payload?.sections?.filter((s: any) => s.code?.length > 0).length,
+              sections: payload?.sections?.length,
             })
             const res = await fetch('/api/project/import', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(payload),
+              body: guestHandoff,
             })
+
             if (res.ok) {
-              const data = await res.json()
-              console.log('[Studio] Import successful:', data)
               localStorage.removeItem('hatch_guest_handoff')
               localStorage.removeItem('hatch_last_prompt')
             } else if (res.status === 401) {
               router.replace('/sign-in?redirect_url=/dashboard')
               return
             } else {
-              const text = await res.text()
-              console.error('[Studio] Import failed:', res.status, text)
+              console.error('[Portal] Import failed', await res.text())
             }
-          } catch (err) {
-            console.error('[Studio] Import error:', err)
+          } catch (error) {
+            console.error('[Portal] Import error', error)
+          } finally {
+            setIsMigrating(false)
           }
-          setIsMigrating(false)
         }
 
         const res = await fetch('/api/project/list')
@@ -87,18 +120,19 @@ export default function StudioPage() {
           router.replace('/sign-in?redirect_url=/dashboard')
           return
         }
+
         if (res.ok) {
           const data = await res.json()
           if (!cancelled) setProjects(data.projects || [])
         }
       } catch (error) {
-        console.error('Error:', error)
+        console.error('[Portal] Failed to load projects', error)
       } finally {
         if (!cancelled) setIsLoading(false)
       }
     }
 
-    init()
+    bootstrap()
 
     return () => {
       cancelled = true
@@ -107,40 +141,59 @@ export default function StudioPage() {
 
   const filteredProjects = useMemo(() => {
     if (!searchQuery) return projects
-    return projects.filter(p => 
-      p.name.toLowerCase().includes(searchQuery.toLowerCase())
-    )
+    const query = searchQuery.toLowerCase()
+    return projects.filter(project => (project.name || 'Untitled Project').toLowerCase().includes(query))
   }, [projects, searchQuery])
+
+  const lastUpdatedProject = useMemo(() => {
+    if (!projects.length) return undefined
+    return [...projects].sort((a, b) => {
+      const aTime = a.updated_at ? new Date(a.updated_at).getTime() : 0
+      const bTime = b.updated_at ? new Date(b.updated_at).getTime() : 0
+      return bTime - aTime
+    })[0]
+  }, [projects])
+
+  const routeToBuilder = (projectId?: string | null) => {
+    if (projectId) {
+      router.push(`/builder?project=${projectId}`)
+    } else {
+      router.push('/builder')
+    }
+  }
 
   const handleCreate = async () => {
     if (isAtLimit) {
       setShowUpgradeModal(true)
       return
     }
+
     setIsCreating(true)
     try {
       const res = await fetch('/api/project', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: 'Untitled Project', templateId: 'landing-page' })
+        body: JSON.stringify({ name: 'Untitled Project', templateId: 'landing-page' }),
       })
+
       if (res.ok) {
         const data = await res.json()
-        // Redirect to builder immediately
-        router.push(`/builder?project=${data.project.id}`)
+        setProjects(prev => [data.project, ...prev])
+        routeToBuilder(data.project.id)
       }
     } finally {
       setIsCreating(false)
     }
   }
 
-  const handleDelete = async (e: React.MouseEvent, id: string) => {
-    e.preventDefault()
-    e.stopPropagation()
-    if (confirm('Delete this project?')) {
-      const res = await fetch(`/api/project/${id}`, { method: 'DELETE' })
-      if (res.ok) setProjects(prev => prev.filter(p => p.id !== id))
-    }
+  const handleDelete = async (event: MouseEvent<HTMLButtonElement>, id: string) => {
+    event.preventDefault()
+    event.stopPropagation()
+
+    if (!confirm('Delete this project?')) return
+
+    const res = await fetch(`/api/project/${id}`, { method: 'DELETE' })
+    if (res.ok) setProjects(prev => prev.filter(project => project.id !== id))
   }
 
   if (!isLoaded || !isSignedIn || isLoading || isMigrating) {
@@ -151,214 +204,345 @@ export default function StudioPage() {
     )
   }
 
+  const portalStacks = [
+    {
+      title: 'Builder',
+      description: 'Generate React components with Singularity-grade AI.',
+      icon: Code2,
+      cta: lastUpdatedProject ? 'Resume builder' : 'Launch builder',
+      action: () => routeToBuilder(lastUpdatedProject?.id),
+      accent: 'from-emerald-500/20 via-teal-500/10 to-transparent',
+    },
+    {
+      title: 'Data Layer',
+      description: 'View Supabase tables, logs, and connection details.',
+      icon: Database,
+      cta: 'Coming soon',
+      disabled: true,
+      accent: 'from-zinc-600/30 via-zinc-900 to-transparent',
+    },
+    {
+      title: 'Access & Billing',
+      description: 'Manage your seat, upgrade tier, and invoices.',
+      icon: ShieldCheck,
+      cta: 'Open billing',
+      action: () => router.push('/dashboard/billing'),
+      accent: 'from-emerald-500/15 via-emerald-500/5 to-transparent',
+    },
+  ]
+
   return (
     <>
-    <div className="p-8 w-full">
-      {/* Page Title */}
-      <motion.div 
-        initial={{ opacity: 0, y: -10 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.4, delay: 0.1 }}
-        className="flex items-start justify-between mb-8"
-      >
-        <div>
-          <h1 className="text-xl font-semibold text-zinc-100 mb-1">Studio</h1>
-          <p className="text-zinc-500 text-sm">
-            Build and deploy React components with AI
-          </p>
-        </div>
-        <motion.button
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-          onClick={handleCreate}
-          disabled={isCreating}
-          className="group relative flex items-center gap-2 px-4 py-2 bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 text-emerald-400 text-sm font-medium rounded-lg backdrop-blur-md transition-all shadow-[0_0_20px_-5px_rgba(16,185,129,0.1)] hover:shadow-[0_0_25px_-5px_rgba(16,185,129,0.3)] overflow-hidden"
+      <div className="w-full px-6 py-8 space-y-10">
+        <motion.section
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.4 }}
+          className="grid gap-6 lg:grid-cols-[2fr,1fr]"
         >
-          <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/0 via-emerald-500/10 to-emerald-500/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-1000" />
-          {isCreating ? (
-            <div className="w-4 h-4 border-2 border-emerald-500/30 border-t-emerald-500 rounded-full animate-spin" />
-          ) : (
-            <Plus className="w-4 h-4" />
-          )}
-          <span>New Project</span>
-        </motion.button>
-      </motion.div>
-
-      {/* Empty State */}
-      {!isLoading && projects.length === 0 && (
-        <motion.div 
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className="flex flex-col items-center justify-center py-20 border border-dashed border-zinc-800 rounded-2xl bg-zinc-900/30"
-        >
-          <div className="w-16 h-16 bg-zinc-900 rounded-2xl flex items-center justify-center mb-6 border border-zinc-800 shadow-xl">
-            <Zap className="w-8 h-8 text-zinc-600" />
-          </div>
-          <h3 className="text-xl font-semibold text-zinc-200 mb-2">Ready to build?</h3>
-          <p className="text-zinc-500 max-w-md text-center mb-8">
-            Create your first project to start generating React components with AI.
-          </p>
-          <button
-            onClick={handleCreate}
-            disabled={isCreating}
-            className="px-6 py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-medium transition-all shadow-lg shadow-emerald-900/20 flex items-center gap-2"
-          >
-            {isCreating ? (
-              <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-            ) : (
-              <Plus className="w-5 h-5" />
-            )}
-            <span>Create New Project</span>
-          </button>
-        </motion.div>
-      )}
-
-
-          {/* Subtle upgrade hint for free users */}
-          {isFreeTier && (
-            <motion.div 
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-              className="mb-8 flex items-center justify-between px-5 py-4 bg-white/5 border border-white/10 backdrop-blur-md rounded-xl shadow-lg shadow-black/20"
-            >
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 rounded-full bg-zinc-500/10 flex items-center justify-center border border-white/5">
-                  <Crown className="w-4 h-4 text-zinc-400" />
-                </div>
-                <div>
-                  <p className="text-zinc-200 text-sm font-medium">Free Plan</p>
-                  <p className="text-zinc-500 text-xs">{projects.length} / {tierConfig.limit} projects used</p>
-                </div>
+          <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-zinc-950 via-zinc-900/80 to-zinc-900/40 px-6 py-6 sm:px-8 sm:py-8 shadow-[0_0_40px_-15px_rgba(16,185,129,0.5)]">
+            <div className="absolute inset-0 opacity-60" style={{ backgroundImage: 'radial-gradient(circle at top right, rgba(16,185,129,0.15), transparent 45%)' }} />
+            <div className="relative z-10 flex flex-wrap items-center justify-between gap-4">
+              <div>
+                <p className="text-xs uppercase tracking-[0.4em] text-zinc-600">Portal</p>
+                <h1 className="text-2xl sm:text-3xl font-semibold text-white tracking-tight mt-2">Singularity Portal</h1>
+                <p className="text-zinc-400 text-sm sm:text-base mt-2 max-w-2xl">
+                  Everything inside your HatchIt database — projects, builder, billing, and the roadmap — in one control surface.
+                </p>
               </div>
+              <span className="px-3 py-1 text-[10px] font-semibold tracking-widest uppercase rounded-full border border-emerald-500/30 text-emerald-400 bg-emerald-500/10">
+                Live Sync
+              </span>
+            </div>
+
+            <div className="relative z-10 mt-8 grid gap-4 sm:grid-cols-3">
+              <div className="rounded-xl border border-white/5 bg-white/5 p-4 backdrop-blur-xl">
+                <p className="text-xs uppercase tracking-wide text-zinc-500">Projects</p>
+                <p className="text-2xl font-semibold text-white mt-1">{projects.length || 0}</p>
+                <p className="text-[11px] text-zinc-500 mt-2">
+                  {tierConfig.limit === Infinity ? 'Unlimited capacity' : `${projects.length} / ${tierConfig.limit} used`}
+                </p>
+              </div>
+              <div className="rounded-xl border border-white/5 bg-white/5 p-4 backdrop-blur-xl">
+                <p className="text-xs uppercase tracking-wide text-zinc-500">Tier</p>
+                <p className={`text-2xl font-semibold mt-1 ${tierConfig.color}`}>{tierConfig.name}</p>
+                <p className="text-[11px] text-zinc-500 mt-2">Powered by Clerk + Supabase</p>
+              </div>
+              <div className="rounded-xl border border-white/5 bg-white/5 p-4 backdrop-blur-xl">
+                <p className="text-xs uppercase tracking-wide text-zinc-500">Last activity</p>
+                <p className="text-2xl font-semibold text-white mt-1">
+                  {lastUpdatedProject?.updated_at
+                    ? formatDistanceToNow(new Date(lastUpdatedProject.updated_at), { addSuffix: true })
+                    : 'No builds yet'}
+                </p>
+                <p className="text-[11px] text-zinc-500 mt-2">Observing builder state in real time</p>
+              </div>
+            </div>
+
+            <div className="relative z-10 mt-8 flex flex-wrap gap-3">
+              <motion.button
+                whileHover={{ scale: 1.02, y: -2 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={handleCreate}
+                disabled={isCreating}
+                className="group flex items-center gap-2 rounded-xl border border-emerald-500/40 bg-emerald-500/10 px-5 py-3 text-sm font-medium text-emerald-300 shadow-[0_0_30px_rgba(16,185,129,0.25)] transition-all"
+              >
+                {isCreating ? (
+                  <div className="w-4 h-4 border-2 border-emerald-500/30 border-t-emerald-500 rounded-full animate-spin" />
+                ) : (
+                  <Plus className="w-4 h-4" />
+                )}
+                Start fresh build
+              </motion.button>
+
+              <motion.button
+                whileHover={{ scale: 1.02, y: -2 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={() => routeToBuilder(lastUpdatedProject?.id)}
+                className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-5 py-3 text-sm font-medium text-white/90 backdrop-blur transition-all hover:bg-white/10"
+              >
+                <ArrowRight className="w-4 h-4" />
+                {lastUpdatedProject ? 'Resume last build' : 'Open builder'}
+              </motion.button>
+            </div>
+          </div>
+
+          <div className="rounded-2xl border border-white/10 bg-white/5 backdrop-blur-xl p-6 flex flex-col justify-between">
+            <div>
+              <p className="text-xs uppercase tracking-[0.3em] text-zinc-600">Account</p>
+              <h2 className="text-xl font-semibold text-white mt-2">{tierConfig.name} Tier</h2>
+              <p className="text-sm text-zinc-400 mt-2">
+                {isFreeTier ? 'Unlock code export, deployments, and unlimited projects.' : 'Full access unlocked. Head to billing to adjust seats or cancel.'}
+              </p>
+            </div>
+            <div className="mt-6 space-y-3 text-sm text-zinc-400">
+              <div className="flex items-center justify-between">
+                <span>Projects in DB</span>
+                <span className="font-semibold text-white">{projects.length}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span>Plan Limit</span>
+                <span className="font-semibold text-white">{tierConfig.limit === Infinity ? '∞' : tierConfig.limit}</span>
+              </div>
+              <div className="flex items-center justify-between">
+                <span>Sync Status</span>
+                <span className="font-semibold text-emerald-400 flex items-center gap-1 text-xs uppercase tracking-wider">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                  Healthy
+                </span>
+              </div>
+            </div>
+            <div className="mt-6 flex gap-3">
               <Link
                 href="/dashboard/billing"
-                className="px-3 py-1.5 text-xs font-medium text-zinc-300 hover:text-white bg-white/5 hover:bg-white/10 border border-white/5 rounded-md transition-colors"
+                className="flex-1 text-center rounded-xl border border-white/10 bg-white/5 py-2.5 text-sm font-medium text-white hover:bg-white/10 transition-colors"
               >
-                Upgrade Plan
+                {isFreeTier ? 'Upgrade Plan' : 'Manage Billing'}
               </Link>
-            </motion.div>
-          )}
+              <Link
+                href="/roadmap"
+                className="flex-1 text-center rounded-xl border border-white/5 bg-white/5 py-2.5 text-sm font-medium text-zinc-400 hover:text-white hover:bg-white/10 transition-colors"
+              >
+                Product Roadmap
+              </Link>
+            </div>
+          </div>
+        </motion.section>
 
-          {/* Search and filters */}
-          <motion.div 
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2 }}
-            className="flex items-center justify-between gap-4 mb-8"
-          >
-            <div className="relative flex-1 max-w-md group">
-              <div className="absolute inset-0 bg-emerald-500/5 rounded-lg blur-xl opacity-0 group-focus-within:opacity-100 transition-opacity duration-500" />
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500 group-focus-within:text-emerald-500/70 transition-colors" />
-              <input 
+        <motion.section
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="grid gap-4 md:grid-cols-3"
+        >
+          {portalStacks.map((card, index) => (
+            <motion.div
+              key={card.title}
+              whileHover={{ y: -4 }}
+              className="relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 p-5 backdrop-blur-xl"
+              transition={{ delay: index * 0.05 }}
+            >
+              <div className={`absolute inset-0 bg-gradient-to-br ${card.accent} opacity-60`} />
+              <div className="relative z-10 space-y-4">
+                <div className="flex items-center gap-3">
+                  <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-white/10 bg-black/30">
+                    <card.icon className="w-5 h-5 text-emerald-300" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-white">{card.title}</p>
+                    <p className="text-xs text-zinc-500">Portal stack</p>
+                  </div>
+                </div>
+                <p className="text-sm text-zinc-400 leading-relaxed">{card.description}</p>
+                <button
+                  disabled={card.disabled}
+                  onClick={card.action}
+                  className={`inline-flex items-center gap-2 rounded-full border px-4 py-2 text-xs font-semibold uppercase tracking-wide transition-colors ${card.disabled ? 'cursor-not-allowed border-white/5 text-zinc-500' : 'border-emerald-500/30 text-emerald-300 hover:bg-emerald-500/10'}`}
+                >
+                  {card.cta}
+                  {!card.disabled && <ArrowRight className="w-3.5 h-3.5" />}
+                </button>
+              </div>
+            </motion.div>
+          ))}
+        </motion.section>
+
+        <motion.section
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.15 }}
+          className="space-y-6"
+        >
+          <div className="flex flex-wrap items-center justify-between gap-4">
+            <div>
+              <p className="text-xs uppercase tracking-[0.3em] text-zinc-600">Projects</p>
+              <h2 className="text-xl font-semibold text-white mt-1">Active Deliverables</h2>
+            </div>
+            {projects.length > 0 && (
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={handleCreate}
+                disabled={isCreating}
+                className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm text-white hover:bg-white/10 transition-all"
+              >
+                <Plus className="w-4 h-4" />
+                New project
+              </motion.button>
+            )}
+          </div>
+
+          <div className="flex flex-wrap items-center gap-4">
+            <div className="relative flex-1 min-w-[240px] group">
+              <div className="absolute inset-0 rounded-xl bg-emerald-500/5 blur-2xl opacity-0 group-focus-within:opacity-100 transition" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
+              <input
                 type="text"
                 placeholder="Search projects..."
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="relative w-full bg-white/5 border border-white/10 rounded-lg pl-10 pr-4 py-2.5 text-sm text-zinc-200 placeholder:text-zinc-600 focus:outline-none focus:bg-white/10 focus:border-emerald-500/30 backdrop-blur-md transition-all shadow-inner shadow-black/20"
+                onChange={(event) => setSearchQuery(event.target.value)}
+                className="relative w-full rounded-xl border border-white/10 bg-white/5 pl-10 pr-4 py-2.5 text-sm text-white placeholder:text-zinc-600 backdrop-blur-sm focus:border-emerald-500/40 focus:bg-white/10 focus:outline-none"
               />
             </div>
-            
-            <div className="flex items-center gap-1 bg-white/5 border border-white/10 backdrop-blur-md rounded-lg p-1 shadow-inner shadow-black/20">
+            <div className="flex items-center gap-1 rounded-xl border border-white/10 bg-white/5 p-1 backdrop-blur">
               <button
                 onClick={() => setViewMode('grid')}
-                className={`p-2 rounded-md transition-all duration-300 ${viewMode === 'grid' ? 'bg-white/10 text-emerald-400 shadow-sm' : 'text-zinc-500 hover:text-zinc-300 hover:bg-white/5'}`}
+                className={`rounded-lg p-2 text-xs font-semibold transition-all ${viewMode === 'grid' ? 'bg-white/10 text-emerald-400' : 'text-zinc-500 hover:text-zinc-300'}`}
               >
-                <LayoutGrid className="w-4 h-4" />
+                <LayoutGrid className="h-4 w-4" />
               </button>
               <button
                 onClick={() => setViewMode('list')}
-                className={`p-2 rounded-md transition-all duration-300 ${viewMode === 'list' ? 'bg-white/10 text-emerald-400 shadow-sm' : 'text-zinc-500 hover:text-zinc-300 hover:bg-white/5'}`}
+                className={`rounded-lg p-2 text-xs font-semibold transition-all ${viewMode === 'list' ? 'bg-white/10 text-emerald-400' : 'text-zinc-500 hover:text-zinc-300'}`}
               >
-                <List className="w-4 h-4" />
+                <List className="h-4 w-4" />
               </button>
             </div>
-          </motion.div>
+          </div>
 
-          {/* Projects */}
-          {filteredProjects.length === 0 ? (
-            <motion.div 
+          {!isLoading && projects.length === 0 ? (
+            <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.3 }}
-              className="text-center py-20 bg-white/5 border border-white/10 backdrop-blur-sm rounded-2xl"
+              className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-zinc-800 bg-zinc-950/60 py-16 text-center"
             >
-              <div className="w-16 h-16 bg-white/5 border border-white/10 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-inner shadow-black/20">
-                <Plus className="w-6 h-6 text-zinc-500" />
+              <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-white/10 bg-white/5 mb-4">
+                <Zap className="h-8 w-8 text-emerald-400" />
               </div>
-              <h3 className="text-lg font-medium text-zinc-200 mb-2">
-                {searchQuery ? 'No projects found' : 'Start your first project'}
-              </h3>
-              <p className="text-zinc-500 text-sm max-w-xs mx-auto">
-                {searchQuery 
-                  ? 'Try a different search term.' 
-                  : 'Initialize a new build to begin generating.'}
+              <h3 className="text-lg font-semibold text-white">Your database is waiting</h3>
+              <p className="mt-2 text-sm text-zinc-500 max-w-md">
+                Generate your first artifact. Everything you build here syncs to Supabase and can be deployed instantly.
               </p>
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={handleCreate}
+                className="mt-6 flex items-center gap-2 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-5 py-3 text-sm font-semibold text-emerald-300"
+              >
+                <Plus className="w-4 h-4" />
+                Create first project
+              </motion.button>
             </motion.div>
+          {!isLoading && projects.length === 0 ? (
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-zinc-800 bg-zinc-950/60 py-16 text-center"
+            >
+              <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-white/10 bg-white/5 mb-4">
+                <Zap className="h-8 w-8 text-emerald-400" />
+              </div>
+              <h3 className="text-lg font-semibold text-white">Your database is waiting</h3>
+              <p className="mt-2 text-sm text-zinc-500 max-w-md">
+                Generate your first artifact. Everything you build here syncs to Supabase and can be deployed instantly.
+              </p>
+              <motion.button
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                onClick={handleCreate}
+                className="mt-6 flex items-center gap-2 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-5 py-3 text-sm font-semibold text-emerald-300"
+              >
+                <Plus className="w-4 h-4" />
+                Create first project
+              </motion.button>
+            </motion.div>
+          ) : filteredProjects.length === 0 ? (
+            <div className="rounded-2xl border border-white/10 bg-white/5 px-6 py-12 text-center">
+              <p className="text-sm text-zinc-500">No matches. Try another query.</p>
+            </div>
           ) : viewMode === 'grid' ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredProjects.map((project, i) => (
+              {filteredProjects.map((project, index) => (
                 <motion.div
                   key={project.id}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.1 + i * 0.05 }}
+                  transition={{ delay: 0.1 + index * 0.05 }}
                 >
                   <Link
                     href={`/builder?project=${project.id}`}
-                    className="group block bg-white/5 hover:bg-white/10 border border-white/10 hover:border-emerald-500/30 backdrop-blur-sm rounded-xl p-6 transition-all duration-300 hover:shadow-[0_0_30px_-10px_rgba(16,185,129,0.1)] h-full relative overflow-hidden"
+                    className="group relative block h-full overflow-hidden rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-sm transition-all duration-300 hover:border-emerald-500/40 hover:bg-white/10"
                   >
-                    <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/0 via-emerald-500/0 to-emerald-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                    
-                    <div className="relative z-10 flex items-start justify-between mb-6">
-                      <div className="w-12 h-12 bg-white/5 border border-white/5 rounded-xl flex items-center justify-center group-hover:bg-emerald-500/10 group-hover:border-emerald-500/20 transition-colors shadow-inner shadow-black/20">
-                        <div className="w-3 h-3 bg-emerald-500/50 rounded-sm group-hover:bg-emerald-400 group-hover:shadow-[0_0_10px_rgba(16,185,129,0.5)] transition-all" />
+                    <div className="absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100" style={{ backgroundImage: 'linear-gradient(135deg, rgba(16,185,129,0.08), transparent)' }} />
+                    <div className="relative z-10 flex items-start justify-between">
+                      <div className="rounded-xl border border-white/5 bg-black/30 p-3">
+                        <div className="h-2 w-8 rounded-full bg-emerald-400" />
                       </div>
-                      
-                      {project.slug && (
-                        <span className="flex items-center gap-1.5 text-[10px] font-medium uppercase tracking-wider text-emerald-500/80 bg-emerald-500/10 px-2 py-1 rounded-full border border-emerald-500/10">
-                          <span className="w-1 h-1 bg-emerald-500 rounded-full animate-pulse" />
-                          Live
+                      {project.slug ? (
+                        <span className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-black/20 px-3 py-1 text-[11px] font-semibold text-zinc-300">
+                          {project.slug}
+                          <ExternalLink className="h-3 w-3" />
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-black/20 px-3 py-1 text-[11px] font-semibold text-zinc-500">
+                          Draft
                         </span>
                       )}
                     </div>
-
-                    <div className="relative z-10">
-                      <h3 className="font-medium text-zinc-200 mb-1 truncate group-hover:text-white transition-colors text-lg">
-                        {project.name || 'Untitled'}
-                      </h3>
-                      
-                      <p className="text-xs text-zinc-500 flex items-center gap-1.5 mb-6">
-                        <Clock className="w-3 h-3" />
-                        {project.updated_at 
-                          ? formatDistanceToNow(new Date(project.updated_at), { addSuffix: true })
-                          : 'Just now'}
-                      </p>
-
-                      <div className="flex items-center justify-between pt-4 border-t border-white/5">
-                        <div className="flex items-center gap-2">
-                          {project.slug && (
-                            <a
-                              href={`https://${project.slug}.hatchitsites.dev`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              onClick={(e) => e.stopPropagation()}
-                              className="p-2 text-zinc-500 hover:text-emerald-400 hover:bg-emerald-500/10 rounded-lg transition-colors"
-                            >
-                              <ExternalLink className="w-4 h-4" />
-                            </a>
-                          )}
-                          <button 
-                            onClick={(e) => handleDelete(e, project.id)}
-                            className="p-2 text-zinc-500 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 duration-300"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
+                    <div className="relative z-10 mt-6 space-y-3">
+                      <div className="flex items-center justify-between gap-3">
+                        <div>
+                          <p className="text-sm font-semibold text-white">{project.name || 'Untitled Project'}</p>
+                          <p className="text-xs text-zinc-500">
+                            Updated {project.updated_at ? formatDistanceToNow(new Date(project.updated_at), { addSuffix: true }) : 'moments ago'}
+                          </p>
                         </div>
-                        
-                        <div className="w-8 h-8 rounded-full bg-white/5 flex items-center justify-center text-zinc-500 group-hover:text-emerald-400 group-hover:bg-emerald-500/10 transition-all">
-                          <ChevronRight className="w-4 h-4" />
-                        </div>
+                        <button
+                          onClick={(event) => handleDelete(event, project.id)}
+                          className="rounded-full border border-white/10 p-2 text-zinc-500 hover:text-red-400 hover:border-red-400/40 transition-colors"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
+                      </div>
+                      <div className="flex items-center justify-between text-xs text-zinc-500">
+                        <span className="flex items-center gap-1">
+                          <Clock className="h-3.5 w-3.5" />
+                          {project.updated_at ? formatDistanceToNow(new Date(project.updated_at), { addSuffix: true }) : 'Waiting for first pass'}
+                        </span>
+                        <span className="flex items-center gap-1 text-emerald-300 group-hover:text-white">
+                          Open
+                          <ArrowRight className="h-3.5 w-3.5" />
+                        </span>
                       </div>
                     </div>
                   </Link>
@@ -366,219 +550,137 @@ export default function StudioPage() {
               ))}
             </div>
           ) : (
-            <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 }}
-              className="border border-white/10 rounded-xl overflow-hidden bg-white/5 backdrop-blur-sm"
-            >
-              {filteredProjects.map((project, i) => (
-                <Link
+            <div className="space-y-3">
+              {filteredProjects.map((project, index) => (
+                <motion.div
                   key={project.id}
-                  href={`/builder?project=${project.id}`}
-                  className={`group flex items-center gap-4 px-6 py-5 hover:bg-white/5 transition-colors ${
-                    i !== filteredProjects.length - 1 ? 'border-b border-white/5' : ''
-                  }`}
+                  initial={{ opacity: 0, y: 12 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 0.05 + index * 0.04 }}
                 >
-                  <div className="w-10 h-10 bg-white/5 border border-white/5 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:bg-emerald-500/10 group-hover:border-emerald-500/20 transition-colors">
-                    <div className="w-2.5 h-2.5 bg-emerald-500/50 rounded-sm group-hover:bg-emerald-400 transition-colors" />
-                  </div>
-
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-medium text-zinc-200 text-sm truncate group-hover:text-white transition-colors">
-                      {project.name || 'Untitled'}
-                    </h3>
-                    <p className="text-xs text-zinc-500">
-                      {project.updated_at 
-                        ? formatDistanceToNow(new Date(project.updated_at), { addSuffix: true })
-                        : 'Just now'}
-                    </p>
-                  </div>
-
-                  {project.slug && (
-                    <span className="hidden sm:flex items-center gap-1.5 text-[10px] font-medium uppercase tracking-wider text-emerald-500/80 bg-emerald-500/10 px-2 py-1 rounded-full border border-emerald-500/10">
-                      <span className="w-1 h-1 bg-emerald-500 rounded-full" />
-                      Live
-                    </span>
-                  )}
-
-                  <div className="flex items-center gap-2">
-                    {project.slug && (
-                      <a
-                        href={`https://${project.slug}.hatchitsites.dev`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        onClick={(e) => e.stopPropagation()}
-                        className="p-2 text-zinc-500 hover:text-emerald-400 hover:bg-emerald-500/10 rounded-lg transition-colors"
+                  <Link
+                    href={`/builder?project=${project.id}`}
+                    className="group flex items-center justify-between gap-4 rounded-2xl border border-white/10 bg-white/5 px-4 py-3 backdrop-blur transition-colors hover:border-emerald-500/40 hover:bg-white/10"
+                  >
+                    <div>
+                      <p className="text-sm font-semibold text-white">{project.name || 'Untitled Project'}</p>
+                      <p className="text-xs text-zinc-500">
+                        Last touched {project.updated_at ? formatDistanceToNow(new Date(project.updated_at), { addSuffix: true }) : 'just now'}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-3 text-xs text-zinc-400">
+                      <span className="inline-flex items-center gap-1 rounded-full border border-white/10 px-3 py-1">
+                        {project.slug ? 'Published' : 'Draft'}
+                      </span>
+                      <button
+                        onClick={(event) => handleDelete(event, project.id)}
+                        className="rounded-full border border-white/10 p-2 text-zinc-500 hover:text-red-400 hover:border-red-400/40 transition-colors"
                       >
-                        <ExternalLink className="w-4 h-4" />
-                      </a>
-                    )}
-                    <button 
-                      onClick={(e) => handleDelete(e, project.id)}
-                      className="p-2 text-zinc-500 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors opacity-0 group-hover:opacity-100"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                    <ChevronRight className="w-4 h-4 text-zinc-600 group-hover:text-zinc-400 transition-colors" />
-                  </div>
-                </Link>
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                      <ChevronRight className="h-4 w-4 text-emerald-300" />
+                    </div>
+                  </Link>
+                </motion.div>
               ))}
-            </motion.div>
+            </div>
           )}
+        </motion.section>
 
-          {/* Coming Soon - Realistic Roadmap */}
-          <motion.div 
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.4 }}
-            className="mt-16 pt-8 border-t border-white/10"
-          >
-            <div className="flex items-center gap-3 mb-6">
-              <h2 className="text-lg font-medium text-zinc-400">Coming Soon</h2>
-              <span className="px-2 py-0.5 bg-emerald-500/10 text-emerald-500 text-[10px] font-bold rounded uppercase tracking-wider border border-emerald-500/20">Q1 2026</span>
-            </div>
-            
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-              {/* Replicator - REAL, already built */}
-              <motion.div 
-                whileHover={{ y: -4 }}
-                className="group relative bg-white/5 border border-white/10 backdrop-blur-sm rounded-xl p-6 overflow-hidden hover:bg-white/10 hover:border-emerald-500/30 transition-all duration-300"
-              >
-                <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/0 via-emerald-500/0 to-emerald-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                <div className="relative z-10">
-                  <div className="w-12 h-12 bg-white/5 border border-white/5 rounded-xl flex items-center justify-center mb-4 group-hover:bg-emerald-500/10 group-hover:border-emerald-500/20 transition-colors shadow-inner shadow-black/20">
-                    <Zap className="w-5 h-5 text-emerald-500" />
-                  </div>
-                  <h3 className="font-medium text-zinc-200 mb-2 text-lg">URL Replicator</h3>
-                  <p className="text-xs text-zinc-500 leading-relaxed">
-                    Paste any URL → AI extracts the design DNA and recreates it as your starting point.
-                  </p>
-                  <div className="mt-6 flex items-center gap-1.5 text-[10px] text-emerald-500 uppercase tracking-wider font-medium">
-                    <span className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
-                    Built — Launching Soon
-                  </div>
-                </div>
-              </motion.div>
-
-              {/* Code Export - REAL, tier-gated */}
-              <motion.div 
-                whileHover={{ y: -4 }}
-                className="group relative bg-white/5 border border-white/10 backdrop-blur-sm rounded-xl p-6 overflow-hidden hover:bg-white/10 transition-all duration-300"
-              >
-                <div className="relative z-10">
-                  <div className="w-12 h-12 bg-white/5 border border-white/5 rounded-xl flex items-center justify-center mb-4 group-hover:bg-white/10 transition-colors shadow-inner shadow-black/20">
-                    <Code2 className="w-5 h-5 text-zinc-400 group-hover:text-zinc-300" />
-                  </div>
-                  <h3 className="font-medium text-zinc-200 mb-2 text-lg">Code Export</h3>
-                  <p className="text-xs text-zinc-500 leading-relaxed">
-                    Download your components as clean React + Tailwind files. Own your code completely.
-                  </p>
-                  <div className="mt-6 flex items-center gap-1.5 text-[10px] text-zinc-500 uppercase tracking-wider font-medium">
-                    <span className="w-1 h-1 bg-zinc-600 rounded-full" />
-                    Visionary+ Tier
-                  </div>
-                </div>
-              </motion.div>
-
-              {/* Custom Domains - REAL roadmap */}
-              <motion.div 
-                whileHover={{ y: -4 }}
-                className="group relative bg-white/5 border border-white/10 backdrop-blur-sm rounded-xl p-6 overflow-hidden hover:bg-white/10 transition-all duration-300"
-              >
-                <div className="relative z-10">
-                  <div className="w-12 h-12 bg-white/5 border border-white/5 rounded-xl flex items-center justify-center mb-4 group-hover:bg-white/10 transition-colors shadow-inner shadow-black/20">
-                    <Globe className="w-5 h-5 text-zinc-400 group-hover:text-zinc-300" />
-                  </div>
-                  <h3 className="font-medium text-zinc-200 mb-2 text-lg">Custom Domains</h3>
-                  <p className="text-xs text-zinc-500 leading-relaxed">
-                    Connect your own domain. Deploy to yourbrand.com instead of hatchitsites.dev.
-                  </p>
-                  <div className="mt-6 flex items-center gap-1.5 text-[10px] text-zinc-500 uppercase tracking-wider font-medium">
-                    <span className="w-1 h-1 bg-zinc-600 rounded-full" />
-                    Q1 2026
-                  </div>
-                </div>
-              </motion.div>
-            </div>
-
-            {/* Roadmap Link */}
-            <div className="mt-8 text-center">
-              <Link 
-                href="/roadmap"
-                className="inline-flex items-center gap-2 text-sm text-zinc-500 hover:text-emerald-400 transition-colors px-4 py-2 rounded-full hover:bg-white/5"
-              >
-                View full roadmap
-                <ArrowRight className="w-3.5 h-3.5" />
+        <motion.section
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+          className="grid gap-6 lg:grid-cols-[2fr,1fr]"
+        >
+          <div className="rounded-2xl border border-white/10 bg-gradient-to-br from-zinc-950 via-zinc-900/70 to-zinc-950/60 p-6">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <div>
+                <p className="text-xs uppercase tracking-[0.3em] text-zinc-600">Roadmap</p>
+                <h3 className="text-lg font-semibold text-white mt-1">Signal From The Singularity</h3>
+              </div>
+              <Link href="/roadmap" className="inline-flex items-center gap-1 text-xs font-semibold text-emerald-300 hover:text-white">
+                View full changelog
+                <ExternalLink className="h-3.5 w-3.5" />
               </Link>
             </div>
-          </motion.div>
-        </div>
+            <div className="mt-6 space-y-4">
+              {ROADMAP_FEATURES.map(feature => (
+                <div key={feature.title} className="relative flex gap-4 rounded-2xl border border-white/5 bg-white/5 p-4">
+                  <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-white/10 bg-black/30">
+                    <feature.icon className="h-5 w-5 text-emerald-300" />
+                  </div>
+                  <div className="flex-1">
+                    <div className="flex flex-wrap items-center justify-between gap-2">
+                      <p className="text-sm font-semibold text-white">{feature.title}</p>
+                      <span className="rounded-full border border-white/10 px-3 py-1 text-[11px] uppercase tracking-wide text-zinc-400">
+                        {feature.status}
+                      </span>
+                    </div>
+                    <p className="mt-1 text-sm text-zinc-400">{feature.description}</p>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className="rounded-2xl border border-white/10 bg-white/5 p-6 space-y-4">
+            <p className="text-xs uppercase tracking-[0.3em] text-zinc-600">Velocity</p>
+            <h3 className="text-lg font-semibold text-white">Deployment timeline</h3>
+            <p className="text-sm text-zinc-400">
+              Live shipping cadence from the Chronosphere. Builder updates land here before the public log.
+            </p>
+            <ul className="space-y-3 text-sm text-zinc-400">
+              <li className="flex items-center gap-3">
+                <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+                Portal redesign shipped · {formatDistanceToNow(new Date(), { addSuffix: true })}
+              </li>
+              <li className="flex items-center gap-3">
+                <span className="h-2 w-2 rounded-full bg-zinc-500" />
+                Next up: Builder autosave sync to Supabase
+              </li>
+              <li className="flex items-center gap-3">
+                <span className="h-2 w-2 rounded-full bg-zinc-500" />
+                Researching native deploy pipeline with incremental cache
+              </li>
+            </ul>
+          </div>
+        </motion.section>
+      </div>
 
-      {/* Upgrade Modal */}
       <AnimatePresence>
         {showUpgradeModal && (
-          <motion.div 
+          <motion.div
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="fixed inset-0 bg-black/80 backdrop-blur-md z-50 flex items-center justify-center p-4"
-            onClick={() => setShowUpgradeModal(false)}
           >
             <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              className="bg-zinc-900/90 border border-white/10 backdrop-blur-xl rounded-2xl p-8 w-full max-w-lg shadow-2xl shadow-black/50"
-              onClick={(e) => e.stopPropagation()}
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="max-w-md rounded-2xl border border-white/10 bg-zinc-950 p-6 text-white shadow-2xl"
             >
-              <h2 className="text-2xl font-semibold text-white mb-2">Upgrade your plan</h2>
-              <p className="text-zinc-400 text-sm mb-8">
-                You&apos;ve reached the {tierConfig.limit} project limit. Choose a plan to continue building.
+              <h3 className="text-xl font-semibold">Upgrade for unlimited builds</h3>
+              <p className="mt-2 text-sm text-zinc-400">
+                You have reached the cap for the {tierConfig.name} tier. Unlock Visionary to remove project limits, export code, and deploy to custom domains.
               </p>
-              
-              <div className="space-y-4 mb-8">
-                <a 
-                  href="/api/checkout?tier=architect"
-                  className="flex items-center justify-between p-5 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 rounded-xl transition-all group"
+              <div className="mt-6 flex flex-col gap-3">
+                <Link
+                  href="/dashboard/billing"
+                  onClick={() => setShowUpgradeModal(false)}
+                  className="flex items-center justify-center gap-2 rounded-xl border border-emerald-500/40 bg-emerald-500/10 px-4 py-3 text-sm font-semibold text-emerald-300 hover:bg-emerald-500/20"
                 >
-                  <div>
-                    <p className="text-zinc-200 font-medium group-hover:text-white transition-colors">Architect</p>
-                    <p className="text-zinc-500 text-sm">3 projects, deploy to hatchit.dev</p>
-                  </div>
-                  <p className="text-zinc-200 font-semibold">$19<span className="text-zinc-500 font-normal">/mo</span></p>
-                </a>
-
-                <a 
-                  href="/api/checkout?tier=visionary"
-                  className="flex items-center justify-between p-5 bg-emerald-500/10 border border-emerald-500/30 rounded-xl hover:bg-emerald-500/20 transition-all relative group shadow-[0_0_30px_-10px_rgba(16,185,129,0.2)]"
+                  Upgrade plan
+                  <ArrowRight className="h-4 w-4" />
+                </Link>
+                <button
+                  onClick={() => setShowUpgradeModal(false)}
+                  className="rounded-xl border border-white/10 px-4 py-3 text-sm text-zinc-400 hover:text-white"
                 >
-                  <div className="absolute -top-2.5 left-4 px-2.5 py-0.5 bg-emerald-500 text-white text-[10px] font-bold rounded-full shadow-lg shadow-emerald-500/20 tracking-wide">RECOMMENDED</div>
-                  <div>
-                    <p className="text-white font-medium">Visionary</p>
-                    <p className="text-emerald-200/60 text-sm">10 projects + download code</p>
-                  </div>
-                  <p className="text-white font-semibold">$49<span className="text-emerald-200/60 font-normal">/mo</span></p>
-                </a>
-
-                <a 
-                  href="/api/checkout?tier=singularity"
-                  className="flex items-center justify-between p-5 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-white/20 rounded-xl transition-all group"
-                >
-                  <div>
-                    <p className="text-zinc-200 font-medium group-hover:text-white transition-colors">Singularity</p>
-                    <p className="text-zinc-500 text-sm">Unlimited projects + API</p>
-                  </div>
-                  <p className="text-zinc-200 font-semibold">$199<span className="text-zinc-500 font-normal">/mo</span></p>
-                </a>
+                  Keep free tier for now
+                </button>
               </div>
-
-              <button
-                onClick={() => setShowUpgradeModal(false)}
-                className="w-full py-3 text-zinc-500 hover:text-zinc-300 text-sm transition-colors font-medium"
-              >
-                Maybe later
-              </button>
             </motion.div>
           </motion.div>
         )}
@@ -586,4 +688,3 @@ export default function StudioPage() {
     </>
   )
 }
-
