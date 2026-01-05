@@ -34,8 +34,8 @@ export default function Navigation() {
         <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/10 to-transparent" />
         
         <div className="relative max-w-7xl mx-auto px-6 py-3 flex justify-between items-center gap-3">
-          {/* Logo */}
-          <Link href="/" className="flex items-center gap-2.5 group">
+          {/* Logo - Icon only */}
+          <Link href="/" className="flex items-center group">
             <motion.div
               className="inline-block"
               style={{ willChange: 'transform', backfaceVisibility: 'hidden' }}
@@ -44,7 +44,6 @@ export default function Navigation() {
             >
               <Image src="/assets/hatchit_definitive.svg" alt="HatchIt" width={28} height={28} className="w-7 h-7" />
             </motion.div>
-            <span className="text-white font-semibold tracking-tight">HatchIt</span>
           </Link>
           
           {/* Desktop Nav Links */}

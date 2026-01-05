@@ -38,11 +38,12 @@ const Phase = ({ icon: Icon, phase, title, description, delay = 0 }: { icon: any
 
 export default function HowItWorksPage() {
   return (
-    <div className="min-h-screen bg-black text-white selection:bg-emerald-500/30 relative overflow-hidden">
+    <div className="min-h-screen bg-zinc-950 text-zinc-200 selection:bg-emerald-500/30 selection:text-emerald-50 relative overflow-hidden">
       {/* Ambient void background */}
       <div className="fixed inset-0 pointer-events-none">
-        <div className="absolute top-[-10%] left-[-10%] w-[600px] h-[600px] bg-emerald-500/5 rounded-full blur-[150px]" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-teal-500/5 rounded-full blur-[150px]" />
+        <div className="absolute top-[-10%] left-[-10%] w-[600px] h-[600px] bg-emerald-500/5 rounded-full blur-[120px]" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-teal-500/5 rounded-full blur-[120px]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(9,9,11,0.8)_100%)]" />
       </div>
 
       {/* Scanline Effect */}
@@ -93,7 +94,7 @@ export default function HowItWorksPage() {
       </div>
 
       {/* Phases */}
-      <div className="px-6 py-24 border-y border-white/10 bg-white/5">
+      <div className="px-6 py-24 border-y border-zinc-800 bg-zinc-900/50 backdrop-blur-sm">
         <div className="max-w-6xl mx-auto">
           <div className="grid md:grid-cols-3 gap-12 md:gap-16 items-start relative">
             {/* Connecting Line */}
@@ -141,11 +142,11 @@ export default function HowItWorksPage() {
             </div>
 
             <div className="grid gap-6">
-              <div className="group p-6 bg-white/5 border border-white/10 hover:border-emerald-500/30 transition-colors rounded-sm">
+              <div className="group p-6 bg-zinc-900 border border-zinc-800 hover:border-emerald-500/30 transition-colors rounded-lg">
                 <div className="flex items-start gap-4">
                   <div className="mt-1 font-mono text-emerald-500 text-xs">[01]</div>
                   <div>
-                    <h3 className="text-lg font-bold mb-2 font-mono text-white group-hover:text-emerald-400 transition-colors">Hybrid Intelligence Core</h3>
+                    <h3 className="text-lg font-bold mb-2 font-mono text-zinc-100 group-hover:text-emerald-400 transition-colors">Hybrid Intelligence Core</h3>
                     <p className="text-zinc-400 text-sm font-mono leading-relaxed">
                       Not a simple builder. A symbiotic AI partner. You retain full control over the creative direction while the System handles the heavy lifting of code generation and optimization.
                     </p>
@@ -153,11 +154,11 @@ export default function HowItWorksPage() {
                 </div>
               </div>
 
-              <div className="group p-6 bg-white/5 border border-white/10 hover:border-emerald-500/30 transition-colors rounded-sm">
+              <div className="group p-6 bg-zinc-900 border border-zinc-800 hover:border-emerald-500/30 transition-colors rounded-lg">
                 <div className="flex items-start gap-4">
                   <div className="mt-1 font-mono text-emerald-500 text-xs">[02]</div>
                   <div>
-                    <h3 className="text-lg font-bold mb-2 font-mono text-white group-hover:text-emerald-400 transition-colors">Supabase Integration</h3>
+                    <h3 className="text-lg font-bold mb-2 font-mono text-zinc-100 group-hover:text-emerald-400 transition-colors">Supabase Integration</h3>
                     <p className="text-zinc-400 text-sm font-mono leading-relaxed">
                       Enterprise-grade backend infrastructure. Secure authentication, real-time databases, and scalable storage are woven into the fabric of your construct from inception.
                     </p>
@@ -165,11 +166,11 @@ export default function HowItWorksPage() {
                 </div>
               </div>
 
-              <div className="group p-6 bg-white/5 border border-white/10 hover:border-emerald-500/30 transition-colors rounded-sm">
+              <div className="group p-6 bg-zinc-900 border border-zinc-800 hover:border-emerald-500/30 transition-colors rounded-lg">
                 <div className="flex items-start gap-4">
                   <div className="mt-1 font-mono text-emerald-500 text-xs">[03]</div>
                   <div>
-                    <h3 className="text-lg font-bold mb-2 font-mono text-white group-hover:text-emerald-400 transition-colors">Chronosphere Versioning</h3>
+                    <h3 className="text-lg font-bold mb-2 font-mono text-zinc-100 group-hover:text-emerald-400 transition-colors">Chronosphere Versioning</h3>
                     <p className="text-zinc-400 text-sm font-mono leading-relaxed">
                       Every iteration is logged. Every prompt is archived. The Chronosphere allows for instant rollback and branching, ensuring no creative spark is ever lost to the void.
                     </p>
@@ -177,11 +178,11 @@ export default function HowItWorksPage() {
                 </div>
               </div>
 
-              <div className="group p-6 bg-white/5 border border-white/10 hover:border-emerald-500/30 transition-colors rounded-sm">
+              <div className="group p-6 bg-zinc-900 border border-zinc-800 hover:border-emerald-500/30 transition-colors rounded-lg">
                 <div className="flex items-start gap-4">
                   <div className="mt-1 font-mono text-emerald-500 text-xs">[04]</div>
                   <div>
-                    <h3 className="text-lg font-bold mb-2 font-mono text-white group-hover:text-emerald-400 transition-colors">Sovereign Security</h3>
+                    <h3 className="text-lg font-bold mb-2 font-mono text-zinc-100 group-hover:text-emerald-400 transition-colors">Sovereign Security</h3>
                     <p className="text-zinc-400 text-sm font-mono leading-relaxed">
                       Your data. Your code. Your rules. We employ industry-standard encryption and security protocols. Export your entire project at any time. Zero lock-in.
                     </p>
@@ -194,10 +195,10 @@ export default function HowItWorksPage() {
       </div>
 
       {/* Final CTA */}
-      <div className="px-6 py-24 border-t border-white/10">
+      <div className="px-6 py-24 border-t border-zinc-800">
         <div className="max-w-4xl mx-auto text-center">
           <motion.div 
-            className="relative p-12 bg-white/5 border border-white/10 rounded-sm overflow-hidden group"
+            className="relative p-12 bg-zinc-900 border border-zinc-800 rounded-lg overflow-hidden group"
             variants={sectionVariants}
             initial="hidden"
             whileInView="visible"
@@ -206,10 +207,10 @@ export default function HowItWorksPage() {
           >
             <div className="absolute inset-0 bg-emerald-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
             
-            <h2 className="text-3xl md:text-4xl font-bold mb-6 font-mono relative z-10">Ready to Initialize?</h2>
+            <h2 className="text-3xl md:text-4xl font-bold mb-6 font-mono relative z-10 text-zinc-100">Ready to Initialize?</h2>
             <p className="text-zinc-400 mb-8 font-mono relative z-10">Cease manual coding. Begin materialization.</p>
             
-            <Link href="/builder" className="relative z-10 inline-flex items-center gap-2 px-8 py-4 bg-emerald-500 text-zinc-950 hover:bg-emerald-400 rounded-sm font-bold text-lg font-mono transition-all">
+            <Link href="/builder" className="relative z-10 inline-flex items-center gap-2 px-8 py-4 bg-emerald-600 text-white hover:bg-emerald-500 rounded-lg font-bold text-lg font-mono transition-all shadow-lg shadow-emerald-900/20 hover:-translate-y-0.5">
               <Code2 className="w-5 h-5" />
               <span>INIT_BUILDER</span>
               <ArrowRight className="w-5 h-5" />

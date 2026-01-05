@@ -71,18 +71,15 @@ export default function FeaturesPage() {
   ]
 
   return (
-    <div className="min-h-screen bg-black text-white overflow-hidden relative">
+    <div className="min-h-screen bg-zinc-950 text-zinc-200 overflow-hidden relative selection:bg-emerald-500/30 selection:text-emerald-50">
       {/* Scanline Overlay */}
       <div className="fixed inset-0 pointer-events-none z-50 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI0IiBoZWlnaHQ9IjQiPgo8cmVjdCB3aWR0aD0iNCIgaGVpZ2h0PSI0IiBmaWxsPSIjZmZmIiBmaWxsLW9wYWNpdHk9IjAuMDIiLz4KPC9zdmc+')] opacity-20 mix-blend-overlay" />
       
-      {/* Matrix/Grid Background */}
-      <div className="absolute inset-0 bg-[linear-gradient(rgba(16,185,129,0.03)_1px,transparent_1px),linear-gradient(90deg,rgba(16,185,129,0.03)_1px,transparent_1px)] bg-[size:40px_40px] pointer-events-none" />
-
-      {/* Gradient orbs */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -left-40 w-80 h-80 bg-emerald-500/10 rounded-full blur-[100px] opacity-50 md:opacity-100" />
-        <div className="absolute top-1/3 -right-40 w-96 h-96 bg-teal-500/10 rounded-full blur-[100px] opacity-50 md:opacity-100" />
-        <div className="absolute -bottom-40 left-1/3 w-80 h-80 bg-emerald-900/20 rounded-full blur-[100px] opacity-50 md:opacity-100" />
+      {/* Ambient Void */}
+      <div className="fixed inset-0 pointer-events-none z-0">
+        <div className="absolute top-[-10%] left-[-10%] w-[600px] h-[600px] bg-emerald-500/5 rounded-full blur-[120px]" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-teal-500/5 rounded-full blur-[120px]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(9,9,11,0.8)_100%)]" />
       </div>
       
       {/* Hero Section */}
@@ -127,13 +124,13 @@ export default function FeaturesPage() {
           >
             <Link
               href="/builder"
-              className="px-8 py-4 bg-emerald-500 hover:bg-emerald-400 text-zinc-950 rounded-md font-bold text-lg transition-all shadow-[0_0_20px_rgba(16,185,129,0.3)] hover:shadow-[0_0_30px_rgba(16,185,129,0.5)]"
+              className="px-8 py-4 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg font-bold text-lg transition-all shadow-lg shadow-emerald-900/20 hover:-translate-y-0.5"
             >
               Initialize System
             </Link>
             <Link
               href="/roadmap"
-              className="px-8 py-4 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-emerald-500/30 rounded-md font-semibold text-lg transition-all text-zinc-300 hover:text-white"
+              className="px-8 py-4 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 rounded-lg font-semibold text-lg transition-all hover:-translate-y-0.5"
             >
               View Evolution Log
             </Link>
@@ -152,13 +149,11 @@ export default function FeaturesPage() {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: i * 0.1 }}
-                className="group relative p-6 md:p-8 rounded-md bg-white/5 border border-white/10 hover:border-emerald-500/30 transition-all duration-300 hover:bg-white/10"
+                className="group relative p-6 md:p-8 rounded-lg bg-zinc-900 border border-zinc-800 hover:border-emerald-500/30 transition-all duration-300"
               >
-                <div className={`absolute inset-0 bg-gradient-to-br ${feature.gradient} opacity-0 group-hover:opacity-5 rounded-md transition-opacity duration-500`} />
-                
                 <div className="relative z-10">
                   <div className="flex justify-between items-start mb-6">
-                    <div className="p-3 rounded-md bg-black border border-white/10 text-emerald-400 group-hover:scale-110 transition-transform duration-300">
+                    <div className="p-3 rounded-lg bg-zinc-950 border border-zinc-800 text-emerald-400 group-hover:scale-110 transition-transform duration-300">
                       {feature.icon}
                     </div>
                     {feature.badge && (
@@ -168,7 +163,7 @@ export default function FeaturesPage() {
                     )}
                   </div>
                   
-                  <h3 className="text-xl font-bold mb-1 text-white">{feature.title}</h3>
+                  <h3 className="text-xl font-bold mb-1 text-zinc-100">{feature.title}</h3>
                   <p className="text-sm font-mono text-emerald-400/80 mb-4">{feature.subtitle}</p>
                   <p className="text-zinc-400 leading-relaxed mb-6">{feature.description}</p>
                   

@@ -1,6 +1,15 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  async redirects() {
+    return [
+      {
+        source: '/dashboard/studio',
+        destination: '/dashboard',
+        permanent: false,
+      },
+    ]
+  },
   async headers() {
     return [
       {

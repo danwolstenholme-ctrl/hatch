@@ -33,14 +33,11 @@ function VoidButton({ isSignedIn, router, onLaunch }: { isSignedIn: boolean | un
   return (
     <button
       onClick={handleClick}
-      className="group relative w-full sm:w-auto inline-flex justify-center items-center gap-3 px-8 sm:px-10 py-4 sm:py-5 bg-white/5 hover:bg-white/10 border border-white/10 hover:border-emerald-500/50 backdrop-blur-md rounded-xl font-bold text-lg transition-all duration-300 hover:scale-105 active:scale-95 shadow-[0_0_30px_-10px_rgba(16,185,129,0.3)] hover:shadow-[0_0_50px_-10px_rgba(16,185,129,0.5)] overflow-hidden"
+      className="group relative w-full sm:w-auto inline-flex justify-center items-center gap-3 px-8 sm:px-10 py-4 sm:py-5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg font-bold text-lg transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0 shadow-lg shadow-emerald-900/20"
     >
-      {/* Glow ring on hover - Always active on mobile via CSS animation */}
-      <div className="absolute -inset-[2px] rounded-xl bg-gradient-to-r from-emerald-500/20 via-teal-500/20 to-emerald-500/20 opacity-0 group-hover:opacity-100 blur-md transition-opacity duration-500" />
-      
       <div className="relative z-10 flex items-center gap-3">
-        <span className="text-white tracking-wide font-semibold">Try the Demo</span>
-        <ArrowRight className="w-5 h-5 text-emerald-400 group-hover:translate-x-1 transition-transform" />
+        <span className="tracking-wide">Try the Demo</span>
+        <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
       </div>
     </button>
   )
@@ -153,12 +150,12 @@ export default function Home() {
   }
   
   return (
-    <main className="min-h-screen bg-black text-white relative overflow-hidden">
+    <main className="min-h-screen bg-zinc-950 text-zinc-200 relative overflow-hidden selection:bg-emerald-500/30 selection:text-emerald-50">
       {/* Ambient void background - Global */}
       <div className="fixed inset-0 pointer-events-none z-0">
-        <div className="absolute top-[-10%] left-[-10%] w-[600px] h-[600px] bg-emerald-500/5 rounded-full blur-[150px]" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-teal-500/5 rounded-full blur-[150px]" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(0,0,0,0.8)_100%)]" />
+        <div className="absolute top-[-10%] left-[-10%] w-[600px] h-[600px] bg-emerald-500/5 rounded-full blur-[120px]" />
+        <div className="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-teal-500/5 rounded-full blur-[120px]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,transparent_0%,rgba(9,9,11,0.8)_100%)]" />
       </div>
 
       {/* Scanline Effect - Global */}
@@ -193,16 +190,16 @@ export default function Home() {
       {/* HERO SECTION - Clean and confident */}
       <section className="relative min-h-[90vh] flex flex-col justify-center items-center pt-28 sm:pt-32 pb-12 px-4 sm:px-6 overflow-hidden">
         {/* Layered depth background */}
-        <div className="absolute inset-0 bg-black/50" />
+        <div className="absolute inset-0 bg-zinc-950/50" />
         
         {/* Perspective grid - fades into distance */}
         <div className="absolute inset-0 overflow-hidden">
           <div 
-            className="absolute inset-0 opacity-[0.15] bg-grid-flow"
+            className="absolute inset-0 opacity-[0.1] bg-grid-flow"
             style={{
               backgroundImage: `
-                linear-gradient(rgba(16,185,129,0.3) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(16,185,129,0.3) 1px, transparent 1px)
+                linear-gradient(rgba(16,185,129,0.2) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(16,185,129,0.2) 1px, transparent 1px)
               `,
               backgroundSize: '60px 60px',
               maskImage: 'linear-gradient(to bottom, transparent, black 20%, black 50%, transparent 90%)',
@@ -297,10 +294,13 @@ export default function Home() {
               transition={{ delay: 0.6 }}
               className="relative w-full max-w-lg mb-10 hidden sm:block"
             >
-              <div className="bg-white/5 border border-white/10 rounded-xl p-5 font-mono text-sm overflow-hidden backdrop-blur-md shadow-2xl shadow-black/50">
-                <div className="flex items-center gap-2 mb-4 text-zinc-500 border-b border-white/5 pb-3">
+              <div className="bg-zinc-900 border border-zinc-800 rounded-lg p-5 font-mono text-sm overflow-hidden shadow-xl shadow-black/20">
+                <div className="flex items-center gap-2 mb-4 text-zinc-600 border-b border-zinc-800 pb-3">
                   <div className="flex gap-1.5">
-                    <div className="w-2.5 h-2.5 rounded-full bg-red-500/20 border border-red-500/50" />
+                    <div className="w-2.5 h-2.5 rounded-full bg-zinc-700" />
+                    <div className="w-2.5 h-2.5 rounded-full bg-zinc-700" />
+                    <div className="w-2.5 h-2.5 rounded-full bg-zinc-700" />
+                  </div>
                     <div className="w-2.5 h-2.5 rounded-full bg-amber-500/20 border border-amber-500/50" />
                     <div className="w-2.5 h-2.5 rounded-full bg-emerald-500/20 border border-emerald-500/50" />
                   </div>
