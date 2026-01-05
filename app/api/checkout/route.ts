@@ -39,14 +39,14 @@ async function handleCheckout(
 
   // Check for existing active subscription
   if (existingSubscription?.status === 'active') {
-    if (existingSubscription.tier === tier) {
+    if (existingSubscription!.tier === tier) {
       return { redirect: '/dashboard/projects?error=already_subscribed' }
     }
 
     // Block downgrades through this endpoint
     const tierRank = { architect: 1, visionary: 2, singularity: 3 } as const
     // @ts-ignore
-    if (tierRank[tier] < tierRank[existingSubscription.tier]) {
+    if (tierRank[tier] < tierRank[existingSubscription!.tier]) {
       return { redirect: '/dashboard/projects?error=downgrade_not_allowed' }
     }
 
