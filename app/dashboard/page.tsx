@@ -463,29 +463,6 @@ export default function PortalPage() {
                 Create first project
               </motion.button>
             </motion.div>
-          {!isLoading && projects.length === 0 ? (
-            <motion.div
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              className="flex flex-col items-center justify-center rounded-2xl border border-dashed border-zinc-800 bg-zinc-950/60 py-16 text-center"
-            >
-              <div className="flex h-16 w-16 items-center justify-center rounded-2xl border border-white/10 bg-white/5 mb-4">
-                <Zap className="h-8 w-8 text-emerald-400" />
-              </div>
-              <h3 className="text-lg font-semibold text-white">Your database is waiting</h3>
-              <p className="mt-2 text-sm text-zinc-500 max-w-md">
-                Generate your first artifact. Everything you build here syncs to Supabase and can be deployed instantly.
-              </p>
-              <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
-                onClick={handleCreate}
-                className="mt-6 flex items-center gap-2 rounded-xl border border-emerald-500/30 bg-emerald-500/10 px-5 py-3 text-sm font-semibold text-emerald-300"
-              >
-                <Plus className="w-4 h-4" />
-                Create first project
-              </motion.button>
-            </motion.div>
           ) : filteredProjects.length === 0 ? (
             <div className="rounded-2xl border border-white/10 bg-white/5 px-6 py-12 text-center">
               <p className="text-sm text-zinc-500">No matches. Try another query.</p>
