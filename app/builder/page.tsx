@@ -95,10 +95,7 @@ function BuilderContent() {
       return
     }
 
-    // Signed in but NO active subscription and NO pending checkout - block and redirect (unless guest)
-    if (!hasActiveSubscription && !pendingTier && !isGuest) {
-      router.push('/sign-up')
-    }
+    // Free users can use the builder with limits - no redirect needed
   }, [isLoaded, isSignedIn, upgrade, hasActiveSubscription, router, isGuest])
 
   // Migrate guest build into a real project after signup

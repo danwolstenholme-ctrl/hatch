@@ -10,6 +10,20 @@ export default function BillingPage() {
 
   const plans = [
     {
+      id: 'free',
+      name: 'Free',
+      price: 0,
+      description: 'Try it out',
+      features: [
+        '3 generations',
+        'Live preview',
+        '1 project',
+      ],
+      cta: currentTier === 'free' ? 'Current plan' : 'Downgrade',
+      current: currentTier === 'free',
+      free: true,
+    },
+    {
       id: 'architect',
       name: 'Architect',
       price: 19,
