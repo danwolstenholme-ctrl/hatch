@@ -762,9 +762,10 @@ export default function SectionBuilder({
   const autoBuildRanRef = useRef(false)
 
   // Redirect to sign-up page when paywall is hit (deploy/export only)
-  const goToSignUp = (tier: string = 'pro') => {
-    const currentUrl = window.location.href
-    router.push(`/sign-up?upgrade=${tier}&redirect_url=${encodeURIComponent(currentUrl)}`)
+  const goToSignUp = (tier: string = 'visionary') => {
+    // Always redirect to studio after signup - that's where migration happens
+    const redirectUrl = '/dashboard/studio'
+    router.push(`/sign-up?upgrade=${tier}&redirect_url=${encodeURIComponent(redirectUrl)}`)
   }
   
   // Handle prompt submission from guest modal
@@ -2233,7 +2234,7 @@ export default function SectionBuilder({
         <div className="w-full bg-emerald-500/10 border-b border-emerald-500/30 text-emerald-200 text-sm px-4 py-3 flex items-center justify-between z-30">
           <span className="font-medium">Guest trial complete: preview is unlocked, edits are disabled.</span>
           <button
-            onClick={() => goToSignUp('pro')}
+            onClick={() => goToSignUp('visionary')}
             className="ml-3 px-3 py-1.5 rounded-lg bg-emerald-500 text-black text-sm font-semibold hover:bg-emerald-400 transition-colors"
           >
             Unlock builder
@@ -2891,7 +2892,7 @@ export default function SectionBuilder({
                 editMode={true}
                 onTextEdit={handleTextEdit}
                 allowCodeView={canRevealRawCode}
-                onUpgradeClick={() => goToSignUp('pro')}
+                onUpgradeClick={() => goToSignUp('visionary')}
               />
               {/* AI Presence Indicator */}
               {generatedCode && !isUserRefining && !isArchitectPolishing && (
@@ -2928,7 +2929,7 @@ export default function SectionBuilder({
           {isLocked && (
             <div className="absolute top-3 right-3 z-20">
               <button
-                onClick={() => goToSignUp('pro')}
+                onClick={() => goToSignUp('visionary')}
                 className="px-3 py-2 rounded-lg bg-emerald-600 text-black text-xs font-semibold shadow-lg shadow-emerald-900/30 hover:bg-emerald-500 transition-colors"
               >
                 Unlock builder
