@@ -8,7 +8,7 @@ import BuildFlowController from '@/components/BuildFlowController'
 // =============================================================================
 // DEMO PAGE - Full builder experience, localStorage only
 // Premium actions (deploy, download) show signup modal
-// If signed in, redirect to /builder to migrate guest work
+// If signed in, redirect to /dashboard/studio to migrate guest work
 // =============================================================================
 
 function DemoContent() {
@@ -17,23 +17,11 @@ function DemoContent() {
   const { isSignedIn, isLoaded } = useUser()
   const prompt = searchParams.get('prompt')
   
-  // If user is signed in, redirect to /builder to migrate their demo work
+  // If user is signed in, redirect to studio to migrate their demo work
   useEffect(() => {
     if (isLoaded && isSignedIn) {
-      // Check if they have guest work to migrate
-      const hasHandoff = typeof window !== 'undefined' && localStorage.getItem('hatch_guest_handoff')
-      const hasPreview = typeof window !== 'undefined' && 
-        Array.from({ length: localStorage.length }).some((_, i) => 
-          localStorage.key(i)?.startsWith('hatch_preview_')
-        )
-      
-      if (hasHandoff || hasPreview) {
-        // Redirect to builder which will migrate their work
-        router.replace('/builder')
-      } else {
-        // No demo work - just go to builder fresh
-        router.replace('/builder')
-      }
+      // Always go to studio - that's where migration logic lives
+      router.replace('/dashboard/studio')
     }
   }, [isLoaded, isSignedIn, router])
   

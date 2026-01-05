@@ -8,6 +8,13 @@ import {
 } from '@/lib/db'
 import { getTemplateById, Section } from '@/lib/templates'
 
+// Tier project limits (server-side enforcement)
+function getProjectLimit(tier: string): number {
+  if (tier === 'singularity' || tier === 'visionary') return Infinity
+  if (tier === 'architect') return 3
+  return 3 // Free tier gets 3 projects
+}
+
 // =============================================================================
 // POST: Create a new project with sections and brand config
 // =============================================================================
@@ -25,6 +32,19 @@ export async function POST(request: NextRequest) {
     const dbUser = await getOrCreateUser(clerkId, email)
     if (!dbUser) {
       return NextResponse.json({ error: 'Failed to create user' }, { status: 500 })
+    }
+
+    // Server-side project limit check
+    const accountSubscription = user?.publicMetadata?.accountSubscription as any
+    const tier = accountSubscription?.tier || 'free'
+    const limit = getProjectLimit(tier)
+    
+    const existingProjects = await getProjectsByUserId(dbUser.id)
+    if (existingProjects.length >= limit) {
+      return NextResponse.json(
+        { error: 'Project limit reached', limit, current: existingProjects.length },
+        { status: 403 }
+      )
     }
 
     const body = await request.json()

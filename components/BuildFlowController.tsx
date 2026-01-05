@@ -49,6 +49,7 @@ import PaywallTransition from './PaywallTransition'
 import HatchModal from './HatchModal'
 import TheWitness from './singularity/TheWitness'
 import WelcomeModal from './WelcomeModal'
+import BuilderWelcome from './BuilderWelcome'
 import SiteSettingsModal, { SiteSettings } from './SiteSettingsModal'
 import FullSitePreviewFrame from './builder/FullSitePreviewFrame'
 import GuestCreditBadge from './GuestCreditBadge'
@@ -154,9 +155,19 @@ export default function BuildFlowController({ existingProjectId, initialPrompt, 
   const [isReplicationReady, setIsReplicationReady] = useState(false)
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
   const [showBuildSuccess, setShowBuildSuccess] = useState(false)
+  const [showBuilderWelcome, setShowBuilderWelcome] = useState(false)
   const [lastCompletedSection, setLastCompletedSection] = useState<string>('')
   const [guestBuildsUsed, setGuestBuildsUsed] = useState(0)
   const [guestRefinementsUsed, setGuestRefinementsUsed] = useState(0)
+
+  // Show builder welcome for authenticated users (first time only)
+  useEffect(() => {
+    if (isDemo || !isSignedIn) return
+    const hasSeen = localStorage.getItem('hatch_builder_welcome_seen')
+    if (!hasSeen) {
+      setShowBuilderWelcome(true)
+    }
+  }, [isDemo, isSignedIn])
 
   // Sync guest credit counts from localStorage
   useEffect(() => {
@@ -2013,6 +2024,11 @@ export default function GeneratedPage() {
         onClose={() => setShowHatchModal(false)}
         reason={hatchModalReason}
       />
+
+      {/* Builder Welcome - first-time orientation for authenticated users */}
+      {showBuilderWelcome && (
+        <BuilderWelcome onClose={() => setShowBuilderWelcome(false)} />
+      )}
 
       {/* Build Success Modal - celebration + upgrade nudge for guests */}
       <BuildSuccessModal

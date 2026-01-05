@@ -1,12 +1,34 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth, currentUser } from '@clerk/nextjs/server'
-import { getProjectById, getOrCreateUser, completeSection } from '@/lib/db'
+import { getProjectById, getOrCreateUser, completeSection, checkAndIncrementGeneration } from '@/lib/db'
 import { getUserDNA } from '@/lib/db/chronosphere'
 import { StyleDNA } from '@/lib/supabase'
 
 // =============================================================================
 // CLAUDE SONNET 4.5 - THE ARCHITECT (BUILDER MODE)
 // =============================================================================
+
+// Rate limiting: 20 requests per minute per user
+const rateLimitMap = new Map<string, { count: number; resetTime: number }>()
+
+function checkRateLimit(userId: string): boolean {
+  const now = Date.now()
+  const windowMs = 60_000 // 1 minute
+  const maxRequests = 20
+
+  const userData = rateLimitMap.get(userId)
+  if (!userData || now > userData.resetTime) {
+    rateLimitMap.set(userId, { count: 1, resetTime: now + windowMs })
+    return true
+  }
+
+  if (userData.count >= maxRequests) {
+    return false
+  }
+
+  userData.count++
+  return true
+}
 
 interface BrandConfig {
   brandName: string
@@ -182,23 +204,40 @@ Now build the ${sectionName} section.`
 export async function POST(request: NextRequest) {
   try {
     const { userId } = await auth()
-    // if (!userId) {
-    //   return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-    // }
-
-    // if (!genai) {
-    //   return NextResponse.json({ error: 'Gemini API key not configured' }, { status: 500 })
-    // }
+    
+    // Rate limit check (use IP for guests, userId for auth'd)
+    const rateLimitKey = userId || request.headers.get('x-forwarded-for') || 'anonymous'
+    if (!checkRateLimit(rateLimitKey)) {
+      return NextResponse.json(
+        { error: 'Rate limit exceeded. Maximum 20 requests per minute.' },
+        { status: 429 }
+      )
+    }
     
     if (!process.env.ANTHROPIC_API_KEY) {
        return NextResponse.json({ error: 'Anthropic API key not configured' }, { status: 500 })
     }
 
+    // Check generation limits for authenticated users
+    let isPaid = false
     let dbUser = null
     if (userId) {
       const clerkUser = await currentUser()
       const email = clerkUser?.emailAddresses?.[0]?.emailAddress
       dbUser = await getOrCreateUser(userId, email)
+      
+      // Check if paid
+      const accountSub = clerkUser?.publicMetadata?.accountSubscription as { status?: string } | undefined
+      isPaid = accountSub?.status === 'active'
+      
+      // Enforce generation limit for free users
+      const genCheck = await checkAndIncrementGeneration(userId, isPaid)
+      if (!genCheck.allowed) {
+        return NextResponse.json(
+          { error: 'Daily generation limit reached. Upgrade to continue building.', remaining: 0 },
+          { status: 429 }
+        )
+      }
     }
 
     const body = await request.json()
