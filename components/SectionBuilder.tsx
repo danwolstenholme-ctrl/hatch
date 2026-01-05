@@ -157,6 +157,29 @@ const REFINE_PROMPTS = [
   "Try: 'Add a gradient'",
 ]
 
+const unwrapCodePayload = (payload: unknown): string => {
+  if (!payload) return ''
+
+  if (typeof payload === 'string') {
+    const trimmed = payload.trim()
+    if (trimmed.startsWith('{') && trimmed.includes('"code"')) {
+      try {
+        const parsed = JSON.parse(trimmed)
+        return unwrapCodePayload(parsed)
+      } catch {
+        return payload
+      }
+    }
+    return payload
+  }
+
+  if (typeof payload === 'object' && 'code' in (payload as Record<string, unknown>)) {
+    return unwrapCodePayload((payload as Record<string, unknown>).code)
+  }
+
+  return ''
+}
+
 function GuestRefineBar({
   refinePrompt,
   setRefinePrompt,
@@ -1054,7 +1077,8 @@ export default function SectionBuilder({
         throw new Error(`Self-healing failed: ${response.status} ${response.statusText} - ${errorText}`)
       }
 
-      const { code: fixedCode, changes } = await response.json()
+      const { code: rawFixedCode, changes } = await response.json()
+      const fixedCode = unwrapCodePayload(rawFixedCode)
       
       setGeneratedCode(fixedCode)
       setRefinementChanges(prev => [...prev, `Auto-fixed crash: ${errorMsg.slice(0, 30)}...`])
@@ -1376,7 +1400,8 @@ export default function SectionBuilder({
         throw new Error('Generation failed')
       }
 
-      const { code: generatedCode, reasoning: aiReasoning } = await generateResponse.json()
+      const { code: rawCode, reasoning: aiReasoning } = await generateResponse.json()
+      const normalizedCode = unwrapCodePayload(rawCode)
       
       // Progress auto-cycles - API response will trigger completion
 
@@ -1389,9 +1414,9 @@ export default function SectionBuilder({
       const chunkSize = 15 // Smaller chunks = smoother scroll
       const delay = 12 // ms between chunks - slower for visual effect
       
-      for (let i = 0; i < generatedCode.length; i += chunkSize) {
+      for (let i = 0; i < normalizedCode.length; i += chunkSize) {
         await new Promise(resolve => setTimeout(resolve, delay))
-        setStreamingCode(generatedCode.slice(0, i + chunkSize))
+        setStreamingCode(normalizedCode.slice(0, i + chunkSize))
         // Auto-scroll to bottom
         codeEndRef.current?.scrollIntoView({ behavior: 'auto', block: 'end' })
       }
@@ -1399,7 +1424,7 @@ export default function SectionBuilder({
       buildProgress.complete() // Build finished - show complete state
       
       // Architect is done! No auto-polish - user can opt-in later
-      setGeneratedCode(generatedCode)
+      setGeneratedCode(normalizedCode)
       setStreamingCode('')
       setRefined(false)
       setRefinementChanges([])
@@ -1407,7 +1432,7 @@ export default function SectionBuilder({
       
       // Save to localStorage for guest preview persistence (guests only)
       if (!isSignedIn) {
-        savePreview(buildPrompt, generatedCode, aiReasoning || '')
+        savePreview(buildPrompt, normalizedCode, aiReasoning || '')
         // Also save the prompt so demo page can restore it
         try { localStorage.setItem('hatch_last_prompt', buildPrompt) } catch { /* ignore */ }
         // Note: Don't increment guest builds here - let them refine first
@@ -1415,10 +1440,10 @@ export default function SectionBuilder({
       }
 
       // Notify parent with generated code
-      onComplete(generatedCode, false)
+      onComplete(normalizedCode, false)
       
       // Evolve style DNA (background)
-      evolveUserStyle(generatedCode)
+      evolveUserStyle(normalizedCode)
 
     } catch (err) {
       console.error('Build error:', err)
@@ -1551,7 +1576,8 @@ export default function SectionBuilder({
         throw new Error('Refinement failed')
       }
 
-      const { code: refinedCode, changes } = await response.json()
+      const { code: rawRefinedCode, changes } = await response.json()
+      const refinedCode = unwrapCodePayload(rawRefinedCode)
 
       // Show refined code streaming
       for (let i = 0; i < refinedCode.length; i += 20) {
@@ -1628,7 +1654,8 @@ export default function SectionBuilder({
         throw new Error(data.error || 'Refinement failed')
       }
 
-      const { refined: wasRefined, code: polishedCode, changes } = await response.json()
+      const { refined: wasRefined, code: rawPolishedCode, changes } = await response.json()
+      const polishedCode = unwrapCodePayload(rawPolishedCode)
 
       if (wasRefined && polishedCode !== generatedCode) {
         // Show polished code streaming
