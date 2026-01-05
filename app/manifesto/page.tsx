@@ -6,7 +6,7 @@ import Link from 'next/link'
 
 export default function ManifestoPage() {
   return (
-    <div className="min-h-screen bg-black text-white selection:bg-emerald-900 selection:text-white overflow-x-hidden relative">
+    <div className="min-h-screen bg-zinc-950 text-zinc-100 selection:bg-emerald-500/30 overflow-x-hidden relative">
       {/* Subtle grid pattern */}
       <div className="fixed inset-0 pointer-events-none z-0 opacity-[0.02]">
         <div className="absolute inset-0" style={{ 
@@ -57,7 +57,7 @@ export default function ManifestoPage() {
           {/* Section 1 */}
           <section className="relative">
             <div className="flex items-start gap-6">
-              <div className="shrink-0 w-12 h-12 bg-white/5 rounded-sm flex items-center justify-center">
+              <div className="shrink-0 w-12 h-12 bg-zinc-900/50 border border-zinc-800 rounded-sm flex items-center justify-center backdrop-blur-sm">
                 <Zap className="w-6 h-6 text-emerald-400" />
               </div>
               <div>
@@ -71,7 +71,7 @@ export default function ManifestoPage() {
                     No-code tools promised to fix this, but they traded one problem for another: 
                     complex interfaces, rigid templates, and outputs that look like... well, templates.
                   </p>
-                  <p className="text-white font-medium border-l-2 border-emerald-500 pl-4">
+                  <p className="text-zinc-100 font-medium border-l-2 border-emerald-500 pl-4">
                     HatchIt uses AI to translate what you say into production-ready React components.
                     No drag-and-drop. No complex UI. Just describe what you want, and it exists.
                   </p>
@@ -83,7 +83,7 @@ export default function ManifestoPage() {
           {/* Section 2 */}
           <section className="relative">
             <div className="flex items-start gap-6">
-              <div className="shrink-0 w-12 h-12 bg-white/5 rounded-sm flex items-center justify-center">
+              <div className="shrink-0 w-12 h-12 bg-zinc-900/50 border border-zinc-800 rounded-sm flex items-center justify-center backdrop-blur-sm">
                 <Code2 className="w-6 h-6 text-cyan-400" />
               </div>
               <div>
@@ -97,7 +97,7 @@ export default function ManifestoPage() {
                     We use Claude Sonnet 4.5 to generate production-quality components because we believe
                     AI should amplify your capabilities, not create dependencies.
                   </p>
-                  <p className="text-white font-medium border-l-2 border-cyan-500 pl-4">
+                  <p className="text-zinc-100 font-medium border-l-2 border-cyan-500 pl-4">
                     Build with AI, but own the result. That&apos;s the deal.
                   </p>
                 </div>
@@ -108,7 +108,7 @@ export default function ManifestoPage() {
           {/* Section 3 */}
           <section className="relative">
             <div className="flex items-start gap-6">
-              <div className="shrink-0 w-12 h-12 bg-white/5 rounded-sm flex items-center justify-center">
+              <div className="shrink-0 w-12 h-12 bg-zinc-900/50 border border-zinc-800 rounded-sm flex items-center justify-center backdrop-blur-sm">
                 <Eye className="w-6 h-6 text-violet-400" />
               </div>
               <div>
@@ -131,7 +131,7 @@ export default function ManifestoPage() {
           {/* Section 4 */}
           <section className="relative">
             <div className="flex items-start gap-6">
-              <div className="shrink-0 w-12 h-12 bg-white/5 rounded-sm flex items-center justify-center">
+              <div className="shrink-0 w-12 h-12 bg-zinc-900/50 border border-zinc-800 rounded-sm flex items-center justify-center backdrop-blur-sm">
                 <Layers className="w-6 h-6 text-amber-400" />
               </div>
               <div>
@@ -150,8 +150,8 @@ export default function ManifestoPage() {
           </section>
 
           {/* CTA */}
-          <div className="p-8 border border-white/10 bg-white/5 rounded-sm mt-12 text-center">
-            <h3 className="text-xl text-white font-bold mb-4">Ready to Build?</h3>
+          <div className="p-8 border border-zinc-800 bg-zinc-900/50 rounded-sm mt-12 text-center backdrop-blur-sm">
+            <h3 className="text-xl text-zinc-100 font-bold mb-4">Ready to Build?</h3>
             <p className="text-zinc-400 mb-6 max-w-md mx-auto">
               Stop reading manifestos. Start building. Your first component is free—no credit card required.
             </p>
@@ -165,7 +165,7 @@ export default function ManifestoPage() {
               </Link>
               <Link 
                 href="/builder" 
-                className="px-6 py-3 border border-white/10 hover:border-emerald-500/30 text-white font-medium rounded-sm transition-colors"
+                className="px-6 py-3 border border-zinc-800 hover:border-emerald-500/30 text-zinc-100 font-medium rounded-sm transition-colors"
               >
                 Go to Builder
               </Link>

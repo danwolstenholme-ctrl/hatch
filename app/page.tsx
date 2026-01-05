@@ -301,9 +301,6 @@ export default function Home() {
                     <div className="w-2.5 h-2.5 rounded-full bg-zinc-700" />
                     <div className="w-2.5 h-2.5 rounded-full bg-zinc-700" />
                   </div>
-                    <div className="w-2.5 h-2.5 rounded-full bg-amber-500/20 border border-amber-500/50" />
-                    <div className="w-2.5 h-2.5 rounded-full bg-emerald-500/20 border border-emerald-500/50" />
-                  </div>
                   <span className="text-[10px] uppercase tracking-widest ml-2 opacity-50">HeroSection.tsx</span>
                 </div>
                 <motion.div

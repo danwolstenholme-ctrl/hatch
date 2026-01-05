@@ -6,7 +6,7 @@ import { Terminal, Cpu, Zap, Globe, Shield, Database, Search, Layers, Code2, Arr
 
 export default function VisionPage() {
   return (
-    <main className="min-h-screen bg-black text-white overflow-hidden selection:bg-emerald-500/30 relative">
+    <main className="min-h-screen bg-zinc-950 text-zinc-100 overflow-hidden selection:bg-emerald-500/30 relative">
       {/* Ambient void background */}
       <div className="fixed inset-0 pointer-events-none">
         <div className="absolute top-[-10%] left-[-10%] w-[600px] h-[600px] bg-emerald-500/5 rounded-full blur-[150px]" />
@@ -73,24 +73,24 @@ export default function VisionPage() {
 
         <div className="grid md:grid-cols-2 gap-8">
           {/* Q1 2026 */}
-          <div className="bg-white/5 border border-white/10 rounded-sm p-8 hover:border-emerald-500/30 transition-colors group">
+          <div className="bg-zinc-900/50 border border-zinc-800 rounded-sm p-8 hover:border-emerald-500/30 transition-colors group backdrop-blur-sm">
             <div className="flex items-center gap-3 mb-6">
               <span className="px-2 py-1 bg-emerald-500/10 text-emerald-400 text-xs font-mono border border-emerald-500/20">PHASE_01</span>
               <span className="text-zinc-500 text-xs font-mono uppercase">Jan - Mar</span>
             </div>
-            <h3 className="text-xl font-bold text-white mb-6 font-mono group-hover:text-emerald-400 transition-colors">Infrastructure & Scale</h3>
+            <h3 className="text-xl font-bold text-zinc-100 mb-6 font-mono group-hover:text-emerald-400 transition-colors">Infrastructure & Scale</h3>
             <ul className="space-y-4">
               <li className="flex items-start gap-3">
                 <Database className="w-4 h-4 text-emerald-500 mt-1" />
                 <div>
-                  <span className="font-bold text-white text-sm font-mono block mb-1">Cloud Persistence</span>
+                  <span className="font-bold text-zinc-200 text-sm font-mono block mb-1">Cloud Persistence</span>
                   <p className="text-xs text-zinc-400 font-mono leading-relaxed">Migration from local storage to distributed cloud database. Permanent project retention.</p>
                 </div>
               </li>
               <li className="flex items-start gap-3">
                 <Layers className="w-4 h-4 text-emerald-500 mt-1" />
                 <div>
-                  <span className="font-bold text-white text-sm font-mono block mb-1">Vector Gallery</span>
+                  <span className="font-bold text-zinc-200 text-sm font-mono block mb-1">Vector Gallery</span>
                   <p className="text-xs text-zinc-400 font-mono leading-relaxed">Launch of 50+ specialized template vectors. Instant initialization for diverse use cases.</p>
                 </div>
               </li>
@@ -98,24 +98,24 @@ export default function VisionPage() {
           </div>
 
           {/* Q2 2026 */}
-          <div className="bg-white/5 border border-white/10 rounded-sm p-8 hover:border-emerald-500/30 transition-colors group">
+          <div className="bg-zinc-900/50 border border-zinc-800 rounded-sm p-8 hover:border-emerald-500/30 transition-colors group backdrop-blur-sm">
             <div className="flex items-center gap-3 mb-6">
               <span className="px-2 py-1 bg-emerald-500/10 text-emerald-400 text-xs font-mono border border-emerald-500/20">PHASE_02</span>
               <span className="text-zinc-500 text-xs font-mono uppercase">Apr - Jun</span>
             </div>
-            <h3 className="text-xl font-bold text-white mb-6 font-mono group-hover:text-emerald-400 transition-colors">Neural Expansion</h3>
+            <h3 className="text-xl font-bold text-zinc-100 mb-6 font-mono group-hover:text-emerald-400 transition-colors">Neural Expansion</h3>
             <ul className="space-y-4">
               <li className="flex items-start gap-3">
                 <Cpu className="w-4 h-4 text-emerald-500 mt-1" />
                 <div>
-                  <span className="font-bold text-white text-sm font-mono block mb-1">Next-Gen Integration</span>
+                  <span className="font-bold text-zinc-200 text-sm font-mono block mb-1">Next-Gen Integration</span>
                   <p className="text-xs text-zinc-400 font-mono leading-relaxed">Immediate integration of Claude 4 and Gemini 2 Ultra upon release. Enhanced cognitive capabilities.</p>
                 </div>
               </li>
               <li className="flex items-start gap-3">
                 <Search className="w-4 h-4 text-emerald-500 mt-1" />
                 <div>
-                  <span className="font-bold text-white text-sm font-mono block mb-1">Visual Input Processing</span>
+                  <span className="font-bold text-zinc-200 text-sm font-mono block mb-1">Visual Input Processing</span>
                   <p className="text-xs text-zinc-400 font-mono leading-relaxed">Screenshot-to-Code conversion module. Pixel-perfect replication of visual references.</p>
                 </div>
               </li>
@@ -123,24 +123,24 @@ export default function VisionPage() {
           </div>
 
           {/* Q3 2026 */}
-          <div className="bg-white/5 border border-white/10 rounded-sm p-8 hover:border-emerald-500/30 transition-colors group">
+          <div className="bg-zinc-900/50 border border-zinc-800 rounded-sm p-8 hover:border-emerald-500/30 transition-colors group backdrop-blur-sm">
             <div className="flex items-center gap-3 mb-6">
               <span className="px-2 py-1 bg-emerald-500/10 text-emerald-400 text-xs font-mono border border-emerald-500/20">PHASE_03</span>
               <span className="text-zinc-500 text-xs font-mono uppercase">Jul - Sep</span>
             </div>
-            <h3 className="text-xl font-bold text-white mb-6 font-mono group-hover:text-emerald-400 transition-colors">System Parity</h3>
+            <h3 className="text-xl font-bold text-zinc-100 mb-6 font-mono group-hover:text-emerald-400 transition-colors">System Parity</h3>
             <ul className="space-y-4">
               <li className="flex items-start gap-3">
                 <Database className="w-4 h-4 text-emerald-500 mt-1" />
                 <div>
-                  <span className="font-bold text-white text-sm font-mono block mb-1">CMS Integration</span>
+                  <span className="font-bold text-zinc-200 text-sm font-mono block mb-1">CMS Integration</span>
                   <p className="text-xs text-zinc-400 font-mono leading-relaxed">Connectors for Sanity, Contentful, and Strapi. Dynamic content injection for static builds.</p>
                 </div>
               </li>
               <li className="flex items-start gap-3">
                 <Globe className="w-4 h-4 text-emerald-500 mt-1" />
                 <div>
-                  <span className="font-bold text-white text-sm font-mono block mb-1">Global Localization</span>
+                  <span className="font-bold text-zinc-200 text-sm font-mono block mb-1">Global Localization</span>
                   <p className="text-xs text-zinc-400 font-mono leading-relaxed">Automated i18n support. AI-powered translation for multi-region deployment.</p>
                 </div>
               </li>
@@ -148,24 +148,24 @@ export default function VisionPage() {
           </div>
 
           {/* Q4 2026 */}
-          <div className="bg-white/5 border border-white/10 rounded-sm p-8 hover:border-emerald-500/30 transition-colors group">
+          <div className="bg-zinc-900/50 border border-zinc-800 rounded-sm p-8 hover:border-emerald-500/30 transition-colors group backdrop-blur-sm">
             <div className="flex items-center gap-3 mb-6">
               <span className="px-2 py-1 bg-emerald-500/10 text-emerald-400 text-xs font-mono border border-emerald-500/20">PHASE_04</span>
               <span className="text-zinc-500 text-xs font-mono uppercase">Oct - Dec</span>
             </div>
-            <h3 className="text-xl font-bold text-white mb-6 font-mono group-hover:text-emerald-400 transition-colors">Scale & Solidify</h3>
+            <h3 className="text-xl font-bold text-zinc-100 mb-6 font-mono group-hover:text-emerald-400 transition-colors">Scale & Solidify</h3>
             <ul className="space-y-4">
               <li className="flex items-start gap-3">
                 <Shield className="w-4 h-4 text-emerald-500 mt-1" />
                 <div>
-                  <span className="font-bold text-white text-sm font-mono block mb-1">Enterprise Protocol</span>
+                  <span className="font-bold text-zinc-200 text-sm font-mono block mb-1">Enterprise Protocol</span>
                   <p className="text-xs text-zinc-400 font-mono leading-relaxed">SSO, dedicated support channels, and SLA guarantees for high-volume entities.</p>
                 </div>
               </li>
               <li className="flex items-start gap-3">
                 <Code2 className="w-4 h-4 text-emerald-500 mt-1" />
                 <div>
-                  <span className="font-bold text-white text-sm font-mono block mb-1">API Access</span>
+                  <span className="font-bold text-zinc-200 text-sm font-mono block mb-1">API Access</span>
                   <p className="text-xs text-zinc-400 font-mono leading-relaxed">Programmatic generation access. Build on top of the Hatch infrastructure.</p>
                 </div>
               </li>
@@ -175,42 +175,42 @@ export default function VisionPage() {
       </section>
 
       {/* 2027 Section */}
-      <section className="max-w-6xl mx-auto px-6 py-16 border-t border-white/10">
+      <section className="max-w-6xl mx-auto px-6 py-16 border-t border-zinc-800">
         <div className="flex items-center gap-4 mb-12">
           <div className="w-12 h-12 rounded-sm bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
             <Zap className="w-6 h-6" />
           </div>
           <div>
-            <h2 className="text-2xl font-bold text-white font-mono">CYCLE_2027</h2>
+            <h2 className="text-2xl font-bold text-zinc-100 font-mono">CYCLE_2027</h2>
             <p className="text-emerald-500/60 font-mono text-sm">AUTONOMOUS_ERA</p>
           </div>
         </div>
 
-        <div className="bg-white/5 border border-white/10 rounded-sm p-8 md:p-12 mb-8 relative overflow-hidden">
+        <div className="bg-zinc-900/50 border border-zinc-800 rounded-sm p-8 md:p-12 mb-8 relative overflow-hidden backdrop-blur-sm">
           <div className="absolute inset-0 bg-emerald-500/5 opacity-0 hover:opacity-100 transition-opacity duration-500" />
           
-          <h3 className="text-2xl font-bold text-white mb-6 font-mono relative z-10">Autonomous Agent Deployment</h3>
+          <h3 className="text-2xl font-bold text-zinc-100 mb-6 font-mono relative z-10">Autonomous Agent Deployment</h3>
           <p className="text-lg text-zinc-400 mb-12 max-w-3xl font-mono leading-relaxed relative z-10">
             The paradigm shifts. Instead of you building with AI assistance, AI agents build autonomously—
             checking their own work, iterating, and deploying. You become the Architect, not the laborer.
           </p>
           
           <div className="grid md:grid-cols-3 gap-6 relative z-10">
-            <div className="bg-black border border-white/10 p-6 hover:border-emerald-500/30 transition-colors">
+            <div className="bg-zinc-950 border border-zinc-800 p-6 hover:border-emerald-500/30 transition-colors">
               <div className="text-emerald-500 mb-4"><Cpu className="w-6 h-6" /></div>
-              <h4 className="text-sm font-bold text-white mb-2 font-mono">Self-Healing Structures</h4>
+              <h4 className="text-sm font-bold text-zinc-100 mb-2 font-mono">Self-Healing Structures</h4>
               <p className="text-xs text-zinc-400 font-mono leading-relaxed">Agents monitor your site 24/7. Broken link? Fixed. Slow image? Optimized. Error? Patched.</p>
             </div>
             
-            <div className="bg-black border border-white/10 p-6 hover:border-emerald-500/30 transition-colors">
+            <div className="bg-zinc-950 border border-zinc-800 p-6 hover:border-emerald-500/30 transition-colors">
               <div className="text-emerald-500 mb-4"><Search className="w-6 h-6" /></div>
-              <h4 className="text-sm font-bold text-white mb-2 font-mono">Autonomous Optimization</h4>
+              <h4 className="text-sm font-bold text-zinc-100 mb-2 font-mono">Autonomous Optimization</h4>
               <p className="text-xs text-zinc-400 font-mono leading-relaxed">AI generates variants, runs tests, picks winners—all automatically. Continuous conversion optimization.</p>
             </div>
             
-            <div className="bg-black border border-white/10 p-6 hover:border-emerald-500/30 transition-colors">
+            <div className="bg-zinc-950 border border-zinc-800 p-6 hover:border-emerald-500/30 transition-colors">
               <div className="text-emerald-500 mb-4"><Shield className="w-6 h-6" /></div>
-              <h4 className="text-sm font-bold text-white mb-2 font-mono">Security Sentinels</h4>
+              <h4 className="text-sm font-bold text-zinc-100 mb-2 font-mono">Security Sentinels</h4>
               <p className="text-xs text-zinc-400 font-mono leading-relaxed">Real-time vulnerability scanning. Zero-day patches applied before you even know there was a threat.</p>
             </div>
           </div>

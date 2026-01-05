@@ -23,7 +23,7 @@ export default function AboutPage() {
   const storyInView = useInView(storyRef, { once: true, margin: "-100px" })
 
   return (
-    <div className="bg-black text-white min-h-screen overflow-hidden relative selection:bg-emerald-500/30">
+    <div className="bg-zinc-950 text-zinc-100 min-h-screen overflow-hidden relative selection:bg-emerald-500/30">
       {/* Ambient void background */}
       <div className="fixed inset-0 pointer-events-none">
         <div className="absolute top-[-10%] left-[-10%] w-[600px] h-[600px] bg-emerald-500/5 rounded-full blur-[150px]" />
@@ -97,7 +97,7 @@ export default function AboutPage() {
                 The web development paradigm was broken. We were still dragging rectangles on a canvas, pretending it was engineering. Or we were writing boilerplate, pretending it was creativity.
               </p>
               <p>
-                We asked a simple question: <span className="text-white font-medium">What if the IDE could think?</span>
+                We asked a simple question: <span className="text-zinc-100 font-medium">What if the IDE could think?</span>
               </p>
               <p>
                 HatchIt began as a script. A simple recursive loop that fed error logs back into the generation prompt. It was crude. It broke often. But then, it started fixing itself.
@@ -105,9 +105,9 @@ export default function AboutPage() {
               <p>
                 <span className="text-emerald-400 font-mono text-sm block mb-2">&gt; CURRENT_STATE: V4.0_SINGULARITY</span>
                 Today, the Architect is a tri-core neural pipeline. 
-                <span className="text-white"> The Architect</span> constructs the logic. 
-                <span className="text-white"> The Architect</span> refines the accessibility. 
-                <span className="text-white"> The Architect</span> audits the security.
+                <span className="text-zinc-100"> The Architect</span> constructs the logic. 
+                <span className="text-zinc-100"> The Architect</span> refines the accessibility. 
+                <span className="text-zinc-100"> The Architect</span> audits the security.
               </p>
               <p>
                 It is no longer just a builder. It is a partner. It speaks your language, understands your intent, and manifests your vision into production-grade reality.
