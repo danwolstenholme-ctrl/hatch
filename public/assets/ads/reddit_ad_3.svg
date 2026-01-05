@@ -1,0 +1,58 @@
+<svg width="1200" height="628" viewBox="0 0 1200 628" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="1200" height="628" fill="#09090b"/>
+  
+  <!-- Radial gradient glow -->
+  <radialGradient id="glow3" cx="50%" cy="50%" r="50%">
+    <stop offset="0%" stop-color="#10b981" stop-opacity="0.15"/>
+    <stop offset="100%" stop-color="#09090b" stop-opacity="0"/>
+  </radialGradient>
+  <rect width="1200" height="628" fill="url(#glow3)"/>
+  
+  <!-- Terminal window -->
+  <rect x="300" y="180" width="600" height="350" rx="12" fill="#18181b" stroke="#27272a" stroke-width="2"/>
+  
+  <!-- Terminal header -->
+  <rect x="300" y="180" width="600" height="40" rx="12" fill="#27272a"/>
+  <rect x="300" y="208" width="600" height="12" fill="#27272a"/>
+  <circle cx="324" cy="200" r="6" fill="#ef4444"/>
+  <circle cx="348" cy="200" r="6" fill="#eab308"/>
+  <circle cx="372" cy="200" r="6" fill="#22c55e"/>
+  <text x="600" y="205" text-anchor="middle" font-family="monospace" font-size="12" fill="#52525b">hatchit — builder</text>
+  
+  <!-- Terminal content -->
+  <text x="330" y="260" font-family="monospace" font-size="14" fill="#10b981">$</text>
+  <text x="350" y="260" font-family="monospace" font-size="14" fill="#a1a1aa">describe "A landing page hero with dark theme"</text>
+  
+  <text x="330" y="295" font-family="monospace" font-size="14" fill="#52525b">→ Generating React component...</text>
+  <text x="330" y="320" font-family="monospace" font-size="14" fill="#52525b">→ Applying Tailwind styles...</text>
+  <text x="330" y="345" font-family="monospace" font-size="14" fill="#52525b">→ Building preview...</text>
+  
+  <text x="330" y="390" font-family="monospace" font-size="14" fill="#10b981">✓</text>
+  <text x="355" y="390" font-family="monospace" font-size="14" fill="#fafafa">Ready. Live at</text>
+  <text x="500" y="390" font-family="monospace" font-size="14" fill="#10b981">yoursite.hatchitsites.dev</text>
+  
+  <text x="330" y="430" font-family="monospace" font-size="14" fill="#10b981">$</text>
+  <rect x="345" y="418" width="10" height="18" fill="#10b981" opacity="0.8">
+    <animate attributeName="opacity" values="0.8;0;0.8" dur="1s" repeatCount="indefinite"/>
+  </rect>
+  
+  <!-- Stats bar -->
+  <rect x="330" y="470" width="540" height="40" rx="6" fill="#09090b" stroke="#27272a" stroke-width="1"/>
+  <text x="360" y="496" font-family="monospace" font-size="12" fill="#52525b">TIME:</text>
+  <text x="410" y="496" font-family="monospace" font-size="12" fill="#10b981">23s</text>
+  <text x="480" y="496" font-family="monospace" font-size="12" fill="#52525b">LINES:</text>
+  <text x="535" y="496" font-family="monospace" font-size="12" fill="#10b981">147</text>
+  <text x="600" y="496" font-family="monospace" font-size="12" fill="#52525b">FRAMEWORK:</text>
+  <text x="695" y="496" font-family="monospace" font-size="12" fill="#10b981">React + Tailwind</text>
+  
+  <!-- Headline -->
+  <text x="600" y="80" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="40" font-weight="800" fill="#fafafa">
+    Your idea → Production React → Live URL
+  </text>
+  
+  <!-- Logo -->
+  <text x="600" y="590" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="24" font-weight="700" fill="#52525b">
+    hatchit.dev
+  </text>
+</svg>

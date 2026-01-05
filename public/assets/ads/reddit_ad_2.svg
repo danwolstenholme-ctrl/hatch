@@ -1,0 +1,65 @@
+<svg width="1200" height="628" viewBox="0 0 1200 628" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="1200" height="628" fill="#09090b"/>
+  
+  <!-- Code-like scanlines -->
+  <defs>
+    <pattern id="scanlines" width="4" height="4" patternUnits="userSpaceOnUse">
+      <line x1="0" y1="2" x2="4" y2="2" stroke="#18181b" stroke-width="1"/>
+    </pattern>
+  </defs>
+  <rect width="1200" height="628" fill="url(#scanlines)" opacity="0.3"/>
+  
+  <!-- Dual glow -->
+  <ellipse cx="300" cy="314" rx="250" ry="250" fill="#10b981" opacity="0.06" filter="blur(100px)"/>
+  <ellipse cx="900" cy="314" rx="250" ry="250" fill="#14b8a6" opacity="0.06" filter="blur(100px)"/>
+  
+  <!-- Flow diagram style -->
+  <!-- Text box -->
+  <rect x="80" y="234" width="240" height="160" rx="12" fill="#18181b" stroke="#27272a" stroke-width="2"/>
+  <text x="200" y="295" text-anchor="middle" font-family="monospace" font-size="14" fill="#71717a">"A hero section with</text>
+  <text x="200" y="315" text-anchor="middle" font-family="monospace" font-size="14" fill="#71717a">gradient background</text>
+  <text x="200" y="335" text-anchor="middle" font-family="monospace" font-size="14" fill="#71717a">and CTA button"</text>
+  <text x="200" y="375" text-anchor="middle" font-family="system-ui, sans-serif" font-size="12" font-weight="600" fill="#52525b">YOUR PROMPT</text>
+  
+  <!-- Arrow 1 -->
+  <path d="M340 314 L420 314" stroke="#10b981" stroke-width="3" stroke-linecap="round"/>
+  <path d="M410 304 L420 314 L410 324" stroke="#10b981" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  
+  <!-- React box -->
+  <rect x="440" y="234" width="240" height="160" rx="12" fill="#18181b" stroke="#10b981" stroke-width="2"/>
+  <text x="560" y="280" text-anchor="middle" font-family="monospace" font-size="13" fill="#10b981">&lt;Hero</text>
+  <text x="560" y="300" text-anchor="middle" font-family="monospace" font-size="13" fill="#a1a1aa">  gradient="purple"</text>
+  <text x="560" y="320" text-anchor="middle" font-family="monospace" font-size="13" fill="#a1a1aa">  cta="Get Started"</text>
+  <text x="560" y="340" text-anchor="middle" font-family="monospace" font-size="13" fill="#10b981">/&gt;</text>
+  <text x="560" y="375" text-anchor="middle" font-family="system-ui, sans-serif" font-size="12" font-weight="600" fill="#10b981">REACT + TAILWIND</text>
+  
+  <!-- Arrow 2 -->
+  <path d="M700 314 L780 314" stroke="#10b981" stroke-width="3" stroke-linecap="round"/>
+  <path d="M770 304 L780 314 L770 324" stroke="#10b981" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  
+  <!-- Live box -->
+  <rect x="800" y="234" width="240" height="160" rx="12" fill="#18181b" stroke="#27272a" stroke-width="2"/>
+  <rect x="820" y="254" width="200" height="100" rx="6" fill="#27272a"/>
+  <rect x="835" y="269" width="80" height="10" rx="2" fill="#10b981" opacity="0.5"/>
+  <rect x="835" y="289" width="120" height="6" rx="2" fill="#3f3f46"/>
+  <rect x="835" y="305" width="100" height="6" rx="2" fill="#3f3f46"/>
+  <rect x="835" y="321" width="60" height="20" rx="4" fill="#10b981"/>
+  <circle cx="1000" cy="264" r="6" fill="#10b981"/>
+  <text x="920" y="375" text-anchor="middle" font-family="system-ui, sans-serif" font-size="12" font-weight="600" fill="#52525b">LIVE PREVIEW</text>
+  
+  <!-- Headline -->
+  <text x="600" y="100" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="48" font-weight="800" fill="#fafafa">
+    Describe it. Ship it.
+  </text>
+  
+  <!-- Subline -->
+  <text x="600" y="520" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="22" fill="#71717a">
+    Text → React → Live URL in 30 seconds
+  </text>
+  
+  <!-- Logo -->
+  <text x="600" y="580" text-anchor="middle" font-family="system-ui, -apple-system, sans-serif" font-size="24" font-weight="700" fill="#10b981">
+    hatchit.dev
+  </text>
+</svg>
