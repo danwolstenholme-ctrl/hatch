@@ -241,7 +241,7 @@ export default function PortalPage() {
           className="grid gap-6 lg:grid-cols-[2fr,1fr]"
         >
           <div className="relative overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-zinc-950 via-zinc-900/80 to-zinc-900/40 px-6 py-6 sm:px-8 sm:py-8 shadow-[0_0_40px_-15px_rgba(16,185,129,0.5)]">
-            <div className="absolute inset-0 opacity-60" style={{ backgroundImage: 'radial-gradient(circle at top right, rgba(16,185,129,0.15), transparent 45%)' }} />
+            <div className="pointer-events-none absolute inset-0 opacity-60" style={{ backgroundImage: 'radial-gradient(circle at top right, rgba(16,185,129,0.15), transparent 45%)' }} />
             <div className="relative z-10 flex flex-wrap items-center justify-between gap-4">
               <div>
                 <p className="text-xs uppercase tracking-[0.4em] text-zinc-600">Portal</p>
@@ -362,7 +362,7 @@ export default function PortalPage() {
               className="relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 p-5 backdrop-blur-xl"
               transition={{ delay: index * 0.05 }}
             >
-              <div className={`absolute inset-0 bg-gradient-to-br ${card.accent} opacity-60`} />
+              <div className={`pointer-events-none absolute inset-0 bg-gradient-to-br ${card.accent} opacity-60`} />
               <div className="relative z-10 space-y-4">
                 <div className="flex items-center gap-3">
                   <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-white/10 bg-black/30">
@@ -480,7 +480,7 @@ export default function PortalPage() {
                     href={`/builder?project=${project.id}`}
                     className="group relative block h-full overflow-hidden rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-sm transition-all duration-300 hover:border-emerald-500/40 hover:bg-white/10"
                   >
-                    <div className="absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100" style={{ backgroundImage: 'linear-gradient(135deg, rgba(16,185,129,0.08), transparent)' }} />
+                    <div className="pointer-events-none absolute inset-0 opacity-0 transition-opacity duration-300 group-hover:opacity-100" style={{ backgroundImage: 'linear-gradient(135deg, rgba(16,185,129,0.08), transparent)' }} />
                     <div className="relative z-10 flex items-start justify-between">
                       <div className="rounded-xl border border-white/5 bg-black/30 p-3">
                         <div className="h-2 w-8 rounded-full bg-emerald-400" />

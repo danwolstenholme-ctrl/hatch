@@ -410,7 +410,13 @@ export default function BuildFlowController({ existingProjectId, initialPrompt, 
       icon: Crown,
       projectLimit: Infinity,
       features: ['Unlimited Projects', 'Custom Domains', 'Remove Branding', 'Commercial License', 'Priority Support'],
-      gradient: 'from-amber-500 to-orange-500'
+      gradient: 'from-amber-500 to-orange-500',
+      badge: {
+        wrapper: 'bg-gradient-to-r from-amber-500/10 to-orange-500/10',
+        border: 'border-amber-500/30',
+        icon: 'text-amber-300',
+        text: 'text-amber-200'
+      }
     }
     if (tier === 'visionary') return {
       name: 'Visionary',
@@ -418,7 +424,13 @@ export default function BuildFlowController({ existingProjectId, initialPrompt, 
       icon: Zap,
       projectLimit: Infinity,
       features: ['Unlimited Projects', 'Custom Domains', 'Remove Branding', 'Evolution Engine'],
-      gradient: 'from-violet-500 to-purple-500'
+      gradient: 'from-violet-500 to-purple-500',
+      badge: {
+        wrapper: 'bg-gradient-to-r from-violet-500/10 to-purple-500/10',
+        border: 'border-violet-500/30',
+        icon: 'text-violet-200',
+        text: 'text-violet-100'
+      }
     }
     if (tier === 'architect') return {
       name: 'Architect',
@@ -426,7 +438,13 @@ export default function BuildFlowController({ existingProjectId, initialPrompt, 
       icon: Star,
       projectLimit: 3,
       features: ['3 Active Projects', 'Deploy to hatchitsites.dev', 'Code Download'],
-      gradient: 'from-emerald-500 to-teal-500'
+      gradient: 'from-emerald-500 to-teal-500',
+      badge: {
+        wrapper: 'bg-gradient-to-r from-emerald-500/10 to-teal-500/10',
+        border: 'border-emerald-500/30',
+        icon: 'text-emerald-200',
+        text: 'text-emerald-100'
+      }
     }
     return null
   }, [accountSubscription?.tier])
@@ -1004,6 +1022,52 @@ export default function BuildFlowController({ existingProjectId, initialPrompt, 
       .filter(s => !!s.code)
   }, [buildState, sectionsForBuild])
 
+  const buildBundledCode = useCallback(() => {
+    if (!buildState) return null
+
+    const lucideImports = new Set<string>()
+    sectionsForBuild.forEach(section => {
+      const rawCode = buildState.sectionCode[section.id]
+      if (!rawCode) return
+      const matches = rawCode.matchAll(/import\s*{\s*([^}]+)\s*}\s*from\s*['"]lucide-react['"]/g)
+      for (const match of matches) {
+        match[1]
+          .split(',')
+          .map(token => token.trim())
+          .filter(Boolean)
+          .forEach(token => lucideImports.add(token))
+      }
+    })
+
+    const sectionsWithCode = sectionsForBuild
+      .filter(section => Boolean(buildState.sectionCode[section.id]))
+      .map((section, index) => {
+        let code = buildState.sectionCode[section.id] || ''
+        code = code
+          .replace(/'use client';?/g, '')
+          .replace(/"use client";?/g, '')
+          .replace(/import\s+.*?from\s+['"][^'"]+['"];?\s*/g, '')
+
+        if (code.includes('export default function')) {
+          code = code.replace(/export\s+default\s+function\s+(\w+)?/, (_match, name) => {
+            return `const Section_${index} = function ${name || 'Component'}`
+          })
+        } else if (code.includes('export default')) {
+          code = code.replace(/export\s+default\s+/, `const Section_${index} = `)
+        }
+
+        return { code, index }
+      })
+
+    if (sectionsWithCode.length === 0) return null
+
+    const lucideImportBlock = lucideImports.size > 0
+      ? `import { ${Array.from(lucideImports).join(', ')} } from 'lucide-react'\n`
+      : ''
+
+    return `'use client'\n\nimport { useState, useEffect, useRef, useMemo, useCallback } from 'react'\nimport { motion, AnimatePresence } from 'framer-motion'\nimport Image from 'next/image'\nimport Link from 'next/link'\n${lucideImportBlock}\n// --- SECTIONS ---\n${sectionsWithCode.map(s => s.code).join('\n\n')}\n\n// --- MAIN PAGE ---\nexport default function GeneratedPage() {\n  return (\n    <main className="min-h-screen bg-zinc-950 text-white">\n      ${sectionsWithCode.map(s => `<Section_${s.index} />`).join('\n      ')}\n    </main>\n  )\n}`
+  }, [buildState, sectionsForBuild])
+
   // Direct checkout - skip modal, go straight to Stripe
   const handleDirectCheckout = async (tier: 'architect' | 'visionary' | 'singularity' = 'architect') => {
     // If not signed in, redirect to sign-up with tier pre-selected
@@ -1572,15 +1636,10 @@ export default function GeneratedPage() {
                   </div>
                   
                   {/* Tier Badge */}
-                  {tierConfig && (
-                    <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full bg-gradient-to-r ${tierConfig.gradient} bg-opacity-10 border border-${tierConfig.color}-500/30`}
-                         style={{ background: `linear-gradient(135deg, var(--tw-gradient-stops))`, 
-                                  '--tw-gradient-from': `rgb(var(--${tierConfig.color}-500) / 0.1)`, 
-                                  '--tw-gradient-to': `rgb(var(--${tierConfig.color}-600) / 0.05)` } as React.CSSProperties}>
-                      <tierConfig.icon className={`w-3.5 h-3.5 text-${tierConfig.color}-400`} 
-                                       style={{ color: tierConfig.color === 'amber' ? '#fbbf24' : tierConfig.color === 'emerald' ? '#34d399' : '#a3e635' }} />
-                      <span className="text-xs font-bold uppercase tracking-wider"
-                            style={{ color: tierConfig.color === 'amber' ? '#fbbf24' : tierConfig.color === 'emerald' ? '#34d399' : '#a3e635' }}>
+                  {tierConfig?.badge && (
+                    <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full border ${tierConfig.badge.border} ${tierConfig.badge.wrapper}`}>
+                      <tierConfig.icon className={`w-3.5 h-3.5 ${tierConfig.badge.icon}`} />
+                      <span className={`text-xs font-bold uppercase tracking-wider ${tierConfig.badge.text}`}>
                         {tierConfig.name}
                       </span>
                     </div>
