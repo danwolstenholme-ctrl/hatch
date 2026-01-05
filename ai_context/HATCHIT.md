@@ -230,6 +230,36 @@ if (isDemo) {
 
 ---
 
+## ⚠️ TECH DEBT: Layout Duplication
+
+**Problem:** SectionBuilder has TWO separate layouts - one for demo, one for auth. They look similar but are maintained separately. This causes:
+- Layout shifts when states change
+- Bugs fixed in one place but not the other
+- Double work for every UI change
+
+**Correct Architecture (TODO):**
+```tsx
+// ONE layout, conditional behavior
+<BottomBar
+  isDemo={isDemo}
+  stage={stage}
+  onRefine={isDemo ? showSignupModal : handleRealRefine}
+  onDeploy={isDemo ? showSignupModal : handleRealDeploy}
+/>
+
+// Buttons check isDemo internally:
+<Button 
+  disabled={isDemo && feature === 'premium'}
+  onClick={isDemo ? () => showUpgrade(feature) : realAction}
+>
+  {children}
+</Button>
+```
+
+**Rule:** ONE layout. `isDemo` changes behavior, not structure.
+
+---
+
 ## File Structure
 
 ```
