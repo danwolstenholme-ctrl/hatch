@@ -21,10 +21,33 @@ export default function ProjectsPage() {
 
   const accountSubscription = user?.publicMetadata?.accountSubscription as any
 
-  // Fetch projects
+  // Fetch projects + import any guest work
   useEffect(() => {
     async function initProjects() {
       try {
+        // Check for guest handoff data (from guest builder mode)
+        const guestHandoff = localStorage.getItem('hatch_guest_handoff')
+        if (guestHandoff) {
+          setIsMigrating(true)
+          try {
+            const payload = JSON.parse(guestHandoff)
+            const res = await fetch('/api/project/import', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(payload),
+            })
+            if (res.ok) {
+              localStorage.removeItem('hatch_guest_handoff')
+              localStorage.removeItem('hatch_last_prompt')
+              console.log('✓ Guest work imported successfully')
+            }
+          } catch (err) {
+            console.error('Failed to import guest work:', err)
+          }
+          setIsMigrating(false)
+        }
+
+        // Legacy: Check for old localStorage format
         const localProjectsStr = localStorage.getItem('hatchit-projects')
         if (localProjectsStr) {
           const localProjects = JSON.parse(localProjectsStr)
@@ -130,6 +153,28 @@ export default function ProjectsPage() {
     <div className="min-h-screen bg-zinc-950">
       <div className="max-w-6xl mx-auto px-6 py-10">
         
+        {/* Tier Status Banner - Always visible */}
+        {tierConfig.name === 'Free' && (
+          <div className="mb-8 p-4 bg-zinc-900 border border-zinc-800 rounded-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 bg-emerald-500/10 rounded-lg flex items-center justify-center">
+                <Sparkles className="w-5 h-5 text-emerald-400" />
+              </div>
+              <div>
+                <p className="text-white font-medium">You're on the Free plan</p>
+                <p className="text-zinc-500 text-sm">Upgrade to unlock unlimited projects and deploys</p>
+              </div>
+            </div>
+            <Link
+              href="/#pricing"
+              className="flex items-center gap-2 px-4 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-black rounded-lg font-medium text-sm transition-colors"
+            >
+              View Plans
+              <ArrowRight className="w-4 h-4" />
+            </Link>
+          </div>
+        )}
+
         {/* Clean Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
           <div>
@@ -140,22 +185,36 @@ export default function ProjectsPage() {
             </p>
           </div>
 
-          <button
-            onClick={handleCreate}
-            disabled={isCreating || isAtLimit}
-            className={`flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium text-sm transition-all ${
-              isAtLimit 
-                ? 'bg-zinc-800 text-zinc-500 cursor-not-allowed' 
-                : 'bg-emerald-500 hover:bg-emerald-400 text-black'
-            }`}
-          >
-            {isCreating ? (
-              <div className="w-4 h-4 border-2 border-black/30 border-t-black rounded-full animate-spin" />
-            ) : (
-              <Plus className="w-4 h-4" />
+          <div className="flex items-center gap-3">
+            {/* Tier Badge */}
+            {tierConfig.name !== 'Free' && (
+              <div className={`flex items-center gap-2 px-3 py-1.5 rounded-lg border ${
+                tierConfig.color === 'amber' ? 'bg-amber-500/10 border-amber-500/20 text-amber-400' :
+                tierConfig.color === 'teal' ? 'bg-teal-500/10 border-teal-500/20 text-teal-400' :
+                'bg-emerald-500/10 border-emerald-500/20 text-emerald-400'
+              }`}>
+                <tierConfig.icon className="w-4 h-4" />
+                <span className="text-sm font-medium">{tierConfig.name}</span>
+              </div>
             )}
-            New Project
-          </button>
+
+            <button
+              onClick={handleCreate}
+              disabled={isCreating || isAtLimit}
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-lg font-medium text-sm transition-all ${
+                isAtLimit 
+                  ? 'bg-zinc-800 text-zinc-500 cursor-not-allowed' 
+                  : 'bg-emerald-500 hover:bg-emerald-400 text-black'
+              }`}
+            >
+              {isCreating ? (
+                <div className="w-4 h-4 border-2 border-black/30 border-t-black rounded-full animate-spin" />
+              ) : (
+                <Plus className="w-4 h-4" />
+              )}
+              New Project
+            </button>
+          </div>
         </div>
 
         {/* Search & View Toggle */}
@@ -375,33 +434,85 @@ export default function ProjectsPage() {
                 initial={{ opacity: 0, scale: 0.95 }}
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.95 }}
-                className="bg-zinc-900 rounded-2xl p-6 w-full max-w-md border border-zinc-800"
+                className="bg-zinc-900 rounded-2xl p-6 w-full max-w-lg border border-zinc-800"
                 onClick={(e) => e.stopPropagation()}
               >
                 <div className="text-center mb-6">
-                  <div className="w-12 h-12 bg-zinc-800 rounded-xl flex items-center justify-center mx-auto mb-4">
+                  <div className="w-12 h-12 bg-emerald-500/10 rounded-xl flex items-center justify-center mx-auto mb-4">
                     <Rocket className="w-6 h-6 text-emerald-400" />
                   </div>
                   <h2 className="text-xl font-semibold text-white mb-2">Upgrade to continue</h2>
                   <p className="text-zinc-400 text-sm">
-                    You've reached the project limit on your current plan.
+                    You've reached the {tierConfig.limit} project limit. Upgrade to create more.
                   </p>
                 </div>
                 
                 <div className="space-y-3 mb-6">
-                  <Link 
-                    href="/#pricing"
-                    className="block w-full py-3 bg-emerald-500 hover:bg-emerald-400 text-black rounded-xl text-center font-medium transition-colors"
+                  {/* Architect */}
+                  <a 
+                    href="/api/checkout?tier=architect"
+                    className="block w-full p-4 bg-zinc-800 hover:bg-zinc-700 rounded-xl transition-colors group"
                   >
-                    View Plans
-                  </Link>
-                  <button
-                    onClick={() => setShowLimitModal(false)}
-                    className="block w-full py-3 text-zinc-400 hover:text-white text-sm transition-colors"
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <Star className="w-5 h-5 text-emerald-400" />
+                        <div>
+                          <p className="text-white font-medium">Architect</p>
+                          <p className="text-zinc-500 text-sm">3 projects, unlimited builds</p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-white font-semibold">$19<span className="text-zinc-500 text-sm">/mo</span></p>
+                      </div>
+                    </div>
+                  </a>
+
+                  {/* Visionary - Highlighted */}
+                  <a 
+                    href="/api/checkout?tier=visionary"
+                    className="block w-full p-4 bg-emerald-500/10 border border-emerald-500/30 hover:bg-emerald-500/20 rounded-xl transition-colors group relative"
                   >
-                    Maybe later
-                  </button>
+                    <div className="absolute -top-2 left-4 px-2 py-0.5 bg-emerald-500 text-black text-[10px] font-bold rounded">POPULAR</div>
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <Zap className="w-5 h-5 text-emerald-400" />
+                        <div>
+                          <p className="text-white font-medium">Visionary</p>
+                          <p className="text-zinc-400 text-sm">Unlimited projects + code export</p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-white font-semibold">$49<span className="text-zinc-400 text-sm">/mo</span></p>
+                      </div>
+                    </div>
+                  </a>
+
+                  {/* Singularity */}
+                  <a 
+                    href="/api/checkout?tier=singularity"
+                    className="block w-full p-4 bg-zinc-800 hover:bg-zinc-700 rounded-xl transition-colors group"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <Crown className="w-5 h-5 text-amber-400" />
+                        <div>
+                          <p className="text-white font-medium">Singularity</p>
+                          <p className="text-zinc-500 text-sm">Everything + API access</p>
+                        </div>
+                      </div>
+                      <div className="text-right">
+                        <p className="text-white font-semibold">$199<span className="text-zinc-500 text-sm">/mo</span></p>
+                      </div>
+                    </div>
+                  </a>
                 </div>
+
+                <button
+                  onClick={() => setShowLimitModal(false)}
+                  className="block w-full py-3 text-zinc-500 hover:text-white text-sm transition-colors"
+                >
+                  Maybe later
+                </button>
               </motion.div>
             </motion.div>
           )}
