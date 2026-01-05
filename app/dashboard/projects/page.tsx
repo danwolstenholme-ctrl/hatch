@@ -368,7 +368,7 @@ export default function ProjectsPage() {
                 >
                   <div>
                     <p className="text-white font-medium">Architect</p>
-                    <p className="text-zinc-500 text-sm">3 projects, unlimited builds</p>
+                    <p className="text-zinc-500 text-sm">3 projects, deploy to hatchit.dev</p>
                   </div>
                   <p className="text-white font-semibold">$19<span className="text-zinc-500 font-normal">/mo</span></p>
                 </a>
@@ -380,7 +380,7 @@ export default function ProjectsPage() {
                   <div className="absolute -top-2 left-4 px-2 py-0.5 bg-emerald-500 text-black text-[10px] font-bold rounded">RECOMMENDED</div>
                   <div>
                     <p className="text-white font-medium">Visionary</p>
-                    <p className="text-zinc-400 text-sm">Unlimited projects + code export</p>
+                    <p className="text-zinc-400 text-sm">10 projects + download code</p>
                   </div>
                   <p className="text-white font-semibold">$49<span className="text-zinc-400 font-normal">/mo</span></p>
                 </a>
@@ -391,7 +391,7 @@ export default function ProjectsPage() {
                 >
                   <div>
                     <p className="text-white font-medium">Singularity</p>
-                    <p className="text-zinc-500 text-sm">Everything + API access</p>
+                    <p className="text-zinc-500 text-sm">Unlimited projects + API</p>
                   </div>
                   <p className="text-white font-semibold">$199<span className="text-zinc-500 font-normal">/mo</span></p>
                 </a>

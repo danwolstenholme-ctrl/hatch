@@ -15,7 +15,8 @@ export default function BillingPage() {
       price: 0,
       description: 'Try it out',
       features: [
-        '3 generations',
+        '10 builds',
+        '1 refinement',
         'Live preview',
         '1 project',
       ],
@@ -29,8 +30,7 @@ export default function BillingPage() {
       price: 19,
       description: 'For individuals getting started',
       features: [
-        'Unlimited generations',
-        'Live preview',
+        'Unlimited builds & refinements',
         'Deploy to hatchit.dev',
         '3 projects',
       ],
