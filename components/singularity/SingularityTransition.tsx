@@ -2,13 +2,14 @@
 
 import { motion, AnimatePresence } from 'framer-motion'
 import { useEffect, useState } from 'react'
+import Pip from '@/components/Pip'
 
 // Singularity-branded transition - confident, minimal, fast
 const TRANSITION_STATES = [
-  { text: "CONNECTING", progress: 25 },
-  { text: "INITIALIZING", progress: 50 },
-  { text: "LOADING CANVAS", progress: 75 },
-  { text: "READY", progress: 100 }
+  { text: "WARMING UP", progress: 25 },
+  { text: "GATHERING IDEAS", progress: 50 },
+  { text: "PREPARING CANVAS", progress: 75 },
+  { text: "LET'S BUILD", progress: 100 }
 ]
 
 export default function SingularityTransition({ onComplete }: { onComplete: () => void }) {
@@ -45,27 +46,25 @@ export default function SingularityTransition({ onComplete }: { onComplete: () =
       <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-emerald-500/50 to-transparent" />
 
       <div className="relative z-10 flex flex-col items-center">
-        {/* Geometric H mark - animated */}
+        {/* Pip - the idea given form */}
         <motion.div 
-          className="relative w-16 h-16 mb-10"
-          animate={{ opacity: [0.6, 1, 0.6] }}
-          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+          className="mb-8"
+          animate={{ 
+            y: [0, -6, 0],
+            rotate: [0, 2, 0, -2, 0]
+          }}
+          transition={{ 
+            duration: 2.5, 
+            repeat: Infinity, 
+            ease: "easeInOut" 
+          }}
         >
-          {/* Outer ring */}
-          <motion.div 
-            className="absolute inset-0 border border-zinc-800 rounded-full"
-            animate={{ scale: [1, 1.05, 1], opacity: [0.3, 0.6, 0.3] }}
-            transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-          />
-          {/* Inner mark */}
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="w-6 h-6 relative">
-              {/* H shape abstracted */}
-              <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-emerald-400 to-emerald-600 rounded-full" />
-              <div className="absolute right-0 top-0 bottom-0 w-1 bg-gradient-to-b from-emerald-400 to-emerald-600 rounded-full" />
-              <div className="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-1 bg-gradient-to-r from-emerald-400 to-emerald-600 rounded-full" />
-            </div>
-          </div>
+          <motion.div
+            animate={{ scale: [1, 1.02, 1] }}
+            transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+          >
+            <Pip size={80} animate={true} float={false} glow={true} />
+          </motion.div>
         </motion.div>
 
         {/* Status text - mono, uppercase, tracked */}

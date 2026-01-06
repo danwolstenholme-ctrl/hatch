@@ -178,9 +178,12 @@ export default function BuildFlowController({ existingProjectId, initialPrompt, 
     if (!isLoaded) return
     // If signed in and not explicitly in demo, force live mode
     if (isSignedIn && !isDemo) {
-      setDemoMode(false)
+      if (demoMode) {
+        console.log('[Builder] Forcing demoMode=false for signed-in user')
+        setDemoMode(false)
+      }
     }
-  }, [isLoaded, isSignedIn, isDemo])
+  }, [isLoaded, isSignedIn, isDemo, demoMode])
 
   // Sync guest credit counts from localStorage (only for guests)
   useEffect(() => {
@@ -724,8 +727,14 @@ export default function BuildFlowController({ existingProjectId, initialPrompt, 
       clearTimeout(timeoutId)
 
       if (!response.ok) {
-        console.warn('API failed, falling back to demo mode')
-        setupDemoMode(guestHandoff)
+        console.warn('API failed')
+        // Only fall back to demo mode if user is NOT signed in
+        if (!isSignedIn) {
+          setupDemoMode(guestHandoff)
+        } else {
+          setError('Failed to create project. Please try again.')
+          setIsLoading(false)
+        }
         return
       }
 
@@ -763,7 +772,12 @@ export default function BuildFlowController({ existingProjectId, initialPrompt, 
 
     } catch (err) {
       console.error('Error creating project:', err)
-      setupDemoMode()
+      // Only fall back to demo mode if user is NOT signed in
+      if (!isSignedIn) {
+        setupDemoMode()
+      } else {
+        setError('Failed to create project. Please try again.')
+      }
     } finally {
       setIsLoading(false)
       setIsCreatingProject(false)

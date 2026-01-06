@@ -8,6 +8,7 @@ import { motion, useInView, AnimatePresence } from 'framer-motion'
 import { Terminal, Layers, Shield, Zap, Code2, Globe, ArrowRight, CheckCircle2, Layout, Smartphone } from 'lucide-react'
 import HomepageWelcome from '@/components/HomepageWelcome'
 import SingularityTransition from '@/components/singularity/SingularityTransition'
+import Pip from '@/components/Pip'
 
 // Section wrapper - staggered fade-in with depth
 function Section({ children, className = '', id = '', delay = 0 }: { children: React.ReactNode; className?: string; id?: string; delay?: number }) {
@@ -53,7 +54,9 @@ export default function Home() {
       <section className="relative min-h-[90vh] flex items-center px-4 sm:px-6 pt-32 pb-24 border-b border-zinc-900 overflow-hidden">
         {/* Animated gradient backdrop */}
         <motion.div 
+          initial={{ opacity: 0 }}
           animate={{ 
+            opacity: 1,
             background: [
               'radial-gradient(ellipse at 30% 20%, rgba(16,185,129,0.15), transparent 50%)',
               'radial-gradient(ellipse at 70% 30%, rgba(16,185,129,0.12), transparent 50%)',
@@ -61,11 +64,13 @@ export default function Home() {
               'radial-gradient(ellipse at 30% 20%, rgba(16,185,129,0.15), transparent 50%)',
             ]
           }}
-          transition={{ duration: 20, repeat: Infinity, ease: 'easeInOut' }}
+          transition={{ opacity: { duration: 0.8, delay: 0.3 }, background: { duration: 20, repeat: Infinity, ease: 'easeInOut' } }}
           className="absolute inset-0"
         />
         <motion.div 
+          initial={{ opacity: 0 }}
           animate={{ 
+            opacity: 1,
             background: [
               'radial-gradient(ellipse at 70% 80%, rgba(16,185,129,0.08), transparent 60%)',
               'radial-gradient(ellipse at 30% 70%, rgba(16,185,129,0.1), transparent 60%)',
@@ -73,14 +78,22 @@ export default function Home() {
               'radial-gradient(ellipse at 70% 80%, rgba(16,185,129,0.08), transparent 60%)',
             ]
           }}
-          transition={{ duration: 25, repeat: Infinity, ease: 'easeInOut' }}
+          transition={{ opacity: { duration: 0.8, delay: 0.3 }, background: { duration: 25, repeat: Infinity, ease: 'easeInOut' } }}
           className="absolute inset-0"
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-zinc-950/30 via-transparent to-zinc-950/80" />
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.8, delay: 0.2 }}
+          className="absolute inset-0 bg-gradient-to-b from-zinc-950/30 via-transparent to-zinc-950/80" 
+        />
         
         {/* Grid overlay for depth */}
-        <div 
-          className="absolute inset-0 opacity-[0.02]"
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 0.02 }}
+          transition={{ duration: 0.8, delay: 0.4 }}
+          className="absolute inset-0"
           style={{
             backgroundImage: 'linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)',
             backgroundSize: '60px 60px'

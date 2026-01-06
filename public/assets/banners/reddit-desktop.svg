@@ -1,0 +1,64 @@
+<svg width="1920" height="384" viewBox="0 0 1920 384" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <filter id="rd-glow" x="-100%" y="-100%" width="300%" height="300%">
+      <feGaussianBlur stdDeviation="10" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+    <filter id="rd-cheek" x="-100%" y="-100%" width="300%" height="300%">
+      <feGaussianBlur stdDeviation="3"/>
+    </filter>
+    <radialGradient id="rd-bg-glow" cx="50%" cy="50%" r="40%">
+      <stop offset="0%" stop-color="#10b981" stop-opacity="0.1"/>
+      <stop offset="100%" stop-color="#10b981" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="rd-body" cx="50%" cy="30%" r="70%">
+      <stop offset="0%" stop-color="#34d399"/>
+      <stop offset="60%" stop-color="#10b981"/>
+      <stop offset="100%" stop-color="#059669"/>
+    </radialGradient>
+    <radialGradient id="rd-inner" cx="50%" cy="35%" r="50%">
+      <stop offset="0%" stop-color="white" stop-opacity="0.8"/>
+      <stop offset="100%" stop-color="white" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <rect width="1920" height="384" fill="#09090b"/>
+  <rect width="1920" height="384" fill="url(#rd-bg-glow)"/>
+
+  <!-- Centered composition -->
+  <g transform="translate(960, 192)">
+    <!-- Wordmark -->
+    <text 
+      x="-60" 
+      y="15" 
+      text-anchor="middle"
+      font-family="Inter, system-ui, -apple-system, sans-serif" 
+      font-weight="700" 
+      font-size="72"
+      letter-spacing="-0.02em"
+    >
+      <tspan fill="white">Hatch</tspan><tspan fill="#10b981">It</tspan>
+    </text>
+
+    <!-- Sprite - floating right of wordmark -->
+    <g transform="translate(200, -40) rotate(8) scale(2.8)">
+      <ellipse cx="0" cy="4" rx="22" ry="24" fill="#10b981" opacity="0.15" filter="url(#rd-glow)"/>
+      <path 
+        d="M0 -22 C 15 -16, 19 0, 18 13 C 16 24, 8 30, 0 30 C -8 30, -16 24, -18 13 C -19 0, -15 -16, 0 -22 Z" 
+        fill="url(#rd-body)" 
+        filter="url(#rd-glow)"
+      />
+      <ellipse cx="0" cy="3" rx="10" ry="14" fill="url(#rd-inner)"/>
+      <ellipse cx="0" cy="-16" rx="4" ry="2" fill="white" opacity="0.3"/>
+      <ellipse cx="-12" cy="8" rx="4" ry="3" fill="#fca5a5" opacity="0.25" filter="url(#rd-cheek)"/>
+      <ellipse cx="12" cy="8" rx="4" ry="3" fill="#fca5a5" opacity="0.25" filter="url(#rd-cheek)"/>
+      <g transform="translate(-1, 4)">
+        <ellipse cx="-6" cy="0" rx="2.5" ry="3" fill="#09090b" opacity="0.9"/>
+        <circle cx="-6.5" cy="0.8" r="0.9" fill="white" opacity="0.9"/>
+        <ellipse cx="6" cy="0" rx="2.5" ry="3" fill="#09090b" opacity="0.9"/>
+        <circle cx="5.5" cy="0.8" r="0.9" fill="white" opacity="0.9"/>
+      </g>
+      <path d="M-3 12 Q 0 14, 3 12" stroke="#09090b" stroke-width="1.2" stroke-linecap="round" fill="none" opacity="0.35"/>
+    </g>
+  </g>
+</svg>
