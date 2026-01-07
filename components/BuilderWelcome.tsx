@@ -2,8 +2,9 @@
 
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { X, Sparkles, Rocket, Code2, Globe, Zap, Crown, ArrowRight, Shield, Cloud } from 'lucide-react'
+import { X, Sparkles, Rocket, Code2, Globe, Zap, Crown, ArrowRight, Shield, Cloud, LayoutDashboard } from 'lucide-react'
 import { useUser } from '@clerk/nextjs'
+import Link from 'next/link'
 
 // =============================================================================
 // BUILDER WELCOME - First-time orientation for authenticated users
@@ -229,6 +230,21 @@ export default function BuilderWelcome({ onClose }: BuilderWelcomeProps) {
                   <span className="relative">Enter the Studio</span>
                   <ArrowRight className="relative w-5 h-5 group-hover:translate-x-1 transition-transform" />
                 </motion.button>
+
+                {/* Secondary - Go to Dashboard */}
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  transition={{ delay: 0.6 }}
+                >
+                  <Link
+                    href="/dashboard"
+                    className="group flex items-center justify-center gap-2 w-full mt-3 py-2 text-xs text-zinc-400 hover:text-white transition-colors"
+                  >
+                    <LayoutDashboard className="w-3.5 h-3.5" />
+                    <span>Go to Dashboard</span>
+                  </Link>
+                </motion.div>
               </div>
             </div>
           </motion.div>
