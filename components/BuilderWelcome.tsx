@@ -121,7 +121,7 @@ export default function BuilderWelcome({ onClose }: BuilderWelcomeProps) {
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 10 }}
             transition={{ type: 'spring', duration: 0.4, bounce: 0.2 }}
-            className="relative z-10 w-full max-w-md"
+            className="relative z-10 w-full max-w-xs sm:max-w-sm"
           >
             {/* Outer glow */}
             <div className="absolute -inset-1 bg-gradient-to-r from-emerald-500/20 via-teal-500/10 to-emerald-500/20 rounded-3xl blur-2xl opacity-60" />
@@ -145,29 +145,29 @@ export default function BuilderWelcome({ onClose }: BuilderWelcomeProps) {
               </button>
 
               {/* Content */}
-              <div className="relative p-8">
+              <div className="relative p-4 sm:p-6">
                 {/* Logo + Greeting */}
                 <motion.div 
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.2 }}
-                  className="flex items-center gap-4 mb-8"
+                  className="flex items-center gap-3 mb-4 sm:mb-6"
                 >
                   {/* Geometric H mark */}
-                  <div className="relative w-14 h-14 bg-zinc-900 rounded-xl flex items-center justify-center border border-zinc-800">
-                    <div className="w-6 h-6 relative">
-                      <div className="absolute left-0 top-0 bottom-0 w-1 bg-gradient-to-b from-emerald-400 to-emerald-600 rounded-full" />
-                      <div className="absolute right-0 top-0 bottom-0 w-1 bg-gradient-to-b from-emerald-400 to-emerald-600 rounded-full" />
-                      <div className="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-1 bg-gradient-to-r from-emerald-400 to-emerald-600 rounded-full" />
+                  <div className="relative w-10 h-10 sm:w-12 sm:h-12 bg-zinc-900 rounded-lg flex items-center justify-center border border-zinc-800">
+                    <div className="w-4 h-4 sm:w-5 sm:h-5 relative">
+                      <div className="absolute left-0 top-0 bottom-0 w-0.5 sm:w-1 bg-gradient-to-b from-emerald-400 to-emerald-600 rounded-full" />
+                      <div className="absolute right-0 top-0 bottom-0 w-0.5 sm:w-1 bg-gradient-to-b from-emerald-400 to-emerald-600 rounded-full" />
+                      <div className="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-0.5 sm:h-1 bg-gradient-to-r from-emerald-400 to-emerald-600 rounded-full" />
                     </div>
                   </div>
                   <div>
-                    <h2 className="text-2xl font-bold text-white">
+                    <h2 className="text-lg sm:text-xl font-bold text-white">
                       Welcome, {firstName}
                     </h2>
-                    <div className="flex items-center gap-2 mt-1">
-                      <TierIcon className="w-4 h-4 text-emerald-500" />
-                      <span className="text-sm text-zinc-400 font-medium">
+                    <div className="flex items-center gap-1.5 mt-0.5">
+                      <TierIcon className="w-3 h-3 sm:w-4 sm:h-4 text-emerald-500" />
+                      <span className="text-xs sm:text-sm text-zinc-400 font-medium">
                         {config.name} Plan
                       </span>
                     </div>
@@ -179,21 +179,21 @@ export default function BuilderWelcome({ onClose }: BuilderWelcomeProps) {
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.3 }}
-                  className="mb-8"
+                  className="mb-4 sm:mb-6"
                 >
-                  <div className="space-y-3">
+                  <div className="space-y-2">
                     {config.perks.map((perk, i) => (
                       <motion.div 
                         key={i}
                         initial={{ opacity: 0, x: -10 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: 0.4 + i * 0.1 }}
-                        className="flex items-center gap-3 text-zinc-200"
+                        className="flex items-center gap-2 text-zinc-200"
                       >
-                        <div className="w-8 h-8 rounded-lg bg-zinc-800 border border-zinc-700 flex items-center justify-center">
-                          <perk.icon className="w-4 h-4 text-zinc-400" />
+                        <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-md bg-zinc-800 border border-zinc-700 flex items-center justify-center">
+                          <perk.icon className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-zinc-400" />
                         </div>
-                        <span className="text-sm">{perk.text}</span>
+                        <span className="text-xs sm:text-sm">{perk.text}</span>
                       </motion.div>
                     ))}
                   </div>
@@ -205,7 +205,7 @@ export default function BuilderWelcome({ onClose }: BuilderWelcomeProps) {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ delay: 0.6 }}
-                    className="text-xs text-zinc-500 text-center mb-6"
+                    className="text-[10px] sm:text-xs text-zinc-500 text-center mb-3 sm:mb-4"
                   >
                     {config.upgradeHint}
                   </motion.p>
@@ -218,7 +218,7 @@ export default function BuilderWelcome({ onClose }: BuilderWelcomeProps) {
                   transition={{ delay: 0.5 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={handleDismiss}
-                  className="group relative w-full py-4 px-6 bg-emerald-500/15 backdrop-blur-2xl border border-emerald-500/40 hover:bg-emerald-500/20 hover:border-emerald-500/50 text-white font-semibold rounded-xl transition-all shadow-[0_0_15px_rgba(16,185,129,0.15)] flex items-center justify-center gap-3 overflow-hidden"
+                  className="group relative w-full py-2.5 sm:py-3 px-4 bg-emerald-500/15 backdrop-blur-2xl border border-emerald-500/40 hover:bg-emerald-500/20 hover:border-emerald-500/50 text-white text-sm font-semibold rounded-lg transition-all shadow-[0_0_15px_rgba(16,185,129,0.15)] flex items-center justify-center gap-2 overflow-hidden"
                 >
                   <div className="absolute inset-0 bg-gradient-to-br from-white/[0.08] via-transparent to-transparent rounded-xl pointer-events-none" />
                   <motion.div

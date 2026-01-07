@@ -63,7 +63,7 @@ export default function WelcomeModal({ trigger = 'auto', isOpen: externalIsOpen,
             animate={{ opacity: 1, scale: 1, y: 0 }}
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             transition={{ type: 'spring', bounce: 0.3 }}
-            className="relative w-full max-w-md bg-zinc-900 border border-zinc-800 rounded-2xl shadow-2xl overflow-hidden"
+            className="relative w-full max-w-[300px] sm:max-w-sm bg-zinc-900 border border-zinc-800 rounded-xl shadow-2xl overflow-hidden"
           >
             {/* Close button - Optional: Remove to force signup? User said "They NEED to create an account" */}
             <button 
@@ -74,37 +74,37 @@ export default function WelcomeModal({ trigger = 'auto', isOpen: externalIsOpen,
               <X className="w-5 h-5" />
             </button>
 
-            <div className="p-8 text-center">
-              <div className="w-16 h-16 bg-zinc-800 rounded-full flex items-center justify-center mx-auto mb-6 border border-zinc-700">
-                <Lock className="w-8 h-8 text-zinc-400" />
+            <div className="p-5 text-center">
+              <div className="w-12 h-12 bg-zinc-800 rounded-full flex items-center justify-center mx-auto mb-4 border border-zinc-700">
+                <Lock className="w-6 h-6 text-zinc-400" />
               </div>
               
-              <h2 className="text-2xl font-bold text-white mb-3">
-                Save Your Masterpiece
+              <h2 className="text-lg font-bold text-white mb-2">
+                Save Your Work
               </h2>
               
-              <p className="text-zinc-400 mb-8 leading-relaxed">
-                You've built a great foundation. To save your progress and continue building the rest of the site, you need to create a free account.
+              <p className="text-sm text-zinc-400 mb-5 leading-relaxed">
+                Create a free account to save your progress and continue building.
               </p>
 
-              <div className="space-y-4">
+              <div className="space-y-3">
                 <button 
                   onClick={handleSignup}
-                  className="w-full py-4 px-6 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-lg rounded-xl transition-colors flex items-center justify-center gap-2"
+                  className="w-full py-3 px-4 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-sm rounded-lg transition-colors flex items-center justify-center gap-2"
                 >
                   Create Free Account
-                  <ArrowRight className="w-5 h-5" />
+                  <ArrowRight className="w-4 h-4" />
                 </button>
                 
-                <p className="text-xs text-zinc-500">
-                  Already have an account? <button onClick={() => router.push('/sign-in')} className="text-zinc-400 hover:text-white underline">Sign in</button>
+                <p className="text-[11px] text-zinc-500">
+                  Have an account? <button onClick={() => router.push('/sign-in')} className="text-zinc-400 hover:text-white underline">Sign in</button>
                 </p>
               </div>
             </div>
             
-            <div className="p-4 bg-zinc-950/50 border-t border-zinc-800 text-center">
-              <p className="text-xs text-zinc-500">
-                <span className="text-red-400">Warning:</span> Closing this window without signing up will result in lost progress.
+            <div className="p-3 bg-zinc-950/50 border-t border-zinc-800 text-center">
+              <p className="text-[10px] text-zinc-500">
+                <span className="text-red-400">Warning:</span> Progress will be lost without signing up.
               </p>
             </div>
           </motion.div>
