@@ -94,16 +94,8 @@ export async function GET() {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const user = await currentUser()
-    const email = user?.emailAddresses?.[0]?.emailAddress
-
-    // Get or create our user record
-    const dbUser = await getOrCreateUser(clerkId, email)
-    if (!dbUser) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 })
-    }
-
-    const projects = await getProjectsByUserId(dbUser.id)
+    // Get projects by clerk ID directly (projects.user_id stores clerk_id)
+    const projects = await getProjectsByUserId(clerkId)
 
     return NextResponse.json({ projects })
 

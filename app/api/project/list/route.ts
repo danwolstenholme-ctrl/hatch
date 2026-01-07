@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
 import { getProjectsByUserId } from '@/lib/db/projects'
-import { getUserByClerkId } from '@/lib/db/users'
 
 export async function GET(req: NextRequest) {
   const { userId } = await auth()
@@ -11,13 +10,8 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    // Look up the Supabase user by Clerk ID
-    const dbUser = await getUserByClerkId(userId)
-    if (!dbUser) {
-      return NextResponse.json({ projects: [] })
-    }
-    
-    const projects = await getProjectsByUserId(dbUser.id)
+    // Projects are stored with clerk_id as user_id (per schema)
+    const projects = await getProjectsByUserId(userId)
     return NextResponse.json({ projects })
   } catch (error) {
     console.error('Error fetching projects:', error)

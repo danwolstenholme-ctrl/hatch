@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth, currentUser } from '@clerk/nextjs/server'
+import { auth } from '@clerk/nextjs/server'
 import { 
   getProjectById, 
   getSectionsByProjectId,
-  getOrCreateUser,
   updateProjectBrandConfig,
 } from '@/lib/db'
 import { getTemplateById } from '@/lib/templates'
@@ -21,15 +20,6 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const user = await currentUser()
-    const email = user?.emailAddresses?.[0]?.emailAddress
-
-    // Get or create our user record to get the internal user ID
-    const dbUser = await getOrCreateUser(clerkId, email)
-    if (!dbUser) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 })
-    }
-
     const { id } = await params
     
     const project = await getProjectById(id)
@@ -37,8 +27,8 @@ export async function GET(
       return NextResponse.json({ error: 'Project not found' }, { status: 404 })
     }
 
-    // Verify ownership using internal user ID
-    if (project.user_id !== dbUser.id) {
+    // Verify ownership - project.user_id is the clerk_id per schema
+    if (project.user_id !== clerkId) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
@@ -70,13 +60,6 @@ export async function PATCH(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const user = await currentUser()
-    const email = user?.emailAddresses?.[0]?.emailAddress
-    const dbUser = await getOrCreateUser(clerkId, email)
-    if (!dbUser) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 })
-    }
-
     const { id } = await params
     const body = await request.json()
     const { brandConfig } = body
@@ -85,9 +68,9 @@ export async function PATCH(
       return NextResponse.json({ error: 'Missing brandConfig' }, { status: 400 })
     }
 
-    // Verify ownership
+    // Verify ownership - project.user_id stores clerk_id directly
     const project = await getProjectById(id)
-    if (!project || project.user_id !== dbUser.id) {
+    if (!project || project.user_id !== clerkId) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 

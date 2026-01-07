@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth, clerkClient, currentUser } from '@clerk/nextjs/server'
-import { getProjectById, getSectionById, getOrCreateUser, updateSectionRefinement, getSectionsByProjectId } from '@/lib/db'
+import { getProjectById, getSectionById, updateSectionRefinement, getSectionsByProjectId } from '@/lib/db'
 import { LIMITS } from '@/types/subscriptions'
 
 // =============================================================================
@@ -170,11 +170,6 @@ export async function POST(request: NextRequest) {
       }
 
       const clerkUser = await currentUser()
-      const email = clerkUser?.emailAddresses?.[0]?.emailAddress
-      const dbUser = await getOrCreateUser(userId!, email)
-      if (!dbUser) {
-        return NextResponse.json({ error: 'User not found' }, { status: 404 })
-      }
 
       // Verify code is provided
       if (!code) {
@@ -184,7 +179,7 @@ export async function POST(request: NextRequest) {
         )
       }
 
-      // Verify ownership: section -> project -> user (using internal ID)
+      // Verify ownership: section -> project -> user (using clerk_id)
       let section = await getSectionById(sectionId)
       
       // Fallback: Try to find by projectId + sectionType if sectionId lookup failed
@@ -201,7 +196,7 @@ export async function POST(request: NextRequest) {
       if (!project) {
         return NextResponse.json({ error: 'Project not found' }, { status: 404 })
       }
-      if (project.user_id !== dbUser.id) {
+      if (project.user_id !== userId) {
         return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
       }
     } else {

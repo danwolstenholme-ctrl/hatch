@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth, clerkClient } from '@clerk/nextjs/server'
 import { AccountSubscription } from '@/types/subscriptions'
-import { getOrCreateUser } from '@/lib/db/users'
 import { getProjectsByUserId } from '@/lib/db/projects'
 
 // =============================================================================
@@ -68,14 +67,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Project slug required' }, { status: 400 })
   }
 
-  // Verify project ownership - SECURITY FIX
+  // Verify project ownership - use clerk_id directly
   try {
-    const dbUser = await getOrCreateUser(userId)
-    if (!dbUser) {
-      return NextResponse.json({ error: 'Failed to verify user' }, { status: 500 })
-    }
-    
-    const userProjects = await getProjectsByUserId(dbUser.id)
+    const userProjects = await getProjectsByUserId(userId)
     const ownsProject = userProjects.some((p: { slug: string }) => p.slug === projectSlug)
     if (!ownsProject) {
       return NextResponse.json({ error: 'Project not found or access denied' }, { status: 403 })

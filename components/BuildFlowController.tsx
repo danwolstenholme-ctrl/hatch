@@ -613,6 +613,26 @@ export default function BuildFlowController({ existingProjectId, initialPrompt, 
       return
     }
 
+    // Check project limit before attempting to create
+    // If at limit, route to dashboard to manage existing projects
+    try {
+      const listRes = await fetch('/api/project/list')
+      if (listRes.ok) {
+        const { projects } = await listRes.json()
+        const accountSub = user.publicMetadata?.accountSubscription as { tier?: string } | undefined
+        const tier = accountSub?.tier || 'free'
+        const limit = (tier === 'singularity' || tier === 'visionary') ? Infinity : 3
+        
+        if (projects.length >= limit) {
+          // At limit - route to dashboard to manage projects
+          router.push('/dashboard')
+          return
+        }
+      }
+    } catch {
+      // If check fails, continue and let project creation handle it
+    }
+
     // Create fresh project for signed-in users (no guest handoff - demo is a demo)
     try {
       const controller = new AbortController()

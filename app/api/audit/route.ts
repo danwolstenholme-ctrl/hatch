@@ -1,11 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth, currentUser, clerkClient } from '@clerk/nextjs/server'
+import { auth, clerkClient } from '@clerk/nextjs/server'
 import { 
   getLatestBuild, 
   updateBuildAudit,
   createBuild,
   getProjectById,
-  getOrCreateUser,
 } from '@/lib/db'
 import { AccountSubscription } from '@/types/subscriptions'
 
@@ -118,10 +117,6 @@ export async function POST(request: NextRequest) {
     }
 
     const email = user?.emailAddresses?.[0]?.emailAddress
-    const dbUser = await getOrCreateUser(clerkId, email)
-    if (!dbUser) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 })
-    }
 
     const body = await request.json()
     const { projectId } = body
@@ -133,9 +128,9 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Verify project ownership using internal user ID
+    // Verify project ownership - project.user_id stores clerk_id directly
     const project = await getProjectById(projectId)
-    if (!project || project.user_id !== dbUser.id) {
+    if (!project || project.user_id !== clerkId) {
       return NextResponse.json(
         { error: 'Project not found' },
         { status: 404 }

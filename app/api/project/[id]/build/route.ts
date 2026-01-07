@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { auth, currentUser } from '@clerk/nextjs/server'
-import { createBuild, getLatestBuild, updateProjectStatus, getProjectById, getOrCreateUser } from '@/lib/db'
+import { auth } from '@clerk/nextjs/server'
+import { createBuild, getLatestBuild, updateProjectStatus, getProjectById } from '@/lib/db'
 
 // =============================================================================
 // POST: Create a build from completed sections
@@ -15,18 +15,11 @@ export async function POST(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const user = await currentUser()
-    const email = user?.emailAddresses?.[0]?.emailAddress
-    const dbUser = await getOrCreateUser(clerkId, email)
-    if (!dbUser) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 })
-    }
-
     const { id: projectId } = await params
 
-    // Verify ownership using internal user ID
+    // Verify ownership - project.user_id stores clerk_id directly
     const project = await getProjectById(projectId)
-    if (!project || project.user_id !== dbUser.id) {
+    if (!project || project.user_id !== clerkId) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 
@@ -63,18 +56,11 @@ export async function GET(
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const user = await currentUser()
-    const email = user?.emailAddresses?.[0]?.emailAddress
-    const dbUser = await getOrCreateUser(clerkId, email)
-    if (!dbUser) {
-      return NextResponse.json({ error: 'User not found' }, { status: 404 })
-    }
-
     const { id: projectId } = await params
 
-    // Verify ownership using internal user ID
+    // Verify ownership - project.user_id stores clerk_id directly
     const project = await getProjectById(projectId)
-    if (!project || project.user_id !== dbUser.id) {
+    if (!project || project.user_id !== clerkId) {
       return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
     }
 

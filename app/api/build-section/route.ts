@@ -268,7 +268,7 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Verify project ownership using internal user ID
+    // Verify project ownership - project.user_id stores clerk_id directly
     if (projectId && !projectId.startsWith('demo-')) {
       const project = await getProjectById(projectId)
       if (!project) {
@@ -277,7 +277,7 @@ export async function POST(request: NextRequest) {
           { status: 404 }
         )
       }
-      if (!dbUser || project.user_id !== dbUser.id) {
+      if (!userId || project.user_id !== userId) {
         return NextResponse.json(
           { error: 'Unauthorized access to project' },
           { status: 403 }
@@ -285,7 +285,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Fetch User Style DNA (The Chronosphere)
+    // Fetch User Style DNA (The Chronosphere) - uses dbUser.id (UUID) for users table
     const styleDNA = dbUser ? await getUserDNA(dbUser.id) : null
 
     // Build the system prompt
