@@ -248,10 +248,10 @@ export function SubscriptionStatusCard() {
         <div className="text-center py-4">
           <p className="text-zinc-400 mb-4">Upgrade to unlock all features</p>
           <Link
-            href="/pricing"
+            href="/dashboard/billing"
             className="inline-block px-6 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold rounded-xl transition-colors"
           >
-            View Plans
+            Manage Billing
           </Link>
         </div>
       )}
