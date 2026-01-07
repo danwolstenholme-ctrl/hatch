@@ -47,6 +47,7 @@ import HatchModal from './HatchModal'
 import TheWitness from './singularity/TheWitness'
 import WelcomeModal from './WelcomeModal'
 import BuilderWelcome from './BuilderWelcome'
+import DemoWelcome from './DemoWelcome'
 import SiteSettingsModal, { SiteSettings } from './SiteSettingsModal'
 import FullSitePreviewFrame from './builder/FullSitePreviewFrame'
 import GuestCreditBadge from './GuestCreditBadge'
@@ -159,6 +160,7 @@ export default function BuildFlowController({ existingProjectId, initialPrompt, 
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
   const [showBuildSuccess, setShowBuildSuccess] = useState(false)
   const [showBuilderWelcome, setShowBuilderWelcome] = useState(false)
+  const [showDemoWelcome, setShowDemoWelcome] = useState(false)
   const [lastCompletedSection, setLastCompletedSection] = useState<string>('')
   const [guestBuildsUsed, setGuestBuildsUsed] = useState(0)
   const [guestRefinementsUsed, setGuestRefinementsUsed] = useState(0)
@@ -171,6 +173,13 @@ export default function BuildFlowController({ existingProjectId, initialPrompt, 
       setShowBuilderWelcome(true)
     }
   }, [isSignedIn])
+
+  // Show demo welcome for demo mode users
+  useEffect(() => {
+    if (demoMode) {
+      setShowDemoWelcome(true)
+    }
+  }, [demoMode])
   
   // Keep demoMode in sync with isDemo prop and auth state
   // Ensures signed-in users on /builder never show sandbox mode
@@ -1401,9 +1410,17 @@ export default function GeneratedPage() {
       {demoMode && (
         <div className="fixed top-0 left-0 right-0 z-50 bg-amber-500/10 border-b border-amber-500/20 px-4 py-2">
           <div className="max-w-screen-xl mx-auto flex items-center justify-between">
-            <p className="text-sm text-amber-200">
-              <span className="font-medium">Demo Mode</span> — Your work won't be saved. Sign up to keep your projects.
-            </p>
+            <div className="flex items-center gap-4">
+              <button
+                onClick={() => router.push('/')}
+                className="text-sm text-zinc-400 hover:text-white transition-colors"
+              >
+                ← Exit
+              </button>
+              <p className="text-sm text-amber-200">
+                <span className="font-medium">Demo Mode</span> — Your work won't be saved.
+              </p>
+            </div>
             <button
               onClick={() => router.push('/sign-up?redirect_url=/dashboard')}
               className="text-sm font-medium text-amber-400 hover:text-amber-300 transition-colors"
@@ -2023,6 +2040,11 @@ export default function GeneratedPage() {
       {/* Builder Welcome - first-time orientation for authenticated users */}
       {showBuilderWelcome && (
         <BuilderWelcome onClose={() => setShowBuilderWelcome(false)} />
+      )}
+
+      {/* Demo Welcome - orientation for demo/guest users */}
+      {showDemoWelcome && (
+        <DemoWelcome onClose={() => setShowDemoWelcome(false)} />
       )}
 
       {/* Build Success Modal - celebration + upgrade nudge for guests */}

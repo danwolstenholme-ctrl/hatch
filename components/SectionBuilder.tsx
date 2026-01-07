@@ -42,19 +42,6 @@ import {
 } from 'lucide-react'
 import GeneratingModal from './builder/GeneratingModal'
 
-// Suggestions based on section type
-const getSuggestions = (id: string) => {
-  switch(id) {
-    case 'hero': return ['Modern & Minimal', 'Bold Typography', 'With Video Background', 'Dark Mode Aesthetic'];
-    case 'features': return ['Grid Layout', 'Alternating Side-by-Side', 'With Icons', 'Glassmorphism Cards'];
-    case 'testimonials': return ['Carousel Slider', 'Masonry Grid', 'Minimalist Quotes', 'With Avatars'];
-    case 'contact': return ['Simple Form', 'With Map', 'Split Layout', 'Floating Card'];
-    case 'pricing': return ['3-Tier Cards', 'Comparison Table', 'Simple List', 'Highlighted Preferred Option'];
-    case 'faq': return ['Accordion Style', 'Grid Layout', 'Simple List', 'Categorized'];
-    default: return ['Modern Style', 'Minimalist', 'Bold & Colorful', 'Professional', 'High Contrast'];
-  }
-}
-
 // =============================================================================
 // STREAMING CODE EFFECT - Fake code animation for loading state
 // =============================================================================
@@ -152,12 +139,6 @@ function InlinePromptInput({ onSubmit }: { onSubmit: (prompt: string) => void })
     }, 300)
   }
 
-  const suggestions = [
-    'Hero with animated gradient background',
-    'Pricing table with 3 tiers',
-    'Testimonial carousel with avatars',
-  ]
-
   return (
     <div className="h-full flex items-center justify-center bg-zinc-950 p-6">
       <motion.div
@@ -209,10 +190,26 @@ function InlinePromptInput({ onSubmit }: { onSubmit: (prompt: string) => void })
                 handleSubmit()
               }
             }}
-            placeholder="e.g. A futuristic landing page for a space tourism agency..."
+            placeholder="e.g. A landing page for a premium fitness app called 'Elevate' with dark theme, neon accents, pricing cards, and testimonials..."
             className="w-full h-32 bg-transparent p-5 text-base text-white placeholder-zinc-600 resize-none focus:outline-none font-medium"
             autoFocus
           />
+          
+          {/* Inline tips when empty */}
+          {!prompt.trim() && (
+            <div className="px-5 pb-4 space-y-2">
+              <p className="text-xs text-emerald-400 font-medium">💡 Tips for great results:</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-zinc-500">
+                <span>• Be specific: mention colors, style, purpose</span>
+                <span>• Include your brand name if you have one</span>
+                <span>• Describe your target audience</span>
+                <span>• Mention sections: hero, pricing, testimonials</span>
+              </div>
+              <p className="text-xs text-zinc-600 mt-2 border-t border-zinc-800/50 pt-2">
+                <span className="text-zinc-500">After generation:</span> Click any text to edit • Switch device views • Refine with AI prompts
+              </p>
+            </div>
+          )}
           
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between px-5 py-4 bg-zinc-900/40 border-t border-zinc-800/60">
             <div className="flex items-center gap-2 text-xs text-zinc-500">
@@ -256,17 +253,14 @@ function InlinePromptInput({ onSubmit }: { onSubmit: (prompt: string) => void })
           </div>
         </div>
 
-        {/* Suggestions */}
-        <div className="flex flex-wrap justify-center gap-2 mt-4">
-          {suggestions.map((s) => (
-            <button
-              key={s}
-              onClick={() => setPrompt(s)}
-              className="px-3 py-1.5 text-xs text-zinc-400 border border-zinc-800/60 rounded-full bg-zinc-950/50 hover:bg-zinc-900/60 hover:text-white transition-colors"
-            >
-              {s}
-            </button>
-          ))}
+        {/* Example prompt - not clickable, just inspiration */}
+        <div className="mt-4 text-center">
+          <p className="text-xs text-zinc-600">
+            <span className="text-zinc-500">Try something like:</span>{' '}
+            <span className="text-zinc-400 italic">
+              "A hero section for [your business name] - we do [what you do] for [who you help]. Dark theme with [your brand color] accents."
+            </span>
+          </p>
         </div>
       </motion.div>
     </div>

@@ -206,15 +206,24 @@ export default function Home() {
                   animate={{ x: ['-200%', '200%'] }}
                   transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
                 />
-                <span className="relative">Try the Demo</span>
+                <span className="relative">{isSignedIn ? 'Start Building' : 'Try the Demo'}</span>
                 <ArrowRight className="relative w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-1 transition-transform" />
               </motion.button>
-              <Link
-                href="/how-it-works"
-                className="w-full sm:w-auto inline-flex items-center justify-center rounded-xl bg-zinc-800/50 backdrop-blur-xl hover:bg-zinc-800/60 border border-zinc-700/50 hover:border-zinc-600 px-6 sm:px-8 py-3.5 sm:py-4 font-medium text-zinc-200 transition-all"
-              >
-                See how it works
-              </Link>
+              {isSignedIn ? (
+                <Link
+                  href="/dashboard"
+                  className="w-full sm:w-auto inline-flex items-center justify-center rounded-xl bg-zinc-800/50 backdrop-blur-xl hover:bg-zinc-800/60 border border-zinc-700/50 hover:border-zinc-600 px-6 sm:px-8 py-3.5 sm:py-4 font-medium text-zinc-200 transition-all"
+                >
+                  Go to Dashboard
+                </Link>
+              ) : (
+                <Link
+                  href="/how-it-works"
+                  className="w-full sm:w-auto inline-flex items-center justify-center rounded-xl bg-zinc-800/50 backdrop-blur-xl hover:bg-zinc-800/60 border border-zinc-700/50 hover:border-zinc-600 px-6 sm:px-8 py-3.5 sm:py-4 font-medium text-zinc-200 transition-all"
+                >
+                  See how it works
+                </Link>
+              )}
             </motion.div>
 
             <motion.div 

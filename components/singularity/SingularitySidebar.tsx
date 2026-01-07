@@ -1,7 +1,8 @@
 'use client'
 
 import { motion } from 'framer-motion'
-import { Settings, Check, Sparkles, Cpu, Code2, Database, ArrowRight } from 'lucide-react'
+import { Settings, Check, Sparkles, Cpu, Code2, Database, ArrowRight, Home } from 'lucide-react'
+import Link from 'next/link'
 
 interface SingularitySidebarProps {
   currentSection: number
@@ -51,6 +52,15 @@ export default function SingularitySidebar({
       <div className="absolute inset-y-0 right-0 w-px bg-gradient-to-b from-transparent via-zinc-700/50 to-transparent" />
       
       <div className="relative flex-1 overflow-y-auto px-5 py-6 space-y-5 scrollbar-thin">
+        {/* Back to Dashboard/Home */}
+        <Link
+          href={demoMode ? '/' : '/dashboard'}
+          className="flex items-center gap-2 text-xs text-zinc-500 hover:text-white transition-colors -mt-2 mb-2"
+        >
+          <Home className="w-3.5 h-3.5" />
+          {demoMode ? 'Exit Demo' : 'Dashboard'}
+        </Link>
+
         {/* Project Capsule - HomepageWelcome card style */}
         <div className="relative rounded-2xl overflow-hidden">
           <div className="absolute inset-0 bg-zinc-900/40 backdrop-blur-xl" />

@@ -53,16 +53,24 @@ function buildSystemPrompt(
   styleDNA: StyleDNA | null,
   sectionPromptHint?: string
 ): string {
-  // Handle sparse/lazy inputs
-  const isSparseInput = userPrompt.length < 15 || ['test', 'testing', 'demo', 'example', 'sample'].some(w => userPrompt.toLowerCase().includes(w));
+  // Handle sparse/lazy inputs - be VERY aggressive about detecting low-effort prompts
+  const lowEffortKeywords = ['test', 'testing', 'demo', 'example', 'sample', 'website', 'site', 'page', 'something', 'anything', 'stuff', 'thing', 'cool', 'nice', 'good', 'idk', 'dunno', 'whatever'];
+  const isVeryGeneric = userPrompt.split(/\s+/).length < 5; // Less than 5 words
+  const containsLowEffort = lowEffortKeywords.some(w => userPrompt.toLowerCase().includes(w));
+  const isSparseInput = userPrompt.length < 30 || (isVeryGeneric && containsLowEffort);
+  
   const sparseInstruction = isSparseInput 
-    ? `\n## CRITICAL: SPARSE INPUT DETECTED
-The user provided a very minimal prompt ("${userPrompt}"). 
-DO NOT just print "${userPrompt}" on the screen.
-Instead, HALLUCINATE a premium, high-fidelity example for this section type.
-- Use realistic placeholder copy (e.g. for a SaaS, Agency, or Tech product).
-- Make it look expensive and production-ready.
-- Ignore the specific text "${userPrompt}" and treat it as "Build me a great example".`
+    ? `\n## CRITICAL: LOW-EFFORT INPUT DETECTED
+The user provided a vague/generic prompt: "${userPrompt}"
+
+DO NOT create something bland or generic. Instead:
+1. Pick ONE compelling use case: A luxury travel agency, a cutting-edge AI startup, a boutique design studio, or a high-end restaurant.
+2. INVENT specific, premium content: Company name, specific services, real-sounding testimonials, concrete pricing.
+3. Make it look like a $10,000 custom website - not a template.
+4. Use SPECIFIC text, not "Lorem ipsum" or "[Your Text Here]".
+
+Example: Instead of "Welcome to our website", write "Redefining Luxury Travel Since 2019" with actual trip packages and prices.
+The goal is to WOW the user with specificity, not show them a blank template.`
     : '';
 
   const componentName = sectionName

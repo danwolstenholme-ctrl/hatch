@@ -23,6 +23,7 @@ export default function DashboardPage() {
   const [projects, setProjects] = useState<DbProject[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isCreating, setIsCreating] = useState(false)
+  const [createError, setCreateError] = useState<string | null>(null)
   const [showUpgradeModal, setShowUpgradeModal] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
@@ -109,6 +110,7 @@ export default function DashboardPage() {
     }
 
     setIsCreating(true)
+    setCreateError(null)
     try {
       const res = await fetch('/api/project', {
         method: 'POST',
@@ -127,12 +129,12 @@ export default function DashboardPage() {
         if (res.status === 403) {
           setShowUpgradeModal(true)
         } else {
-          alert(data.error || 'Failed to create project. Please try again.')
+          setCreateError(data.error || 'Failed to create project. Please try again.')
         }
       }
     } catch (err) {
       console.error('[Dashboard] Create project error:', err)
-      alert('Failed to create project. Please check your connection.')
+      setCreateError('Failed to create project. Please check your connection.')
     } finally {
       setIsCreating(false)
     }
@@ -164,8 +166,23 @@ export default function DashboardPage() {
 
   return (
     <div className="min-h-screen bg-zinc-950">
-      <div className="max-w-6xl mx-auto px-6 py-10 space-y-10">
+      <div className="max-w-6xl mx-auto px-4 sm:px-6 py-6 space-y-6">
         
+        {/* Error Banner */}
+        <AnimatePresence>
+          {createError && (
+            <motion.div
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              className="flex items-center justify-between gap-3 px-4 py-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm"
+            >
+              <span>{createError}</span>
+              <button onClick={() => setCreateError(null)} className="text-red-400/60 hover:text-red-400">✕</button>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         {/* Header */}
         <motion.header
           initial={{ opacity: 0, y: -10 }}
@@ -173,10 +190,10 @@ export default function DashboardPage() {
           className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4"
         >
           <div>
-            <h1 className="text-2xl sm:text-3xl font-semibold text-white">
+            <h1 className="text-xl sm:text-2xl font-semibold text-white">
               Hey {firstName} 👋
             </h1>
-            <p className="text-zinc-400 mt-1">
+            <p className="text-zinc-500 text-sm mt-0.5">
               {hasProjects 
                 ? `You have ${projects.length} project${projects.length === 1 ? '' : 's'}. Let's keep building.`
                 : "Ready to build something amazing?"
@@ -184,22 +201,22 @@ export default function DashboardPage() {
             </p>
           </div>
           
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
             <Link
               href="/dashboard/billing"
-              className="flex items-center gap-2 px-4 py-2 rounded-xl border border-zinc-800 bg-zinc-900/50 text-sm text-zinc-400 hover:text-white hover:border-zinc-700 transition-colors"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-zinc-800 bg-zinc-900/50 text-xs text-zinc-400 hover:text-white hover:border-zinc-700 transition-colors"
             >
-              <Settings className="w-4 h-4" />
+              <Settings className="w-3.5 h-3.5" />
               <span className={tierConfig.color}>{tierConfig.name}</span>
             </Link>
             
             {hasProjects && (
               <motion.button
-                whileHover={{ scale: 1.02 }}
-                whileTap={{ scale: 0.98 }}
+                whileHover={{ scale: 1.01 }}
+                whileTap={{ scale: 0.99 }}
                 onClick={handleCreate}
                 disabled={isCreating}
-                className="flex items-center gap-2 px-5 py-2.5 rounded-xl bg-emerald-500/15 border border-emerald-500/40 text-emerald-400 text-sm font-medium hover:bg-emerald-500/20 transition-colors"
+                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-emerald-500/15 border border-emerald-500/40 text-emerald-400 text-xs font-medium hover:bg-emerald-500/20 transition-colors"
               >
                 {isCreating ? (
                   <div className="w-4 h-4 border-2 border-emerald-500/30 border-t-emerald-500 rounded-full animate-spin" />
@@ -218,7 +235,7 @@ export default function DashboardPage() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="relative overflow-hidden rounded-2xl bg-zinc-900/70 backdrop-blur-xl border border-zinc-800/50 p-8 sm:p-12"
+            className="relative overflow-hidden rounded-xl bg-zinc-900/70 backdrop-blur-xl border border-zinc-800/50 p-6 sm:p-8"
           >
             {/* Gradient overlay */}
             <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(16,185,129,0.08),transparent_60%)] pointer-events-none" />
@@ -230,24 +247,24 @@ export default function DashboardPage() {
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ delay: 0.2, type: "spring", stiffness: 200 }}
               >
-                <Pip size={100} animate={true} float={true} glow={true} />
+                <Pip size={64} animate={true} float={true} glow={true} />
               </motion.div>
               
-              <h2 className="text-2xl sm:text-3xl font-semibold text-white mt-6">
+              <h2 className="text-lg sm:text-xl font-semibold text-white mt-4">
                 Welcome to HatchIt!
               </h2>
-              <p className="text-zinc-400 mt-3 leading-relaxed">
+              <p className="text-zinc-400 text-sm mt-2 leading-relaxed">
                 Describe what you want to build, and watch AI create production-ready React components in real-time. 
                 No templates. No drag-and-drop. Just your ideas, instantly realized.
               </p>
 
-              <div className="flex flex-col sm:flex-row items-center gap-3 mt-8">
+              <div className="flex flex-col sm:flex-row items-center gap-2 mt-6">
                 <motion.button
-                  whileHover={{ scale: 1.03, y: -2 }}
+                  whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={handleCreate}
                   disabled={isCreating}
-                  className="relative group w-full sm:w-auto flex items-center justify-center gap-2 px-8 py-4 rounded-xl bg-emerald-500/15 border border-emerald-500/40 text-emerald-400 font-semibold hover:bg-emerald-500/20 transition-all shadow-[0_0_30px_rgba(16,185,129,0.15)] overflow-hidden"
+                  className="relative group w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg bg-emerald-500/15 border border-emerald-500/40 text-emerald-400 text-sm font-medium hover:bg-emerald-500/20 transition-all shadow-[0_0_20px_rgba(16,185,129,0.1)] overflow-hidden"
                 >
                   <div className="absolute inset-0 bg-gradient-to-br from-white/[0.08] via-transparent to-transparent rounded-xl pointer-events-none" />
                   <motion.div
@@ -256,23 +273,23 @@ export default function DashboardPage() {
                     transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
                   />
                   {isCreating ? (
-                    <div className="w-5 h-5 border-2 border-emerald-500/30 border-t-emerald-500 rounded-full animate-spin" />
+                    <div className="w-4 h-4 border-2 border-emerald-500/30 border-t-emerald-500 rounded-full animate-spin" />
                   ) : (
-                    <Sparkles className="w-5 h-5" />
+                    <Sparkles className="w-4 h-4" />
                   )}
                   <span className="relative">Start Building</span>
-                  <ArrowRight className="w-5 h-5 relative group-hover:translate-x-1 transition-transform" />
+                  <ArrowRight className="w-4 h-4 relative group-hover:translate-x-0.5 transition-transform" />
                 </motion.button>
                 
                 <Link
                   href="/how-it-works"
-                  className="w-full sm:w-auto flex items-center justify-center gap-2 px-6 py-4 rounded-xl border border-zinc-800 bg-zinc-900/50 text-zinc-300 font-medium hover:bg-zinc-800/50 hover:border-zinc-700 transition-colors"
+                  className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border border-zinc-800 bg-zinc-900/50 text-zinc-300 text-sm font-medium hover:bg-zinc-800/50 hover:border-zinc-700 transition-colors"
                 >
                   See how it works
                 </Link>
               </div>
 
-              <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 mt-8 text-xs text-zinc-500">
+              <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-5 mt-5 text-xs text-zinc-500">
                 <span className="flex items-center gap-1.5">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
                   Live preview
@@ -296,58 +313,58 @@ export default function DashboardPage() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="space-y-6"
+            className="space-y-4"
           >
             {/* Search and View Toggle */}
-            <div className="flex flex-wrap items-center gap-4">
-              <div className="relative flex-1 min-w-[240px] group">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500" />
+            <div className="flex flex-wrap items-center gap-3">
+              <div className="relative flex-1 min-w-[200px] group">
+                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-zinc-500" />
                 <input
                   type="text"
                   placeholder="Search projects..."
                   value={searchQuery}
                   onChange={(event) => setSearchQuery(event.target.value)}
-                  className="w-full rounded-xl border border-zinc-800 bg-zinc-900/50 pl-10 pr-4 py-2.5 text-sm text-white placeholder:text-zinc-600 focus:border-emerald-500/40 focus:bg-zinc-900 focus:outline-none transition-colors"
+                  className="w-full rounded-lg border border-zinc-800 bg-zinc-900/50 pl-8 pr-3 py-2 text-sm text-white placeholder:text-zinc-600 focus:border-emerald-500/40 focus:bg-zinc-900 focus:outline-none transition-colors"
                 />
               </div>
-              <div className="flex items-center gap-1 rounded-xl border border-zinc-800 bg-zinc-900/50 p-1">
+              <div className="flex items-center gap-0.5 rounded-lg border border-zinc-800 bg-zinc-900/50 p-0.5">
                 <button
                   type="button"
                   onClick={() => setViewMode('grid')}
-                  className={`rounded-lg p-2 transition-all ${viewMode === 'grid' ? 'bg-zinc-800 text-emerald-400' : 'text-zinc-500 hover:text-zinc-300'}`}
+                  className={`rounded-md p-1.5 transition-all ${viewMode === 'grid' ? 'bg-zinc-800 text-emerald-400' : 'text-zinc-500 hover:text-zinc-300'}`}
                 >
-                  <LayoutGrid className="h-4 w-4" />
+                  <LayoutGrid className="h-3.5 w-3.5" />
                 </button>
                 <button
                   type="button"
                   onClick={() => setViewMode('list')}
-                  className={`rounded-lg p-2 transition-all ${viewMode === 'list' ? 'bg-zinc-800 text-emerald-400' : 'text-zinc-500 hover:text-zinc-300'}`}
+                  className={`rounded-md p-1.5 transition-all ${viewMode === 'list' ? 'bg-zinc-800 text-emerald-400' : 'text-zinc-500 hover:text-zinc-300'}`}
                 >
-                  <List className="h-4 w-4" />
+                  <List className="h-3.5 w-3.5" />
                 </button>
               </div>
             </div>
 
             {/* No Search Results */}
             {filteredProjects.length === 0 && searchQuery && (
-              <div className="rounded-2xl border border-zinc-800 bg-zinc-900/50 px-6 py-12 text-center">
-                <p className="text-zinc-500">No projects match "{searchQuery}"</p>
+              <div className="rounded-lg border border-zinc-800 bg-zinc-900/50 px-4 py-8 text-center">
+                <p className="text-zinc-500 text-sm">No projects match "{searchQuery}"</p>
               </div>
             )}
 
             {/* Grid View */}
             {viewMode === 'grid' && filteredProjects.length > 0 && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                 {filteredProjects.map((project, index) => (
                   <motion.div
                     key={project.id}
-                    initial={{ opacity: 0, y: 20 }}
+                    initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.05 + index * 0.03 }}
+                    transition={{ delay: 0.02 + index * 0.02 }}
                   >
                     <Link
                       href={`/builder?project=${project.id}`}
-                      className="group relative block h-full overflow-hidden rounded-xl border border-zinc-800 bg-zinc-900/50 p-5 transition-all duration-200 hover:border-emerald-500/40 hover:bg-zinc-900"
+                      className="group relative block h-full overflow-hidden rounded-lg border border-zinc-800 bg-zinc-900/50 p-4 transition-all duration-150 hover:border-emerald-500/40 hover:bg-zinc-900"
                     >
                       {/* Hover gradient */}
                       <div className="absolute inset-0 bg-gradient-to-br from-emerald-500/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none" />
@@ -373,7 +390,7 @@ export default function DashboardPage() {
                           </button>
                         </div>
 
-                        <div className="flex items-center gap-3 mt-4 pt-4 border-t border-zinc-800/50">
+                        <div className="flex items-center gap-2 mt-3 pt-3 border-t border-zinc-800/50">
                           <span className={`text-xs px-2 py-1 rounded-full border ${
                             project.status === 'deployed' 
                               ? 'border-emerald-500/30 bg-emerald-500/10 text-emerald-400'
@@ -407,24 +424,24 @@ export default function DashboardPage() {
 
             {/* List View */}
             {viewMode === 'list' && filteredProjects.length > 0 && (
-              <div className="space-y-2">
+              <div className="space-y-1.5">
                 {filteredProjects.map((project, index) => (
                   <motion.div
                     key={project.id}
-                    initial={{ opacity: 0, x: -10 }}
+                    initial={{ opacity: 0, x: -5 }}
                     animate={{ opacity: 1, x: 0 }}
-                    transition={{ delay: 0.05 + index * 0.03 }}
+                    transition={{ delay: 0.02 + index * 0.02 }}
                   >
                     <Link
                       href={`/builder?project=${project.id}`}
-                      className="group flex items-center justify-between p-4 rounded-xl border border-zinc-800 bg-zinc-900/50 hover:border-emerald-500/40 hover:bg-zinc-900 transition-all"
+                      className="group flex items-center justify-between p-3 rounded-lg border border-zinc-800 bg-zinc-900/50 hover:border-emerald-500/40 hover:bg-zinc-900 transition-all"
                     >
-                      <div className="flex items-center gap-4 flex-1 min-w-0">
-                        <div className="w-10 h-10 rounded-lg border border-zinc-700 bg-zinc-800/50 flex items-center justify-center flex-shrink-0">
-                          <div className="w-2 h-2 rounded-full bg-emerald-400" />
+                      <div className="flex items-center gap-3 flex-1 min-w-0">
+                        <div className="w-8 h-8 rounded-md border border-zinc-700 bg-zinc-800/50 flex items-center justify-center flex-shrink-0">
+                          <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
                         </div>
                         <div className="flex-1 min-w-0">
-                          <h3 className="font-medium text-white truncate group-hover:text-emerald-400 transition-colors">
+                          <h3 className="text-sm font-medium text-white truncate group-hover:text-emerald-400 transition-colors">
                             {project.name || 'Untitled Project'}
                           </h3>
                           <div className="flex items-center gap-3 mt-0.5">
@@ -476,27 +493,27 @@ export default function DashboardPage() {
             initial={{ opacity: 0, y: 10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="grid grid-cols-2 sm:grid-cols-4 gap-4"
+            className="grid grid-cols-2 sm:grid-cols-4 gap-3"
           >
-            <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-4">
+            <div className="rounded-lg border border-zinc-800 bg-zinc-900/50 p-3">
               <p className="text-xs text-zinc-500">Total Projects</p>
-              <p className="text-2xl font-semibold text-white mt-1">{projects.length}</p>
+              <p className="text-lg font-semibold text-white mt-0.5">{projects.length}</p>
             </div>
-            <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-4">
+            <div className="rounded-lg border border-zinc-800 bg-zinc-900/50 p-3">
               <p className="text-xs text-zinc-500">Deployed</p>
-              <p className="text-2xl font-semibold text-emerald-400 mt-1">
+              <p className="text-lg font-semibold text-emerald-400 mt-0.5">
                 {projects.filter(p => p.status === 'deployed').length}
               </p>
             </div>
-            <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-4">
+            <div className="rounded-lg border border-zinc-800 bg-zinc-900/50 p-3">
               <p className="text-xs text-zinc-500">Plan Limit</p>
-              <p className="text-2xl font-semibold text-white mt-1">
+              <p className="text-lg font-semibold text-white mt-0.5">
                 {tierConfig.limit === Infinity ? '∞' : `${projects.length}/${tierConfig.limit}`}
               </p>
             </div>
-            <div className="rounded-xl border border-zinc-800 bg-zinc-900/50 p-4">
+            <div className="rounded-lg border border-zinc-800 bg-zinc-900/50 p-3">
               <p className="text-xs text-zinc-500">Last Activity</p>
-              <p className="text-lg font-medium text-white mt-1 truncate">
+              <p className="text-sm font-medium text-white mt-0.5 truncate">
                 {lastUpdatedProject?.updated_at
                   ? formatDistanceToNow(new Date(lastUpdatedProject.updated_at), { addSuffix: true })
                   : 'None'}
@@ -517,29 +534,29 @@ export default function DashboardPage() {
             onClick={() => setShowUpgradeModal(false)}
           >
             <motion.div
-              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              initial={{ opacity: 0, scale: 0.95, y: 10 }}
               animate={{ opacity: 1, scale: 1, y: 0 }}
-              exit={{ opacity: 0, scale: 0.95, y: 20 }}
+              exit={{ opacity: 0, scale: 0.95, y: 10 }}
               onClick={(e) => e.stopPropagation()}
-              className="bg-zinc-900/90 backdrop-blur-xl border border-zinc-800 rounded-2xl p-6 max-w-md w-full shadow-2xl"
+              className="bg-zinc-900/90 backdrop-blur-xl border border-zinc-800 rounded-xl p-5 max-w-sm w-full shadow-2xl"
             >
               <div className="text-center">
-                <Pip size={60} animate={true} float={false} glow={true} />
-                <h3 className="text-xl font-semibold text-white mt-4">Project Limit Reached</h3>
-                <p className="text-zinc-400 mt-2">
+                <Pip size={48} animate={true} float={false} glow={true} />
+                <h3 className="text-lg font-semibold text-white mt-3">Project Limit Reached</h3>
+                <p className="text-zinc-400 text-sm mt-1.5">
                   You've hit the {tierConfig.limit} project limit on your {tierConfig.name} plan. 
                   Upgrade to create unlimited projects.
                 </p>
-                <div className="flex gap-3 mt-6">
+                <div className="flex gap-2 mt-4">
                   <button
                     onClick={() => setShowUpgradeModal(false)}
-                    className="flex-1 px-4 py-3 rounded-xl border border-zinc-700 text-zinc-300 hover:bg-zinc-800 transition-colors"
+                    className="flex-1 px-3 py-2 rounded-lg border border-zinc-700 text-zinc-300 text-sm hover:bg-zinc-800 transition-colors"
                   >
                     Maybe Later
                   </button>
                   <Link
                     href="/pricing"
-                    className="flex-1 px-4 py-3 rounded-xl bg-emerald-500/15 border border-emerald-500/40 text-emerald-400 font-medium hover:bg-emerald-500/20 transition-colors text-center"
+                    className="flex-1 px-3 py-2 rounded-lg bg-emerald-500/15 border border-emerald-500/40 text-emerald-400 text-sm font-medium hover:bg-emerald-500/20 transition-colors text-center"
                   >
                     View Plans
                   </Link>
