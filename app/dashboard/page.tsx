@@ -22,7 +22,6 @@ export default function DashboardPage() {
   const router = useRouter()
   const [projects, setProjects] = useState<DbProject[]>([])
   const [isLoading, setIsLoading] = useState(true)
-  const [isMigrating, setIsMigrating] = useState(false)
   const [isCreating, setIsCreating] = useState(false)
   const [showUpgradeModal, setShowUpgradeModal] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
@@ -54,45 +53,6 @@ export default function DashboardPage() {
 
     const bootstrap = async () => {
       try {
-        const guestHandoff = typeof window !== 'undefined' ? localStorage.getItem('hatch_guest_handoff') : null
-        console.log('[Dashboard] Checking for guest handoff:', { hasHandoff: !!guestHandoff, dataLength: guestHandoff?.length || 0 })
-
-        if (guestHandoff) {
-          setIsMigrating(true)
-          try {
-            const payload = JSON.parse(guestHandoff)
-            console.log('[Dashboard] Importing guest handoff', {
-              projectName: payload?.projectName,
-              templateId: payload?.templateId,
-              sections: payload?.sections?.length,
-              sectionsWithCode: payload?.sections?.filter((s: any) => s.code && s.code.length > 0).length || 0,
-            })
-            const res = await fetch('/api/project/import', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: guestHandoff,
-            })
-
-            const responseData = await res.json()
-            console.log('[Dashboard] Import response:', { status: res.status, ok: res.ok, data: responseData })
-
-            if (res.ok) {
-              localStorage.removeItem('hatch_guest_handoff')
-              localStorage.removeItem('hatch_last_prompt')
-              console.log('[Dashboard] Import succeeded, cleared localStorage')
-            } else if (res.status === 401) {
-              router.replace('/sign-in?redirect_url=/dashboard')
-              return
-            } else {
-              console.error('[Dashboard] Import failed', responseData)
-            }
-          } catch (error) {
-            console.error('[Dashboard] Import error', error)
-          } finally {
-            setIsMigrating(false)
-          }
-        }
-
         const res = await fetch('/api/project/list')
         console.log('[Dashboard] Project list fetch:', { status: res.status })
         if (res.status === 401) {
@@ -156,11 +116,23 @@ export default function DashboardPage() {
         body: JSON.stringify({ name: 'Untitled Project', templateId: 'website' }),
       })
 
-      if (res.ok) {
-        const data = await res.json()
+      const data = await res.json()
+      
+      if (res.ok && data.project) {
         setProjects(prev => [data.project, ...prev])
         routeToBuilder(data.project.id)
+      } else {
+        console.error('[Dashboard] Create project failed:', { status: res.status, data })
+        // If at limit, show upgrade modal
+        if (res.status === 403) {
+          setShowUpgradeModal(true)
+        } else {
+          alert(data.error || 'Failed to create project. Please try again.')
+        }
       }
+    } catch (err) {
+      console.error('[Dashboard] Create project error:', err)
+      alert('Failed to create project. Please check your connection.')
     } finally {
       setIsCreating(false)
     }
@@ -177,12 +149,12 @@ export default function DashboardPage() {
   }
 
   // Loading state with Pip
-  if (!isLoaded || !isSignedIn || isLoading || isMigrating) {
+  if (!isLoaded || !isSignedIn || isLoading) {
     return (
       <div className="min-h-screen bg-zinc-950 flex flex-col items-center justify-center gap-4">
         <Pip size={60} animate={true} float={true} glow={true} />
         <p className="text-zinc-400 text-sm">
-          {isMigrating ? 'Importing your project...' : 'Loading your dashboard...'}
+          Loading your dashboard...
         </p>
       </div>
     )

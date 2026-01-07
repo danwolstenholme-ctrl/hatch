@@ -205,7 +205,7 @@ export default function BuildFlowController({ existingProjectId, initialPrompt, 
   const handleSaveSettings = async (settings: SiteSettings) => {
     if (!project) return
     
-    // Handle Demo Mode - Update local state only
+    // Handle Demo Mode - Update local state only (no persistence)
     if (demoMode) {
       const updatedBrandConfig: DbBrandConfig = {
         ...(project.brand_config || {}),
@@ -223,27 +223,6 @@ export default function BuildFlowController({ existingProjectId, initialPrompt, 
 
       setProject(prev => prev ? ({ ...prev, brand_config: updatedBrandConfig }) : null)
       setBrandConfig(updatedBrandConfig)
-      
-      // Persist to guest handoff if needed
-      if (!isSignedIn) {
-        // Manually persist the updated brand config
-        const payload = {
-          templateId: selectedTemplate?.id || SINGULARITY_TEMPLATE.id,
-          projectName: updatedBrandConfig.brandName || 'Untitled Project',
-          brand: updatedBrandConfig,
-          sections: dbSections.map((s) => {
-            const code = buildState?.sectionCode?.[s.section_id] || s.code || ''
-            return {
-              sectionId: s.section_id,
-              code,
-              userPrompt: s.user_prompt || '',
-              refined: s.refined || false,
-              refinementChanges: s.refinement_changes || [],
-            }
-          }),
-        }
-        localStorage.setItem('hatch_guest_handoff', JSON.stringify(payload))
-      }
       return
     }
 
@@ -280,60 +259,11 @@ export default function BuildFlowController({ existingProjectId, initialPrompt, 
   }
   // Show unlock banner for guests or free users
   const showUnlockBanner = useMemo(() => !isSignedIn || (!isPaidUser && !demoMode), [isSignedIn, isPaidUser, demoMode])
-  
-  // Persist guest build locally for post-signup migration
-  const persistGuestHandoff = useCallback((sectionsSnapshot?: DbSection[], codeSnapshot?: Record<string, string>) => {
-    // Only persist for guests (not signed in) - signed in users save to Supabase
-    if (isSignedIn) return
-    
-    const sectionsToUse = sectionsSnapshot || dbSections
-    const payload = {
-      templateId: selectedTemplate?.id || SINGULARITY_TEMPLATE.id,
-      projectName: brandConfig?.brandName || 'Untitled Project',
-      brand: brandConfig,
-      sections: sectionsToUse.map((s) => {
-        const code = codeSnapshot?.[s.section_id] || buildState?.sectionCode?.[s.section_id] || s.code || ''
-        return {
-          sectionId: s.section_id,
-          code,
-          userPrompt: s.user_prompt || '',
-          refined: s.refined || false,
-          refinementChanges: s.refinement_changes || [],
-        }
-      }),
-    }
-    
-    // Debug logging
-    console.log('[GuestHandoff] Persisting:', {
-      projectName: payload.projectName,
-      templateId: payload.templateId,
-      sectionsCount: payload.sections.length,
-      sectionsWithCode: payload.sections.filter(s => s.code && s.code.length > 0).length,
-      sectionIds: payload.sections.map(s => s.sectionId),
-      firstSectionCode: payload.sections[0]?.code?.substring(0, 100) || 'NO CODE',
-    })
-    
-    // Validation before save
-    if (!payload.templateId) {
-      console.error('[GuestHandoff] MISSING templateId!')
-    }
-    if (!payload.projectName) {
-      console.error('[GuestHandoff] MISSING projectName!')
-    }
-    if (!payload.sections?.length) {
-      console.error('[GuestHandoff] MISSING sections!')
-    }
-    
-    try {
-      localStorage.setItem('hatch_guest_handoff', JSON.stringify(payload))
-      console.log('[GuestHandoff] Saved to localStorage successfully')
-    } catch (err) {
-      console.error('[GuestHandoff] Failed to persist:', err)
-    }
-  }, [isSignedIn, selectedTemplate?.id, brandConfig, dbSections, buildState])
 
   // NO MORE GENERATION LIMITS - Paywall is at DEPLOY/EXPORT only
   // Free users can generate unlimited, they pay to ship
+  
+  // Guest handoff REMOVED - Demo is a demo, users start fresh after signup
 
   // Handle Replicator Mode & Onboarding Mode
   useEffect(() => {
@@ -658,20 +588,7 @@ export default function BuildFlowController({ existingProjectId, initialPrompt, 
     if (!isSignedIn || !user) {
       // ALLOW GUEST MODE IF EXPLICITLY REQUESTED
       if (isDemo) {
-        // Check for restored guest session FIRST
-        try {
-          const savedGuestSession = localStorage.getItem('hatch_guest_handoff')
-          if (savedGuestSession) {
-            const parsedSession = JSON.parse(savedGuestSession)
-            console.log('[GuestHandoff] Restoring session:', parsedSession)
-            setupDemoMode(parsedSession)
-            return
-          }
-        } catch (e) {
-          console.error('Failed to restore guest session', e)
-        }
-
-        // Run immediately to avoid stuck loading state
+        // Start fresh demo - no session restore (demo is ephemeral)
         setupDemoMode()
         return
       }
@@ -684,86 +601,42 @@ export default function BuildFlowController({ existingProjectId, initialPrompt, 
       const currentParams = window.location.search
       const returnUrl = '/dashboard' + currentParams
       router.push(`/sign-up?redirect_url=${encodeURIComponent(returnUrl)}`)
-      
-      // ROLLBACK PLAN: Uncomment this block to restore Demo Mode
-      /*
-      // Small delay for effect
-      setTimeout(setupDemoMode, 1500)
-      return
-      */
       return
     }
 
-    // Check for guest handoff data (user just signed up from demo)
-    let guestHandoff: any = null
-    try {
-      const savedGuestSession = localStorage.getItem('hatch_guest_handoff')
-      if (savedGuestSession) {
-        guestHandoff = JSON.parse(savedGuestSession)
-        console.log('[Builder] Found guest handoff:', {
-          projectName: guestHandoff?.projectName,
-          sectionsCount: guestHandoff?.sections?.length,
-        })
-      }
-    } catch (e) {
-      console.error('[Builder] Failed to parse guest handoff', e)
-    }
-
+    // Create fresh project for signed-in users (no guest handoff - demo is a demo)
     try {
       const controller = new AbortController()
       const timeoutId = setTimeout(() => controller.abort(), 15000) // 15s timeout for creation
-
-      // Use guest handoff data if available
-      const projectBrand = guestHandoff?.brand || brand
-      const projectSections = guestHandoff?.sections || sections.map(s => ({
-        sectionId: s.id,
-        code: null,
-        userPrompt: null,
-        refined: false,
-      }))
 
       const response = await fetch('/api/project', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          templateId: guestHandoff?.templateId || template.id,
-          name: projectBrand.brandName || brand.brandName,
-          sections: guestHandoff ? projectSections : sections,
-          brand: projectBrand,
+          templateId: template.id,
+          name: brand.brandName,
+          sections: sections,
+          brand: brand,
           initialPrompt: projectPrompt,
-          // Pass the guest sections with their code if they exist
-          guestSections: guestHandoff?.sections,
         }),
         signal: controller.signal
       })
       clearTimeout(timeoutId)
 
       if (!response.ok) {
-        console.warn('API failed')
-        // Only fall back to demo mode if user is NOT signed in
-        if (!isSignedIn) {
-          setupDemoMode(guestHandoff)
-        } else {
-          setError('Failed to create project. Please try again.')
-          setIsLoading(false)
-        }
+        console.error('[Builder] API failed:', response.status)
+        setError('Failed to create project. Please try again.')
+        setIsLoading(false)
         return
       }
 
       const { project: newProject, sections: dbSectionsData } = await response.json()
 
-      // Clear guest handoff after successful import
-      localStorage.removeItem('hatch_guest_handoff')
-      localStorage.removeItem('hatch_last_prompt')
-      localStorage.removeItem('hatch_guest_builds')
-      localStorage.removeItem('hatch_guest_refinements')
-      localStorage.removeItem('hatch_guest_generations')
-
       setProject(newProject)
       setDbSections(dbSectionsData)
       
-      // Reconstruct build state from imported sections
-      const state = createInitialBuildState(guestHandoff?.templateId || template.id)
+      // Set up build state for fresh project
+      const state = createInitialBuildState(template.id)
       dbSectionsData.forEach((s: DbSection) => {
         if (s.status === 'complete') {
           state.completedSections.push(s.section_id)
@@ -784,12 +657,7 @@ export default function BuildFlowController({ existingProjectId, initialPrompt, 
 
     } catch (err) {
       console.error('Error creating project:', err)
-      // Only fall back to demo mode if user is NOT signed in
-      if (!isSignedIn) {
-        setupDemoMode()
-      } else {
-        setError('Failed to create project. Please try again.')
-      }
+      setError('Failed to create project. Please try again.')
     } finally {
       setIsLoading(false)
       setIsCreatingProject(false)
@@ -932,14 +800,8 @@ export default function BuildFlowController({ existingProjectId, initialPrompt, 
       )
     )
 
-    // Persist demo progress for post-signup migration (only for guests)
+    // Demo mode: track sections built for soft nudge
     if (!isSignedIn) {
-      persistGuestHandoff(dbSections.map(s => s.id === dbSection.id ? { ...s, code, refined, refinement_changes: refinementChanges || null } : s), {
-        ...(buildState?.sectionCode || {}),
-        [currentSection.id]: code,
-      })
-      
-      // Soft nudge after 3 sections built
       const newCount = demoSectionsBuilt + 1
       setDemoSectionsBuilt(newCount)
       if (newCount === 3) {
@@ -1416,10 +1278,6 @@ export default function GeneratedPage() {
   const hardReset = useCallback(() => {
     try {
       localStorage.removeItem('hatch_current_project')
-      localStorage.removeItem('hatch_guest_handoff')
-      localStorage.removeItem('hatch_guest_generations')
-      localStorage.removeItem('hatch_guest_refinements')
-      localStorage.removeItem('hatch_guest_dreams')
     } catch (err) {
       console.warn('Hard reset failed to clear localStorage', err)
     }
@@ -1539,6 +1397,23 @@ export default function GeneratedPage() {
 
   return (
     <div className="min-h-screen bg-zinc-950">
+      {/* Demo Mode Banner */}
+      {demoMode && (
+        <div className="fixed top-0 left-0 right-0 z-50 bg-amber-500/10 border-b border-amber-500/20 px-4 py-2">
+          <div className="max-w-screen-xl mx-auto flex items-center justify-between">
+            <p className="text-sm text-amber-200">
+              <span className="font-medium">Demo Mode</span> — Your work won't be saved. Sign up to keep your projects.
+            </p>
+            <button
+              onClick={() => router.push('/sign-up?redirect_url=/dashboard')}
+              className="text-sm font-medium text-amber-400 hover:text-amber-300 transition-colors"
+            >
+              Sign Up Free →
+            </button>
+          </div>
+        </div>
+      )}
+      
       {/* Paywall Transition - Full screen immersive */}
       {showPaywallTransition && (
         <PaywallTransition
@@ -1554,7 +1429,7 @@ export default function GeneratedPage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="flex h-screen overflow-hidden bg-black"
+            className={`flex h-screen overflow-hidden bg-black ${demoMode ? 'pt-10' : ''}`}
           >
             {/* Singularity Sidebar - Desktop Only */}
             <div className="hidden lg:block w-72 border-r border-zinc-900 bg-zinc-950 flex flex-col h-full overflow-y-auto">
