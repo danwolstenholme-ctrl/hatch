@@ -212,37 +212,25 @@ export default function BuilderWelcome({ onClose }: BuilderWelcomeProps) {
                   </motion.p>
                 )}
 
-                {/* CTA - Primary shimmer style */}
-                <motion.button
+                {/* CTA - Go to Dashboard (primary action) */}
+                <motion.div
                   initial={{ opacity: 0, y: 8 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.5 }}
-                  whileTap={{ scale: 0.98 }}
-                  onClick={handleDismiss}
-                  className="group relative w-full py-2.5 sm:py-3 px-4 bg-emerald-500/15 backdrop-blur-2xl border border-emerald-500/40 hover:bg-emerald-500/20 hover:border-emerald-500/50 text-white text-sm font-semibold rounded-lg transition-all shadow-[0_0_15px_rgba(16,185,129,0.15)] flex items-center justify-center gap-2 overflow-hidden"
-                >
-                  <div className="absolute inset-0 bg-gradient-to-br from-white/[0.08] via-transparent to-transparent rounded-xl pointer-events-none" />
-                  <motion.div
-                    className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/10 to-white/0"
-                    animate={{ x: ['-200%', '200%'] }}
-                    transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-                  />
-                  <span className="relative">Enter the Studio</span>
-                  <ArrowRight className="relative w-5 h-5 group-hover:translate-x-1 transition-transform" />
-                </motion.button>
-
-                {/* Secondary - Go to Dashboard */}
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.6 }}
                 >
                   <Link
                     href="/dashboard"
-                    className="group flex items-center justify-center gap-2 w-full mt-3 py-2 text-xs text-zinc-400 hover:text-white transition-colors"
+                    className="group relative w-full py-2.5 sm:py-3 px-4 bg-emerald-500/15 backdrop-blur-2xl border border-emerald-500/40 hover:bg-emerald-500/20 hover:border-emerald-500/50 text-white text-sm font-semibold rounded-lg transition-all shadow-[0_0_15px_rgba(16,185,129,0.15)] flex items-center justify-center gap-2 overflow-hidden"
                   >
-                    <LayoutDashboard className="w-3.5 h-3.5" />
-                    <span>Go to Dashboard</span>
+                    <div className="absolute inset-0 bg-gradient-to-br from-white/[0.08] via-transparent to-transparent rounded-xl pointer-events-none" />
+                    <motion.div
+                      className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/10 to-white/0"
+                      animate={{ x: ['-200%', '200%'] }}
+                      transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                    />
+                    <LayoutDashboard className="relative w-4 h-4" />
+                    <span className="relative">Go to Dashboard</span>
+                    <ArrowRight className="relative w-5 h-5 group-hover:translate-x-1 transition-transform" />
                   </Link>
                 </motion.div>
               </div>
