@@ -5,6 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { ArrowRight, CheckCircle2 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useUser } from '@clerk/nextjs'
+import Pip from '@/components/Pip'
 
 export default function HomepageWelcome({ onStart }: { onStart?: () => void }) {
   const [isOpen, setIsOpen] = useState(false)
@@ -122,16 +123,14 @@ export default function HomepageWelcome({ onStart }: { onStart?: () => void }) {
                   transition={{ delay: 0.1, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
                   className="text-center mb-6 sm:mb-8"
                 >
-                  <motion.img
-                    src="/icon.svg"
-                    alt="HatchIt"
-                    width={80}
-                    height={80}
+                  <motion.div
                     initial={{ scale: 0.8, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
                     transition={{ delay: 0.05, duration: 0.5, type: "spring", stiffness: 200 }}
-                    className="w-16 h-16 sm:w-20 sm:h-20 mx-auto mb-6 sm:mb-8"
-                  />
+                    className="flex justify-center mb-6 sm:mb-8"
+                  >
+                    <Pip size={80} animate={true} float={true} glow={true} />
+                  </motion.div>
                   <h1 className="text-3xl sm:text-5xl md:text-6xl font-bold mb-4 sm:mb-6 tracking-tight">
                     <span className="text-zinc-200">Text</span>
                     <span className="mx-2 sm:mx-4 text-zinc-600">→</span>
