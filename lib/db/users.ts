@@ -18,8 +18,6 @@ export async function getOrCreateUser(
     return null
   }
 
-  console.log('[getOrCreateUser] Attempting upsert for clerkId:', clerkId)
-  
   // First check if user exists
   const { data: existingUser } = await supabaseAdmin
     .from('users')
@@ -28,13 +26,11 @@ export async function getOrCreateUser(
     .single()
 
   if (existingUser) {
-    console.log('[getOrCreateUser] Found existing user:', existingUser.id)
     return existingUser as DbUser
   }
 
   // User doesn't exist, create new one with explicit ID
   const newId = randomUUID()
-  console.log('[getOrCreateUser] Creating new user with id:', newId)
   
   const { data: newUser, error: insertError } = await supabaseAdmin
     .from('users')
@@ -43,7 +39,6 @@ export async function getOrCreateUser(
     .single()
 
   if (insertError) {
-    console.error('[getOrCreateUser] Insert error:', insertError)
     // Race condition - another request might have created it, try select again
     const { data: raceUser } = await supabaseAdmin
       .from('users')
@@ -52,13 +47,12 @@ export async function getOrCreateUser(
       .single()
     
     if (raceUser) {
-      console.log('[getOrCreateUser] Found user after race condition:', raceUser.id)
       return raceUser as DbUser
     }
+    console.error('Error creating user:', insertError)
     return null
   }
 
-  console.log('[getOrCreateUser] Created new user:', newUser?.id)
   return newUser as DbUser
 }
 

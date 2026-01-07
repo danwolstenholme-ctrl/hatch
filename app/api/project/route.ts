@@ -29,12 +29,9 @@ export async function POST(request: NextRequest) {
     const email = user?.emailAddresses?.[0]?.emailAddress
 
     // Get or create our user record
-    console.log('[API/project] Getting or creating user for clerkId:', clerkId)
     const dbUser = await getOrCreateUser(clerkId, email)
-    console.log('[API/project] dbUser result:', JSON.stringify(dbUser, null, 2))
-    console.log('[API/project] Using user_id for project:', dbUser?.id)
     if (!dbUser) {
-      return NextResponse.json({ error: 'Failed to create user', detail: 'getOrCreateUser returned null' }, { status: 500 })
+      return NextResponse.json({ error: 'Failed to create user' }, { status: 500 })
     }
 
     // Server-side project limit check
@@ -83,8 +80,7 @@ export async function POST(request: NextRequest) {
 
   } catch (error) {
     console.error('Error creating project:', error)
-    const message = error instanceof Error ? error.message : 'Unknown error'
-    return NextResponse.json({ error: 'Internal server error', detail: message }, { status: 500 })
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
   }
 }
 
