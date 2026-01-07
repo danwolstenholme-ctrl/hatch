@@ -1408,24 +1408,24 @@ export default function GeneratedPage() {
     <div className="min-h-screen bg-zinc-950">
       {/* Demo Mode Banner */}
       {demoMode && (
-        <div className="fixed top-0 left-0 right-0 z-50 bg-amber-500/10 border-b border-amber-500/20 px-4 py-2">
+        <div className="fixed top-0 left-0 right-0 z-50 bg-amber-500/10 border-b border-amber-500/20 px-3 py-1.5 sm:px-4 sm:py-2">
           <div className="max-w-screen-xl mx-auto flex items-center justify-between">
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2 sm:gap-4">
               <button
                 onClick={() => router.push('/')}
-                className="text-sm text-zinc-400 hover:text-white transition-colors"
+                className="text-xs sm:text-sm text-zinc-400 hover:text-white transition-colors"
               >
                 ← Exit
               </button>
-              <p className="text-sm text-amber-200">
-                <span className="font-medium">Demo Mode</span> — Your work won't be saved.
+              <p className="text-xs sm:text-sm text-amber-200">
+                <span className="font-medium">Demo</span><span className="hidden sm:inline"> Mode</span> — <span className="hidden sm:inline">Your work </span>won't be saved.
               </p>
             </div>
             <button
               onClick={() => router.push('/sign-up?redirect_url=/dashboard')}
-              className="text-sm font-medium text-amber-400 hover:text-amber-300 transition-colors"
+              className="text-xs sm:text-sm font-medium text-amber-400 hover:text-amber-300 transition-colors whitespace-nowrap"
             >
-              Sign Up Free →
+              Sign Up<span className="hidden sm:inline"> Free</span> →
             </button>
           </div>
         </div>
@@ -1557,21 +1557,21 @@ export default function GeneratedPage() {
           >
             {/* Review Header */}
             <div className="flex-shrink-0 border-b border-zinc-800/50 bg-zinc-950">
-              <div className="px-6 py-4 flex items-center justify-between">
-                <div className="flex items-center gap-4">
+              <div className="px-3 py-2.5 sm:px-6 sm:py-4 flex items-center justify-between">
+                <div className="flex items-center gap-2 sm:gap-4">
                   <button
                     onClick={handleGoHome}
-                    className="text-zinc-500 hover:text-white transition-colors flex items-center gap-2 text-sm font-medium"
+                    className="text-zinc-500 hover:text-white transition-colors flex items-center gap-1 sm:gap-2 text-xs sm:text-sm font-medium"
                   >
-                    <ArrowLeft className="w-4 h-4" />
-                    <span>Dashboard</span>
+                    <ArrowLeft className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                    <span className="hidden sm:inline">Dashboard</span>
                   </button>
-                  <div className="h-6 w-px bg-zinc-800" />
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-zinc-800 border border-zinc-700 flex items-center justify-center">
-                      <Terminal className="w-4 h-4 text-zinc-400" />
+                  <div className="h-5 sm:h-6 w-px bg-zinc-800 hidden sm:block" />
+                  <div className="flex items-center gap-2 sm:gap-3">
+                    <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-lg bg-zinc-800 border border-zinc-700 flex items-center justify-center">
+                      <Terminal className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-zinc-400" />
                     </div>
-                    <h1 className="text-lg font-bold text-white tracking-tight">{project?.name || 'Untitled Project'}</h1>
+                    <h1 className="text-sm sm:text-lg font-bold text-white tracking-tight truncate max-w-[120px] sm:max-w-none">{project?.name || 'Untitled Project'}</h1>
                   </div>
                   
                   {/* Tier Badge */}
@@ -1584,37 +1584,37 @@ export default function GeneratedPage() {
                     </div>
                   )}
                 </div>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-1.5 sm:gap-3">
                   <button
                     onClick={handleStartFresh}
-                    className="px-3 py-2 text-sm text-zinc-400 hover:text-white transition-colors font-mono"
+                    className="hidden sm:block px-3 py-2 text-sm text-zinc-400 hover:text-white transition-colors font-mono"
                   >
                     New Project
                   </button>
                   <button
                     onClick={handleDownload}
                     disabled={!assembledCode}
-                    className="px-3 py-2 text-sm text-zinc-400 hover:text-white transition-colors font-mono flex items-center gap-2"
+                    className="px-2 py-1.5 sm:px-3 sm:py-2 text-xs sm:text-sm text-zinc-400 hover:text-white transition-colors font-mono flex items-center gap-1.5 sm:gap-2"
                   >
-                    <Download className="w-4 h-4" />
-                    <span>Export Code</span>
+                    <Download className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                    <span className="hidden sm:inline">Export Code</span>
                   </button>
                   {deployedUrl ? (
                     <a
                       href={deployedUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="px-4 py-2 text-sm bg-zinc-800 text-emerald-400 border border-zinc-700 rounded-lg hover:bg-zinc-700 transition-colors flex items-center gap-2 font-medium"
+                      className="px-2.5 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm bg-zinc-800 text-emerald-400 border border-zinc-700 rounded-lg hover:bg-zinc-700 transition-colors flex items-center gap-1.5 sm:gap-2 font-medium"
                     >
-                      <Globe className="w-4 h-4" />
-                      <span>View Live Site</span>
+                      <Globe className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                      <span className="hidden sm:inline">View Live Site</span>
                       <ExternalLink className="w-3 h-3" />
                     </a>
                   ) : (
                     <button
                       onClick={handleDeploy}
                       disabled={isDeploying || !assembledCode}
-                      className={`px-6 py-2.5 text-sm font-bold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 group ${
+                      className={`px-3 py-2 sm:px-6 sm:py-2.5 text-xs sm:text-sm font-bold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5 sm:gap-2 group ${
                         tierConfig?.color === 'amber' 
                           ? 'bg-amber-500 hover:bg-amber-400 text-black'
                           : tierConfig?.color === 'lime'
@@ -1624,13 +1624,13 @@ export default function GeneratedPage() {
                     >
                       {isDeploying ? (
                         <>
-                          <RefreshCw className="w-4 h-4 animate-spin" />
-                          <span>Deploying...</span>
+                          <RefreshCw className="w-3.5 h-3.5 sm:w-4 sm:h-4 animate-spin" />
+                          <span className="hidden sm:inline">Deploying...</span>
                         </>
                       ) : (
                         <>
-                          <Rocket className="w-4 h-4 group-hover:-translate-y-0.5 transition-transform" />
-                          <span>Deploy to Production</span>
+                          <Rocket className="w-3.5 h-3.5 sm:w-4 sm:h-4 group-hover:-translate-y-0.5 transition-transform" />
+                          <span><span className="hidden sm:inline">Deploy to </span>Production</span>
                         </>
                       )}
                     </button>
@@ -1638,7 +1638,7 @@ export default function GeneratedPage() {
                 </div>
               </div>
               {error && (
-                <div className="px-6 pb-3">
+                <div className="px-3 sm:px-6 pb-2 sm:pb-3">
                   <div className="text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg px-4 py-2 flex items-center gap-2">
                     <AlertCircle className="w-4 h-4" />
                     {error}
@@ -1648,19 +1648,19 @@ export default function GeneratedPage() {
             </div>
 
               {showUnlockBanner && (
-                <div className="px-6 py-5 border-b border-emerald-500/20 bg-gradient-to-r from-emerald-950/50 via-zinc-900/80 to-emerald-950/50 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                  <div className="space-y-1.5">
+                <div className="px-3 py-3 sm:px-6 sm:py-5 border-b border-emerald-500/20 bg-gradient-to-r from-emerald-950/50 via-zinc-900/80 to-emerald-950/50 flex flex-col md:flex-row md:items-center md:justify-between gap-2 sm:gap-4">
+                  <div className="space-y-0.5 sm:space-y-1.5">
                     <div className="flex items-center gap-2">
-                      <div className="w-2 h-2 rounded-full bg-emerald-500" />
-                      <p className="text-base text-white font-semibold">Hero Section Deployed</p>
+                      <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-emerald-500" />
+                      <p className="text-sm sm:text-base text-white font-semibold">Hero Section Deployed</p>
                     </div>
-                    <p className="text-sm text-zinc-400">Don't lose your progress. Start your 14-day trial to keep building.</p>
+                    <p className="text-xs sm:text-sm text-zinc-400">Don't lose your progress. Start your 14-day trial.</p>
                   </div>
                   <button
                     onClick={() => handleDirectCheckout('architect')}
-                    className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm transition-colors"
+                    className="inline-flex items-center justify-center gap-1.5 sm:gap-2 px-4 py-2 sm:px-6 sm:py-3 rounded-lg sm:rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs sm:text-sm transition-colors"
                   >
-                    <Lock className="w-4 h-4" />
+                    <Lock className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                     Unlock — $19/mo
                   </button>
                 </div>
@@ -1670,28 +1670,28 @@ export default function GeneratedPage() {
             <div className="flex-1 flex flex-col md:flex-row min-h-0 overflow-hidden">
               
               {/* Mobile Tab Switcher for Review */}
-              <div className="flex md:hidden border-b border-zinc-800/50 bg-zinc-950 p-2">
-                <div className="flex w-full bg-zinc-900/50 rounded-lg p-1 border border-zinc-800/50">
+              <div className="flex md:hidden border-b border-zinc-800/50 bg-zinc-950 p-1.5">
+                <div className="flex w-full bg-zinc-900/50 rounded-lg p-0.5 border border-zinc-800/50">
                   <button
                     onClick={() => setReviewMobileTab('modules')}
-                    className={`flex-1 py-2.5 text-sm font-medium rounded-md transition-all duration-200 flex items-center justify-center gap-2 ${
+                    className={`flex-1 py-2 text-xs font-medium rounded-md transition-all duration-200 flex items-center justify-center gap-1.5 ${
                       reviewMobileTab === 'modules' 
                         ? 'bg-zinc-800 text-white shadow-sm' 
                         : 'text-zinc-400 hover:text-zinc-300'
                     }`}
                   >
-                    <Layers className="w-4 h-4" />
+                    <Layers className="w-3.5 h-3.5" />
                     <span>Modules</span>
                   </button>
                   <button
                     onClick={() => setReviewMobileTab('preview')}
-                    className={`flex-1 py-2.5 text-sm font-medium rounded-md transition-all duration-200 flex items-center justify-center gap-2 ${
+                    className={`flex-1 py-2 text-xs font-medium rounded-md transition-all duration-200 flex items-center justify-center gap-1.5 ${
                       reviewMobileTab === 'preview' 
                         ? 'bg-zinc-800 text-white shadow-sm' 
                         : 'text-zinc-400 hover:text-zinc-300'
                     }`}
                   >
-                    <Eye className="w-4 h-4" />
+                    <Eye className="w-3.5 h-3.5" />
                     <span>Preview</span>
                   </button>
                 </div>
@@ -1700,15 +1700,15 @@ export default function GeneratedPage() {
               {/* Left Panel - Section List */}
               <div className={`
                 ${reviewMobileTab === 'modules' ? 'flex' : 'hidden'} md:flex
-                w-full md:w-80 border-r border-zinc-800/50 flex-col bg-zinc-900/20 overflow-hidden
+                w-full md:w-72 border-r border-zinc-800/50 flex-col bg-zinc-900/20 overflow-hidden
               `}>
-                <div className="p-4 border-b border-zinc-800/50">
+                <div className="p-3 sm:p-4 border-b border-zinc-800/50">
                   <h2 className="text-xs font-mono text-zinc-500 uppercase tracking-wider">Your Full Site</h2>
                   {!isPaidUser && (
                     <p className="text-xs text-zinc-500 mt-1">Hero complete • {allTemplateSections.length - 1} sections ready to customize</p>
                   )}
                 </div>
-                <div className="flex-1 overflow-auto p-2 space-y-1">
+                <div className="flex-1 overflow-auto p-1.5 sm:p-2 space-y-0.5 sm:space-y-1">
                   {/* Show ALL template sections, not just built ones */}
                   {allTemplateSections.map((section, index) => {
                     const isCompleted = buildState.completedSections.includes(section.id)
@@ -1731,7 +1731,7 @@ export default function GeneratedPage() {
                             }
                           }
                         }}
-                        className={`w-full text-left p-3 rounded-lg mb-1 transition-all group ${
+                        className={`w-full text-left p-2 sm:p-3 rounded-lg mb-0.5 sm:mb-1 transition-all group ${
                           isLocked
                             ? 'bg-zinc-800/30 border border-zinc-700/50 cursor-pointer hover:border-emerald-500/30'
                             : isCompleted
@@ -1861,7 +1861,7 @@ export default function GeneratedPage() {
                 </div>
 
                 {/* Preview Container */}
-                <div className="flex-1 flex items-start justify-center overflow-auto p-2 md:p-8 relative z-0">
+                <div className="flex-1 flex items-start justify-center overflow-auto p-1 sm:p-2 md:p-8 relative z-0">
                   <motion.div
                     initial={false}
                     animate={{ 

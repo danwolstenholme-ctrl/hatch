@@ -140,7 +140,7 @@ function InlinePromptInput({ onSubmit }: { onSubmit: (prompt: string) => void })
   }
 
   return (
-    <div className="h-full flex items-center justify-center bg-zinc-950 p-6">
+    <div className="h-full flex items-center justify-center bg-zinc-950 p-3 sm:p-6">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -148,30 +148,30 @@ function InlinePromptInput({ onSubmit }: { onSubmit: (prompt: string) => void })
         className="w-full max-w-2xl"
       >
         {/* Header */}
-        <div className="relative overflow-hidden rounded-2xl border border-zinc-800/60 bg-zinc-950/70 backdrop-blur-xl shadow-2xl shadow-black/40 px-6 py-8 md:px-10 md:py-10">
+        <div className="relative overflow-hidden rounded-xl sm:rounded-2xl border border-zinc-800/60 bg-zinc-950/70 backdrop-blur-xl shadow-2xl shadow-black/40 px-4 py-5 sm:px-6 sm:py-8 md:px-10 md:py-10">
           <div className="absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-zinc-700 to-transparent" />
-          <div className="flex flex-col items-center text-center gap-4">
+          <div className="flex flex-col items-center text-center gap-3 sm:gap-4">
             <motion.div
               initial={{ scale: 0.85, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               transition={{ delay: 0.1, duration: 0.4 }}
-              className="w-14 h-14 rounded-2xl bg-zinc-900 border border-zinc-800 flex items-center justify-center shadow-inner shadow-black/60"
+              className="w-10 h-10 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-zinc-900 border border-zinc-800 flex items-center justify-center shadow-inner shadow-black/60"
             >
-              <Image src="/icon.svg" alt="HatchIt" width={36} height={36} className="w-9 h-9" />
+              <Image src="/icon.svg" alt="HatchIt" width={36} height={36} className="w-6 h-6 sm:w-9 sm:h-9" />
             </motion.div>
             <div>
-              <p className="text-xs uppercase tracking-[0.4em] text-zinc-600">Builder</p>
-              <h1 className="text-3xl md:text-4xl font-semibold text-white mt-2">
+              <p className="text-[10px] sm:text-xs uppercase tracking-[0.4em] text-zinc-600">Builder</p>
+              <h1 className="text-xl sm:text-3xl md:text-4xl font-semibold text-white mt-1.5 sm:mt-2">
                 Text to React generation surface
               </h1>
             </div>
-            <p className="text-sm md:text-base text-zinc-400 max-w-xl leading-relaxed">
+            <p className="text-xs sm:text-sm md:text-base text-zinc-400 max-w-xl leading-relaxed">
               Describe the component or page in plain English. We assemble the React tree, Tailwind styling, and deployment wiring in one pass.
             </p>
-            <div className="flex flex-wrap items-center justify-center gap-3 text-xs text-zinc-500">
+            <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3 text-[10px] sm:text-xs text-zinc-500">
               {['Live preview', 'Production React + Tailwind', 'Supabase-ready deploy'].map(item => (
-                <span key={item} className="inline-flex items-center gap-2 rounded-full border border-zinc-800/80 px-3 py-1 bg-zinc-900/40">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                <span key={item} className="inline-flex items-center gap-1.5 sm:gap-2 rounded-full border border-zinc-800/80 px-2 py-0.5 sm:px-3 sm:py-1 bg-zinc-900/40">
+                  <span className="w-1 h-1 sm:w-1.5 sm:h-1.5 rounded-full bg-emerald-400 animate-pulse" />
                   {item}
                 </span>
               ))}
@@ -180,7 +180,7 @@ function InlinePromptInput({ onSubmit }: { onSubmit: (prompt: string) => void })
         </div>
 
         {/* Input Area */}
-        <div className="mt-6 bg-zinc-950/70 border border-zinc-800/60 rounded-2xl overflow-hidden backdrop-blur-xl transition-colors focus-within:border-emerald-500/30">
+        <div className="mt-4 sm:mt-6 bg-zinc-950/70 border border-zinc-800/60 rounded-xl sm:rounded-2xl overflow-hidden backdrop-blur-xl transition-colors focus-within:border-emerald-500/30">
           <textarea
             value={prompt}
             onChange={(e) => setPrompt(e.target.value)}
@@ -191,30 +191,31 @@ function InlinePromptInput({ onSubmit }: { onSubmit: (prompt: string) => void })
               }
             }}
             placeholder="e.g. A landing page for a premium fitness app called 'Elevate' with dark theme, neon accents, pricing cards, and testimonials..."
-            className="w-full h-32 bg-transparent p-5 text-base text-white placeholder-zinc-600 resize-none focus:outline-none font-medium"
+            className="w-full h-24 sm:h-32 bg-transparent p-3 sm:p-5 text-sm sm:text-base text-white placeholder-zinc-600 resize-none focus:outline-none font-medium"
             autoFocus
           />
           
           {/* Inline tips when empty */}
           {!prompt.trim() && (
-            <div className="px-5 pb-4 space-y-2">
-              <p className="text-xs text-emerald-400 font-medium">💡 Tips for great results:</p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-zinc-500">
+            <div className="px-3 pb-3 sm:px-5 sm:pb-4 space-y-1.5 sm:space-y-2">
+              <p className="text-[10px] sm:text-xs text-emerald-400 font-medium">💡 Tips for great results:</p>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5 sm:gap-2 text-[10px] sm:text-xs text-zinc-500">
                 <span>• Be specific: mention colors, style, purpose</span>
                 <span>• Include your brand name if you have one</span>
                 <span>• Describe your target audience</span>
                 <span>• Mention sections: hero, pricing, testimonials</span>
               </div>
-              <p className="text-xs text-zinc-600 mt-2 border-t border-zinc-800/50 pt-2">
+              <p className="text-[10px] sm:text-xs text-zinc-600 mt-1.5 sm:mt-2 border-t border-zinc-800/50 pt-1.5 sm:pt-2">
                 <span className="text-zinc-500">After generation:</span> Click any text to edit • Switch device views • Refine with AI prompts
               </p>
             </div>
           )}
           
-          <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between px-5 py-4 bg-zinc-900/40 border-t border-zinc-800/60">
-            <div className="flex items-center gap-2 text-xs text-zinc-500">
-              <Command className="w-3 h-3" />
-              <span>Shift + Enter for newline</span>
+          <div className="flex flex-col gap-2 sm:gap-3 sm:flex-row sm:items-center sm:justify-between px-3 py-2.5 sm:px-5 sm:py-4 bg-zinc-900/40 border-t border-zinc-800/60">
+            <div className="flex items-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs text-zinc-500">
+              <Command className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
+              <span className="hidden sm:inline">Shift + Enter for newline</span>
+              <span className="sm:hidden">Shift+Enter: newline</span>
               {!isValid && prompt.trim().length > 0 && (
                 <span className="text-amber-500 ml-2">
                   ({10 - prompt.trim().length} more chars)
@@ -226,7 +227,7 @@ function InlinePromptInput({ onSubmit }: { onSubmit: (prompt: string) => void })
               whileTap={{ scale: isValid && !isSubmitting ? 0.97 : 1 }}
               onClick={handleSubmit}
               disabled={!isValid || isSubmitting}
-              className={`relative inline-flex items-center justify-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold transition-all overflow-hidden
+              className={`relative inline-flex items-center justify-center gap-1.5 sm:gap-2 rounded-lg sm:rounded-xl px-3 py-2 sm:px-5 sm:py-2.5 text-xs sm:text-sm font-semibold transition-all overflow-hidden
                 ${isValid && !isSubmitting
                   ? 'bg-emerald-500/15 border border-emerald-500/40 text-white shadow-[0_0_20px_rgba(16,185,129,0.25)]'
                   : 'bg-zinc-900/60 border border-zinc-800 text-zinc-500 cursor-not-allowed'}`}
@@ -240,13 +241,13 @@ function InlinePromptInput({ onSubmit }: { onSubmit: (prompt: string) => void })
               )}
               {isSubmitting ? (
                 <>
-                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  <div className="w-3.5 h-3.5 sm:w-4 sm:h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                   <span className="relative">Building...</span>
                 </>
               ) : (
                 <>
-                  <span className="relative">Generate section</span>
-                  <ArrowRight className="relative w-4 h-4" />
+                  <span className="relative">Generate<span className="hidden sm:inline"> section</span></span>
+                  <ArrowRight className="relative w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 </>
               )}
             </motion.button>
@@ -254,8 +255,8 @@ function InlinePromptInput({ onSubmit }: { onSubmit: (prompt: string) => void })
         </div>
 
         {/* Example prompt - not clickable, just inspiration */}
-        <div className="mt-4 text-center">
-          <p className="text-xs text-zinc-600">
+        <div className="mt-3 sm:mt-4 text-center">
+          <p className="text-[10px] sm:text-xs text-zinc-600">
             <span className="text-zinc-500">Try something like:</span>{' '}
             <span className="text-zinc-400 italic">
               "A hero section for [your business name] - we do [what you do] for [who you help]. Dark theme with [your brand color] accents."
@@ -368,14 +369,14 @@ function GuestRefineBar({
         initial={{ opacity: 0, y: 5 }}
         animate={{ opacity: 1, y: 0 }}
         key={refinementChanges.length}
-        className="flex items-center gap-2.5 px-1"
+        className="flex items-center gap-2 sm:gap-2.5 px-1"
       >
         <motion.div 
-          className="w-6 h-6 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center flex-shrink-0"
+          className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center flex-shrink-0"
           animate={{ scale: [1, 1.1, 1], opacity: [0.8, 1, 0.8] }}
           transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
         >
-          <Sparkles className="w-3 h-3 text-emerald-400" />
+          <Sparkles className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-emerald-400" />
         </motion.div>
         <AnimatePresence mode="wait">
           <motion.p
@@ -383,7 +384,7 @@ function GuestRefineBar({
             initial={{ opacity: 0, x: -5 }}
             animate={{ opacity: 1, x: 0 }}
             exit={{ opacity: 0, x: 5 }}
-            className="text-sm"
+            className="text-xs sm:text-sm"
           >
             <span className="text-emerald-400 font-medium">{message.prefix}</span>{' '}
             <span className="text-zinc-400">{message.text}</span>
@@ -392,11 +393,11 @@ function GuestRefineBar({
       </motion.div>
 
       {/* Input Row - Premium Glass */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2 sm:gap-3">
         {/* Main Input Container */}
         <div className="relative flex-1 group">
           {/* Input wrapper */}
-          <div className="relative flex items-center bg-zinc-900/50 border border-zinc-800/50 rounded-xl overflow-hidden transition-all duration-300 focus-within:border-emerald-500/30">
+          <div className="relative flex items-center bg-zinc-900/50 border border-zinc-800/50 rounded-lg sm:rounded-xl overflow-hidden transition-all duration-300 focus-within:border-emerald-500/30">
             <input
               type="text"
               value={refinePrompt}
@@ -406,18 +407,18 @@ function GuestRefineBar({
               onKeyDown={(e) => e.key === 'Enter' && refinePrompt.trim() && !isGuestRefineLocked && handleUserRefine()}
               disabled={isUserRefining || isGuestRefineLocked}
               placeholder={isFocused ? REFINE_PROMPTS[promptIndex] : "What would you change?"}
-              className="flex-1 bg-transparent px-4 py-3.5 text-sm text-zinc-200 placeholder-zinc-500 focus:outline-none disabled:opacity-50"
+              className="flex-1 bg-transparent px-3 py-2.5 sm:px-4 sm:py-3.5 text-xs sm:text-sm text-zinc-200 placeholder-zinc-500 focus:outline-none disabled:opacity-50"
             />
             <button
               onClick={handleUserRefine}
               disabled={!refinePrompt.trim() || isUserRefining || isGuestRefineLocked}
-              className="relative px-5 py-3.5 bg-zinc-900/50 hover:bg-zinc-800/50 border-l border-zinc-800/50 text-zinc-300 hover:text-zinc-100 text-sm font-medium transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-2"
+              className="relative px-3 py-2.5 sm:px-5 sm:py-3.5 bg-zinc-900/50 hover:bg-zinc-800/50 border-l border-zinc-800/50 text-zinc-300 hover:text-zinc-100 text-xs sm:text-sm font-medium transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-1.5 sm:gap-2"
             >
               {isUserRefining ? (
-                <RefreshCw className="w-4 h-4 animate-spin text-emerald-400" />
+                <RefreshCw className="w-3.5 h-3.5 sm:w-4 sm:h-4 animate-spin text-emerald-400" />
               ) : (
                 <>
-                  <Wand2 className="w-4 h-4 text-emerald-400" />
+                  <Wand2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-400" />
                   <span>Refine</span>
                 </>
               )}
@@ -428,11 +429,11 @@ function GuestRefineBar({
         {/* Save CTA - Sign up button */}
         <button
           onClick={() => goToSignUp()}
-          className="group relative flex-shrink-0 px-6 py-3.5 rounded-xl overflow-hidden transition-all duration-300"
+          className="group relative flex-shrink-0 px-4 py-2.5 sm:px-6 sm:py-3.5 rounded-lg sm:rounded-xl overflow-hidden transition-all duration-300"
         >
           {/* Button glass background */}
-          <div className="absolute inset-0 bg-emerald-500/15 border border-emerald-500/30 rounded-xl transition-all duration-300 group-hover:bg-emerald-500/25 group-hover:border-emerald-500/40" />
-          <span className="relative z-10 text-zinc-100 text-sm font-semibold">Save & Continue</span>
+          <div className="absolute inset-0 bg-emerald-500/15 border border-emerald-500/30 rounded-lg sm:rounded-xl transition-all duration-300 group-hover:bg-emerald-500/25 group-hover:border-emerald-500/40" />
+          <span className="relative z-10 text-zinc-100 text-xs sm:text-sm font-semibold">Save<span className="hidden sm:inline"> & Continue</span></span>
         </button>
       </div>
     </div>
@@ -2170,7 +2171,7 @@ export default function SectionBuilder({
         </div>
 
         {/* Bottom Panel - Floating Glass Command Bar */}
-        <div className="flex-shrink-0 p-3 sm:p-4">
+        <div className="flex-shrink-0 p-2 sm:p-3 md:p-4">
           <motion.div
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
@@ -2179,7 +2180,7 @@ export default function SectionBuilder({
           >
             {/* Generating Stage */}
             {(stage === 'generating' || showGenerating) && (
-              <div className="relative rounded-2xl overflow-hidden">
+              <div className="relative rounded-xl sm:rounded-2xl overflow-hidden">
                 {/* Glass layers - matches sidebar exactly */}
                 <div className="absolute inset-0 bg-zinc-900/70 backdrop-blur-xl" />
                 <div className="absolute inset-0 bg-gradient-to-b from-white/[0.02] to-transparent pointer-events-none" />
@@ -2187,39 +2188,39 @@ export default function SectionBuilder({
                 <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-zinc-700 to-transparent" />
                 
                 {/* Content */}
-                <div className="relative p-4 space-y-3">
+                <div className="relative p-3 sm:p-4 space-y-2 sm:space-y-3">
                   {/* AI Status */}
-                  <div className="flex items-center gap-2.5 px-1">
+                  <div className="flex items-center gap-2 sm:gap-2.5 px-1">
                     <motion.div 
-                      className="w-6 h-6 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center"
+                      className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center"
                       animate={{ scale: [1, 1.1, 1], opacity: [0.8, 1, 0.8] }}
                       transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
                     >
-                      <Sparkles className="w-3 h-3 text-emerald-400" />
+                      <Sparkles className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-emerald-400" />
                     </motion.div>
-                    <p className="text-sm">
+                    <p className="text-xs sm:text-sm">
                       <span className="text-emerald-400 font-medium">Building.</span>{' '}
                       <span className="text-zinc-400">{loadingStages[loadingStage]}...</span>
                     </p>
                   </div>
 
                   {/* Input placeholder */}
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2 sm:gap-3">
                     <div className="relative flex-1">
-                      <div className="relative flex items-center bg-zinc-900/50 border border-zinc-800/50 rounded-xl overflow-hidden">
-                        <div className="flex-1 px-4 py-3.5 text-sm text-zinc-500">
+                      <div className="relative flex items-center bg-zinc-900/50 border border-zinc-800/50 rounded-lg sm:rounded-xl overflow-hidden">
+                        <div className="flex-1 px-3 py-2.5 sm:px-4 sm:py-3.5 text-xs sm:text-sm text-zinc-500">
                           Constructing Reality...
                         </div>
-                        <div className="px-5 py-3.5 bg-zinc-900/50 border-l border-zinc-800/50 text-zinc-500 text-sm font-medium flex items-center gap-2">
-                          <RefreshCw className="w-4 h-4 animate-spin text-emerald-400" />
+                        <div className="px-3 py-2.5 sm:px-5 sm:py-3.5 bg-zinc-900/50 border-l border-zinc-800/50 text-zinc-500 text-xs sm:text-sm font-medium flex items-center gap-1.5 sm:gap-2">
+                          <RefreshCw className="w-3.5 h-3.5 sm:w-4 sm:h-4 animate-spin text-emerald-400" />
                           <span>Building</span>
                         </div>
                       </div>
                     </div>
                     
-                    <div className="relative px-7 py-3.5 rounded-xl">
-                      <div className="absolute inset-0 bg-zinc-900/50 border border-zinc-800/50 rounded-xl" />
-                      <span className="relative text-zinc-500 text-sm font-medium">Deploy</span>
+                    <div className="relative px-4 py-2.5 sm:px-7 sm:py-3.5 rounded-lg sm:rounded-xl">
+                      <div className="absolute inset-0 bg-zinc-900/50 border border-zinc-800/50 rounded-lg sm:rounded-xl" />
+                      <span className="relative text-zinc-500 text-xs sm:text-sm font-medium">Deploy</span>
                     </div>
                   </div>
                 </div>
@@ -2228,15 +2229,15 @@ export default function SectionBuilder({
 
             {/* Complete Stage */}
             {stage === 'complete' && (
-              <div className="relative rounded-2xl overflow-hidden">
+              <div className="relative rounded-xl sm:rounded-2xl overflow-hidden">
                 {/* Glass layers - matches sidebar exactly */}
                 <div className="absolute inset-0 bg-zinc-900/70 backdrop-blur-xl" />
                 <div className="absolute inset-0 bg-gradient-to-b from-white/[0.02] to-transparent pointer-events-none" />
-                <div className="absolute inset-0 border border-zinc-800/50 rounded-2xl" />
+                <div className="absolute inset-0 border border-zinc-800/50 rounded-xl sm:rounded-2xl" />
                 <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-zinc-700 to-transparent" />
                 
                 {/* Content */}
-                <div className="relative p-4">
+                <div className="relative p-3 sm:p-4">
                   <GuestRefineBar
                     refinePrompt={refinePrompt}
                     setRefinePrompt={setRefinePrompt}
@@ -2253,22 +2254,22 @@ export default function SectionBuilder({
 
             {/* Refining Stage */}
             {stage === 'refining' && (
-              <div className="relative rounded-2xl overflow-hidden">
+              <div className="relative rounded-xl sm:rounded-2xl overflow-hidden">
                 {/* Glass layers - matches sidebar with emerald accent */}
                 <div className="absolute inset-0 bg-zinc-900/70 backdrop-blur-xl" />
                 <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(16,185,129,0.06),transparent_60%)]" />
-                <div className="absolute inset-0 border border-emerald-500/20 rounded-2xl" />
+                <div className="absolute inset-0 border border-emerald-500/20 rounded-xl sm:rounded-2xl" />
                 <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-emerald-500/30 to-transparent" />
                 
                 {/* Content */}
-                <div className="relative p-4">
-                  <div className="flex items-center gap-3">
+                <div className="relative p-3 sm:p-4">
+                  <div className="flex items-center gap-2 sm:gap-3">
                     <motion.div
                       animate={{ rotate: 360 }}
                       transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-                      className="w-6 h-6 border-2 border-emerald-500/60 border-t-emerald-400 rounded-full"
+                      className="w-5 h-5 sm:w-6 sm:h-6 border-2 border-emerald-500/60 border-t-emerald-400 rounded-full"
                     />
-                    <p className="text-sm font-medium text-white">Refining your section...</p>
+                    <p className="text-xs sm:text-sm font-medium text-white">Refining your section...</p>
                   </div>
                 </div>
               </div>
