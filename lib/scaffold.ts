@@ -351,7 +351,135 @@ export default function robots(): MetadataRoute.Robots {
 `
   })
 
-  // 12. Components directory structure
+  // 12. Open Graph Image generation
+  files.push({
+    path: 'app/opengraph-image.tsx',
+    content: `import { ImageResponse } from 'next/og'
+import { siteConfig } from '@/lib/config'
+
+export const runtime = 'edge'
+export const alt = '${config.name}'
+export const size = { width: 1200, height: 630 }
+export const contentType = 'image/png'
+
+export default async function Image() {
+  return new ImageResponse(
+    (
+      <div
+        style={{
+          height: '100%',
+          width: '100%',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          backgroundColor: '${isDark ? '#09090b' : '#ffffff'}',
+          fontFamily: 'system-ui, sans-serif',
+        }}
+      >
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '20px',
+          }}
+        >
+          <div
+            style={{
+              fontSize: 72,
+              fontWeight: 700,
+              color: '${primaryColor}',
+              letterSpacing: '-0.02em',
+            }}
+          >
+            {siteConfig.name}
+          </div>
+          <div
+            style={{
+              fontSize: 28,
+              color: '${isDark ? '#a1a1aa' : '#52525b'}',
+              maxWidth: '600px',
+              textAlign: 'center',
+            }}
+          >
+            {siteConfig.description}
+          </div>
+        </div>
+      </div>
+    ),
+    { ...size }
+  )
+}
+`
+  })
+
+  // 13. Twitter Image (same as OG)
+  files.push({
+    path: 'app/twitter-image.tsx',
+    content: `import { ImageResponse } from 'next/og'
+import { siteConfig } from '@/lib/config'
+
+export const runtime = 'edge'
+export const alt = '${config.name}'
+export const size = { width: 1200, height: 630 }
+export const contentType = 'image/png'
+
+export default async function Image() {
+  return new ImageResponse(
+    (
+      <div
+        style={{
+          height: '100%',
+          width: '100%',
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+          justifyContent: 'center',
+          backgroundColor: '${isDark ? '#09090b' : '#ffffff'}',
+          fontFamily: 'system-ui, sans-serif',
+        }}
+      >
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '20px',
+          }}
+        >
+          <div
+            style={{
+              fontSize: 72,
+              fontWeight: 700,
+              color: '${primaryColor}',
+              letterSpacing: '-0.02em',
+            }}
+          >
+            {siteConfig.name}
+          </div>
+          <div
+            style={{
+              fontSize: 28,
+              color: '${isDark ? '#a1a1aa' : '#52525b'}',
+              maxWidth: '600px',
+              textAlign: 'center',
+            }}
+          >
+            {siteConfig.description}
+          </div>
+        </div>
+      </div>
+    ),
+    { ...size }
+  )
+}
+`
+  })
+
+  // 14. Components directory structure
   // Header placeholder
   files.push({
     path: 'components/Header.tsx',
@@ -442,7 +570,7 @@ export { default as Footer } from '../Footer'
 `
   })
 
-  // 13. Page templates for each route
+  // 15. Page templates for each route
   pages.forEach(page => {
     const pagePath = page.path === '/' ? 'app/page.tsx' : `app${page.path}/page.tsx`
     
@@ -479,7 +607,7 @@ export default function ${page.name.replace(/\s+/g, '')}Page() {
     })
   })
 
-  // 14. README
+  // 16. README
   files.push({
     path: 'README.md',
     content: `# ${config.name}
@@ -533,7 +661,7 @@ Generated with ❤️ by [HatchIt.dev](https://hatchit.dev)
 `
   })
 
-  // 15. .gitignore
+  // 17. .gitignore
   files.push({
     path: '.gitignore',
     content: `# Dependencies
@@ -572,7 +700,7 @@ next-env.d.ts
 `
   })
 
-  // 16. ESLint config
+  // 18. ESLint config
   files.push({
     path: '.eslintrc.json',
     content: JSON.stringify({
@@ -580,7 +708,7 @@ next-env.d.ts
     }, null, 2)
   })
 
-  // 17. next-env.d.ts
+  // 19. next-env.d.ts
   files.push({
     path: 'next-env.d.ts',
     content: `/// <reference types="next" />
