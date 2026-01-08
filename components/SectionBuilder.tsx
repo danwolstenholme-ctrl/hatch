@@ -28,6 +28,8 @@ import { LogoMark } from './Logo'
 // =============================================================================
 // INLINE PROMPT INPUT - Clean, minimal input for section prompts
 // =============================================================================
+// INLINE PROMPT INPUT - Clean, professional initial state
+// =============================================================================
 function InlinePromptInput({ 
   onSubmit, 
   sectionName = 'Section',
@@ -50,17 +52,16 @@ function InlinePromptInput({
 
   return (
     <div className="h-full flex flex-col bg-zinc-950">
-      {/* Main content area - compact input at bottom */}
       <div className="flex-1 flex items-end justify-center p-4 pb-6">
-        <div className="w-full max-w-2xl">
-          {/* Section context */}
+        <div className="w-full max-w-xl">
+          {/* Section label */}
           <div className="mb-3 text-center">
-            <p className="text-xs text-zinc-500 uppercase tracking-wider">Building</p>
+            <p className="text-[10px] text-zinc-600 uppercase tracking-wider">Building</p>
             <p className="text-sm text-zinc-300 font-medium">{sectionName}</p>
           </div>
           
-          {/* Input bar - inline style like chat */}
-          <div className="relative">
+          {/* Input */}
+          <div className="flex items-center bg-zinc-900/80 border border-zinc-800/60 rounded-lg overflow-hidden focus-within:border-zinc-700">
             <input
               type="text"
               value={prompt}
@@ -72,29 +73,27 @@ function InlinePromptInput({
                 }
               }}
               placeholder={placeholder}
-              className="w-full bg-zinc-900/60 border border-zinc-800 rounded-xl px-4 py-3 pr-24 text-sm text-zinc-200 placeholder-zinc-500 focus:outline-none focus:border-emerald-500/40 transition-all"
+              className="flex-1 bg-transparent px-4 py-3 text-sm text-zinc-200 placeholder-zinc-600 focus:outline-none"
               autoFocus
             />
             <button
               onClick={handleSubmit}
               disabled={!isValid || isSubmitting}
-              className={`absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all
+              className={`px-4 py-3 text-sm font-medium border-l border-zinc-700/50 transition-all
                 ${isValid && !isSubmitting
-                  ? 'bg-emerald-500/15 border border-emerald-500/40 hover:bg-emerald-500/20 text-white'
-                  : 'bg-zinc-800/50 border border-zinc-700/50 text-zinc-500 cursor-not-allowed'}`}
+                  ? 'bg-emerald-500/10 text-white hover:bg-emerald-500/15'
+                  : 'bg-zinc-800/50 text-zinc-600 cursor-not-allowed'}`}
             >
-              {isSubmitting ? '...' : 'Build'}
-              {!isSubmitting && <ArrowRight className="w-3 h-3" />}
+              {isSubmitting ? '...' : 'Build →'}
             </button>
           </div>
           
-          {/* Tech stack indicator */}
-          <div className="mt-2 flex items-center justify-center gap-2 text-[10px] text-zinc-600">
-            <span className="w-1 h-1 rounded-full bg-emerald-500/60" />
+          {/* Tech stack */}
+          <div className="mt-2 flex items-center justify-center gap-2 text-[10px] text-zinc-700">
             <span>Claude Sonnet 4.5</span>
-            <span className="text-zinc-700">·</span>
+            <span>·</span>
             <span>React 19</span>
-            <span className="text-zinc-700">·</span>
+            <span>·</span>
             <span>Tailwind 4</span>
           </div>
         </div>
@@ -148,8 +147,7 @@ const unwrapCodePayload = (payload: unknown): string => {
 }
 
 // =============================================================================
-// AUTH REFINE BAR - For logged-in users
-// Refine input + Next Section button
+// AUTH REFINE BAR - Professional, dense command bar for logged-in users
 // =============================================================================
 function AuthRefineBar({
   refinePrompt,
@@ -168,22 +166,9 @@ function AuthRefineBar({
 }) {
   return (
     <div className="flex items-center gap-2">
-      {/* Input with glass styling */}
+      {/* Refine input */}
       <div className="relative flex-1">
-        <motion.div 
-          initial={false}
-          animate={{ 
-            borderColor: refinePrompt.trim() ? 'rgba(16, 185, 129, 0.3)' : 'rgba(63, 63, 70, 0.5)'
-          }}
-          className="flex items-center bg-zinc-900/60 backdrop-blur-sm border rounded-xl overflow-hidden transition-all focus-within:border-emerald-500/40 focus-within:shadow-[0_0_15px_rgba(16,185,129,0.1)]"
-        >
-          <motion.div 
-            animate={{ opacity: [0.5, 1, 0.5] }}
-            transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-            className="pl-4 text-emerald-500"
-          >
-            <Sparkles className="w-4 h-4" />
-          </motion.div>
+        <div className="flex items-center bg-zinc-900/80 border border-zinc-800/60 rounded-lg overflow-hidden focus-within:border-zinc-700">
           <input
             type="text"
             value={refinePrompt}
@@ -191,28 +176,26 @@ function AuthRefineBar({
             onKeyDown={(e) => e.key === 'Enter' && refinePrompt.trim() && handleUserRefine()}
             disabled={isUserRefining}
             placeholder="What should change?"
-            className="flex-1 bg-transparent px-3 py-3 text-sm text-zinc-200 placeholder-zinc-500 focus:outline-none disabled:opacity-50"
+            className="flex-1 bg-transparent px-3 py-2 text-sm text-zinc-200 placeholder-zinc-600 focus:outline-none disabled:opacity-50"
           />
           <button
             onClick={handleUserRefine}
             disabled={!refinePrompt.trim() || isUserRefining}
-            className="px-5 py-3 bg-zinc-800/80 hover:bg-zinc-700/80 border-l border-zinc-700/50 text-zinc-300 text-sm font-medium transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+            className="px-3 py-2 text-xs font-medium bg-zinc-800/80 border-l border-zinc-700/50 text-zinc-400 hover:text-white transition-all disabled:opacity-30"
           >
-            {isUserRefining ? <RefreshCw className="w-4 h-4 animate-spin" /> : 'Refine'}
+            {isUserRefining ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : 'Refine'}
           </button>
-        </motion.div>
+        </div>
       </div>
       
-      {/* Next Section button */}
-      <motion.button
-        whileHover={{ scale: 1.02 }}
-        whileTap={{ scale: 0.98 }}
+      {/* Next button */}
+      <button
         onClick={onNextSection}
-        className="flex-shrink-0 px-5 py-3 rounded-xl bg-emerald-500/15 border border-emerald-500/40 hover:bg-emerald-500/20 hover:border-emerald-500/50 text-white text-sm font-medium transition-all shadow-[0_0_15px_rgba(16,185,129,0.15)] flex items-center gap-2"
+        className="flex items-center gap-1.5 px-4 py-2 rounded-lg bg-emerald-500/10 border border-emerald-500/30 hover:bg-emerald-500/15 text-white text-sm font-medium transition-all"
       >
         {isLastSection ? 'Finish' : 'Next'}
-        <ArrowRight className="w-4 h-4" />
-      </motion.button>
+        <ArrowRight className="w-3.5 h-3.5" />
+      </button>
     </div>
   )
 }
@@ -220,6 +203,10 @@ function AuthRefineBar({
 // =============================================================================
 // =============================================================================
 // COMMAND BAR - The main builder interface
+// =============================================================================
+
+// =============================================================================
+// DEMO COMMAND BAR - Clean, professional command bar for demo users
 // =============================================================================
 
 function DemoCommandBar({
@@ -250,32 +237,18 @@ function DemoCommandBar({
   const inputValue = isInitialState ? prompt : refinePrompt
   const setInputValue = isInitialState ? setPrompt : setRefinePrompt
   const handleSubmit = isInitialState ? () => onBuild(inputValue) : handleUserRefine
-  const placeholderText = isInitialState 
-    ? "Describe your site..."
-    : "What should change?"
+  const placeholderText = isInitialState ? "Describe your site..." : "What should change?"
   const buttonText = isInitialState ? "Build" : "Refine"
   
   return (
-    <motion.div 
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
-    >
-      {/* Input with glass styling */}
-      <motion.div 
-        initial={false}
-        animate={{ 
-          borderColor: inputValue.trim() ? 'rgba(16, 185, 129, 0.3)' : 'rgba(63, 63, 70, 0.5)'
-        }}
-        className="flex items-center bg-zinc-900/60 backdrop-blur-sm border border-zinc-800/50 rounded-xl overflow-hidden transition-all focus-within:border-emerald-500/40 focus-within:shadow-[0_0_15px_rgba(16,185,129,0.1)]"
-      >
-        <motion.div 
-          animate={{ scale: [1, 1.05, 1] }}
-          transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-          className="pl-3 sm:pl-4 flex-shrink-0"
-        >
-          <LogoMark size={20} className="w-5 h-5" />
-        </motion.div>
+    <div className="flex items-center gap-2">
+      {/* Input */}
+      <div className="flex-1 flex items-center bg-zinc-900/80 border border-zinc-800/60 rounded-lg overflow-hidden focus-within:border-zinc-700">
+        <div className="pl-3 flex-shrink-0">
+          <div className="w-4 h-4 rounded bg-emerald-500/20 flex items-center justify-center">
+            <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+          </div>
+        </div>
         <input
           type="text"
           value={inputValue}
@@ -283,19 +256,28 @@ function DemoCommandBar({
           onKeyDown={(e) => e.key === 'Enter' && inputValue.trim() && handleSubmit()}
           disabled={isUserRefining}
           placeholder={placeholderText}
-          className="flex-1 bg-transparent px-3 py-3 sm:py-3.5 text-sm text-zinc-200 placeholder-zinc-500 focus:outline-none disabled:opacity-50"
+          className="flex-1 bg-transparent px-3 py-2 text-sm text-zinc-200 placeholder-zinc-600 focus:outline-none disabled:opacity-50"
         />
-        <motion.button
-          whileHover={{ backgroundColor: 'rgba(63, 63, 70, 0.8)' }}
-          whileTap={{ scale: 0.98 }}
+        <button
           onClick={handleSubmit}
           disabled={!inputValue.trim() || isUserRefining}
-          className="px-4 sm:px-5 py-3 sm:py-3.5 bg-zinc-800/60 border-l border-zinc-700/50 text-zinc-300 text-sm font-medium transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+          className="px-3 py-2 text-xs font-medium bg-zinc-800/80 border-l border-zinc-700/50 text-zinc-400 hover:text-white transition-all disabled:opacity-30"
         >
-          {isUserRefining ? <RefreshCw className="w-4 h-4 animate-spin" /> : buttonText}
-        </motion.button>
-      </motion.div>
-    </motion.div>
+          {isUserRefining ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : buttonText}
+        </button>
+      </div>
+      
+      {/* Sign up CTA for demo users after first build */}
+      {!isInitialState && (
+        <button
+          onClick={goToSignUp}
+          className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-emerald-500/10 border border-emerald-500/30 hover:bg-emerald-500/15 text-white text-xs font-medium transition-all whitespace-nowrap"
+        >
+          Sign up
+          <ArrowRight className="w-3 h-3" />
+        </button>
+      )}
+    </div>
   )
 }
 
@@ -1727,156 +1709,83 @@ export default function SectionBuilder({
           )}
         </div>
 
-        {/* Bottom Panel - Floating Glass Command Bar */}
-        <div className="flex-shrink-0 p-2 sm:p-3 md:p-4 relative z-10 safe-area-bottom">
-          <motion.div
-            initial={{ y: 20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
-            className="mx-auto w-full max-w-3xl relative"
-          >
-            {/* Demo Mode - Unified Command Bar (handles both input and complete stages) */}
+        {/* Bottom Panel - Minimal, professional */}
+        <div className="flex-shrink-0 p-2 sm:p-3 relative z-10 safe-area-bottom">
+          <div className="mx-auto w-full max-w-2xl">
+            {/* Demo Mode Command Bar */}
             {isDemo && (stage === 'input' || stage === 'complete') && (
-              <div className="relative rounded-xl sm:rounded-2xl overflow-hidden">
-                {/* Glass layers */}
-                <div className="absolute inset-0 bg-zinc-900/70 backdrop-blur-xl" />
-                <div className="absolute inset-0 bg-gradient-to-b from-white/[0.02] to-transparent pointer-events-none" />
-                <div className="absolute inset-0 border border-zinc-800/50 rounded-xl sm:rounded-2xl" />
-                <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-zinc-700 to-transparent" />
-                
-                {/* Content */}
-                <div className="relative p-3 sm:p-4">
-                  <DemoCommandBar
-                    stage={stage}
-                    prompt={prompt}
-                    setPrompt={setPrompt}
-                    onBuild={(submittedPrompt: string) => {
-                      setPrompt(submittedPrompt)
-                      setStage('generating')
-                      if (typeof window !== 'undefined') {
-                        localStorage.setItem('hatch_last_prompt', submittedPrompt)
-                      }
-                      setTimeout(() => {
-                        handleBuildSection({ overridePrompt: submittedPrompt, skipGuestCredit: true })
-                      }, 100)
-                    }}
-                    refinePrompt={refinePrompt}
-                    setRefinePrompt={setRefinePrompt}
-                    isUserRefining={isUserRefining}
-                    handleUserRefine={handleUserRefine}
-                    goToSignUp={goToSignUp}
-                    reasoning={reasoning}
-                  />
-                </div>
+              <div className="bg-zinc-900/70 backdrop-blur-xl border border-zinc-800/50 rounded-lg p-2.5">
+                <DemoCommandBar
+                  stage={stage}
+                  prompt={prompt}
+                  setPrompt={setPrompt}
+                  onBuild={(submittedPrompt: string) => {
+                    setPrompt(submittedPrompt)
+                    setStage('generating')
+                    if (typeof window !== 'undefined') {
+                      localStorage.setItem('hatch_last_prompt', submittedPrompt)
+                    }
+                    setTimeout(() => {
+                      handleBuildSection({ overridePrompt: submittedPrompt, skipGuestCredit: true })
+                    }, 100)
+                  }}
+                  refinePrompt={refinePrompt}
+                  setRefinePrompt={setRefinePrompt}
+                  isUserRefining={isUserRefining}
+                  handleUserRefine={handleUserRefine}
+                  goToSignUp={goToSignUp}
+                  reasoning={reasoning}
+                />
               </div>
             )}
 
-            {/* Generating Stage - only show when actively generating without preview */}
+            {/* Generating State */}
             {showGenerating && (
-              <motion.div 
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                className="relative rounded-2xl overflow-hidden"
-              >
-                {/* Glass layers */}
-                <div className="absolute inset-0 bg-zinc-900/70 backdrop-blur-xl" />
-                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(16,185,129,0.05),transparent_70%)]" />
-                <div className="absolute inset-0 border border-zinc-800/50 rounded-2xl" />
-                <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-emerald-500/30 to-transparent" />
-                
-                {/* Content */}
-                <div className="relative p-4">
-                  <div className="flex items-center gap-3">
-                    {/* Animated icon */}
-                    <motion.div 
-                      animate={{ 
-                        scale: [1, 1.1, 1],
-                        opacity: [0.7, 1, 0.7]
-                      }}
-                      transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
-                      className="relative"
-                    >
-                      <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center">
-                        <Sparkles className="w-5 h-5 text-emerald-400" />
-                      </div>
-                      <motion.div
-                        animate={{ scale: [1, 1.5], opacity: [0.4, 0] }}
-                        transition={{ duration: 1, repeat: Infinity }}
-                        className="absolute inset-0 rounded-xl border border-emerald-500/40"
+              <div className="bg-zinc-900/70 backdrop-blur-xl border border-zinc-800/50 rounded-lg p-3">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center">
+                    <Sparkles className="w-4 h-4 text-emerald-400 animate-pulse" />
+                  </div>
+                  <div className="flex-1">
+                    <p className="text-sm font-medium text-white">Building</p>
+                    <p className="text-[11px] text-zinc-600">{loadingStages[loadingStage]}</p>
+                  </div>
+                  <div className="flex gap-1">
+                    {[0, 1, 2, 3].map((i) => (
+                      <div
+                        key={i}
+                        className={`w-1.5 h-1.5 rounded-full ${i <= loadingStage ? 'bg-emerald-500' : 'bg-zinc-700'}`}
                       />
-                    </motion.div>
-                    
-                    {/* Status text */}
-                    <div className="flex-1">
-                      <p className="text-sm font-medium text-white">Building</p>
-                      <p className="text-xs text-zinc-500">{loadingStages[loadingStage]}</p>
-                    </div>
-                    
-                    {/* Progress indicator */}
-                    <div className="flex gap-1">
-                      {[0, 1, 2, 3].map((i) => (
-                        <motion.div
-                          key={i}
-                          animate={{
-                            backgroundColor: i <= loadingStage 
-                              ? 'rgb(16, 185, 129)' 
-                              : 'rgb(63, 63, 70)'
-                          }}
-                          className="w-2 h-2 rounded-full"
-                        />
-                      ))}
-                    </div>
+                    ))}
                   </div>
                 </div>
-              </motion.div>
+              </div>
             )}
 
-            {/* Complete Stage - Only for authenticated users (demo uses DemoCommandBar above) */}
+            {/* Auth Complete State */}
             {stage === 'complete' && !isDemo && (
-              <div className="relative rounded-xl sm:rounded-2xl overflow-hidden">
-                {/* Glass layers - matches sidebar exactly */}
-                <div className="absolute inset-0 bg-zinc-900/70 backdrop-blur-xl" />
-                <div className="absolute inset-0 bg-gradient-to-b from-white/[0.02] to-transparent pointer-events-none" />
-                <div className="absolute inset-0 border border-zinc-800/50 rounded-xl sm:rounded-2xl" />
-                <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-zinc-700 to-transparent" />
-                
-                {/* Auth refine bar */}
-                <div className="relative p-3 sm:p-4">
-                  <AuthRefineBar
-                    refinePrompt={refinePrompt}
-                    setRefinePrompt={setRefinePrompt}
-                    isUserRefining={isUserRefining}
-                    handleUserRefine={handleUserRefine}
-                    onNextSection={handleNextSection}
-                    isLastSection={isLastSection || false}
-                  />
-                </div>
+              <div className="bg-zinc-900/70 backdrop-blur-xl border border-zinc-800/50 rounded-lg p-2.5">
+                <AuthRefineBar
+                  refinePrompt={refinePrompt}
+                  setRefinePrompt={setRefinePrompt}
+                  isUserRefining={isUserRefining}
+                  handleUserRefine={handleUserRefine}
+                  onNextSection={handleNextSection}
+                  isLastSection={isLastSection || false}
+                />
               </div>
             )}
 
-            {/* Refining Stage */}
+            {/* Refining State */}
             {stage === 'refining' && (
-              <div className="relative rounded-xl sm:rounded-2xl overflow-hidden">
-                {/* Glass layers - matches sidebar with emerald accent */}
-                <div className="absolute inset-0 bg-zinc-900/70 backdrop-blur-xl" />
-                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,rgba(16,185,129,0.06),transparent_60%)]" />
-                <div className="absolute inset-0 border border-emerald-500/20 rounded-xl sm:rounded-2xl" />
-                <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-emerald-500/30 to-transparent" />
-                
-                {/* Content */}
-                <div className="relative p-3 sm:p-4">
-                  <div className="flex items-center gap-2 sm:gap-3">
-                    <motion.div
-                      animate={{ rotate: 360 }}
-                      transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
-                      className="w-5 h-5 sm:w-6 sm:h-6 border-2 border-emerald-500/60 border-t-emerald-400 rounded-full"
-                    />
-                    <p className="text-xs sm:text-sm font-medium text-white">Refining your section...</p>
-                  </div>
+              <div className="bg-zinc-900/70 backdrop-blur-xl border border-emerald-500/20 rounded-lg p-3">
+                <div className="flex items-center gap-2">
+                  <RefreshCw className="w-4 h-4 text-emerald-400 animate-spin" />
+                  <p className="text-sm text-white">Refining...</p>
                 </div>
               </div>
             )}
-          </motion.div>
+          </div>
         </div>
 
         {/* Locked Banner - Only shows for demo users who hit the limit */}

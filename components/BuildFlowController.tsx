@@ -1805,77 +1805,73 @@ export default function GeneratedPage() {
             />
             <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-zinc-950/90 via-transparent to-transparent" />
 
-            {/* Top Header */}
-            <div className="relative z-20 flex-shrink-0 border-b border-zinc-800/50 bg-zinc-950/80 backdrop-blur-xl">
-              <div className="px-4 py-3 flex items-center justify-between">
-                <div className="flex items-center gap-3">
+            {/* Top Header - Dense, professional */}
+            <div className="relative z-20 flex-shrink-0 h-12 border-b border-zinc-800/50 bg-zinc-950/90 backdrop-blur-xl">
+              <div className="h-full px-3 flex items-center justify-between">
+                <div className="flex items-center gap-2">
                   {/* Mobile Sidebar Toggle */}
                   <button
                     onClick={() => setShowMobileSidebar(true)}
-                    className="xl:hidden p-2 -ml-2 text-zinc-400 hover:text-white transition-colors"
+                    className="xl:hidden p-1.5 -ml-1 text-zinc-500 hover:text-white transition-colors"
                     aria-label="Open sections"
                   >
-                    <Menu className="w-5 h-5" />
+                    <Menu className="w-4 h-4" />
                   </button>
                   
                   <button
                     onClick={handleGoHome}
-                    className="hidden sm:flex text-zinc-500 hover:text-white transition-colors items-center gap-2 text-sm font-medium"
+                    className="hidden sm:flex p-1.5 text-zinc-500 hover:text-white transition-colors"
+                    aria-label="Back to dashboard"
                   >
                     <ArrowLeft className="w-4 h-4" />
-                    Dashboard
                   </button>
-                  <div className="h-6 w-px bg-zinc-800" />
-                  <div className="flex items-center gap-3">
-                    <div className="w-8 h-8 rounded-lg bg-zinc-800 border border-zinc-700 flex items-center justify-center">
-                      <Terminal className="w-4 h-4 text-zinc-400" />
+                  <div className="h-4 w-px bg-zinc-800 hidden sm:block" />
+                  <div className="flex items-center gap-2">
+                    <div className="w-6 h-6 rounded bg-zinc-800/80 border border-zinc-700/50 flex items-center justify-center">
+                      <Terminal className="w-3 h-3 text-zinc-500" />
                     </div>
-                    <h1 className="text-lg font-semibold text-white tracking-tight truncate max-w-[200px]">{project?.name || 'Untitled Project'}</h1>
+                    <span className="text-sm font-medium text-white truncate max-w-[160px]">{project?.name || 'Untitled'}</span>
                   </div>
                   
-                  {/* Tier Badge */}
-                  {tierConfig?.badge && (
-                    <div className={`hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-full border ${tierConfig.badge.border} ${tierConfig.badge.wrapper}`}>
-                      <tierConfig.icon className={`w-3.5 h-3.5 ${tierConfig.badge.icon}`} />
-                      <span className={`text-xs font-bold uppercase tracking-wider ${tierConfig.badge.text}`}>
-                        {tierConfig.name}
-                      </span>
-                    </div>
-                  )}
+                  {/* Status indicator */}
+                  <div className="hidden md:flex items-center gap-1.5 ml-2">
+                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                    <span className="text-[10px] text-zinc-600 uppercase tracking-wider">Ready</span>
+                  </div>
                 </div>
                 
-                <div className="flex items-center gap-2 sm:gap-3">
-                  {/* Mobile Add Section Button */}
+                <div className="flex items-center gap-1.5">
+                  {/* Progress counter */}
+                  <span className="text-[10px] text-zinc-600 tabular-nums hidden lg:inline mr-2">{buildState.currentSectionIndex + 1}/{sectionsForBuild.length}</span>
+                  
+                  {/* Mobile Sections */}
                   <button
                     onClick={() => setShowMobileSidebar(true)}
-                    className="xl:hidden flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 rounded-lg hover:bg-emerald-500/20 transition-colors"
+                    className="xl:hidden p-1.5 text-zinc-500 hover:text-white transition-colors"
+                    aria-label="View sections"
                   >
-                    <Plus className="w-3.5 h-3.5" />
-                    <span className="hidden sm:inline">Sections</span>
+                    <Plus className="w-4 h-4" />
                   </button>
                   
-                  <span className="text-xs text-zinc-500 hidden lg:inline">{buildState.currentSectionIndex + 1}/{sectionsForBuild.length}</span>
-                  
-                  {/* Export Button */}
+                  {/* Export */}
                   <button
                     onClick={handleDownload}
                     disabled={!assembledCode}
-                    className="p-2 sm:px-3 sm:py-2 text-sm text-zinc-400 hover:text-zinc-200 transition-colors font-medium flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                    title="Export to ZIP"
+                    className="p-1.5 text-zinc-500 hover:text-white transition-colors disabled:opacity-40"
+                    title="Export ZIP"
                   >
                     <Download className="w-4 h-4" />
-                    <span className="hidden sm:inline">Export</span>
                   </button>
                   
-                  {/* Ship Button */}
+                  {/* Ship */}
                   {deployedUrl ? (
                     <a
                       href={deployedUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="px-3 py-2 text-sm bg-zinc-800 text-emerald-400 border border-zinc-700 rounded-lg hover:bg-zinc-700 transition-colors flex items-center gap-2 font-medium"
+                      className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium bg-zinc-800 text-emerald-400 border border-zinc-700/50 rounded-md hover:bg-zinc-700 transition-colors"
                     >
-                      <Globe className="w-4 h-4" />
+                      <Globe className="w-3.5 h-3.5" />
                       <span className="hidden sm:inline">Live</span>
                       <ExternalLink className="w-3 h-3" />
                     </a>
@@ -1883,9 +1879,9 @@ export default function GeneratedPage() {
                     <button
                       onClick={handleDeploy}
                       disabled={!assembledCode}
-                      className="px-4 py-2 text-sm font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 bg-emerald-500/15 border border-emerald-500/40 hover:bg-emerald-500/20 text-white"
+                      className="flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-md transition-colors disabled:opacity-40 bg-emerald-500/10 border border-emerald-500/30 hover:bg-emerald-500/15 text-white"
                     >
-                      <Rocket className="w-4 h-4" />
+                      <Rocket className="w-3.5 h-3.5" />
                       <span>Ship</span>
                     </button>
                   )}
@@ -2111,105 +2107,73 @@ export default function GeneratedPage() {
               </div>
             </div>
 
-            {/* Live Preview Panel - Shows on large screens */}
-            <div className="hidden lg:flex w-[390px] flex-shrink-0 flex-col border-l border-zinc-800/70 bg-zinc-900/20">
-              {/* Preview Header with Device Toggles + Edit Text */}
-              <div className="flex-shrink-0 px-3 py-2.5 border-b border-zinc-800/50">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                    <span className="text-[10px] text-zinc-500 uppercase tracking-wider font-medium">Live</span>
-                  </div>
-                  
-                  {/* Device Toggle + Edit Text */}
-                  {previewSections.length > 0 && (
-                    <div className="flex items-center gap-2">
-                      {/* Edit Text Toggle - PROMINENT */}
-                      <button
-                        onClick={() => setPreviewEditMode(!previewEditMode)}
-                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
-                          previewEditMode
-                            ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/30'
-                            : 'bg-zinc-800 text-white hover:bg-zinc-700 border border-zinc-700'
-                        }`}
-                      >
-                        <Edit3 className="w-3.5 h-3.5" />
-                        {previewEditMode ? 'Editing' : 'Edit Text'}
-                      </button>
-                      
-                      {/* Device Toggle - Mobile stays inline, Tablet/Desktop pop out */}
-                      <div className="flex items-center gap-0.5 p-0.5 bg-zinc-800/50 rounded-md">
-                        <button
-                          onClick={() => {
-                            setExpandedPreview(null)
-                            setReviewDeviceView('mobile')
-                          }}
-                          className={`p-1.5 rounded transition-all ${
-                            !expandedPreview && reviewDeviceView === 'mobile'
-                              ? 'bg-zinc-700 text-white'
-                              : 'text-zinc-500 hover:text-zinc-300'
-                          }`}
-                          title="Mobile Preview"
-                        >
-                          <Smartphone className="w-3.5 h-3.5" />
-                        </button>
-                        <button
-                          onClick={() => {
-                            setExpandedPreview('tablet')
-                            setReviewDeviceView('tablet')
-                          }}
-                          className={`p-1.5 rounded transition-all ${
-                            expandedPreview === 'tablet'
-                              ? 'bg-zinc-700 text-white'
-                              : 'text-zinc-500 hover:text-zinc-300'
-                          }`}
-                          title="Tablet Preview (Fullscreen)"
-                        >
-                          <Tablet className="w-3.5 h-3.5" />
-                        </button>
-                        <button
-                          onClick={() => {
-                            setExpandedPreview('desktop')
-                            setReviewDeviceView('desktop')
-                          }}
-                          className={`p-1.5 rounded transition-all ${
-                            expandedPreview === 'desktop'
-                              ? 'bg-zinc-700 text-white'
-                              : 'text-zinc-500 hover:text-zinc-300'
-                          }`}
-                          title="Desktop Preview (Fullscreen)"
-                        >
-                          <Monitor className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-                    </div>
-                  )}
+            {/* Live Preview Panel - Denser, professional */}
+            <div className="hidden lg:flex w-[360px] flex-shrink-0 flex-col border-l border-zinc-800/50 bg-zinc-950">
+              {/* Preview Header - Minimal */}
+              <div className="flex-shrink-0 h-10 px-3 border-b border-zinc-800/50 flex items-center justify-between">
+                <div className="flex items-center gap-1.5">
+                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                  <span className="text-[10px] text-zinc-600 uppercase tracking-wider">Preview</span>
                 </div>
+                
+                {previewSections.length > 0 && (
+                  <div className="flex items-center gap-1">
+                    {/* Edit Toggle */}
+                    <button
+                      onClick={() => setPreviewEditMode(!previewEditMode)}
+                      className={`p-1 rounded transition-all ${
+                        previewEditMode ? 'text-emerald-400 bg-emerald-500/10' : 'text-zinc-600 hover:text-zinc-400'
+                      }`}
+                      title={previewEditMode ? 'Editing enabled' : 'Enable text editing'}
+                    >
+                      <Edit3 className="w-3.5 h-3.5" />
+                    </button>
+                    
+                    {/* Device toggles */}
+                    <div className="flex items-center bg-zinc-900/50 rounded p-0.5 ml-1">
+                      <button
+                        onClick={() => { setExpandedPreview(null); setReviewDeviceView('mobile') }}
+                        className={`p-1 rounded transition-all ${!expandedPreview && reviewDeviceView === 'mobile' ? 'bg-zinc-800 text-white' : 'text-zinc-600 hover:text-zinc-400'}`}
+                        title="Mobile"
+                      >
+                        <Smartphone className="w-3 h-3" />
+                      </button>
+                      <button
+                        onClick={() => { setExpandedPreview('tablet'); setReviewDeviceView('tablet') }}
+                        className={`p-1 rounded transition-all ${expandedPreview === 'tablet' ? 'bg-zinc-800 text-white' : 'text-zinc-600 hover:text-zinc-400'}`}
+                        title="Tablet"
+                      >
+                        <Tablet className="w-3 h-3" />
+                      </button>
+                      <button
+                        onClick={() => { setExpandedPreview('desktop'); setReviewDeviceView('desktop') }}
+                        className={`p-1 rounded transition-all ${expandedPreview === 'desktop' ? 'bg-zinc-800 text-white' : 'text-zinc-600 hover:text-zinc-400'}`}
+                        title="Desktop"
+                      >
+                        <Monitor className="w-3 h-3" />
+                      </button>
+                    </div>
+                  </div>
+                )}
               </div>
               
-              {/* Preview Content - Full container */}
-              <div className="flex-1 overflow-hidden relative bg-zinc-950">
+              {/* Preview Content */}
+              <div className="flex-1 overflow-hidden relative bg-zinc-900/30">
                 {previewSections.length > 0 ? (
-                  <div className="h-full">
-                    <FullSitePreviewFrame 
-                      sections={previewSections}
-                      deviceView="mobile"
-                      seo={brandConfig?.seo ? {
-                        title: brandConfig.seo.title || '',
-                        description: brandConfig.seo.description || '',
-                        keywords: brandConfig.seo.keywords || ''
-                      } : undefined}
-                    />
-                  </div>
+                  <FullSitePreviewFrame 
+                    sections={previewSections}
+                    deviceView="mobile"
+                    seo={brandConfig?.seo ? {
+                      title: brandConfig.seo.title || '',
+                      description: brandConfig.seo.description || '',
+                      keywords: brandConfig.seo.keywords || ''
+                    } : undefined}
+                  />
                 ) : (
-                  <div className="h-full flex items-center justify-center p-6 bg-zinc-900/50">
+                  <div className="h-full flex items-center justify-center">
                     <div className="text-center">
-                      <div className="w-12 h-12 rounded-full bg-zinc-800/50 flex items-center justify-center mx-auto mb-3">
-                        <Eye className="w-5 h-5 text-zinc-600" />
-                      </div>
-                      <p className="text-xs text-zinc-500 max-w-[160px]">
-                        Build a section to see the live preview
-                      </p>
+                      <Eye className="w-5 h-5 text-zinc-700 mx-auto mb-2" />
+                      <p className="text-[11px] text-zinc-600">Build to preview</p>
                     </div>
                   </div>
                 )}
