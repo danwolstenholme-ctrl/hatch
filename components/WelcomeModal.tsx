@@ -1,10 +1,9 @@
 'use client'
 
-import { useState, useEffect, useCallback } from 'react'
+import { useState, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { X, MessageSquare, Heart, Bug, Mail, ArrowRight, Zap, Crown, CheckCircle2, Lock } from 'lucide-react'
+import { X, ArrowRight, Lock } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import { useUser } from '@clerk/nextjs'
 
 // =============================================================================
 // WELCOME MODAL (SIGNUP GATE)
@@ -18,25 +17,12 @@ interface WelcomeModalProps {
   onClose?: () => void
 }
 
-export default function WelcomeModal({ trigger = 'auto', isOpen: externalIsOpen, onClose }: WelcomeModalProps) {
-  const [isOpen, setIsOpen] = useState(false)
-  const SEEN_KEY = 'welcome_dismissed'
+export default function WelcomeModal({ isOpen: externalIsOpen, onClose }: WelcomeModalProps) {
+  const isOpen = externalIsOpen ?? false
   const router = useRouter()
-  const { isSignedIn } = useUser()
-
-  useEffect(() => {
-    // If controlled externally, use that state
-    if (trigger === 'manual' || trigger === 'post-demo') {
-      setIsOpen(externalIsOpen ?? false)
-      return
-    }
-    
-    // Auto trigger removed - we now trigger manually from BuildFlowController
-  }, [trigger, externalIsOpen])
 
   const handleClose = useCallback(() => {
     // If triggered manually (gate), we allow closing but it might re-trigger on next action
-    setIsOpen(false)
     onClose?.()
   }, [onClose])
 
@@ -90,7 +76,7 @@ export default function WelcomeModal({ trigger = 'auto', isOpen: externalIsOpen,
               <div className="space-y-3">
                 <button 
                   onClick={handleSignup}
-                  className="w-full py-3 px-4 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold text-sm rounded-lg transition-colors flex items-center justify-center gap-2"
+                  className="w-full py-3 px-4 bg-emerald-500/15 border border-emerald-500/40 hover:bg-emerald-500/20 hover:border-emerald-500/50 text-white font-semibold text-sm rounded-lg transition-all shadow-[0_0_15px_rgba(16,185,129,0.15)] flex items-center justify-center gap-2"
                 >
                   Create Free Account
                   <ArrowRight className="w-4 h-4" />

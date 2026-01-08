@@ -17,17 +17,14 @@ import {
   AlertCircle, 
   Eye, 
   RefreshCw, 
-  Home,
   Layers,
   Layout,
-  Maximize2,
-  Minimize2,
+  MessageSquare,
   Share2,
   Edit3,
   Plus,
   Terminal,
   ArrowRight,
-  Copy,
   Sparkles,
   Crown,
   Zap,
@@ -35,9 +32,10 @@ import {
   Download,
   ExternalLink,
   Lock,
-  Check
+  Check,
+  X,
+  Menu
 } from 'lucide-react'
-import Image from 'next/image'
 import { track } from '@vercel/analytics'
 import SectionProgress from './SectionProgress'
 import SectionBuilder from './SectionBuilder'
@@ -48,9 +46,9 @@ import WelcomeModal from './WelcomeModal'
 import BuilderWelcome from './BuilderWelcome'
 import DemoWelcome from './DemoWelcome'
 import SiteSettingsModal, { SiteSettings } from './SiteSettingsModal'
+import { useGitHub } from '@/hooks/useGitHub'
+import { Github } from 'lucide-react'
 import FullSitePreviewFrame from './builder/FullSitePreviewFrame'
-import GuestCreditBadge from './GuestCreditBadge'
-import PremiumFeaturesShowcase from './PremiumFeaturesShowcase'
 import BuildSuccessModal from './BuildSuccessModal'
 import SingularityLoader from './singularity/SingularityLoader'
 import ReplicatorModal from './ReplicatorModal'
@@ -61,12 +59,29 @@ import { DbProject, DbSection, DbBrandConfig } from '@/lib/supabase'
 import { AccountSubscription } from '@/types/subscriptions'
 import { useSubscription } from '@/contexts/SubscriptionContext'
 
-// Sanitize SVG data URLs to prevent XSS
-const sanitizeSvgDataUrls = (input: string) => {
-  return input.replace(/url\(['"]?(data:image\/svg\+xml[^'")\s]+)['"]?\)/gi, (match, data) => {
-    const safe = data.replace(/"/g, '%22').replace(/'/g, '%27')
-    return `url("${safe}")`
-  })
+const OLD_WELCOME_KEYS = ['hatch_welcome_v1_seen', 'hatch_v1_welcome_seen']
+
+type ReplicationData = {
+  projectName?: string
+  description?: string
+  sections?: Array<{
+    type?: string
+    prompt?: string
+  }>
+}
+
+type DemoRestoredSection = {
+  sectionId: string
+  code?: string | null
+  userPrompt?: string | null
+  refined?: boolean
+  refinementChanges?: string[] | null
+}
+
+type DemoRestoreData = {
+  brand?: DbBrandConfig
+  templateId?: string
+  sections?: DemoRestoredSection[]
 }
 
 // =============================================================================
@@ -85,19 +100,51 @@ interface BuildFlowControllerProps {
 const generateId = () => Math.random().toString(36).substring(2, 15)
 
 // Default System Template
-// Minimal, clean, ready for anything.
+// Minimal starter - Header, Hero, Footer. Users add more as needed.
+const MINIMAL_SECTIONS: Section[] = [
+  {
+    id: 'header',
+    name: 'Header/Navigation',
+    description: 'Logo, nav links, and CTA button.',
+    prompt: 'Define your brand name and navigation links.',
+    estimatedTime: '~20s',
+    required: true,
+    order: 0,
+  },
+  {
+    id: 'hero',
+    name: 'Hero',
+    description: 'Your main headline and call-to-action.',
+    prompt: 'What\'s the main value proposition?',
+    estimatedTime: '~30s',
+    required: true,
+    order: 1,
+  },
+  {
+    id: 'footer',
+    name: 'Footer',
+    description: 'Links, contact info, and legal.',
+    prompt: 'Contact details and social links.',
+    estimatedTime: '~20s',
+    required: true,
+    order: 2,
+  },
+]
+
 const SINGULARITY_TEMPLATE: Template = {
   ...websiteTemplate,
   id: 'singularity',
   name: 'Build Mode',
-  description: 'Default canvas ready for live generation.',
-  sections: websiteTemplate.sections
+  description: 'Start minimal. Add sections as you go.',
+  sections: MINIMAL_SECTIONS
 }
 
 export default function BuildFlowController({ existingProjectId, initialPrompt, isDemo = false }: BuildFlowControllerProps) {
   const { user, isLoaded, isSignedIn } = useUser()
   const { isPaidUser } = useSubscription()
   const router = useRouter()
+
+  const [openSettingsFromQuery, setOpenSettingsFromQuery] = useState(false)
   
   const [demoMode, setDemoMode] = useState(isDemo)
   const [phase, setPhase] = useState<BuildPhase>('initializing')
@@ -106,15 +153,9 @@ export default function BuildFlowController({ existingProjectId, initialPrompt, 
   const [brandConfig, setBrandConfig] = useState<DbBrandConfig | null>(null)
   const [buildState, setBuildState] = useState<BuildState | null>(null)
   const [project, setProject] = useState<DbProject | null>(null)
-  // Initialize guest count to 0 for SSR, sync from localStorage in useEffect
-  const [guestInteractionCount, setGuestInteractionCount] = useState(0)
   const [hatchModalReason, setHatchModalReason] = useState<'generation_limit' | 'code_access' | 'deploy' | 'download' | 'proactive' | 'running_low' | 'guest_lock'>('proactive')
   const [showPaywallTransition, setShowPaywallTransition] = useState(false)
-  const [paywallReason, setPaywallReason] = useState<'limit_reached' | 'site_complete'>('limit_reached')
-  
-  const WELCOME_SEEN_KEY = 'hatch_intro_v2_seen'
-  const OLD_WELCOME_KEYS = ['hatch_welcome_v1_seen', 'hatch_v1_welcome_seen']
-  const skipFirstGuestCreditRef = useRef<boolean>(!!initialPrompt)
+  const [paywallReason] = useState<'limit_reached' | 'site_complete'>('limit_reached')
   const skipLoadingScreen = !!initialPrompt
   
   const [dbSections, setDbSections] = useState<DbSection[]>([])
@@ -127,12 +168,13 @@ export default function BuildFlowController({ existingProjectId, initialPrompt, 
   const [shareUrlCopied, setShareUrlCopied] = useState(false)
   const [reviewDeviceView, setReviewDeviceView] = useState<'mobile' | 'tablet' | 'desktop'>('mobile')
   const [reviewMobileTab, setReviewMobileTab] = useState<'modules' | 'preview'>('preview')
-  const [editingSectionIndex, setEditingSectionIndex] = useState<number | null>(null)
   const [justCreatedProjectId, setJustCreatedProjectId] = useState<string | null>(null)
-  const [showScorecard, setShowScorecard] = useState(false)
   const [showSignupGate, setShowSignupGate] = useState(false)
   const [showDemoNudge, setShowDemoNudge] = useState(false)
   const [demoSectionsBuilt, setDemoSectionsBuilt] = useState(0)
+  const [showMobileSidebar, setShowMobileSidebar] = useState(false)
+  const [expandedPreview, setExpandedPreview] = useState<'tablet' | 'desktop' | null>(null)
+  const [previewEditMode, setPreviewEditMode] = useState(false)
 
   // Reset legacy welcome flags so V2 intro shows for all users (esp. mobile)
   useEffect(() => {
@@ -140,14 +182,6 @@ export default function BuildFlowController({ existingProjectId, initialPrompt, 
       OLD_WELCOME_KEYS.forEach((key) => localStorage.removeItem(key))
     } catch (err) {
       console.warn('Welcome key cleanup failed', err)
-    }
-  }, [])
-
-  // Sync guestInteractionCount from localStorage after mount (prevents hydration mismatch)
-  useEffect(() => {
-    const stored = localStorage.getItem('hatch_guest_generations')
-    if (stored) {
-      setGuestInteractionCount(parseInt(stored, 10) || 0)
     }
   }, [])
   
@@ -171,9 +205,31 @@ export default function BuildFlowController({ existingProjectId, initialPrompt, 
   const [showBuildSuccess, setShowBuildSuccess] = useState(false)
   const [showBuilderWelcome, setShowBuilderWelcome] = useState(false)
   const [showDemoWelcome, setShowDemoWelcome] = useState(false)
-  const [lastCompletedSection, setLastCompletedSection] = useState<string>('')
+  const [lastCompletedSection] = useState<string>('')
   const [guestBuildsUsed, setGuestBuildsUsed] = useState(0)
-  const [guestRefinementsUsed, setGuestRefinementsUsed] = useState(0)
+  
+  // GitHub integration
+  const github = useGitHub()
+  const [showDeployOptions, setShowDeployOptions] = useState(false)
+  const [githubRepoName, setGithubRepoName] = useState('')
+  const [githubPushResult, setGithubPushResult] = useState<{
+    success: boolean
+    repoUrl?: string
+    vercelImportUrl?: string
+    error?: string
+  } | null>(null)
+
+  // Close expanded preview on ESC key
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && expandedPreview) {
+        setExpandedPreview(null)
+        setReviewDeviceView('mobile')
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [expandedPreview])
 
   // Show builder welcome for authenticated users (first time only)
   useEffect(() => {
@@ -190,6 +246,22 @@ export default function BuildFlowController({ existingProjectId, initialPrompt, 
       setShowDemoWelcome(true)
     }
   }, [demoMode])
+
+  // Deep link support: /builder?project=...&settings=1
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    const params = new URLSearchParams(window.location.search)
+    if (params.get('settings') === '1') {
+      setOpenSettingsFromQuery(true)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!openSettingsFromQuery) return
+    if (!project?.id && !existingProjectId) return
+    setIsSettingsOpen(true)
+    setOpenSettingsFromQuery(false)
+  }, [openSettingsFromQuery, project?.id, existingProjectId])
   
   // Keep demoMode in sync with isDemo prop and auth state
   // Ensures signed-in users on /builder never show sandbox mode
@@ -210,9 +282,7 @@ export default function BuildFlowController({ existingProjectId, initialPrompt, 
     
     const syncCredits = () => {
       const builds = parseInt(localStorage.getItem('hatch_guest_builds') || '0', 10)
-      const refinements = parseInt(localStorage.getItem('hatch_guest_refinements') || '0', 10)
       setGuestBuildsUsed(builds)
-      setGuestRefinementsUsed(refinements)
     }
     
     syncCredits()
@@ -292,20 +362,20 @@ export default function BuildFlowController({ existingProjectId, initialPrompt, 
 
     if (mode === 'replicate' && data) {
       try {
-        const replicationData = JSON.parse(decodeURIComponent(data))
+        const replicationData = JSON.parse(decodeURIComponent(data)) as ReplicationData
         // Transform replication data into a template
         const replicatedTemplate: Template = {
           ...SINGULARITY_TEMPLATE,
           name: replicationData.projectName || 'Replicated Project',
           description: replicationData.description || 'Imported from URL',
-          sections: replicationData.sections.map((s: any, i: number) => ({
-            id: s.type || `section-${i}`,
-            name: s.type ? s.type.charAt(0).toUpperCase() + s.type.slice(1) : `Section ${i + 1}`,
-            description: s.prompt,
-            prompt: s.prompt,
+          sections: (replicationData.sections ?? []).map((section, index) => ({
+            id: section.type || `section-${index}`,
+            name: section.type ? section.type.charAt(0).toUpperCase() + section.type.slice(1) : `Section ${index + 1}`,
+            description: section.prompt || '',
+            prompt: section.prompt || '',
             estimatedTime: '~20s',
             required: true,
-            order: i + 1
+            order: index + 1
           }))
         }
         
@@ -450,6 +520,7 @@ export default function BuildFlowController({ existingProjectId, initialPrompt, 
 
   // Track if we're in the middle of creating a project to prevent reload
   const [isCreatingProject, setIsCreatingProject] = useState(false)
+  const autoInitAttemptedRef = useRef(false)
 
   // AUTO-INITIALIZATION LOGIC
   useEffect(() => {
@@ -474,6 +545,7 @@ export default function BuildFlowController({ existingProjectId, initialPrompt, 
 
     // If we already have a project loaded (e.g. via demo mode), skip
     if (project) {
+      autoInitAttemptedRef.current = false
       return
     }
 
@@ -493,6 +565,10 @@ export default function BuildFlowController({ existingProjectId, initialPrompt, 
     }
 
     // Otherwise, INITIALIZE A NEW PROJECT IMMEDIATELY
+    if (autoInitAttemptedRef.current) {
+      return
+    }
+    autoInitAttemptedRef.current = true
     initializeProject()
     
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -521,36 +597,38 @@ export default function BuildFlowController({ existingProjectId, initialPrompt, 
       styleVibe: brandConfig?.styleVibe || 'modern'
     }
 
-    const setupDemoMode = (restoredData?: any) => {
+    const setupDemoMode = (restoredData?: DemoRestoreData) => {
       const mockProjectId = `demo-${generateId()}`
       
       // Use restored data if available
       const finalBrand = restoredData?.brand || brand
-      const finalSections = restoredData?.sections ? restoredData.sections.map((s: any, i: number) => ({
-        id: generateId(),
-        project_id: mockProjectId,
-        section_id: s.sectionId,
-        code: s.code || null,
-        user_prompt: s.userPrompt || null,
-        refined: s.refined || false,
-        refinement_changes: s.refinementChanges || null,
-        status: s.code ? 'complete' : 'pending',
-        order_index: i,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      })) : sections.map((s, index) => ({
-        id: generateId(),
-        project_id: mockProjectId,
-        section_id: s.id,
-        code: null,
-        user_prompt: (index === 0 && projectPrompt) ? projectPrompt : null,
-        refined: false,
-        refinement_changes: null,
-        status: 'pending' as const,
-        order_index: index,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      }))
+      const finalSections: DbSection[] = restoredData?.sections
+        ? restoredData.sections.map((section, index) => ({
+            id: generateId(),
+            project_id: mockProjectId,
+            section_id: section.sectionId,
+            code: section.code || null,
+            user_prompt: section.userPrompt || null,
+            refined: section.refined || false,
+            refinement_changes: section.refinementChanges || null,
+            status: section.code ? 'complete' : 'pending',
+            order_index: index,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          }))
+        : sections.map((s, index) => ({
+            id: generateId(),
+            project_id: mockProjectId,
+            section_id: s.id,
+            code: null,
+            user_prompt: index === 0 && projectPrompt ? projectPrompt : null,
+            refined: false,
+            refinement_changes: null,
+            status: 'pending' as const,
+            order_index: index,
+            created_at: new Date().toISOString(),
+            updated_at: new Date().toISOString(),
+          }))
 
       const mockProject: DbProject = {
         id: mockProjectId,
@@ -570,7 +648,7 @@ export default function BuildFlowController({ existingProjectId, initialPrompt, 
       
       // Reconstruct build state from restored sections
       const state = createInitialBuildState(restoredData?.templateId || template.id)
-      finalSections.forEach((s: any) => {
+      finalSections.forEach((s) => {
         if (s.status === 'complete') {
           state.completedSections.push(s.section_id)
           if (s.code) state.sectionCode[s.section_id] = s.code
@@ -582,13 +660,13 @@ export default function BuildFlowController({ existingProjectId, initialPrompt, 
       // Find first pending section - but clamp to hero only for free/demo users
       // Demo users only have access to hero section, so if hero is complete,
       // keep index at 0 to show the completed preview instead of black screen
-      const heroSection = finalSections.find((s: any) => s.section_id === 'hero')
+      const heroSection = finalSections.find((s) => s.section_id === 'hero')
       if (heroSection?.status === 'complete') {
         // Hero is done - stay on hero to show preview
         state.currentSectionIndex = 0
       } else {
         // Hero not done - find first pending (should be hero at index 0)
-        const firstPending = finalSections.findIndex((s: any) => s.status === 'pending')
+        const firstPending = finalSections.findIndex((s) => s.status === 'pending')
         state.currentSectionIndex = firstPending === -1 ? 0 : Math.min(firstPending, 0)
       }
 
@@ -620,19 +698,27 @@ export default function BuildFlowController({ existingProjectId, initialPrompt, 
     }
 
     // Check project limit before attempting to create
-    // If at limit, route to dashboard to manage existing projects
+    // If at limit, open an existing project instead of failing
     try {
       const listRes = await fetch('/api/project/list')
       if (listRes.ok) {
         const { projects } = await listRes.json()
         const accountSub = user.publicMetadata?.accountSubscription as { tier?: string } | undefined
         const tier = accountSub?.tier || 'free'
-        const limit = (tier === 'singularity' || tier === 'visionary') ? Infinity : 3
+        const limit = (tier === 'singularity' || tier === 'visionary') ? Infinity : (tier === 'architect' ? 3 : 1)
         
         if (projects.length >= limit) {
-          // At limit - route to dashboard to manage projects
-          router.push('/dashboard')
-          return
+          // At limit - open the most recent project instead of hard-failing
+          const sorted = [...projects].sort((a: DbProject, b: DbProject) => {
+            const aTime = a.updated_at ? new Date(a.updated_at).getTime() : 0
+            const bTime = b.updated_at ? new Date(b.updated_at).getTime() : 0
+            return bTime - aTime
+          })
+          const mostRecent = sorted[0]
+          if (mostRecent?.id) {
+            await loadExistingProject(mostRecent.id)
+            return
+          }
         }
       }
     } catch {
@@ -644,22 +730,59 @@ export default function BuildFlowController({ existingProjectId, initialPrompt, 
       const controller = new AbortController()
       const timeoutId = setTimeout(() => controller.abort(), 15000) // 15s timeout for creation
 
-      const response = await fetch('/api/project', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          templateId: template.id,
-          name: brand.brandName,
-          sections: sections,
-          brand: brand,
-          initialPrompt: projectPrompt,
-        }),
-        signal: controller.signal
-      })
-      clearTimeout(timeoutId)
+      let response: Response
+      try {
+        response = await fetch('/api/project', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            templateId: template.id,
+            name: brand.brandName,
+            sections: sections,
+            brand: brand,
+            initialPrompt: projectPrompt,
+          }),
+          signal: controller.signal,
+        })
+      } finally {
+        clearTimeout(timeoutId)
+      }
 
       if (!response.ok) {
-        console.error('[Builder] API failed:', response.status)
+        // If we hit a project limit (403), treat it as a normal control-plane state:
+        // open the most recent existing project instead of throwing a scary console error.
+        if (response.status === 403) {
+          console.warn('[Builder] Project limit reached (403). Opening existing project…')
+          try {
+            // Try to confirm it really is the limit case, but don't depend on it.
+            const body = (await response.json().catch(() => null)) as { error?: string } | null
+            const isLimit = body?.error === 'Project limit reached'
+
+            const listRes = await fetch('/api/project/list')
+            if (listRes.ok) {
+              const listData = (await listRes.json().catch(() => ({}))) as { projects?: unknown }
+              const raw = Array.isArray(listData.projects) ? listData.projects : []
+              const safe = (raw.filter(Boolean) as DbProject[])
+
+              const sorted = safe.sort((a, b) => {
+                const aTime = a?.updated_at ? new Date(a.updated_at).getTime() : 0
+                const bTime = b?.updated_at ? new Date(b.updated_at).getTime() : 0
+                return bTime - aTime
+              })
+              const mostRecent = sorted[0]
+              if (mostRecent?.id) {
+                if (isLimit) setError(null)
+                await loadExistingProject(mostRecent.id)
+                return
+              }
+            }
+          } catch {
+            // ignore and fall through to error
+          }
+        } else {
+          console.error('[Builder] API failed:', response.status)
+        }
+
         setError('Failed to create project. Please try again.')
         setIsLoading(false)
         return
@@ -669,6 +792,7 @@ export default function BuildFlowController({ existingProjectId, initialPrompt, 
 
       setProject(newProject)
       setDbSections(dbSectionsData)
+      autoInitAttemptedRef.current = false
       
       // Set up build state for fresh project
       const state = createInitialBuildState(template.id)
@@ -691,8 +815,19 @@ export default function BuildFlowController({ existingProjectId, initialPrompt, 
       localStorage.setItem('hatch_current_project', newProject.id)
 
     } catch (err) {
-      console.error('Error creating project:', err)
-      setError('Failed to create project. Please try again.')
+      // Aborts and transient network issues can surface as "Failed to fetch" depending on browser.
+      const message = err instanceof Error ? err.message : String(err)
+      const isAbort = err instanceof DOMException ? err.name === 'AbortError' : false
+      const isFailedFetch = err instanceof TypeError && message.toLowerCase().includes('failed to fetch')
+
+      if (isAbort) {
+        setError('Project creation timed out. Please try again.')
+      } else if (isFailedFetch) {
+        setError('Network error creating project. Please retry.')
+      } else {
+        console.error('Error creating project:', err)
+        setError('Failed to create project. Please try again.')
+      }
     } finally {
       setIsLoading(false)
       setIsCreatingProject(false)
@@ -712,8 +847,12 @@ export default function BuildFlowController({ existingProjectId, initialPrompt, 
       const controller = new AbortController()
       const timeoutId = setTimeout(() => controller.abort(), 10000) // 10s timeout
 
-      const response = await fetch(`/api/project/${projectId}`, { signal: controller.signal })
-      clearTimeout(timeoutId)
+      let response: Response
+      try {
+        response = await fetch(`/api/project/${projectId}`, { signal: controller.signal })
+      } finally {
+        clearTimeout(timeoutId)
+      }
       
       if (response.status === 401 || response.status === 403 || response.status === 404) {
         localStorage.removeItem('hatch_current_project')
@@ -742,6 +881,7 @@ export default function BuildFlowController({ existingProjectId, initialPrompt, 
       setProject(proj)
       setDbSections(sections)
       setSelectedTemplate(template)
+      autoInitAttemptedRef.current = false
 
       const orderedDbSections = [...sections].sort((a: DbSection, b: DbSection) => a.order_index - b.order_index)
       const reconstructed = orderedDbSections.map((s: DbSection, index: number): Section => {
@@ -887,7 +1027,7 @@ export default function BuildFlowController({ existingProjectId, initialPrompt, 
     }
 
     if (newState.currentSectionIndex >= sectionsForBuild.length) {
-      setPhase('review')
+      // Stay on building phase - user can deploy from there
       localStorage.removeItem('hatch_current_project')
       
       if (!demoMode && project) {
@@ -919,14 +1059,82 @@ export default function BuildFlowController({ existingProjectId, initialPrompt, 
     }
   }
 
+  const handleMoveSection = async (fromIndex: number, toIndex: number) => {
+    if (!buildState) return
+    if (fromIndex === toIndex) return
+    if (fromIndex < 0 || toIndex < 0) return
+    if (fromIndex >= sectionsForBuild.length || toIndex >= sectionsForBuild.length) return
+
+    const pinnedTopId = 'header'
+    const pinnedBottomId = 'footer'
+
+    const fromId = sectionsForBuild[fromIndex]?.id
+    const toId = sectionsForBuild[toIndex]?.id
+    const lastIndex = sectionsForBuild.length - 1
+
+    // Keep header at index 0 and footer at last index
+    if (fromId === pinnedTopId || fromId === pinnedBottomId) return
+    if (toIndex === 0 || toIndex === lastIndex) return
+    if (toId === pinnedTopId || toId === pinnedBottomId) return
+
+    const activeSectionId = sectionsForBuild[buildState.currentSectionIndex]?.id
+    if (!activeSectionId) return
+
+    const nextSections = (() => {
+      const next = [...sectionsForBuild]
+      const [moved] = next.splice(fromIndex, 1)
+      next.splice(toIndex, 0, moved)
+      return next
+    })()
+
+    // Update section ordering used by the UI
+    setCustomizedSections(nextSections)
+
+    // Keep DB sections in the same order for any UI that relies on it
+    setDbSections((prev) => {
+      const nextOrderIds = new Set(nextSections.map(s => s.id))
+      const bySectionId = new Map(prev.map(s => [s.section_id, s]))
+
+      const ordered: DbSection[] = nextSections
+        .map((s) => bySectionId.get(s.id))
+        .filter((s): s is DbSection => !!s)
+        .map((s, index) => ({ ...s, order_index: index }))
+
+      // Preserve any sections that aren't in nextSections (shouldn't happen, but keep safe)
+      const leftovers = prev.filter(s => !nextOrderIds.has(s.section_id))
+      return [...ordered, ...leftovers]
+    })
+
+    // Maintain the currently active section by ID
+    const nextActiveIndex = nextSections.findIndex(s => s.id === activeSectionId)
+    if (nextActiveIndex !== -1) {
+      setBuildState({ ...buildState, currentSectionIndex: nextActiveIndex })
+    }
+
+    // Persist ordering for live projects
+    if (!demoMode && project?.id) {
+      try {
+        const response = await fetch(`/api/project/${project.id}/sections/order`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ order: nextSections.map(s => s.id) }),
+        })
+        if (!response.ok) {
+          console.error('Failed to persist section order:', response.status)
+        }
+      } catch (err) {
+        console.error('Failed to persist section order:', err)
+      }
+    }
+  }
+
   const handleNextSection = () => {
     if (!buildState) return
 
     const nextIndex = buildState.currentSectionIndex + 1
     
     if (nextIndex >= sectionsForBuild.length) {
-      // All sections done - go to review phase
-      setPhase('review')
+      // All sections done - stay on building phase, user can deploy from tabs
       // Clear localStorage since project is complete
       localStorage.removeItem('hatch_current_project')
       if (!demoMode && project) {
@@ -940,6 +1148,80 @@ export default function BuildFlowController({ existingProjectId, initialPrompt, 
     } else {
       setBuildState({ ...buildState, currentSectionIndex: nextIndex })
     }
+  }
+
+  // Add a new section of a specific type
+  const handleAddSection = (sectionType: string) => {
+    if (!buildState) return
+
+    // Define section metadata for each type
+    const sectionMeta: Record<string, { name: string; description: string; prompt: string }> = {
+      hero: { name: 'Hero', description: 'The main headline and call-to-action', prompt: 'Describe the main value proposition' },
+      features: { name: 'Features', description: 'Showcase key features or benefits', prompt: 'List the main features to highlight' },
+      services: { name: 'Services', description: 'Display your service offerings', prompt: 'Describe the services you offer' },
+      about: { name: 'About', description: 'Tell your story', prompt: 'Share background info about you or your business' },
+      testimonials: { name: 'Testimonials', description: 'Social proof from customers', prompt: 'Add customer testimonials or reviews' },
+      pricing: { name: 'Pricing', description: 'Display pricing tiers', prompt: 'Describe your pricing structure' },
+      stats: { name: 'Stats', description: 'Show key metrics and numbers', prompt: 'What numbers or achievements to highlight?' },
+      work: { name: 'Work/Portfolio', description: 'Showcase your projects', prompt: 'Describe projects or work examples' },
+      faq: { name: 'FAQ', description: 'Answer common questions', prompt: 'What questions do customers often ask?' },
+      cta: { name: 'Call to Action', description: 'Drive user action', prompt: 'What action should visitors take?' },
+      contact: { name: 'Contact', description: 'Contact information and form', prompt: 'How should people reach you?' },
+    }
+
+    const meta = sectionMeta[sectionType]
+    if (!meta) return // Invalid section type
+
+    // Create the new section
+    const newSection: Section = {
+      id: sectionType,
+      name: meta.name,
+      description: meta.description,
+      prompt: meta.prompt,
+      estimatedTime: '~30 seconds',
+      required: false,
+      order: sectionsForBuild.length,
+    }
+
+    // Find the position to insert (before footer if it exists, otherwise at end)
+    const footerIndex = sectionsForBuild.findIndex(s => s.id === 'footer')
+    const insertAt = footerIndex >= 0 ? footerIndex : sectionsForBuild.length
+
+    // Insert the new section
+    const nextSections = [...sectionsForBuild]
+    nextSections.splice(insertAt, 0, newSection)
+
+    // Update sections
+    setCustomizedSections(nextSections)
+
+    // Navigate to the new section
+    setBuildState({ ...buildState, currentSectionIndex: insertAt })
+  }
+
+  // Remove a section by index
+  const handleRemoveSection = (index: number) => {
+    if (!buildState) return
+    const section = sectionsForBuild[index]
+    if (!section) return
+
+    // Don't allow removing header/footer
+    if (section.id === 'header' || section.id === 'footer') return
+
+    // Remove the section
+    const nextSections = sectionsForBuild.filter((_, i) => i !== index)
+    setCustomizedSections(nextSections)
+
+    // Also remove from dbSections if it exists
+    setDbSections(prev => prev.filter(s => s.section_id !== section.id))
+
+    // Adjust current section index if needed
+    let nextIndex = buildState.currentSectionIndex
+    if (index < nextIndex) {
+      nextIndex = Math.max(0, nextIndex - 1)
+    } else if (index === nextIndex) {
+      nextIndex = Math.min(nextIndex, nextSections.length - 1)
+    }
+    setBuildState({ ...buildState, currentSectionIndex: nextIndex })
   }
 
   // Assemble all section code into a full page for preview
@@ -976,31 +1258,23 @@ export default function BuildFlowController({ existingProjectId, initialPrompt, 
     {
       id: 'building' as const,
       label: 'Build',
-      meta: `${completedModuleCount}/${totalModules} modules`,
+      meta: `${completedModuleCount}/${totalModules}`,
       icon: Layout,
       action: () => setPhase('building'),
       active: phase === 'building',
     },
     {
-      id: 'review' as const,
-      label: 'Review',
-      meta: 'Audit & preview',
-      icon: Eye,
-      action: () => setPhase('review'),
-      active: phase === 'review',
-    },
-    {
       id: 'oracle' as const,
-      label: 'Oracle',
-      meta: 'Prompt architect',
-      icon: Sparkles,
+      label: 'Assistant',
+      meta: 'Help',
+      icon: MessageSquare,
       action: () => setShowOracle(true),
       active: false,
     },
     {
       id: 'deploy' as const,
       label: 'Deploy',
-      meta: canDeploy ? 'Ship to HatchEdge' : 'Upgrade to deploy',
+      meta: canDeploy ? 'Ship it' : 'Upgrade',
       icon: Rocket,
       action: () => {
         if (!canDeploy || !assembledCode) {
@@ -1013,17 +1287,17 @@ export default function BuildFlowController({ existingProjectId, initialPrompt, 
       active: false,
       disabled: !canDeploy || !assembledCode,
     },
-  ]), [completedModuleCount, totalModules, phase, canDeploy, assembledCode, setPhase])
+  ]), [completedModuleCount, totalModules, phase, canDeploy, assembledCode, handleDeploy])
 
   const BuilderTabRail = ({ variant = 'glass' }: { variant?: 'glass' | 'flat' }) => (
     <div
       className={
         variant === 'glass'
-          ? 'border-b border-white/5 bg-white/[0.02] backdrop-blur-xl'
-          : 'border-b border-zinc-800/60 bg-zinc-950/80'
+          ? 'border-b border-zinc-800/50 bg-zinc-900/30 backdrop-blur-xl'
+          : 'border-b border-zinc-800/50 bg-zinc-950'
       }
     >
-      <div className="flex flex-wrap gap-2 px-4 py-3">
+      <div className="flex gap-1.5 sm:gap-2 px-2 sm:px-4 py-2 sm:py-3">
         {builderTabs.map((tab) => {
           const Icon = tab.icon
           const isDisabled = Boolean(tab.disabled)
@@ -1033,73 +1307,29 @@ export default function BuildFlowController({ existingProjectId, initialPrompt, 
               type="button"
               onClick={() => !isDisabled && tab.action()}
               disabled={isDisabled}
-              className={`group flex items-center gap-3 rounded-2xl border px-3 py-2 text-left transition-all ${
+              className={`group flex items-center gap-1.5 sm:gap-2 rounded-lg sm:rounded-xl border px-2 sm:px-3 py-1.5 sm:py-2 text-left transition-all ${
                 tab.active
-                  ? 'border-white/30 bg-white/[0.08] text-white shadow-[0_10px_40px_rgba(16,185,129,0.15)]'
-                  : 'border-white/10 text-zinc-400 hover:border-white/30 hover:text-white'
+                  ? 'border-emerald-500/40 bg-emerald-500/10 text-white'
+                  : 'border-zinc-800 text-zinc-400 hover:border-zinc-700 hover:text-zinc-200'
               } ${isDisabled ? 'opacity-40 cursor-not-allowed' : ''}`}
             >
-              <div className={`flex h-9 w-9 items-center justify-center rounded-2xl ${
-                tab.active ? 'bg-emerald-500/20 text-emerald-300' : 'bg-white/[0.04] text-zinc-500'
+              <div className={`flex h-7 w-7 sm:h-8 sm:w-8 items-center justify-center rounded-md sm:rounded-lg ${
+                tab.active ? 'bg-emerald-500/15 text-emerald-400' : 'bg-zinc-800/50 text-zinc-500'
               }`}>
-                <Icon className="h-4 w-4" />
+                <Icon className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
               </div>
-              <div>
-                <p className="text-sm font-semibold leading-tight">{tab.label}</p>
-                <p className="text-[11px] text-zinc-500">{tab.meta}</p>
+              <div className="hidden sm:block">
+                <p className="text-xs sm:text-sm font-medium leading-tight">{tab.label}</p>
+                <p className="text-[10px] sm:text-xs text-zinc-500">{tab.meta}</p>
               </div>
+              {/* Mobile: just show label */}
+              <span className="sm:hidden text-xs font-medium">{tab.label}</span>
             </button>
           )
         })}
       </div>
     </div>
   )
-
-  const buildBundledCode = useCallback(() => {
-    if (!buildState) return null
-
-    const lucideImports = new Set<string>()
-    sectionsForBuild.forEach(section => {
-      const rawCode = buildState.sectionCode[section.id]
-      if (!rawCode) return
-      const matches = rawCode.matchAll(/import\s*{\s*([^}]+)\s*}\s*from\s*['"]lucide-react['"]/g)
-      for (const match of matches) {
-        match[1]
-          .split(',')
-          .map(token => token.trim())
-          .filter(Boolean)
-          .forEach(token => lucideImports.add(token))
-      }
-    })
-
-    const sectionsWithCode = sectionsForBuild
-      .filter(section => Boolean(buildState.sectionCode[section.id]))
-      .map((section, index) => {
-        let code = buildState.sectionCode[section.id] || ''
-        code = code
-          .replace(/'use client';?/g, '')
-          .replace(/"use client";?/g, '')
-          .replace(/import\s+.*?from\s+['"][^'"]+['"];?\s*/g, '')
-
-        if (code.includes('export default function')) {
-          code = code.replace(/export\s+default\s+function\s+(\w+)?/, (_match, name) => {
-            return `const Section_${index} = function ${name || 'Component'}`
-          })
-        } else if (code.includes('export default')) {
-          code = code.replace(/export\s+default\s+/, `const Section_${index} = `)
-        }
-
-        return { code, index }
-      })
-
-    if (sectionsWithCode.length === 0) return null
-
-    const lucideImportBlock = lucideImports.size > 0
-      ? `import { ${Array.from(lucideImports).join(', ')} } from 'lucide-react'\n`
-      : ''
-
-    return `'use client'\n\nimport { useState, useEffect, useRef, useMemo, useCallback } from 'react'\nimport { motion, AnimatePresence } from 'framer-motion'\nimport Image from 'next/image'\nimport Link from 'next/link'\n${lucideImportBlock}\n// --- SECTIONS ---\n${sectionsWithCode.map(s => s.code).join('\n\n')}\n\n// --- MAIN PAGE ---\nexport default function GeneratedPage() {\n  return (\n    <main className="min-h-screen bg-zinc-950 text-white">\n      ${sectionsWithCode.map(s => `<Section_${s.index} />`).join('\n      ')}\n    </main>\n  )\n}`
-  }, [buildState, sectionsForBuild])
 
   // Direct checkout - skip modal, go straight to Stripe
   const handleDirectCheckout = async (tier: 'architect' | 'visionary' | 'singularity' = 'architect') => {
@@ -1139,7 +1369,7 @@ export default function BuildFlowController({ existingProjectId, initialPrompt, 
     }
   }
 
-  const handleDeploy = async () => {
+  async function handleDeploy() {
     if (!project || !assembledCode || isDeploying || !buildState) return
     
     // Guests: Always show signup modal for deploy
@@ -1396,23 +1626,59 @@ export default function GeneratedPage() {
     }
   }
 
-  const hardReset = useCallback(() => {
-    try {
-      localStorage.removeItem('hatch_current_project')
-    } catch (err) {
-      console.warn('Hard reset failed to clear localStorage', err)
+  const handleGitHubPush = async () => {
+    if (!assembledCode || !buildState) return
+    
+    // If not connected to GitHub, initiate OAuth
+    if (!github.connected) {
+      github.connect()
+      return
     }
-
-    setError(null)
-    setProject(null)
-    setDbSections([])
-    setBrandConfig(null)
-    setBuildState(null)
-    setPhase('initializing')
-    setDemoMode(false)
-    setJustCreatedProjectId(null)
-    window.location.href = '/builder'
-  }, [])
+    
+    // Generate default repo name from project
+    const defaultName = project?.name?.replace(/[^a-z0-9]/gi, '-').toLowerCase() || 'hatchit-site'
+    if (!githubRepoName) {
+      setGithubRepoName(defaultName)
+    }
+    
+    // Build project config from brand settings
+    const brandConfig = project?.brand_config as Record<string, unknown> | null
+    const colors = brandConfig?.colors as { primary?: string; secondary?: string } | undefined
+    
+    const projectConfig = {
+      name: project?.name || 'My HatchIt Site',
+      brand: {
+        primaryColor: colors?.primary || '#10b981',
+        secondaryColor: colors?.secondary || '#059669',
+        font: (brandConfig?.fontStyle as string) || 'Inter',
+        headingFont: (brandConfig?.fontStyle as string) || 'Inter',
+        mode: (brandConfig?.styleVibe === 'light' ? 'light' : 'dark') as 'dark' | 'light',
+      },
+      seo: {
+        title: project?.name || 'My HatchIt Site',
+        description: `Generated with HatchIt - ${new Date().toLocaleDateString()}`,
+      }
+    }
+    
+    // Push to GitHub
+    const result = await github.push(
+      githubRepoName || defaultName,
+      assembledCode,
+      undefined, // pages - single page for now
+      { 
+        description: `Generated with HatchIt - ${new Date().toLocaleDateString()}`,
+        projectConfig
+      }
+    )
+    
+    setGithubPushResult(result)
+    
+    if (result.success) {
+      track('GitHub Push Success', { repoName: result.repoName })
+    } else if (result.requiresAuth) {
+      github.connect()
+    }
+  }
 
   const handleRunAudit = async () => {
     if (!project || !buildState || demoMode) return
@@ -1426,11 +1692,17 @@ export default function GeneratedPage() {
 
       if (!response.ok) throw new Error('Audit failed')
 
-      const { changes, scores, passed } = await response.json()
+      const { changes, scores, passed } = await response.json() as {
+        changes?: Array<string | { fix?: string }>
+        scores?: BuildState['auditScores']
+        passed?: boolean
+      }
       
       // Convert changes objects to strings if necessary
-      const changeStrings = Array.isArray(changes) 
-        ? changes.map((c: any) => typeof c === 'string' ? c : c.fix)
+      const changeStrings = Array.isArray(changes)
+        ? changes
+            .map((c) => (typeof c === 'string' ? c : (c?.fix || '')))
+            .filter(Boolean)
         : []
 
       setBuildState({
@@ -1441,8 +1713,6 @@ export default function GeneratedPage() {
         auditPassed: passed
       })
       
-      setShowScorecard(true)
-
     } catch (err) {
       console.error('Audit error:', err)
       setError('Audit failed. You can still deploy.')
@@ -1469,12 +1739,6 @@ export default function GeneratedPage() {
 
   const handleGoHome = () => {
     router.push('/')
-  }
-
-  const handleViewBrand = () => {
-    // Branding is now handled via chat or settings, not a separate phase
-    // setPhase('branding')
-    alert("Brand settings are managed automatically. Ask to change colors or fonts.")
   }
 
   // Only show loading screen if NOT coming from FirstContact
@@ -1518,31 +1782,6 @@ export default function GeneratedPage() {
 
   return (
     <div className="min-h-screen bg-zinc-950">
-      {/* Demo Mode Banner */}
-      {demoMode && (
-        <div className="fixed top-0 left-0 right-0 z-50 bg-amber-500/10 border-b border-amber-500/20 px-3 py-1.5 sm:px-4 sm:py-2">
-          <div className="max-w-screen-xl mx-auto flex items-center justify-between">
-            <div className="flex items-center gap-2 sm:gap-4">
-              <button
-                onClick={() => router.push('/')}
-                className="text-xs sm:text-sm text-zinc-400 hover:text-white transition-colors"
-              >
-                ← Exit
-              </button>
-              <p className="text-xs sm:text-sm text-amber-200">
-                <span className="font-medium">Demo</span><span className="hidden sm:inline"> Mode</span> — <span className="hidden sm:inline">Your work </span>won't be saved.
-              </p>
-            </div>
-            <button
-              onClick={() => router.push('/sign-up?redirect_url=/dashboard')}
-              className="text-xs sm:text-sm font-medium text-amber-400 hover:text-amber-300 transition-colors whitespace-nowrap"
-            >
-              Sign Up<span className="hidden sm:inline"> Free</span> →
-            </button>
-          </div>
-        </div>
-      )}
-      
       {/* Paywall Transition - Full screen immersive */}
       {showPaywallTransition && (
         <PaywallTransition
@@ -1558,20 +1797,187 @@ export default function GeneratedPage() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className={`relative flex h-screen overflow-hidden bg-[#030712] text-white ${demoMode ? 'pt-10' : ''}`}
+            className="relative flex flex-col h-screen overflow-hidden bg-zinc-950 text-white"
           >
-            <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(16,185,129,0.2),transparent_55%)] opacity-60" />
-            <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(130deg,rgba(15,23,42,0.7),rgba(0,0,0,0.6))]" />
+            <div className="pointer-events-none absolute inset-0 bg-zinc-950" />
+            <div 
+              className="builder-ambient-glow pointer-events-none absolute top-[-100px] left-1/2 -translate-x-1/2 w-[1000px] h-[700px]"
+            />
+            <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-zinc-950/90 via-transparent to-transparent" />
 
-            <div className="relative z-10 flex w-full h-full">
-            {/* Sidebar - Desktop Only */}
-            <div className="hidden lg:flex w-[320px] flex-col border-r border-white/10 bg-white/5 backdrop-blur-3xl h-full overflow-y-auto shadow-[inset_0_1px_rgba(255,255,255,0.08)]">
+            {/* Top Header */}
+            <div className="relative z-20 flex-shrink-0 border-b border-zinc-800/50 bg-zinc-950/80 backdrop-blur-xl">
+              <div className="px-4 py-3 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  {/* Mobile Sidebar Toggle */}
+                  <button
+                    onClick={() => setShowMobileSidebar(true)}
+                    className="xl:hidden p-2 -ml-2 text-zinc-400 hover:text-white transition-colors"
+                    aria-label="Open sections"
+                  >
+                    <Menu className="w-5 h-5" />
+                  </button>
+                  
+                  <button
+                    onClick={handleGoHome}
+                    className="hidden sm:flex text-zinc-500 hover:text-white transition-colors items-center gap-2 text-sm font-medium"
+                  >
+                    <ArrowLeft className="w-4 h-4" />
+                    Dashboard
+                  </button>
+                  <div className="h-6 w-px bg-zinc-800" />
+                  <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-lg bg-zinc-800 border border-zinc-700 flex items-center justify-center">
+                      <Terminal className="w-4 h-4 text-zinc-400" />
+                    </div>
+                    <h1 className="text-lg font-semibold text-white tracking-tight truncate max-w-[200px]">{project?.name || 'Untitled Project'}</h1>
+                  </div>
+                  
+                  {/* Tier Badge */}
+                  {tierConfig?.badge && (
+                    <div className={`hidden lg:flex items-center gap-2 px-3 py-1.5 rounded-full border ${tierConfig.badge.border} ${tierConfig.badge.wrapper}`}>
+                      <tierConfig.icon className={`w-3.5 h-3.5 ${tierConfig.badge.icon}`} />
+                      <span className={`text-xs font-bold uppercase tracking-wider ${tierConfig.badge.text}`}>
+                        {tierConfig.name}
+                      </span>
+                    </div>
+                  )}
+                </div>
+                
+                <div className="flex items-center gap-2 sm:gap-3">
+                  {/* Mobile Add Section Button */}
+                  <button
+                    onClick={() => setShowMobileSidebar(true)}
+                    className="xl:hidden flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 rounded-lg hover:bg-emerald-500/20 transition-colors"
+                  >
+                    <Plus className="w-3.5 h-3.5" />
+                    <span className="hidden sm:inline">Sections</span>
+                  </button>
+                  
+                  <span className="text-xs text-zinc-500 hidden lg:inline">{buildState.currentSectionIndex + 1}/{sectionsForBuild.length}</span>
+                  
+                  {/* Export Button */}
+                  <button
+                    onClick={handleDownload}
+                    disabled={!assembledCode}
+                    className="p-2 sm:px-3 sm:py-2 text-sm text-zinc-400 hover:text-zinc-200 transition-colors font-medium flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                    title="Export to ZIP"
+                  >
+                    <Download className="w-4 h-4" />
+                    <span className="hidden sm:inline">Export</span>
+                  </button>
+                  
+                  {/* Ship Button */}
+                  {deployedUrl ? (
+                    <a
+                      href={deployedUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="px-3 py-2 text-sm bg-zinc-800 text-emerald-400 border border-zinc-700 rounded-lg hover:bg-zinc-700 transition-colors flex items-center gap-2 font-medium"
+                    >
+                      <Globe className="w-4 h-4" />
+                      <span className="hidden sm:inline">Live</span>
+                      <ExternalLink className="w-3 h-3" />
+                    </a>
+                  ) : (
+                    <button
+                      onClick={handleDeploy}
+                      disabled={!assembledCode}
+                      className="px-4 py-2 text-sm font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 bg-emerald-500/15 border border-emerald-500/40 hover:bg-emerald-500/20 text-white"
+                    >
+                      <Rocket className="w-4 h-4" />
+                      <span>Ship</span>
+                    </button>
+                  )}
+                </div>
+              </div>
+            </div>
+
+            <div className="relative z-10 flex flex-1 min-h-0 overflow-hidden">
+            {/* Mobile Sidebar Drawer */}
+            <AnimatePresence>
+              {showMobileSidebar && (
+                <>
+                  <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40 xl:hidden"
+                    onClick={() => setShowMobileSidebar(false)}
+                  />
+                  <motion.div
+                    initial={{ x: '-100%' }}
+                    animate={{ x: 0 }}
+                    exit={{ x: '-100%' }}
+                    transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+                    className="fixed inset-y-0 left-0 w-72 z-50 xl:hidden"
+                  >
+                    <div className="h-full bg-zinc-900 border-r border-zinc-800 shadow-2xl">
+                      {/* Close button */}
+                      <button
+                        onClick={() => setShowMobileSidebar(false)}
+                        className="absolute top-4 right-4 p-2 text-zinc-400 hover:text-white transition-colors z-10"
+                      >
+                        <X className="w-5 h-5" />
+                      </button>
+                      <Sidebar
+                        userTier={demoMode ? 'demo' : (accountSubscription?.status === 'active' ? accountSubscription?.tier : 'free') as 'demo' | 'free' | 'architect' | 'visionary' | 'singularity'}
+                        projectName={project?.name || brandConfig?.brandName || (demoMode ? 'Demo Project' : 'Untitled Project')}
+                        currentSection={buildState.currentSectionIndex + 1}
+                        totalSections={sectionsForBuild.length}
+                        sectionNames={sectionsForBuild.map(s => s.name)}
+                        sectionIds={sectionsForBuild.map(s => s.id)}
+                        isGenerating={false}
+                        isHealing={isHealing}
+                        lastHealMessage={lastHealMessage ?? undefined}
+                        onAddSection={() => {
+                          if (buildState.currentSectionIndex < sectionsForBuild.length - 1) {
+                            handleNextSection()
+                          }
+                        }}
+                        onAddSectionOfType={(type) => {
+                          handleAddSection(type)
+                          setShowMobileSidebar(false)
+                        }}
+                        onRemoveSection={handleRemoveSection}
+                        onSelectSection={(index) => {
+                          handleSectionClick(index)
+                          setShowMobileSidebar(false)
+                        }}
+                        onMoveSection={handleMoveSection}
+                        onOpenOracle={() => {
+                          setShowOracle(true)
+                          setShowMobileSidebar(false)
+                        }}
+                        onOpenWitness={() => {
+                          setShowWitness(true)
+                          setShowMobileSidebar(false)
+                        }}
+                        onOpenArchitect={() => {
+                          setShowArchitect(true)
+                          setShowMobileSidebar(false)
+                        }}
+                        onOpenSettings={() => {
+                          setIsSettingsOpen(true)
+                          setShowMobileSidebar(false)
+                        }}
+                        onSignUp={demoMode ? () => router.push('/sign-up?redirect_url=/builder') : undefined}
+                      />
+                    </div>
+                  </motion.div>
+                </>
+              )}
+            </AnimatePresence>
+
+            {/* Sidebar - XL screens and up */}
+            <div className="hidden xl:flex w-64 flex-shrink-0 flex-col border-r border-zinc-800 bg-zinc-900/30 backdrop-blur-xl overflow-y-auto">
               <Sidebar
                 userTier={demoMode ? 'demo' : (accountSubscription?.status === 'active' ? accountSubscription?.tier : 'free') as 'demo' | 'free' | 'architect' | 'visionary' | 'singularity'}
                 projectName={project?.name || brandConfig?.brandName || (demoMode ? 'Demo Project' : 'Untitled Project')}
                 currentSection={buildState.currentSectionIndex + 1}
                 totalSections={sectionsForBuild.length}
                 sectionNames={sectionsForBuild.map(s => s.name)}
+                sectionIds={sectionsForBuild.map(s => s.id)}
                 isGenerating={false}
                 isHealing={isHealing}
                 lastHealMessage={lastHealMessage ?? undefined}
@@ -1580,6 +1986,10 @@ export default function GeneratedPage() {
                     handleNextSection()
                   }
                 }}
+                onAddSectionOfType={handleAddSection}
+                onRemoveSection={handleRemoveSection}
+                onSelectSection={handleSectionClick}
+                onMoveSection={handleMoveSection}
                 onOpenOracle={() => setShowOracle(true)}
                 onOpenWitness={() => {
                   setShowWitness(true)
@@ -1606,11 +2016,6 @@ export default function GeneratedPage() {
                   }
                 }}
                 onOpenArchitect={() => setShowArchitect(true)}
-                onOpenReplicator={() => setShowReplicator(true)}
-                onRunAudit={handleRunAudit}
-                onDeploy={handleDeploy}
-                onExport={handleDownload}
-                onAddPage={() => {}}
                 onOpenSettings={() => setIsSettingsOpen(true)}
                 onSignUp={demoMode ? () => router.push('/sign-up?redirect_url=/builder') : undefined}
               />
@@ -1619,7 +2024,7 @@ export default function GeneratedPage() {
             {/* Main Build Area */}
             <div className="flex-1 flex flex-col overflow-hidden">
               <BuilderTabRail />
-              <div className="border-b border-white/5 bg-white/[0.02] px-4 lg:px-8 py-3">
+              <div className="border-b border-zinc-800/50 bg-zinc-900/20 px-4 lg:px-8 py-3">
                 <SectionProgress
                   template={templateForBuild}
                   buildState={buildState}
@@ -1630,7 +2035,7 @@ export default function GeneratedPage() {
 
               <div className="flex-1 flex min-h-0 overflow-hidden px-4 lg:px-8 py-4 lg:py-8">
                 {getCurrentSection() && getCurrentDbSection() && (project?.id || getCurrentDbSection()!.project_id) && (
-                  <div className="flex-1 rounded-[32px] border border-white/10 bg-white/[0.02] backdrop-blur-2xl overflow-hidden shadow-[0_30px_80px_rgba(0,0,0,0.65)]">
+                  <div className="flex-1 rounded-2xl border border-zinc-800 bg-zinc-900/40 backdrop-blur-xl overflow-hidden">
                     <SectionBuilder
                       section={getCurrentSection()!}
                       dbSection={getCurrentDbSection()!}
@@ -1653,7 +2058,7 @@ export default function GeneratedPage() {
                 )}
 
                 {getCurrentSection() && getCurrentDbSection() && !(project?.id || getCurrentDbSection()!.project_id) && (
-                  <div className="flex-1 rounded-[32px] border border-white/10 bg-white/[0.02] backdrop-blur-2xl flex items-center justify-center px-10 text-center shadow-[0_30px_80px_rgba(0,0,0,0.65)]">
+                  <div className="flex-1 rounded-2xl border border-zinc-800 bg-zinc-900/40 backdrop-blur-xl flex items-center justify-center px-10 text-center">
                     <div className="max-w-md">
                       <div className="text-4xl mb-4">⚠️</div>
                       <h2 className="text-lg font-semibold text-white mb-2">Project data isn't available yet</h2>
@@ -1663,13 +2068,13 @@ export default function GeneratedPage() {
                       <div className="flex flex-col sm:flex-row gap-3 justify-center">
                         <button
                           onClick={() => window.location.reload()}
-                          className="px-4 py-2 rounded-xl border border-white/10 bg-white/[0.03] text-white hover:border-white/30"
+                          className="px-4 py-2 rounded-lg border border-zinc-800 bg-zinc-900 text-white hover:border-zinc-700"
                         >
                           Refresh
                         </button>
                         <button
                           onClick={handleStartFresh}
-                          className="px-4 py-2 rounded-xl border border-white/10 text-zinc-200 hover:border-white/30"
+                          className="px-4 py-2 rounded-lg border border-zinc-800 text-zinc-200 hover:border-zinc-700"
                         >
                           Start Fresh
                         </button>
@@ -1679,7 +2084,7 @@ export default function GeneratedPage() {
                 )}
 
                 {getCurrentSection() && !getCurrentDbSection() && (
-                  <div className="flex-1 rounded-[32px] border border-white/10 bg-white/[0.02] backdrop-blur-2xl flex items-center justify-center px-10 text-center shadow-[0_30px_80px_rgba(0,0,0,0.65)]">
+                  <div className="flex-1 rounded-2xl border border-zinc-800 bg-zinc-900/40 backdrop-blur-xl flex items-center justify-center px-10 text-center">
                     <div className="max-w-md">
                       <div className="text-4xl mb-4">⚠️</div>
                       <h2 className="text-lg font-semibold text-white mb-2">This section isn't in your project</h2>
@@ -1689,13 +2094,13 @@ export default function GeneratedPage() {
                       <div className="flex flex-col sm:flex-row gap-3 justify-center">
                         <button
                           onClick={handleStartFresh}
-                          className="px-4 py-2 rounded-xl border border-white/10 bg-white/[0.03] text-white hover:border-white/30"
+                          className="px-4 py-2 rounded-lg border border-zinc-800 bg-zinc-900 text-white hover:border-zinc-700"
                         >
                           Start Fresh
                         </button>
                         <button
                           onClick={() => setPhase('initializing')}
-                          className="px-4 py-2 rounded-xl border border-white/10 text-zinc-200 hover:border-white/30"
+                          className="px-4 py-2 rounded-lg border border-zinc-800 text-zinc-200 hover:border-zinc-700"
                         >
                           Back to Start
                         </button>
@@ -1705,6 +2110,269 @@ export default function GeneratedPage() {
                 )}
               </div>
             </div>
+
+            {/* Live Preview Panel - Shows on large screens */}
+            <div className="hidden lg:flex w-[390px] flex-shrink-0 flex-col border-l border-zinc-800/70 bg-zinc-900/20">
+              {/* Preview Header with Device Toggles + Edit Text */}
+              <div className="flex-shrink-0 px-3 py-2.5 border-b border-zinc-800/50">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                    <span className="text-[10px] text-zinc-500 uppercase tracking-wider font-medium">Live</span>
+                  </div>
+                  
+                  {/* Device Toggle + Edit Text */}
+                  {previewSections.length > 0 && (
+                    <div className="flex items-center gap-2">
+                      {/* Edit Text Toggle - PROMINENT */}
+                      <button
+                        onClick={() => setPreviewEditMode(!previewEditMode)}
+                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all ${
+                          previewEditMode
+                            ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/30'
+                            : 'bg-zinc-800 text-white hover:bg-zinc-700 border border-zinc-700'
+                        }`}
+                      >
+                        <Edit3 className="w-3.5 h-3.5" />
+                        {previewEditMode ? 'Editing' : 'Edit Text'}
+                      </button>
+                      
+                      {/* Device Toggle - Mobile stays inline, Tablet/Desktop pop out */}
+                      <div className="flex items-center gap-0.5 p-0.5 bg-zinc-800/50 rounded-md">
+                        <button
+                          onClick={() => {
+                            setExpandedPreview(null)
+                            setReviewDeviceView('mobile')
+                          }}
+                          className={`p-1.5 rounded transition-all ${
+                            !expandedPreview && reviewDeviceView === 'mobile'
+                              ? 'bg-zinc-700 text-white'
+                              : 'text-zinc-500 hover:text-zinc-300'
+                          }`}
+                          title="Mobile Preview"
+                        >
+                          <Smartphone className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          onClick={() => {
+                            setExpandedPreview('tablet')
+                            setReviewDeviceView('tablet')
+                          }}
+                          className={`p-1.5 rounded transition-all ${
+                            expandedPreview === 'tablet'
+                              ? 'bg-zinc-700 text-white'
+                              : 'text-zinc-500 hover:text-zinc-300'
+                          }`}
+                          title="Tablet Preview (Fullscreen)"
+                        >
+                          <Tablet className="w-3.5 h-3.5" />
+                        </button>
+                        <button
+                          onClick={() => {
+                            setExpandedPreview('desktop')
+                            setReviewDeviceView('desktop')
+                          }}
+                          className={`p-1.5 rounded transition-all ${
+                            expandedPreview === 'desktop'
+                              ? 'bg-zinc-700 text-white'
+                              : 'text-zinc-500 hover:text-zinc-300'
+                          }`}
+                          title="Desktop Preview (Fullscreen)"
+                        >
+                          <Monitor className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+              
+              {/* Preview Content - Full container */}
+              <div className="flex-1 overflow-hidden relative bg-zinc-950">
+                {previewSections.length > 0 ? (
+                  <div className="h-full">
+                    <FullSitePreviewFrame 
+                      sections={previewSections}
+                      deviceView="mobile"
+                      seo={brandConfig?.seo ? {
+                        title: brandConfig.seo.title || '',
+                        description: brandConfig.seo.description || '',
+                        keywords: brandConfig.seo.keywords || ''
+                      } : undefined}
+                    />
+                  </div>
+                ) : (
+                  <div className="h-full flex items-center justify-center p-6 bg-zinc-900/50">
+                    <div className="text-center">
+                      <div className="w-12 h-12 rounded-full bg-zinc-800/50 flex items-center justify-center mx-auto mb-3">
+                        <Eye className="w-5 h-5 text-zinc-600" />
+                      </div>
+                      <p className="text-xs text-zinc-500 max-w-[160px]">
+                        Build a section to see the live preview
+                      </p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+            
+            {/* Expanded Preview Modal - Tablet/Desktop */}
+            <AnimatePresence>
+              {expandedPreview && previewSections.length > 0 && (
+                <motion.div
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.2 }}
+                  className="fixed inset-0 z-50 bg-black/90 backdrop-blur-sm flex items-center justify-center"
+                  onClick={() => {
+                    setExpandedPreview(null)
+                    setReviewDeviceView('mobile')
+                  }}
+                >
+                  {/* Close hint */}
+                  <div className="absolute top-4 left-1/2 -translate-x-1/2 flex items-center gap-2 text-zinc-500 text-xs">
+                    <span>Press ESC or click outside to close</span>
+                  </div>
+                  
+                  {/* Device Controls */}
+                  <div className="absolute top-4 right-4 flex items-center gap-2">
+                    {/* Edit Text Toggle */}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                        setPreviewEditMode(!previewEditMode)
+                      }}
+                      className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                        previewEditMode
+                          ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                          : 'bg-zinc-800 text-zinc-400 hover:text-white border border-zinc-700'
+                      }`}
+                    >
+                      <Edit3 className="w-3.5 h-3.5" />
+                      Edit Text
+                    </button>
+                    
+                    {/* Device Toggle */}
+                    <div className="flex items-center gap-1 p-1 bg-zinc-800 rounded-lg border border-zinc-700">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setExpandedPreview('tablet')
+                          setReviewDeviceView('tablet')
+                        }}
+                        className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded text-xs transition-all ${
+                          expandedPreview === 'tablet'
+                            ? 'bg-zinc-700 text-white'
+                            : 'text-zinc-500 hover:text-zinc-300'
+                        }`}
+                      >
+                        <Tablet className="w-3.5 h-3.5" />
+                        Tablet
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          setExpandedPreview('desktop')
+                          setReviewDeviceView('desktop')
+                        }}
+                        className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded text-xs transition-all ${
+                          expandedPreview === 'desktop'
+                            ? 'bg-zinc-700 text-white'
+                            : 'text-zinc-500 hover:text-zinc-300'
+                        }`}
+                      >
+                        <Monitor className="w-3.5 h-3.5" />
+                        Desktop
+                      </button>
+                    </div>
+                    
+                    {/* Close button */}
+                    <button
+                      onClick={() => {
+                        setExpandedPreview(null)
+                        setReviewDeviceView('mobile')
+                      }}
+                      aria-label="Close preview"
+                      className="p-2 rounded-lg bg-zinc-800 text-zinc-400 hover:text-white border border-zinc-700 transition-all"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
+                  </div>
+                  
+                  {/* Preview Frame */}
+                  <motion.div
+                    key={expandedPreview}
+                    initial={{ scale: 0.9, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    exit={{ scale: 0.9, opacity: 0 }}
+                    transition={{ type: 'spring', damping: 25, stiffness: 300 }}
+                    className="relative"
+                    onClick={(e) => e.stopPropagation()}
+                    style={{
+                      width: expandedPreview === 'tablet' ? '768px' : '1280px',
+                      height: expandedPreview === 'tablet' ? '85vh' : '80vh',
+                      maxWidth: '95vw',
+                      maxHeight: '90vh'
+                    }}
+                  >
+                    {/* Device Frame */}
+                    <div className={`w-full h-full ${
+                      expandedPreview === 'tablet' 
+                        ? 'bg-zinc-800 rounded-[2rem] p-3' 
+                        : 'bg-zinc-900 rounded-lg border border-zinc-700 shadow-2xl'
+                    }`}>
+                      {/* Browser chrome for desktop */}
+                      {expandedPreview === 'desktop' && (
+                        <div className="h-8 bg-zinc-800 rounded-t-lg flex items-center px-3 gap-2 border-b border-zinc-700">
+                          <div className="flex gap-1.5">
+                            <div className="w-3 h-3 rounded-full bg-red-500/60" />
+                            <div className="w-3 h-3 rounded-full bg-yellow-500/60" />
+                            <div className="w-3 h-3 rounded-full bg-green-500/60" />
+                          </div>
+                          <div className="flex-1 mx-3">
+                            <div className="bg-zinc-900 rounded px-3 py-1 text-[10px] text-zinc-500 max-w-md mx-auto flex items-center gap-2">
+                              <Lock className="w-3 h-3" />
+                              <span className="truncate">{brandConfig?.seo?.title || 'Your Website'}</span>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                      
+                      {/* Content */}
+                      <div className={`bg-white overflow-hidden ${
+                        expandedPreview === 'tablet' 
+                          ? 'rounded-[1.5rem] h-full' 
+                          : 'rounded-b-lg'
+                      }`} style={{ height: expandedPreview === 'desktop' ? 'calc(100% - 32px)' : '100%' }}>
+                        <FullSitePreviewFrame 
+                          sections={previewSections}
+                          deviceView={expandedPreview}
+                          seo={brandConfig?.seo ? {
+                            title: brandConfig.seo.title || '',
+                            description: brandConfig.seo.description || '',
+                            keywords: brandConfig.seo.keywords || ''
+                          } : undefined}
+                        />
+                      </div>
+                    </div>
+                    
+                    {/* Edit Mode Indicator */}
+                    {previewEditMode && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="absolute -bottom-12 left-1/2 -translate-x-1/2 px-4 py-2 bg-emerald-500/20 border border-emerald-500/30 rounded-full"
+                      >
+                        <p className="text-xs text-emerald-400 font-medium">
+                          ✨ Click any text to edit it directly
+                        </p>
+                      </motion.div>
+                    )}
+                  </motion.div>
+                </motion.div>
+              )}
+            </AnimatePresence>
             </div>
           </motion.div>
         ) : null}
@@ -1733,7 +2401,7 @@ export default function GeneratedPage() {
                     <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-lg bg-zinc-800 border border-zinc-700 flex items-center justify-center">
                       <Terminal className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-zinc-400" />
                     </div>
-                    <h1 className="text-sm sm:text-lg font-bold text-white tracking-tight truncate max-w-[120px] sm:max-w-none">{project?.name || 'Untitled Project'}</h1>
+                    <h1 className="text-base sm:text-lg font-semibold text-white tracking-tight truncate max-w-[120px] sm:max-w-none">{project?.name || 'Untitled Project'}</h1>
                   </div>
                   
                   {/* Tier Badge */}
@@ -1749,86 +2417,179 @@ export default function GeneratedPage() {
                 <div className="flex items-center gap-1.5 sm:gap-3">
                   <button
                     onClick={handleStartFresh}
-                    className="hidden sm:block px-3 py-2 text-sm text-zinc-400 hover:text-white transition-colors font-mono"
+                    className="hidden sm:block px-4 py-2.5 text-sm text-zinc-400 hover:text-zinc-200 transition-colors font-medium"
                   >
                     New Project
                   </button>
                   <button
                     onClick={handleDownload}
                     disabled={!assembledCode}
-                    className="px-2 py-1.5 sm:px-3 sm:py-2 text-xs sm:text-sm text-zinc-400 hover:text-white transition-colors font-mono flex items-center gap-1.5 sm:gap-2"
+                    className="px-3 py-2 sm:px-4 sm:py-2.5 text-sm text-zinc-400 hover:text-zinc-200 transition-colors font-medium flex items-center gap-2"
                   >
                     <Download className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                    <span className="hidden sm:inline">Export Code</span>
+                    <span className="hidden sm:inline">Export</span>
                   </button>
-                  {deployedUrl ? (
-                    <a
-                      href={deployedUrl}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="px-2.5 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm bg-zinc-800 text-emerald-400 border border-zinc-700 rounded-lg hover:bg-zinc-700 transition-colors flex items-center gap-1.5 sm:gap-2 font-medium"
-                    >
-                      <Globe className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                      <span className="hidden sm:inline">View Live Site</span>
-                      <ExternalLink className="w-3 h-3" />
-                    </a>
-                  ) : (
-                    <button
-                      onClick={handleDeploy}
-                      disabled={isDeploying || !assembledCode}
-                      className={`px-3 py-2 sm:px-6 sm:py-2.5 text-xs sm:text-sm font-bold rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-1.5 sm:gap-2 group ${
-                        tierConfig?.color === 'amber' 
-                          ? 'bg-amber-500 hover:bg-amber-400 text-black'
-                          : tierConfig?.color === 'lime'
-                          ? 'bg-lime-500 hover:bg-lime-400 text-black'
-                          : 'bg-emerald-600 hover:bg-emerald-500 text-white'
-                      }`}
-                    >
-                      {isDeploying ? (
+                  
+                  {/* Deploy Options Dropdown */}
+                  <div className="relative">
+                    {deployedUrl ? (
+                      <a
+                        href={deployedUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="px-2.5 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm bg-zinc-800 text-emerald-400 border border-zinc-700 rounded-lg hover:bg-zinc-700 transition-colors flex items-center gap-1.5 sm:gap-2 font-medium"
+                      >
+                        <Globe className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                        <span className="hidden sm:inline">Live</span>
+                        <ExternalLink className="w-3 h-3" />
+                      </a>
+                    ) : (
+                      <button
+                        onClick={() => setShowDeployOptions(!showDeployOptions)}
+                        disabled={!assembledCode}
+                        className={`px-5 py-2.5 text-sm font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 group ${
+                          tierConfig?.color === 'amber' 
+                            ? 'bg-emerald-500/15 border border-emerald-500/40 hover:bg-emerald-500/20 hover:border-emerald-500/50 text-white shadow-[0_0_15px_rgba(16,185,129,0.15)]'
+                            : tierConfig?.color === 'lime'
+                            ? 'bg-emerald-500/15 border border-emerald-500/40 hover:bg-emerald-500/20 hover:border-emerald-500/50 text-white shadow-[0_0_15px_rgba(16,185,129,0.15)]'
+                            : 'bg-emerald-500/15 border border-emerald-500/40 hover:bg-emerald-500/20 hover:border-emerald-500/50 text-white shadow-[0_0_15px_rgba(16,185,129,0.15)]'
+                        }`}
+                      >
+                        <Rocket className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                        <span>Ship</span>
+                        <svg className="w-3 h-3 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                        </svg>
+                      </button>
+                    )}
+                    
+                    {/* Dropdown Menu */}
+                    <AnimatePresence>
+                      {showDeployOptions && !deployedUrl && (
                         <>
-                          <RefreshCw className="w-3.5 h-3.5 sm:w-4 sm:h-4 animate-spin" />
-                          <span className="hidden sm:inline">Deploying...</span>
-                        </>
-                      ) : (
-                        <>
-                          <Rocket className="w-3.5 h-3.5 sm:w-4 sm:h-4 group-hover:-translate-y-0.5 transition-transform" />
-                          <span><span className="hidden sm:inline">Deploy to </span>Production</span>
+                          <div className="fixed inset-0 z-40" onClick={() => setShowDeployOptions(false)} />
+                          <motion.div
+                            initial={{ opacity: 0, y: -10 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -10 }}
+                            className="absolute right-0 top-full mt-2 w-72 bg-zinc-900 border border-zinc-800 rounded-xl shadow-2xl z-50 overflow-hidden"
+                          >
+                            <div className="p-2">
+                              {/* Push to GitHub */}
+                              <button
+                                onClick={() => {
+                                  setShowDeployOptions(false)
+                                  handleGitHubPush()
+                                }}
+                                disabled={github.pushing}
+                                className="w-full flex items-center gap-3 p-3 hover:bg-zinc-800 rounded-lg transition-colors text-left group"
+                              >
+                                <div className="w-9 h-9 rounded-lg bg-zinc-800 flex items-center justify-center">
+                                  <Github className="w-5 h-5 text-white" />
+                                </div>
+                                <div className="flex-1">
+                                  <p className="text-sm font-medium text-white group-hover:text-emerald-300">
+                                    {github.connected ? 'Push to GitHub' : 'Connect GitHub'}
+                                  </p>
+                                  <p className="text-xs text-zinc-500">
+                                    {github.connected ? `@${github.username}` : 'Your repo, your code'}
+                                  </p>
+                                </div>
+                                {github.pushing && <RefreshCw className="w-4 h-4 text-zinc-500 animate-spin" />}
+                              </button>
+                              
+                              {/* Deploy to hatchitsites.dev */}
+                              <button
+                                onClick={() => {
+                                  setShowDeployOptions(false)
+                                  handleDeploy()
+                                }}
+                                disabled={isDeploying}
+                                className="w-full flex items-center gap-3 p-3 hover:bg-zinc-800 rounded-lg transition-colors text-left group"
+                              >
+                                <div className="w-9 h-9 rounded-lg bg-emerald-500/10 flex items-center justify-center">
+                                  <Rocket className="w-5 h-5 text-emerald-400" />
+                                </div>
+                                <div className="flex-1">
+                                  <p className="text-sm font-medium text-white group-hover:text-emerald-300">Deploy to HatchIt</p>
+                                  <p className="text-xs text-zinc-500">Live on hatchitsites.dev</p>
+                                </div>
+                                {!canDeploy && <Lock className="w-4 h-4 text-zinc-500" />}
+                              </button>
+                              
+                              {/* Download ZIP */}
+                              <button
+                                onClick={() => {
+                                  setShowDeployOptions(false)
+                                  handleDownload()
+                                }}
+                                className="w-full flex items-center gap-3 p-3 hover:bg-zinc-800 rounded-lg transition-colors text-left group"
+                              >
+                                <div className="w-9 h-9 rounded-lg bg-zinc-800 flex items-center justify-center">
+                                  <Download className="w-5 h-5 text-zinc-400" />
+                                </div>
+                                <div className="flex-1">
+                                  <p className="text-sm font-medium text-white group-hover:text-emerald-300">Download ZIP</p>
+                                  <p className="text-xs text-zinc-500">Full Next.js project</p>
+                                </div>
+                              </button>
+                            </div>
+                            
+                            {/* GitHub Push Result */}
+                            {githubPushResult?.success && (
+                              <div className="border-t border-zinc-800 p-3 bg-emerald-500/5">
+                                <p className="text-xs text-emerald-400 font-medium mb-2">✓ Pushed to GitHub</p>
+                                <div className="flex gap-2">
+                                  <a
+                                    href={githubPushResult.repoUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="flex-1 text-xs text-center py-2 bg-zinc-800 hover:bg-zinc-700 rounded-lg text-white"
+                                  >
+                                    View Repo
+                                  </a>
+                                  <a
+                                    href={githubPushResult.vercelImportUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="flex-1 text-xs text-center py-2 bg-white text-black hover:bg-zinc-200 rounded-lg font-medium"
+                                  >
+                                    Deploy on Vercel →
+                                  </a>
+                                </div>
+                              </div>
+                            )}
+                            {githubPushResult?.error && (
+                              <div className="border-t border-zinc-800 p-3 bg-red-500/5">
+                                <p className="text-xs text-red-400">{githubPushResult.error}</p>
+                              </div>
+                            )}
+                          </motion.div>
                         </>
                       )}
-                    </button>
-                  )}
+                    </AnimatePresence>
+                  </div>
                 </div>
               </div>
               {error && (
                 <div className="px-3 sm:px-6 pb-2 sm:pb-3">
-                  <div className="text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg px-4 py-2 flex items-center gap-2">
+                  <motion.div
+                    initial={{ opacity: 0, y: -20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                    className="text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg px-4 py-2 flex items-center gap-2 backdrop-blur-xl"
+                  >
                     <AlertCircle className="w-4 h-4" />
                     {error}
-                  </div>
+                    <button onClick={() => setError(null)} className="ml-auto text-red-400/60 hover:text-red-400" aria-label="Dismiss error">
+                      <X className="w-4 h-4" />
+                    </button>
+                  </motion.div>
                 </div>
               )}
             </div>
 
             <BuilderTabRail variant="flat" />
-
-              {showUnlockBanner && (
-                <div className="px-3 py-3 sm:px-6 sm:py-5 border-b border-emerald-500/20 bg-gradient-to-r from-emerald-950/50 via-zinc-900/80 to-emerald-950/50 flex flex-col md:flex-row md:items-center md:justify-between gap-2 sm:gap-4">
-                  <div className="space-y-0.5 sm:space-y-1.5">
-                    <div className="flex items-center gap-2">
-                      <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-emerald-500" />
-                      <p className="text-sm sm:text-base text-white font-semibold">Hero Section Deployed</p>
-                    </div>
-                    <p className="text-xs sm:text-sm text-zinc-400">Don't lose your progress. Start your 14-day trial.</p>
-                  </div>
-                  <button
-                    onClick={() => handleDirectCheckout('architect')}
-                    className="inline-flex items-center justify-center gap-1.5 sm:gap-2 px-4 py-2 sm:px-6 sm:py-3 rounded-lg sm:rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs sm:text-sm transition-colors"
-                  >
-                    <Lock className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                    Unlock — $19/mo
-                  </button>
-                </div>
-              )}
 
             {/* Main Content - Split Panel */}
             <div className="flex-1 flex flex-col md:flex-row min-h-0 overflow-hidden">
@@ -1867,26 +2628,21 @@ export default function GeneratedPage() {
                 w-full md:w-72 border-r border-zinc-800/50 flex-col bg-zinc-900/20 overflow-hidden
               `}>
                 <div className="p-3 sm:p-4 border-b border-zinc-800/50">
-                  <h2 className="text-xs font-mono text-zinc-500 uppercase tracking-wider">Your Full Site</h2>
+                  <h2 className="text-xs font-medium text-zinc-400 uppercase tracking-wider">Your Full Site</h2>
                   {!isPaidUser && (
                     <p className="text-xs text-zinc-500 mt-1">Hero complete • {allTemplateSections.length - 1} sections ready to customize</p>
                   )}
                 </div>
                 <div className="flex-1 overflow-auto p-1.5 sm:p-2 space-y-0.5 sm:space-y-1">
-                  {/* Show ALL template sections, not just built ones */}
-                  {allTemplateSections.map((section, index) => {
+                  {/* Show only completed hero section */}
+                  {allTemplateSections.filter(section => buildState.completedSections.includes(section.id)).map((section, index) => {
                     const isCompleted = buildState.completedSections.includes(section.id)
-                    const isSkipped = buildState.skippedSections.includes(section.id)
-                    const isLocked = !isPaidUser && section.id !== 'hero' // Lock all except hero for free users
                     
                     return (
                       <button
                         key={section.id}
                         onClick={() => {
-                          if (isLocked) {
-                            // Go DIRECTLY to Stripe checkout - skip the modal
-                            handleDirectCheckout('architect')
-                          } else if (isCompleted) {
+                          if (isCompleted) {
                             // Go back to building mode for this section
                             const sectionIndex = sectionsForBuild.findIndex(s => s.id === section.id)
                             if (sectionIndex >= 0) {
@@ -1895,88 +2651,38 @@ export default function GeneratedPage() {
                             }
                           }
                         }}
-                        className={`w-full text-left p-2 sm:p-3 rounded-lg mb-0.5 sm:mb-1 transition-all group ${
-                          isLocked
-                            ? 'bg-zinc-800/30 border border-zinc-700/50 cursor-pointer hover:border-emerald-500/30'
-                            : isCompleted
-                            ? 'hover:bg-zinc-800/50 border border-transparent cursor-pointer'
-                            : 'opacity-50 cursor-not-allowed border border-transparent'
-                        }`}
+                        className="w-full text-left p-2 sm:p-3 rounded-lg mb-0.5 sm:mb-1 transition-all group hover:bg-zinc-800/50 border border-transparent cursor-pointer"
                       >
                         <div className="flex items-center gap-3">
-                          <div className={`w-6 h-6 rounded flex items-center justify-center text-xs font-mono ${
-                            isLocked
-                              ? 'bg-zinc-700/50 text-zinc-500 border border-zinc-600'
-                            : isCompleted 
-                              ? 'bg-zinc-800 text-emerald-400 border border-zinc-700' 
-                              : isSkipped
-                              ? 'bg-zinc-800 text-zinc-500 border border-zinc-700'
-                              : 'bg-zinc-800 text-zinc-500 border border-zinc-700'
-                          }`}>
-                            {isLocked ? <Lock className="w-3 h-3" /> : isCompleted ? <CheckCircle2 className="w-3.5 h-3.5" /> : index + 1}
+                          <div className="w-6 h-6 rounded flex items-center justify-center text-xs bg-zinc-800 text-emerald-400 border border-zinc-700">
+                            <CheckCircle2 className="w-3.5 h-3.5" />
                           </div>
                           <div className="flex-1 min-w-0">
-                            <h3 className={`text-sm font-medium truncate ${isLocked ? 'text-zinc-500' : 'text-zinc-300 group-hover:text-white'}`}>{section.name}</h3>
-                            {isLocked && (
-                              <p className="text-[10px] text-emerald-500/70 mt-0.5 group-hover:text-emerald-400">Unlock — $9/2wks</p>
-                            )}
+                            <h3 className="text-sm font-medium truncate text-zinc-200 group-hover:text-white">{section.name}</h3>
                           </div>
-                          {isCompleted && !isLocked && (
-                            <Edit3 className="w-3.5 h-3.5 text-zinc-600 group-hover:text-zinc-400" />
-                          )}
-                          {isLocked && (
-                            <Zap className="w-3.5 h-3.5 text-emerald-500/50 group-hover:text-emerald-400" />
-                          )}
+                          <Edit3 className="w-3.5 h-3.5 text-zinc-600 group-hover:text-zinc-400" />
                         </div>
                       </button>
                     )
                   })}
                 </div>
                 
-                {/* Tier Features Panel */}
-                {tierConfig && (
-                  <div className="p-4 border-t border-zinc-800/50 bg-zinc-900/20">
-                    <div className="flex items-center gap-2 mb-3">
-                      <tierConfig.icon className="w-4 h-4" style={{ color: tierConfig.color === 'amber' ? '#fbbf24' : tierConfig.color === 'emerald' ? '#34d399' : '#a3e635' }} />
-                      <span className="text-xs font-mono text-zinc-400 uppercase tracking-wider">Your Plan Features</span>
-                    </div>
-                    <div className="space-y-1.5">
-                      {tierConfig.features.map((feature, idx) => (
-                        <div key={idx} className="flex items-center gap-2 text-xs text-zinc-400">
-                          <CheckCircle2 className="w-3 h-3 text-emerald-500 flex-shrink-0" />
-                          <span>{feature}</span>
-                        </div>
-                      ))}
-                    </div>
-                    {/* Upgrade prompt for Architect users */}
-                    {accountSubscription?.tier === 'architect' && (
-                      <button 
-                        onClick={() => window.location.href = '/sign-up?upgrade=visionary'}
-                        className="mt-4 w-full py-2 text-xs font-medium bg-zinc-800 border border-zinc-700 text-emerald-400 rounded-lg hover:bg-zinc-700 transition-colors flex items-center justify-center gap-2"
-                      >
-                        <Zap className="w-3.5 h-3.5" />
-                        Upgrade to Visionary for Unlimited
-                      </button>
-                    )}
-                  </div>
-                )}
-                
                 {/* Run Audit Button */}
-                <div className="p-4 border-t border-zinc-800/50 bg-zinc-900/30">
+                <div className="p-4 border-t border-zinc-800 bg-zinc-900/20">
                   <button
                     onClick={handleRunAudit}
                     disabled={isAuditRunning}
-                    className="w-full py-3 text-sm bg-zinc-800 border border-zinc-700 text-zinc-300 rounded-lg hover:bg-zinc-700 hover:text-white transition-all flex items-center justify-center gap-2 disabled:opacity-50 group"
+                    className="w-full py-3 text-sm bg-zinc-800 border border-zinc-700 text-zinc-200 rounded-lg hover:bg-zinc-700 hover:text-white transition-all flex items-center justify-center gap-2 disabled:opacity-50 group font-medium"
                   >
                     {isAuditRunning ? (
                       <>
                         <RefreshCw className="w-4 h-4 animate-spin" />
-                        <span className="font-mono">Running AI Diagnostics...</span>
+                        <span>Running Diagnostics...</span>
                       </>
                     ) : (
                       <>
-                        <Terminal className="w-4 h-4 text-zinc-500 group-hover:text-zinc-300" />
-                        <span className="font-mono">Run System Audit</span>
+                        <Terminal className="w-4 h-4 text-zinc-400 group-hover:text-zinc-200" />
+                        <span>Run System Audit</span>
                       </>
                     )}
                   </button>
@@ -1994,13 +2700,12 @@ export default function GeneratedPage() {
                 ${reviewMobileTab === 'preview' ? 'flex' : 'hidden'} md:flex
                 flex-1 flex-col bg-zinc-950 min-h-0 relative
               `}>
-                <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:24px_24px] pointer-events-none" />
                 
                 {/* Preview Header with Device Toggle */}
-                <div className="p-4 border-b border-zinc-800/50 flex items-center justify-between relative z-10 bg-zinc-950/80 backdrop-blur-sm">
+                <div className="p-4 border-b border-zinc-800 flex items-center justify-between relative z-10 bg-zinc-950">
                   <div className="flex items-center gap-2">
-                    <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-                    <h3 className="text-xs font-mono text-zinc-500 uppercase tracking-wider">Live Preview Environment</h3>
+                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                    <h3 className="text-xs font-medium text-zinc-400 uppercase tracking-wider">Live Preview</h3>
                   </div>
                   
                   <div className="hidden md:flex items-center bg-zinc-900 rounded-lg p-1 border border-zinc-800">
@@ -2010,8 +2715,8 @@ export default function GeneratedPage() {
                         onClick={() => setReviewDeviceView(device)}
                         className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all flex items-center gap-2 ${
                           reviewDeviceView === device
-                            ? 'bg-zinc-800 text-white shadow-sm'
-                            : 'text-zinc-500 hover:text-zinc-300'
+                            ? 'bg-zinc-800 text-white'
+                            : 'text-zinc-400 hover:text-zinc-200'
                         }`}
                       >
                         {device === 'mobile' ? <Smartphone className="w-3.5 h-3.5" /> : 
@@ -2024,14 +2729,14 @@ export default function GeneratedPage() {
                 </div>
 
                 {/* Preview Container */}
-                <div className="flex-1 flex items-start justify-center overflow-auto p-1 sm:p-2 md:p-8 relative z-0">
+                <div className="flex-1 flex items-start justify-center overflow-auto p-4 md:p-8 relative z-0">
                   <motion.div
                     initial={false}
                     animate={{ 
                       width: reviewDeviceView === 'mobile' ? '375px' : reviewDeviceView === 'tablet' ? '768px' : '100%' 
                     }}
                     transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-                    className={`h-full bg-zinc-900 rounded-xl overflow-hidden shadow-2xl border border-zinc-800 transition-all duration-500 ${
+                    className={`h-full bg-zinc-900 rounded-xl overflow-hidden border border-zinc-800 transition-all duration-500 ${
                       reviewDeviceView === 'mobile' ? 'border-[8px] border-zinc-800 rounded-[2rem]' : 
                       reviewDeviceView === 'tablet' ? 'border-[8px] border-zinc-800 rounded-[1.5rem]' : ''
                     }`}
@@ -2091,7 +2796,7 @@ export default function GeneratedPage() {
                           setShareUrlCopied(true)
                           setTimeout(() => setShareUrlCopied(false), 2000)
                         }}
-                        className="w-full inline-flex items-center justify-center gap-3 px-6 py-4 bg-blue-600 hover:bg-blue-500 text-white font-semibold rounded-xl transition-colors group mb-4"
+                        className="w-full inline-flex items-center justify-center gap-3 px-6 py-4 bg-emerald-500/20 backdrop-blur-xl border border-emerald-500/40 hover:bg-emerald-500/30 text-white font-semibold rounded-xl transition-colors group mb-4"
                       >
                         {shareUrlCopied ? (
                           <>
@@ -2126,6 +2831,29 @@ export default function GeneratedPage() {
                     <div className="mt-8 pt-6 border-t border-zinc-800 relative z-10">
                       <h3 className="text-xs font-mono text-zinc-500 uppercase tracking-wider mb-4">What's Next</h3>
                       <div className="space-y-2">
+                        {/* Push to GitHub */}
+                        <button
+                          onClick={() => {
+                            setDeployedUrl(null)
+                            handleGitHubPush()
+                          }}
+                          disabled={github.pushing}
+                          className="w-full flex items-center gap-3 p-3 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 rounded-lg transition-colors text-left group"
+                        >
+                          <div className="w-8 h-8 rounded-lg bg-zinc-800 flex items-center justify-center">
+                            <Github className="w-4 h-4 text-white" />
+                          </div>
+                          <div className="flex-1">
+                            <p className="text-sm font-medium text-white group-hover:text-emerald-300 transition-colors">
+                              {github.connected ? 'Push to GitHub' : 'Connect GitHub'}
+                            </p>
+                            <p className="text-xs text-zinc-500">
+                              {github.connected ? `Own your code @${github.username}` : 'Your repo, your control'}
+                            </p>
+                          </div>
+                          {github.pushing && <RefreshCw className="w-4 h-4 text-zinc-500 animate-spin" />}
+                        </button>
+                        
                         <button
                           onClick={() => setDeployedUrl(null)}
                           className="w-full flex items-center gap-3 p-3 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 rounded-lg transition-colors text-left group"
@@ -2279,7 +3007,7 @@ export default function GeneratedPage() {
                     setShowDemoNudge(false)
                     router.push('/sign-up?redirect_url=/dashboard')
                   }}
-                  className="w-full py-3 px-4 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold rounded-lg transition-colors flex items-center justify-center gap-2"
+                  className="w-full py-3 px-4 bg-emerald-500/15 border border-emerald-500/40 hover:bg-emerald-500/20 hover:border-emerald-500/50 text-white font-semibold rounded-lg transition-all shadow-[0_0_15px_rgba(16,185,129,0.15)] flex items-center justify-center gap-2"
                 >
                   <span>Sign Up Free</span>
                   <ArrowRight className="w-4 h-4" />

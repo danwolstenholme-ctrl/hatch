@@ -249,7 +249,7 @@ export function SubscriptionStatusCard() {
           <p className="text-zinc-400 mb-4">Upgrade to unlock all features</p>
           <Link
             href="/dashboard/billing"
-            className="inline-block px-6 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold rounded-xl transition-colors"
+            className="inline-block px-6 py-2 bg-emerald-500/15 border border-emerald-500/40 hover:bg-emerald-500/20 hover:border-emerald-500/50 text-white font-semibold rounded-xl transition-all shadow-[0_0_15px_rgba(16,185,129,0.15)]"
           >
             Manage Billing
           </Link>

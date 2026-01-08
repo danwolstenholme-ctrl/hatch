@@ -133,7 +133,7 @@ export default function BuildSuccessModal({
                       </div>
                       <div className="flex items-center gap-2 text-xs text-zinc-300">
                         <Check className="w-3.5 h-3.5 text-emerald-400" />
-                        <span>Full code export</span>
+                        <span>Export full Next.js project</span>
                       </div>
                     </div>
                   )}
@@ -188,7 +188,7 @@ export default function BuildSuccessModal({
                       track('Build Success Modal - Continue Clicked', { buildsRemaining })
                       onContinue()
                     }}
-                    className="group w-full py-3.5 px-6 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold rounded-xl transition-all duration-200 flex items-center justify-center gap-2 shadow-lg shadow-emerald-500/25"
+                    className="group w-full py-3.5 px-6 bg-emerald-500/15 border border-emerald-500/40 hover:bg-emerald-500/20 hover:border-emerald-500/50 text-white font-semibold rounded-xl transition-all duration-200 flex items-center justify-center gap-2 shadow-[0_0_15px_rgba(16,185,129,0.15)]"
                   >
                     <span>Continue Building</span>
                     <ArrowRight className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />

@@ -2,14 +2,13 @@
 
 import { motion, AnimatePresence } from 'framer-motion'
 import { useEffect, useState } from 'react'
-import Pip from '@/components/Pip'
 
 // Singularity-branded transition - confident, minimal, fast
 const TRANSITION_STATES = [
-  { text: "WARMING UP", progress: 25 },
-  { text: "GATHERING IDEAS", progress: 50 },
-  { text: "PREPARING CANVAS", progress: 75 },
-  { text: "LET'S BUILD", progress: 100 }
+  { text: "INIT", progress: 25 },
+  { text: "LOAD", progress: 50 },
+  { text: "BUILD", progress: 75 },
+  { text: "SHIP", progress: 100 }
 ]
 
 export default function SingularityTransition({ onComplete }: { onComplete: () => void }) {
@@ -39,35 +38,40 @@ export default function SingularityTransition({ onComplete }: { onComplete: () =
       animate={{ opacity: 1 }}
       exit={{ opacity: 0, transition: { duration: 0.5, ease: [0.22, 1, 0.36, 1] } }}
     >
-      {/* Subtle grid background */}
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(to_bottom,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:64px_64px]" />
-      
-      {/* Top accent line */}
-      <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-emerald-500/50 to-transparent" />
+      {/* Clean backdrop - subtle glow (matches homepage) */}
+      <div className="absolute inset-0 bg-zinc-950" />
+      <div 
+        className="absolute top-[-100px] left-1/2 -translate-x-1/2 w-[1000px] h-[700px]"
+        style={{
+          background: 'radial-gradient(ellipse at center, rgba(16,185,129,0.10), transparent 65%)',
+        }}
+      />
+      <div className="absolute inset-0 bg-gradient-to-t from-zinc-950/90 via-transparent to-transparent" />
 
       <div className="relative z-10 flex flex-col items-center">
-        {/* Pip - the idea given form */}
+        {/* Favicon-style "It" logo */}
         <motion.div 
           className="mb-8"
           animate={{ 
-            y: [0, -6, 0],
-            rotate: [0, 2, 0, -2, 0]
+            scale: [1, 1.02, 1],
           }}
           transition={{ 
-            duration: 2.5, 
+            duration: 1.5, 
             repeat: Infinity, 
             ease: "easeInOut" 
           }}
         >
-          <motion.div
-            animate={{ scale: [1, 1.02, 1] }}
-            transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
-          >
-            <Pip size={80} animate={true} float={false} glow={true} />
-          </motion.div>
+          <div className="relative w-20 h-20 rounded-xl bg-gradient-to-br from-zinc-900 to-zinc-950 border border-zinc-800 flex items-center justify-center overflow-hidden">
+            {/* Top accent line */}
+            <div className="absolute top-2 inset-x-6 h-px bg-emerald-500/40" />
+            {/* Ambient glow behind text */}
+            <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(16,185,129,0.15),transparent_60%)]" />
+            {/* The "It" text with gradient */}
+            <span className="text-3xl font-bold bg-gradient-to-r from-emerald-500 to-emerald-400 bg-clip-text text-transparent font-sans tracking-tight relative z-10" style={{ filter: 'drop-shadow(0 0 8px rgba(16,185,129,0.4))' }}>It</span>
+          </div>
         </motion.div>
 
-        {/* Status text - mono, uppercase, tracked */}
+        {/* Status text - matches homepage style */}
         <div className="h-8 flex items-center justify-center">
           <AnimatePresence mode="wait">
             <motion.p
@@ -76,7 +80,7 @@ export default function SingularityTransition({ onComplete }: { onComplete: () =
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -8 }}
               transition={{ duration: 0.2, ease: "easeOut" }}
-              className="text-zinc-500 text-xs font-mono tracking-[0.2em] uppercase"
+              className="text-zinc-400 text-sm font-medium tracking-wider uppercase"
             >
               {currentState.text}
             </motion.p>
@@ -84,9 +88,9 @@ export default function SingularityTransition({ onComplete }: { onComplete: () =
         </div>
 
         {/* Progress bar - clean, emerald accent */}
-        <div className="mt-8 w-48 h-px bg-zinc-800 overflow-hidden">
+        <div className="mt-8 w-48 h-px bg-zinc-800 overflow-hidden rounded-full">
           <motion.div
-            className="h-full bg-emerald-500"
+            className="h-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.4)]"
             initial={{ width: "0%" }}
             animate={{ width: `${currentState.progress}%` }}
             transition={{ duration: 0.3, ease: "easeOut" }}

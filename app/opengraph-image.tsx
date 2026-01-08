@@ -2,7 +2,7 @@ import { ImageResponse } from 'next/og'
  
 export const runtime = 'edge'
  
-export const alt = 'HatchIt - The Singularity Interface'
+export const alt = 'HatchIt - Describe it. Build it. Ship it.'
 export const size = {
   width: 1200,
   height: 630,
@@ -22,7 +22,7 @@ export default async function Image() {
           flexDirection: 'column',
           alignItems: 'center',
           justifyContent: 'center',
-          fontFamily: 'sans-serif',
+          fontFamily: 'system-ui, sans-serif',
           position: 'relative',
         }}
       >
@@ -36,7 +36,19 @@ export default async function Image() {
             bottom: 0,
             backgroundImage: 'linear-gradient(to right, #18181b 1px, transparent 1px), linear-gradient(to bottom, #18181b 1px, transparent 1px)',
             backgroundSize: '50px 50px',
-            opacity: 0.2,
+            opacity: 0.3,
+          }}
+        />
+
+        {/* Top accent line */}
+        <div
+          style={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            height: '4px',
+            background: 'linear-gradient(to right, transparent, #10b981, transparent)',
           }}
         />
 
@@ -44,9 +56,9 @@ export default async function Image() {
         <div
           style={{
             position: 'absolute',
-            width: '600px',
-            height: '600px',
-            background: 'radial-gradient(circle, rgba(16, 185, 129, 0.15) 0%, transparent 70%)',
+            width: '500px',
+            height: '500px',
+            background: 'radial-gradient(circle, rgba(16, 185, 129, 0.12) 0%, transparent 70%)',
             top: '50%',
             left: '50%',
             transform: 'translate(-50%, -50%)',
@@ -62,75 +74,69 @@ export default async function Image() {
             zIndex: 10,
           }}
         >
-          {/* Logo / Icon */}
+          {/* "It" Logo */}
           <div
             style={{
-              width: '80px',
-              height: '80px',
-              background: 'linear-gradient(135deg, #10b981, #06b6d4)',
+              width: '100px',
+              height: '100px',
+              background: '#18181b',
               borderRadius: '20px',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              marginBottom: '30px',
-              boxShadow: '0 0 50px rgba(16, 185, 129, 0.4)',
+              marginBottom: '40px',
+              border: '1px solid #27272a',
+              boxShadow: '0 0 60px rgba(16, 185, 129, 0.2)',
             }}
           >
-            <svg
-              width="48"
-              height="48"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="white"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
+            <span
+              style={{
+                fontSize: '48px',
+                fontWeight: 700,
+                color: '#10b981',
+                fontFamily: 'ui-monospace, monospace',
+              }}
             >
-              <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
-            </svg>
+              It
+            </span>
           </div>
 
-          {/* Title - REMOVED */}
-          {/* 
+          {/* Title */}
           <div
             style={{
-              fontSize: '80px',
-              fontWeight: 800,
+              fontSize: '72px',
+              fontWeight: 700,
               color: 'white',
-              marginBottom: '10px',
-              letterSpacing: '-0.05em',
-              textShadow: '0 0 30px rgba(255, 255, 255, 0.2)',
+              marginBottom: '20px',
+              letterSpacing: '-0.02em',
             }}
           >
             HatchIt
-          </div>
-          */}
-
-          {/* Subtitle */}
-          <div
-            style={{
-              fontSize: '32px',
-              color: '#a1a1aa',
-              marginBottom: '40px',
-              letterSpacing: '0.1em',
-              textTransform: 'uppercase',
-            }}
-          >
-            The Singularity Interface
           </div>
 
           {/* Tagline */}
           <div
             style={{
-              fontSize: '24px',
+              fontSize: '28px',
+              color: '#a1a1aa',
+              marginBottom: '40px',
+            }}
+          >
+            Describe it. Build it. Ship it.
+          </div>
+
+          {/* Subtext */}
+          <div
+            style={{
+              fontSize: '20px',
               color: '#10b981',
               background: 'rgba(16, 185, 129, 0.1)',
-              padding: '10px 30px',
+              padding: '12px 32px',
               borderRadius: '100px',
               border: '1px solid rgba(16, 185, 129, 0.2)',
             }}
           >
-            Speak your intent. Watch the code evolve.
+            AI-assisted React websites → Your GitHub → Live
           </div>
         </div>
       </div>

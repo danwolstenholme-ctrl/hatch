@@ -5,7 +5,7 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { ArrowRight, CheckCircle2 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useUser } from '@clerk/nextjs'
-import Pip from '@/components/Pip'
+import { LogoMark } from '@/components/Logo'
 
 export default function HomepageWelcome({ onStart }: { onStart?: () => void }) {
   const [isOpen, setIsOpen] = useState(false)
@@ -107,75 +107,79 @@ export default function HomepageWelcome({ onStart }: { onStart?: () => void }) {
               ease: [0.16, 1, 0.3, 1],
               scale: { type: "spring", damping: 20, stiffness: 300 }
             }}
-            className="relative w-full max-w-2xl"
+            className="relative w-full max-w-lg"
           >
             <div className="relative bg-zinc-900/70 backdrop-blur-xl border border-zinc-800/50 rounded-2xl overflow-hidden shadow-2xl shadow-black/50">
               {/* Subtle gradient overlay */}
               <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(16,185,129,0.04),transparent_60%)]" />
               <div className="absolute inset-0 bg-gradient-to-b from-white/[0.02] to-transparent pointer-events-none" />
-              
               <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-zinc-700 to-transparent" />
               
-              <div className="relative px-5 pt-8 pb-8 sm:px-8 sm:pt-12 sm:pb-12 md:px-16 md:pt-14 md:pb-16">
+              <div className="relative px-5 pt-6 pb-6 sm:px-6 sm:pt-8 sm:pb-8">
                 <motion.div 
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.1, duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-                  className="text-center mb-6 sm:mb-8"
+                  className="text-center mb-5 sm:mb-6"
                 >
+                  {/* Logo */}
                   <motion.div
                     initial={{ scale: 0.8, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
                     transition={{ delay: 0.05, duration: 0.5, type: "spring", stiffness: 200 }}
-                    className="flex justify-center mb-6 sm:mb-8"
+                    className="mx-auto mb-5 sm:mb-6"
                   >
-                    <Pip size={80} animate={true} float={true} glow={true} />
+                    <LogoMark size={56} className="w-12 h-12 sm:w-14 sm:h-14 mx-auto" />
                   </motion.div>
-                  <h1 className="text-3xl sm:text-5xl md:text-6xl font-bold mb-4 sm:mb-6 tracking-tight">
-                    <span className="text-zinc-200">Text</span>
-                    <span className="mx-2 sm:mx-4 text-zinc-600">→</span>
-                    <span className="bg-gradient-to-r from-emerald-400 to-emerald-500 bg-clip-text text-transparent drop-shadow-[0_0_25px_rgba(16,185,129,0.5)]">React</span>
+                  
+                  {/* Headline */}
+                  <h1 className="text-2xl sm:text-3xl font-bold mb-3 sm:mb-4 tracking-tight">
+                    <span className="text-zinc-200">Describe it.</span>
+                    <span className="mx-1.5 sm:mx-2 text-zinc-200">Build it.</span>
+                    <span className="bg-gradient-to-r from-emerald-400 to-emerald-500 bg-clip-text text-transparent">Ship it.</span>
                   </h1>
                   
-                  <p className="text-base sm:text-xl text-zinc-400 mb-1 sm:mb-2 leading-relaxed">
-                    Describe your vision in plain English.
+                  {/* Subtext */}
+                  <p className="text-sm sm:text-base text-zinc-400 mb-1 leading-relaxed">
+                    Turn plain English into production React + Tailwind.
                   </p>
-                  <p className="text-base sm:text-xl text-zinc-300 font-medium mb-6 sm:mb-8">
-                    Watch it materialize in real-time.
+                  <p className="text-sm sm:text-base text-zinc-300 font-medium mb-5 sm:mb-6">
+                    Push to your GitHub. You own it.
                   </p>
 
+                  {/* Feature grid */}
                   <motion.div
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.3, duration: 0.4 }}
-                    className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 max-w-lg mx-auto mb-6 sm:mb-8"
+                    className="grid grid-cols-2 gap-2 max-w-sm mx-auto mb-5 sm:mb-6"
                   >
                     {[
-                      'Live preview as you type',
-                      'Point-and-click editing',
-                      'Production React code',
-                      'Secure deployment',
-                      'Custom domains',
-                      'Download source code',
+                      'Live preview',
+                      'React + Tailwind',
+                      'Push to GitHub',
+                      'Download source',
                     ].map((feature, i) => (
                       <motion.div
                         key={feature}
                         initial={{ opacity: 0, x: -10 }}
                         animate={{ opacity: 1, x: 0 }}
                         transition={{ delay: 0.4 + (i * 0.05), duration: 0.3 }}
-                        className="flex items-center gap-2 sm:gap-3 text-xs sm:text-sm text-zinc-300 bg-zinc-900/40 backdrop-blur-xl border border-zinc-800/50 rounded-lg px-3 py-2.5 sm:px-4 sm:py-3">
-                        <CheckCircle2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-400 flex-shrink-0" />
-                        <span className="leading-snug">{feature}</span>
+                        className="flex items-center gap-2 text-xs text-zinc-300 bg-zinc-800/40 border border-zinc-700/50 rounded-lg px-2.5 py-2"
+                      >
+                        <CheckCircle2 className="w-3 h-3 text-emerald-400 flex-shrink-0" />
+                        <span>{feature}</span>
                       </motion.div>
                     ))}
                   </motion.div>
                 </motion.div>
 
+                {/* Buttons */}
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.5, duration: 0.4 }}
-                  className="space-y-2 sm:space-y-3 max-w-md mx-auto"
+                  className="space-y-2 max-w-xs mx-auto"
                 >
                   {resumeUrl && (
                     <motion.button
@@ -185,7 +189,7 @@ export default function HomepageWelcome({ onStart }: { onStart?: () => void }) {
                         setIsOpen(false)
                         router.push(resumeUrl)
                       }}
-                      className="group relative w-full py-3 sm:py-4 px-5 sm:px-6 bg-emerald-500/15 backdrop-blur-2xl border border-emerald-500/40 hover:bg-emerald-500/20 hover:border-emerald-500/50 text-white font-semibold text-base sm:text-lg text-center rounded-xl transition-all shadow-[0_0_15px_rgba(16,185,129,0.15)] flex items-center justify-center gap-2 sm:gap-3 overflow-hidden"
+                      className="group relative w-full py-2.5 px-4 bg-emerald-500/15 backdrop-blur-2xl border border-emerald-500/40 hover:bg-emerald-500/20 hover:border-emerald-500/50 text-white font-medium text-sm text-center rounded-xl transition-all shadow-[0_0_15px_rgba(16,185,129,0.15)] flex items-center justify-center gap-2 overflow-hidden"
                     >
                       <div className="absolute inset-0 bg-gradient-to-br from-white/[0.08] via-transparent to-transparent rounded-xl pointer-events-none" />
                       <motion.div
@@ -194,16 +198,16 @@ export default function HomepageWelcome({ onStart }: { onStart?: () => void }) {
                         transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
                       />
                       <span className="relative">Resume Session</span>
-                      <ArrowRight className="relative w-5 h-5 group-hover:translate-x-1 transition-transform group-hover:drop-shadow-[0_0_8px_rgba(16,185,129,0.6)]" />
+                      <ArrowRight className="relative w-4 h-4 group-hover:translate-x-1 transition-transform" />
                     </motion.button>
                   )}
 
                   <motion.button
                     whileTap={{ scale: 0.98 }}
                     onClick={handleStart}
-                    className={`group relative w-full py-3 sm:py-4 px-5 sm:px-6 font-semibold text-base sm:text-lg text-center rounded-xl transition-all flex items-center justify-center gap-2 sm:gap-3 overflow-hidden ${
+                    className={`group relative w-full py-2.5 px-4 font-medium text-sm text-center rounded-xl transition-all flex items-center justify-center gap-2 overflow-hidden ${
                       resumeUrl 
-                        ? 'bg-zinc-800/50 backdrop-blur-xl hover:bg-zinc-800/60 text-zinc-200 border border-zinc-700/50' 
+                        ? 'bg-zinc-800/50 backdrop-blur-xl hover:bg-zinc-800/60 text-zinc-200 border border-zinc-700/50'
                         : 'bg-emerald-500/15 backdrop-blur-2xl border border-emerald-500/40 hover:bg-emerald-500/20 hover:border-emerald-500/50 text-white shadow-[0_0_15px_rgba(16,185,129,0.15)]'
                     }`}
                   >
@@ -216,13 +220,13 @@ export default function HomepageWelcome({ onStart }: { onStart?: () => void }) {
                       />
                     )}
                     <span className="relative">{resumeUrl ? 'Start Fresh' : 'Start Building'}</span>
-                    {!resumeUrl && <ArrowRight className="relative w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-1 transition-transform\" />}
+                    {!resumeUrl && <ArrowRight className="relative w-4 h-4 group-hover:translate-x-1 transition-transform" />}
                   </motion.button>
                   
-                  <div className="text-center pt-3 sm:pt-4">
+                  <div className="text-center pt-2">
                     <motion.button
                       onClick={handleDismiss}
-                      className="text-xs sm:text-sm text-zinc-500 hover:text-zinc-300 transition-colors"
+                      className="text-xs text-zinc-500 hover:text-zinc-300 transition-colors"
                     >
                       Continue browsing
                     </motion.button>

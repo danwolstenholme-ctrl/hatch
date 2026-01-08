@@ -25,9 +25,9 @@ export const viewport: Viewport = {
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://hatchit.dev'),
-  title: 'HatchIt — AI Website Builder | Describe it. Build it. Ship it.',
-  description: 'Turn plain English into production-ready React websites. No templates, no drag-and-drop. Just describe what you want and watch AI build it in real-time.',
-  keywords: ['AI website builder', 'React', 'Tailwind CSS', 'website generator', 'no-code', 'AI development', 'Claude AI'],
+  title: 'HatchIt — Describe it. Build it. Ship it.',
+  description: 'AI-assisted website building. Describe what you want, get production-ready React code, push to your GitHub, deploy to Vercel. You own everything.',
+  keywords: ['AI website builder', 'React', 'Tailwind CSS', 'website generator', 'GitHub', 'Vercel', 'code ownership'],
   authors: [{ name: 'HatchIt' }],
   creator: 'HatchIt',
   manifest: '/manifest.json',
@@ -50,15 +50,15 @@ export const metadata: Metadata = {
     locale: 'en_US',
     url: 'https://hatchit.dev',
     siteName: 'HatchIt',
-    title: 'HatchIt — AI Website Builder',
-    description: 'Turn plain English into production-ready React websites. No templates. Just describe what you want.',
+    title: 'HatchIt — Describe it. Build it. Ship it.',
+    description: 'AI-assisted website building. Your code, your repo, your site.',
   },
   twitter: {
     card: 'summary_large_image',
     site: '@HatchItD',
     creator: '@HatchItD',
-    title: 'HatchIt — AI Website Builder',
-    description: 'Turn plain English into production-ready React websites. No templates. Just describe what you want.',
+    title: 'HatchIt — Describe it. Build it. Ship it.',
+    description: 'AI-assisted website building. Your code, your repo, your site.',
   },
   robots: {
     index: true,

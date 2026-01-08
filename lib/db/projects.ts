@@ -105,6 +105,33 @@ export async function getProjectsByUserId(clerkId: string): Promise<DbProject[]>
   return data as DbProject[]
 }
 
+export type DbProjectWithProgress = DbProject & {
+  total_sections: number
+  completed_sections: number
+  skipped_sections: number
+}
+
+/**
+ * Get all projects for a user, with section progress counts.
+ * Backed by the `projects_with_progress` view.
+ */
+export async function getProjectsWithProgressByUserId(clerkId: string): Promise<DbProjectWithProgress[]> {
+  if (!supabaseAdmin) return []
+
+  const { data, error } = await supabaseAdmin
+    .from('projects_with_progress')
+    .select('*')
+    .eq('user_id', clerkId)
+    .order('created_at', { ascending: false })
+
+  if (error) {
+    console.error('Error fetching projects_with_progress:', error)
+    return []
+  }
+
+  return (data || []) as DbProjectWithProgress[]
+}
+
 /**
  * Get a project by ID
  */

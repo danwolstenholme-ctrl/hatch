@@ -15,6 +15,7 @@ export {
 export {
   createProject,
   getProjectsByUserId,
+  getProjectsWithProgressByUserId,
   getProjectById,
   getProjectBySlug,
   updateProjectStatus,
@@ -29,6 +30,7 @@ export {
   createSectionsFromTemplate,
   getSectionsByProjectId,
   getSectionById,
+  updateSectionOrderBySectionIds,
   markSectionBuilding,
   completeSection,
   updateSectionRefinement,

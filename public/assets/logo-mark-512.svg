@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#18181b"/>
+      <stop offset="100%" stop-color="#09090b"/>
+    </linearGradient>
+    <linearGradient id="emeraldGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#34d399"/>
+      <stop offset="100%" stop-color="#10b981"/>
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="4" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+  
+  <!-- Background -->
+  <rect width="512" height="512" rx="112" fill="url(#bgGrad)"/>
+  <rect x="4" y="4" width="504" height="504" rx="108" fill="none" stroke="#27272a" stroke-width="8"/>
+  
+  <!-- "It" mark - scaled up -->
+  <g transform="translate(256, 256)" filter="url(#glow)">
+    <!-- I -->
+    <rect x="-128" y="-128" width="64" height="256" rx="16" fill="url(#emeraldGrad)"/>
+    <!-- t stem -->
+    <rect x="16" y="-80" width="56" height="208" rx="16" fill="url(#emeraldGrad)"/>
+    <!-- t crossbar -->
+    <rect x="-16" y="-48" width="144" height="48" rx="16" fill="url(#emeraldGrad)"/>
+  </g>
+</svg>

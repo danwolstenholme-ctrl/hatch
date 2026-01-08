@@ -8,7 +8,6 @@ import { motion, useInView, AnimatePresence } from 'framer-motion'
 import { Terminal, Layers, Shield, Zap, Code2, Globe, ArrowRight, CheckCircle2, Layout, Smartphone } from 'lucide-react'
 import HomepageWelcome from '@/components/HomepageWelcome'
 import SingularityTransition from '@/components/singularity/SingularityTransition'
-import Pip from '@/components/Pip'
 
 // Section wrapper - staggered fade-in with depth
 function Section({ children, className = '', id = '', delay = 0 }: { children: React.ReactNode; className?: string; id?: string; delay?: number }) {
@@ -52,81 +51,17 @@ export default function Home() {
 
       {/* HERO */}
       <section className="relative min-h-[90vh] flex items-center px-4 sm:px-6 pt-32 pb-24 border-b border-zinc-900 overflow-hidden">
-        {/* Animated gradient backdrop */}
-        <motion.div 
-          initial={{ opacity: 0 }}
-          animate={{ 
-            opacity: 1,
-            background: [
-              'radial-gradient(ellipse at 30% 20%, rgba(16,185,129,0.15), transparent 50%)',
-              'radial-gradient(ellipse at 70% 30%, rgba(16,185,129,0.12), transparent 50%)',
-              'radial-gradient(ellipse at 40% 40%, rgba(16,185,129,0.18), transparent 50%)',
-              'radial-gradient(ellipse at 30% 20%, rgba(16,185,129,0.15), transparent 50%)',
-            ]
-          }}
-          transition={{ opacity: { duration: 0.8, delay: 0.3 }, background: { duration: 20, repeat: Infinity, ease: 'easeInOut' } }}
-          className="absolute inset-0"
-        />
-        <motion.div 
-          initial={{ opacity: 0 }}
-          animate={{ 
-            opacity: 1,
-            background: [
-              'radial-gradient(ellipse at 70% 80%, rgba(16,185,129,0.08), transparent 60%)',
-              'radial-gradient(ellipse at 30% 70%, rgba(16,185,129,0.1), transparent 60%)',
-              'radial-gradient(ellipse at 60% 60%, rgba(16,185,129,0.06), transparent 60%)',
-              'radial-gradient(ellipse at 70% 80%, rgba(16,185,129,0.08), transparent 60%)',
-            ]
-          }}
-          transition={{ opacity: { duration: 0.8, delay: 0.3 }, background: { duration: 25, repeat: Infinity, ease: 'easeInOut' } }}
-          className="absolute inset-0"
-        />
-        <motion.div 
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ duration: 0.8, delay: 0.2 }}
-          className="absolute inset-0 bg-gradient-to-b from-zinc-950/30 via-transparent to-zinc-950/80" 
-        />
-        
-        {/* Grid overlay for depth */}
-        <motion.div 
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 0.02 }}
-          transition={{ duration: 0.8, delay: 0.4 }}
-          className="absolute inset-0"
+        {/* Clean backdrop - subtle glow */}
+        <div className="absolute inset-0 bg-zinc-950" />
+        <div 
+          className="absolute top-[-100px] left-1/2 -translate-x-1/2 w-[1000px] h-[700px]"
           style={{
-            backgroundImage: 'linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)',
-            backgroundSize: '60px 60px'
+            background: 'radial-gradient(ellipse at center, rgba(16,185,129,0.18), transparent 65%)',
           }}
         />
+        <div className="absolute inset-0 bg-gradient-to-t from-zinc-950/80 via-transparent to-transparent" />
         
-          <div className="relative z-10 max-w-5xl mx-auto w-full text-center">
-            {/* Floating particles */}
-            <div className="absolute inset-0 overflow-hidden pointer-events-none">
-              {[...Array(15)].map((_, i) => (
-                <motion.div
-                  key={i}
-                  animate={{
-                    y: [0, -60 - (i * 5), 0],
-                    x: [0, Math.sin(i) * 20, 0],
-                    opacity: [0.1, 0.4, 0.1],
-                    scale: [1, 1.5, 1]
-                  }}
-                  transition={{
-                    duration: 8 + i * 1.2,
-                    repeat: Infinity,
-                    ease: 'easeInOut',
-                    delay: i * 0.6
-                  }}
-                  className="absolute w-1 h-1 rounded-full bg-emerald-400"
-                  style={{
-                    left: `${10 + (i * 6)}%`,
-                    top: `${20 + (i % 4) * 18}%`,
-                    filter: 'blur(0.5px)'
-                  }}
-                />
-              ))}
-            </div>
+        <div className="relative z-10 max-w-5xl mx-auto w-full text-center">
 
             <motion.div
             initial={{ opacity: 0, y: 40 }}
@@ -145,38 +80,38 @@ export default function Home() {
                 transition={{ duration: 2, repeat: Infinity }}
                 className="w-1.5 h-1.5 bg-emerald-400 rounded-full" 
               />
-              Production-ready React components
+              Generate → Deploy → Own
             </motion.div>
 
             <motion.h1 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-              className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold tracking-tight text-white leading-[1.1]"
+              className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight text-white leading-[1.15]"
             >
-              Text to{' '}
+              Ship{' '}
               <motion.span
                 animate={{ 
                   boxShadow: [
+                    '0 0 20px rgba(16,185,129,0.1)',
                     '0 0 30px rgba(16,185,129,0.2)',
-                    '0 0 50px rgba(16,185,129,0.35)',
-                    '0 0 30px rgba(16,185,129,0.2)',
+                    '0 0 20px rgba(16,185,129,0.1)',
                   ]
                 }}
                 transition={{ duration: 3, repeat: Infinity, ease: 'easeInOut' }}
-                className="relative inline-flex items-center px-4 py-1.5 rounded-2xl border border-emerald-500/30 bg-emerald-500/10"
+                className="relative inline-block px-3 py-1.5 rounded-lg border border-emerald-500/30 bg-emerald-500/10 align-baseline"
               >
-                <span className="bg-gradient-to-r from-emerald-400 to-emerald-500 bg-clip-text text-transparent tracking-tight">
-                  React
+                <span className="bg-gradient-to-r from-emerald-400 to-emerald-500 bg-clip-text text-transparent">
+                  it live
                 </span>
-              </motion.span>.<br />
+              </motion.span><br />
               <motion.span 
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.4, duration: 0.8 }}
                 className="bg-gradient-to-r from-zinc-200 via-zinc-400 to-zinc-500 bg-clip-text text-transparent"
               >
-                Instant preview.
+                in minutes.
               </motion.span>
             </motion.h1>
 
@@ -184,21 +119,21 @@ export default function Home() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.5, duration: 0.6 }}
-              className="text-lg sm:text-xl md:text-2xl text-zinc-400 max-w-3xl mx-auto leading-relaxed px-2"
+              className="text-base sm:text-lg text-zinc-400 max-w-2xl mx-auto leading-relaxed"
             >
-              Describe your vision in plain English. Watch production-ready React + Tailwind materialize in real-time.
+              An AI builder that actually gives you the code — your GitHub, your rules, no lock-in.
             </motion.p>
 
             <motion.div 
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.7, duration: 0.6 }}
-              className="flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4 pt-4 px-2"
+              className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-8"
             >
               <motion.button
-                whileTap={{ scale: 0.95 }}
+                whileTap={{ scale: 0.98 }}
                 onClick={triggerTransition}
-                className="group relative w-full sm:w-auto inline-flex justify-center items-center gap-2 sm:gap-3 px-6 sm:px-8 py-3.5 sm:py-4 bg-emerald-500/15 backdrop-blur-2xl border border-emerald-500/40 hover:bg-emerald-500/20 hover:border-emerald-500/50 text-white text-center rounded-xl font-semibold transition-all shadow-[0_0_20px_rgba(16,185,129,0.2)] overflow-hidden"
+                className="group relative inline-flex justify-center items-center gap-2 px-5 py-2.5 bg-emerald-500/15 backdrop-blur-2xl border border-emerald-500/40 hover:bg-emerald-500/20 hover:border-emerald-500/50 text-white text-sm font-medium rounded-lg transition-all shadow-[0_0_15px_rgba(16,185,129,0.15)] overflow-hidden"
               >
                 <div className="absolute inset-0 bg-gradient-to-br from-white/[0.08] via-transparent to-transparent rounded-xl pointer-events-none" />
                 <motion.div
@@ -206,22 +141,22 @@ export default function Home() {
                   animate={{ x: ['-200%', '200%'] }}
                   transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
                 />
-                <span className="relative">{isSignedIn ? 'Start Building' : 'Try the Demo'}</span>
-                <ArrowRight className="relative w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-1 transition-transform" />
+                <span className="relative">{isSignedIn ? 'Start Building' : 'Start your project'}</span>
+                <ArrowRight className="relative w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
               </motion.button>
               {isSignedIn ? (
                 <Link
                   href="/dashboard"
-                  className="w-full sm:w-auto inline-flex items-center justify-center rounded-xl bg-zinc-800/50 backdrop-blur-xl hover:bg-zinc-800/60 border border-zinc-700/50 hover:border-zinc-600 px-6 sm:px-8 py-3.5 sm:py-4 font-medium text-zinc-200 transition-all"
+                  className="inline-flex items-center justify-center rounded-lg bg-zinc-800/50 hover:bg-zinc-800/60 border border-zinc-700/50 hover:border-zinc-600 px-5 py-2.5 text-sm font-medium text-zinc-300 transition-all"
                 >
-                  Go to Dashboard
+                  Dashboard
                 </Link>
               ) : (
                 <Link
                   href="/how-it-works"
-                  className="w-full sm:w-auto inline-flex items-center justify-center rounded-xl bg-zinc-800/50 backdrop-blur-xl hover:bg-zinc-800/60 border border-zinc-700/50 hover:border-zinc-600 px-6 sm:px-8 py-3.5 sm:py-4 font-medium text-zinc-200 transition-all"
+                  className="inline-flex items-center justify-center rounded-lg bg-zinc-800/50 hover:bg-zinc-800/60 border border-zinc-700/50 hover:border-zinc-600 px-5 py-2.5 text-sm font-medium text-zinc-300 transition-all"
                 >
-                  See how it works
+                  How it works
                 </Link>
               )}
             </motion.div>
@@ -230,13 +165,13 @@ export default function Home() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.9, duration: 0.6 }}
-              className="flex flex-wrap items-center justify-center gap-4 sm:gap-8 text-xs sm:text-sm text-zinc-500 pt-6 sm:pt-8 px-2"
+              className="flex flex-wrap items-center justify-center gap-6 text-xs text-zinc-500 pt-12"
             >
               {[
-                { label: 'Live preview', delay: 0, icon: '\u26a1' },
-                { label: 'Point-and-click editing', delay: 0.1, icon: '\ud83c\udfaf' },
-                { label: 'Real React + Tailwind', delay: 0.2, icon: '\u269b\ufe0f' },
-                { label: 'Deploy or download', delay: 0.3 },
+                { label: 'Your GitHub', delay: 0 },
+                { label: 'Your deploy', delay: 0.1 },
+                { label: 'Your code', delay: 0.2 },
+                { label: 'No lock-in', delay: 0.3 },
               ].map((item, i) => (
                 <motion.div
                   key={item.label}
@@ -330,7 +265,7 @@ export default function Home() {
       </Section>
 
       {/* THE STACK */}
-      <Section id="stack" className="px-6 py-24 border-y border-zinc-900 bg-zinc-950/50 relative overflow-hidden">
+      <Section id="stack" className="px-6 py-16 border-y border-zinc-900 bg-zinc-950/50 relative overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(16,185,129,0.05),transparent_70%)]" />
         <div className="absolute inset-0 bg-gradient-to-b from-zinc-950/30 to-transparent" />
         
@@ -340,13 +275,13 @@ export default function Home() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
-            className="text-center mb-16"
+            className="text-center mb-10"
           >
-            <h2 className="text-4xl sm:text-5xl font-bold mb-4 text-white">
+            <h2 className="text-2xl sm:text-3xl font-bold mb-3 text-white">
               Real code. Not screenshots.
             </h2>
-            <p className="text-xl text-zinc-400 max-w-2xl mx-auto">
-              Every component is production-ready React + Tailwind. No magic, no mockups.
+            <p className="text-base text-zinc-400 max-w-2xl mx-auto">
+              Production-ready React + Tailwind. No magic, no mockups.
             </p>
           </motion.div>
 
@@ -381,17 +316,17 @@ export default function Home() {
       </Section>
 
       {/* HOW IT WORKS */}
-      <Section id="how-it-works" className="px-4 sm:px-6 py-24">
+      <Section id="how-it-works" className="px-4 sm:px-6 py-16">
         <div className="max-w-6xl mx-auto">
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
-            className="text-center mb-16"
+            className="text-center mb-10"
           >
-            <h2 className="text-4xl sm:text-5xl font-bold mb-4 text-white">From idea to live site in minutes</h2>
-            <p className="text-xl text-zinc-400">AI-powered builder. Real infrastructure. Zero DevOps.</p>
+            <h2 className="text-2xl sm:text-3xl font-bold mb-3 text-white">From idea to live site in minutes</h2>
+            <p className="text-base text-zinc-400">AI-assisted builder with real infrastructure</p>
           </motion.div>
 
           <div className="grid md:grid-cols-3 gap-8">
@@ -436,12 +371,12 @@ export default function Home() {
                     initial={{ scale: 0.8, opacity: 0 }}
                     whileInView={{ scale: 1, opacity: 1 }}
                     transition={{ delay: item.delay + 0.2, duration: 0.5 }}
-                    className="text-6xl font-bold text-zinc-800 mb-4 group-hover:text-zinc-700 transition-colors"
+                    className="text-4xl font-bold text-zinc-800 mb-3 group-hover:text-zinc-700 transition-colors"
                   >
                     {item.step}
                   </motion.div>
-                  <h3 className="text-2xl font-semibold text-white mb-3">{item.title}</h3>
-                  <p className="text-zinc-400 leading-relaxed">{item.copy}</p>
+                  <h3 className="text-lg font-semibold text-white mb-2">{item.title}</h3>
+                  <p className="text-sm text-zinc-400 leading-relaxed">{item.copy}</p>
                 </div>
               </motion.div>
             ))}
@@ -450,7 +385,7 @@ export default function Home() {
       </Section>
 
       {/* INFRASTRUCTURE */}
-      <Section className="px-4 sm:px-6 py-24 border-y border-zinc-900 bg-zinc-950 relative overflow-hidden">
+      <Section className="px-4 sm:px-6 py-16 border-y border-zinc-900 bg-zinc-950 relative overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(16,185,129,0.06),transparent_60%)]" />
         <div className="absolute inset-0 bg-gradient-to-b from-transparent via-zinc-950/50 to-transparent" />
         
@@ -460,13 +395,13 @@ export default function Home() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.6 }}
-            className="text-center mb-16"
+            className="text-center mb-10"
           >
-            <h2 className="text-4xl sm:text-5xl font-bold mb-4 text-white">
+            <h2 className="text-2xl sm:text-3xl font-bold mb-3 text-white">
               Real infrastructure. Not a toy.
             </h2>
-            <p className="text-xl text-zinc-400 max-w-3xl mx-auto">
-              Enterprise-grade deployment pipeline, secure authentication, managed database, and global CDN. We handle the DevOps so you don't have to.
+            <p className="text-base text-zinc-400 max-w-2xl mx-auto">
+              Enterprise-grade deployment, authentication, database, and CDN — all handled.
             </p>
           </motion.div>
 
@@ -546,7 +481,7 @@ export default function Home() {
       </Section>
 
       {/* FINAL CTA */}
-      <Section className="px-4 sm:px-6 py-20 sm:py-32 border-t border-zinc-900 relative overflow-hidden">
+      <Section className="px-4 sm:px-6 py-16 sm:py-20 border-t border-zinc-900 relative overflow-hidden">
         <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(16,185,129,0.08),transparent_70%)]" />
         <div className="absolute inset-0 bg-gradient-to-t from-zinc-950/80 via-transparent to-transparent" />
         
@@ -571,9 +506,9 @@ export default function Home() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.1, duration: 0.6 }}
-            className="text-3xl sm:text-4xl md:text-5xl font-bold mb-4 sm:mb-6 text-white"
+            className="text-2xl sm:text-3xl font-bold mb-3 text-white"
           >
-            Build your first section<br className="hidden sm:block" /><span className="sm:hidden"> </span>in under 60 seconds
+            Build your first section in under 60 seconds
           </motion.h2>
           
           <motion.p 
@@ -581,7 +516,7 @@ export default function Home() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ delay: 0.2, duration: 0.6 }}
-            className="text-lg sm:text-xl text-zinc-400 mb-8 sm:mb-10"
+            className="text-base text-zinc-400 mb-8"
           >
             No signup. No setup. Just describe what you want.
           </motion.p>
@@ -593,7 +528,7 @@ export default function Home() {
             transition={{ delay: 0.3, duration: 0.6 }}
             whileTap={{ scale: 0.95 }}
             onClick={triggerTransition}
-            className="group relative inline-flex items-center justify-center gap-2 sm:gap-3 px-8 sm:px-10 py-4 sm:py-5 bg-emerald-500/15 backdrop-blur-2xl border border-emerald-500/40 hover:bg-emerald-500/20 hover:border-emerald-500/50 text-white text-base sm:text-lg text-center rounded-xl font-semibold transition-all shadow-[0_0_25px_rgba(16,185,129,0.2)] overflow-hidden"
+            className="group relative inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-emerald-500/15 backdrop-blur-2xl border border-emerald-500/40 hover:bg-emerald-500/20 hover:border-emerald-500/50 text-white text-sm font-medium rounded-lg transition-all shadow-[0_0_15px_rgba(16,185,129,0.15)] overflow-hidden"
           >
             <div className="absolute inset-0 bg-gradient-to-br from-white/[0.08] via-transparent to-transparent rounded-xl pointer-events-none" />
             <motion.div
@@ -602,7 +537,7 @@ export default function Home() {
               transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
             />
             <span className="relative">Try the Demo</span>
-            <ArrowRight className="relative w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-1 transition-transform" />
+            <ArrowRight className="relative w-4 h-4 group-hover:translate-x-1 transition-transform" />
           </motion.button>
         </div>
       </Section>

@@ -75,6 +75,34 @@ export async function getSectionsByProjectId(projectId: string): Promise<DbSecti
 }
 
 /**
+ * Update section order for a project.
+ * Accepts an ordered list of section_id values (template section ids).
+ */
+export async function updateSectionOrderBySectionIds(
+  projectId: string,
+  orderedSectionIds: string[]
+): Promise<DbSection[]> {
+  if (!supabaseAdmin) return []
+  if (!Array.isArray(orderedSectionIds) || orderedSectionIds.length === 0) return []
+
+  const client = supabaseAdmin
+
+  // Update each section row. Small N, so simple fan-out is fine.
+  await Promise.all(
+    orderedSectionIds.map((sectionId, index) =>
+      client
+        .from('sections')
+        .update({ order_index: index })
+        .eq('project_id', projectId)
+        .eq('section_id', sectionId)
+    )
+  )
+
+  // Return fresh ordered state
+  return getSectionsByProjectId(projectId)
+}
+
+/**
  * Get a single section by ID
  */
 export async function getSectionById(id: string): Promise<DbSection | null> {

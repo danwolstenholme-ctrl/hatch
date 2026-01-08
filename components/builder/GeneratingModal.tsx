@@ -2,12 +2,11 @@
 
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Sparkles, Code2, Layers, Palette, Zap, Check, ArrowRight, Lightbulb } from 'lucide-react'
-import Pip from '../Pip'
+import { Sparkles, Code2, Layers, Palette } from 'lucide-react'
 
 // =============================================================================
-// GENERATING MODAL - Pip guides you through the ~1 minute wait
-// Informational, helpful, keeps users engaged
+// GENERATING MODAL - Clean, professional build progress
+// No emojis, no spam - just elegant feedback
 // =============================================================================
 
 interface GeneratingModalProps {
@@ -16,93 +15,44 @@ interface GeneratingModalProps {
   stageIndex: number
 }
 
-// What's happening behind the scenes
 const BUILD_STAGES = [
   { 
-    label: 'Analyzing your prompt', 
+    label: 'Analyzing', 
     icon: Sparkles,
-    detail: 'Understanding your vision and requirements'
+    detail: 'Understanding your requirements'
   },
   { 
-    label: 'Designing the structure', 
+    label: 'Designing', 
     icon: Layers,
-    detail: 'Planning component hierarchy and layout'
+    detail: 'Planning component structure'
   },
   { 
-    label: 'Writing the code', 
+    label: 'Writing', 
     icon: Code2,
-    detail: 'Generating production-ready React + Tailwind'
+    detail: 'Generating React + Tailwind'
   },
   { 
-    label: 'Adding polish', 
+    label: 'Polishing', 
     icon: Palette,
-    detail: 'Animations, accessibility, responsive design'
+    detail: 'Adding responsive design'
   },
-]
-
-// Pip's tips - rotates every few seconds
-const PIP_TIPS = [
-  { icon: '✨', text: 'Your code is 100% yours — export anytime, no lock-in' },
-  { icon: '🎯', text: 'Pro tip: "Make the headline bigger" works great after this' },
-  { icon: '⚡', text: 'Built with React + Tailwind. Production-ready from day one' },
-  { icon: '💡', text: 'Click any element after to refine just that part' },
-  { icon: '🎨', text: 'Try "darker" or "more contrast" if it feels flat' },
-  { icon: '🚀', text: 'Average user ships their first section in under 3 minutes' },
-  { icon: '🔮', text: 'The more specific your prompt, the better the result' },
-  { icon: '✏️', text: 'You can edit text directly in the preview after building' },
-]
-
-// Fun facts about what Claude is doing
-const CLAUDE_FACTS = [
-  'Sonnet 4.5 is analyzing design patterns from millions of websites',
-  'Writing semantic HTML with proper accessibility attributes',
-  'Optimizing for Core Web Vitals and performance',
-  'Adding Framer Motion for smooth micro-interactions',
-  'Ensuring responsive design across all breakpoints',
-  'Using your brand colors throughout the component',
 ]
 
 export default function GeneratingModal({ isOpen, stageIndex }: GeneratingModalProps) {
-  const [tipIndex, setTipIndex] = useState(0)
-  const [factIndex, setFactIndex] = useState(0)
   const [elapsedSeconds, setElapsedSeconds] = useState(0)
   
-  // Rotate tips every 4 seconds
   useEffect(() => {
-    if (!isOpen) {
-      setTipIndex(0)
-      setElapsedSeconds(0)
-      return
-    }
-    
-    const tipInterval = setInterval(() => {
-      setTipIndex(prev => (prev + 1) % PIP_TIPS.length)
-    }, 4000)
-    
-    const factInterval = setInterval(() => {
-      setFactIndex(prev => (prev + 1) % CLAUDE_FACTS.length)
-    }, 5000)
-    
+    if (!isOpen) return
+
     const timeInterval = setInterval(() => {
       setElapsedSeconds(prev => prev + 1)
     }, 1000)
-    
-    return () => {
-      clearInterval(tipInterval)
-      clearInterval(factInterval)
-      clearInterval(timeInterval)
-    }
+
+    return () => clearInterval(timeInterval)
   }, [isOpen])
   
   const currentStage = BUILD_STAGES[Math.min(stageIndex, BUILD_STAGES.length - 1)]
-  const progressPercent = Math.min(95, ((stageIndex + 1) / BUILD_STAGES.length) * 100 + (elapsedSeconds % 20))
-  const currentTip = PIP_TIPS[tipIndex]
-  
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60)
-    const secs = seconds % 60
-    return mins > 0 ? `${mins}m ${secs}s` : `${secs}s`
-  }
+  const progressPercent = Math.min(95, ((stageIndex) / BUILD_STAGES.length) * 100 + (elapsedSeconds * 1.5))
 
   return (
     <AnimatePresence>
@@ -111,145 +61,116 @@ export default function GeneratingModal({ isOpen, stageIndex }: GeneratingModalP
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="absolute inset-0 z-40 flex items-center justify-center bg-zinc-950/98 backdrop-blur-sm"
+          className="absolute inset-0 z-40 flex items-center justify-center"
         >
+          {/* Backdrop with emerald glow */}
+          <div className="absolute inset-0 bg-zinc-950/95 backdrop-blur-md" />
+          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(16,185,129,0.08),transparent_60%)]" />
+          
           <motion.div
             initial={{ scale: 0.95, opacity: 0, y: 20 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
-            exit={{ scale: 0.95, opacity: 0, y: 20 }}
-            transition={{ duration: 0.3 }}
-            className="w-full max-w-lg px-6"
+            exit={{ scale: 0.95, opacity: 0, y: 10 }}
+            transition={{ duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
+            className="relative w-full max-w-sm px-6"
           >
-            {/* Pip Header */}
-            <div className="flex items-center gap-4 mb-8">
-              <motion.div
-                animate={{ 
-                  y: [0, -4, 0],
-                  rotate: [0, 2, 0, -2, 0]
-                }}
-                transition={{ 
-                  duration: 3, 
-                  repeat: Infinity, 
-                  ease: "easeInOut" 
-                }}
-              >
-                <Pip size={48} animate={true} float={false} glow={true} />
-              </motion.div>
-              <div>
-                <h2 className="text-xl font-semibold text-white">Building your section</h2>
-                <p className="text-sm text-zinc-400">This usually takes about a minute</p>
-              </div>
-            </div>
-            
-            {/* Current Stage Card */}
-            <motion.div 
-              key={stageIndex}
-              initial={{ opacity: 0, x: -10 }}
-              animate={{ opacity: 1, x: 0 }}
-              className="bg-zinc-900/70 backdrop-blur-xl border border-zinc-800/50 rounded-2xl p-5 mb-6"
-            >
-              <div className="flex items-center gap-3 mb-3">
-                <motion.div 
-                  animate={{ rotate: [0, 360] }}
-                  transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-                  className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center"
+            {/* Main card */}
+            <div className="bg-zinc-900/70 backdrop-blur-xl border border-zinc-800/60 rounded-2xl p-6 shadow-2xl shadow-black/50">
+              {/* Subtle top glow */}
+              <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-emerald-500/30 to-transparent rounded-t-2xl" />
+              
+              {/* Animated icon */}
+              <div className="flex justify-center mb-6">
+                <motion.div
+                  animate={{ 
+                    scale: [1, 1.05, 1],
+                    opacity: [0.8, 1, 0.8]
+                  }}
+                  transition={{ 
+                    duration: 2, 
+                    repeat: Infinity, 
+                    ease: "easeInOut" 
+                  }}
+                  className="relative"
                 >
-                  <currentStage.icon className="w-5 h-5 text-emerald-400" />
+                  <div className="w-16 h-16 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center">
+                    <currentStage.icon className="w-7 h-7 text-emerald-400" />
+                  </div>
+                  {/* Pulse ring */}
+                  <motion.div
+                    animate={{ scale: [1, 1.4], opacity: [0.3, 0] }}
+                    transition={{ duration: 1.5, repeat: Infinity, ease: "easeOut" }}
+                    className="absolute inset-0 rounded-2xl border border-emerald-500/50"
+                  />
                 </motion.div>
-                <div className="flex-1">
-                  <p className="text-sm font-medium text-white">{currentStage.label}</p>
-                  <p className="text-xs text-zinc-500">{currentStage.detail}</p>
-                </div>
-                <span className="text-xs font-mono text-zinc-600">{formatTime(elapsedSeconds)}</span>
+              </div>
+              
+              {/* Stage label */}
+              <div className="text-center mb-6">
+                <AnimatePresence mode="wait">
+                  <motion.div
+                    key={stageIndex}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <h2 className="text-lg font-semibold text-white mb-1">
+                      {currentStage.label}
+                    </h2>
+                    <p className="text-sm text-zinc-500">
+                      {currentStage.detail}
+                    </p>
+                  </motion.div>
+                </AnimatePresence>
               </div>
               
               {/* Progress bar */}
-              <div className="h-1.5 rounded-full bg-zinc-800 overflow-hidden">
-                <motion.div
-                  initial={{ width: 0 }}
-                  animate={{ width: `${progressPercent}%` }}
-                  transition={{ duration: 0.5 }}
-                  className="h-full bg-gradient-to-r from-emerald-600 to-emerald-400 rounded-full"
-                />
+              <div className="mb-4">
+                <div className="h-1 rounded-full bg-zinc-800 overflow-hidden">
+                  <motion.div
+                    initial={{ width: 0 }}
+                    animate={{ width: `${progressPercent}%` }}
+                    transition={{ duration: 0.5, ease: "easeOut" }}
+                    className="h-full bg-gradient-to-r from-emerald-500 to-emerald-400 rounded-full"
+                  />
+                </div>
               </div>
               
-              {/* Stage indicators */}
-              <div className="flex items-center justify-between mt-3">
+              {/* Stage dots */}
+              <div className="flex items-center justify-center gap-3">
                 {BUILD_STAGES.map((stage, i) => (
-                  <div key={i} className="flex items-center gap-1.5">
-                    <div className={`w-2 h-2 rounded-full transition-colors ${
-                      i < stageIndex ? 'bg-emerald-500' :
-                      i === stageIndex ? 'bg-emerald-400 animate-pulse' :
-                      'bg-zinc-700'
-                    }`} />
-                    <span className={`text-[10px] hidden sm:block ${
-                      i <= stageIndex ? 'text-zinc-400' : 'text-zinc-600'
-                    }`}>
-                      {stage.label.split(' ')[0]}
-                    </span>
-                  </div>
+                  <motion.div
+                    key={i}
+                    initial={false}
+                    animate={{
+                      scale: i === stageIndex ? 1.2 : 1,
+                      backgroundColor: i < stageIndex 
+                        ? 'rgb(16, 185, 129)' 
+                        : i === stageIndex 
+                          ? 'rgb(52, 211, 153)' 
+                          : 'rgb(63, 63, 70)'
+                    }}
+                    className={`w-2 h-2 rounded-full ${
+                      i === stageIndex ? 'shadow-[0_0_8px_rgba(16,185,129,0.6)]' : ''
+                    }`}
+                  />
                 ))}
               </div>
-            </motion.div>
-            
-            {/* Claude fact */}
-            <motion.div 
-              className="bg-zinc-900/40 border border-zinc-800/30 rounded-xl p-4 mb-6"
-            >
-              <div className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded-lg bg-violet-500/10 border border-violet-500/30 flex items-center justify-center flex-shrink-0">
-                  <Zap className="w-4 h-4 text-violet-400" />
-                </div>
-                <div>
-                  <p className="text-[10px] uppercase tracking-wider text-zinc-600 mb-1">Claude Sonnet 4.5</p>
-                  <AnimatePresence mode="wait">
-                    <motion.p
-                      key={factIndex}
-                      initial={{ opacity: 0, y: 5 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -5 }}
-                      className="text-xs text-zinc-400 leading-relaxed"
-                    >
-                      {CLAUDE_FACTS[factIndex]}
-                    </motion.p>
-                  </AnimatePresence>
-                </div>
-              </div>
-            </motion.div>
-            
-            {/* Pip's Tip */}
-            <motion.div 
-              className="bg-emerald-500/5 border border-emerald-500/20 rounded-xl p-4"
-            >
-              <div className="flex items-start gap-3">
-                <div className="w-8 h-8 rounded-lg bg-emerald-500/10 flex items-center justify-center flex-shrink-0">
-                  <Lightbulb className="w-4 h-4 text-emerald-400" />
-                </div>
-                <div className="flex-1">
-                  <p className="text-[10px] uppercase tracking-wider text-emerald-500/70 mb-1">Pip&apos;s Tip</p>
-                  <AnimatePresence mode="wait">
-                    <motion.div
-                      key={tipIndex}
-                      initial={{ opacity: 0, y: 5 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: -5 }}
-                      className="flex items-start gap-2"
-                    >
-                      <span className="text-sm">{currentTip.icon}</span>
-                      <p className="text-sm text-zinc-300 leading-relaxed">{currentTip.text}</p>
-                    </motion.div>
-                  </AnimatePresence>
-                </div>
-              </div>
-            </motion.div>
-            
-            {/* What happens next */}
-            <div className="mt-6 flex items-center justify-center gap-2 text-xs text-zinc-600">
-              <Check className="w-3.5 h-3.5" />
-              <span>Live preview appears when ready</span>
-              <ArrowRight className="w-3.5 h-3.5" />
-              <span>Then refine with Pip</span>
             </div>
+            
+            {/* Timer - subtle */}
+            <motion.p 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.5 }}
+              className="text-center text-xs text-zinc-600 mt-4"
+            >
+              {elapsedSeconds < 60 
+                ? `${elapsedSeconds}s` 
+                : `${Math.floor(elapsedSeconds / 60)}m ${elapsedSeconds % 60}s`
+              }
+            </motion.p>
           </motion.div>
         </motion.div>
       )}

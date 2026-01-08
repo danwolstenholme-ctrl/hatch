@@ -18,8 +18,11 @@ export function assembleSectionsIntoCode(sections: DbSection[]): string {
     return ''
   }
 
-  // Combine section codes with comments for clarity
-  const assembledCode = completedSections
+  const header = completedSections.find(s => s.section_id === 'header')
+  const footer = completedSections.find(s => s.section_id === 'footer')
+
+  const bodySections = completedSections
+    .filter(s => s.section_id !== 'header' && s.section_id !== 'footer')
     .map(section => {
       return `{/* ========== ${section.section_id.toUpperCase()} ========== */}\n${section.code}`
     })
@@ -32,9 +35,25 @@ import { motion } from 'framer-motion'
 
 export default function GeneratedPage() {
   return (
-    <main className="min-h-screen bg-zinc-950 text-white">
-      ${assembledCode}
-    </main>
+    <div className="min-h-screen bg-zinc-950 text-white flex flex-col">
+      {${header ? 'true' : 'false'} ? (
+        <header className="shrink-0">
+          {/* ========== HEADER ========== */}
+          ${header ? header.code : ''}
+        </header>
+      ) : null}
+
+      <main className="flex-1">
+        ${bodySections}
+      </main>
+
+      {${footer ? 'true' : 'false'} ? (
+        <footer className="shrink-0">
+          {/* ========== FOOTER ========== */}
+          ${footer ? footer.code : ''}
+        </footer>
+      ) : null}
+    </div>
   )
 }
 `

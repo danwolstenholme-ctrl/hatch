@@ -5,7 +5,7 @@ export interface ChronoEvent {
   timestamp: number;
   type: EventType;
   sectionId?: string;
-  details: any;
+  details: Record<string, unknown>;
 }
 
 export interface SessionDNA {
@@ -55,7 +55,7 @@ class Chronosphere {
     }
   }
 
-  public log(type: EventType, details: any, sectionId?: string) {
+  public log(type: EventType, details: Record<string, unknown>, sectionId?: string) {
     const event: ChronoEvent = {
       timestamp: Date.now(),
       type,
@@ -72,7 +72,10 @@ class Chronosphere {
     // Update patterns
     const events = this.dna.events;
     this.dna.patterns.refinementsCount = events.filter(e => e.type === 'refinement').length;
-    this.dna.patterns.regenerationsCount = events.filter(e => e.type === 'generation' && e.details.isRegeneration).length;
+    const isRegenerationEvent = (event: ChronoEvent) => {
+      return event.type === 'generation' && event.details.isRegeneration === true
+    }
+    this.dna.patterns.regenerationsCount = events.filter(isRegenerationEvent).length;
     
     // Calculate average time per section (rough estimate based on acceptance events)
     const acceptances = events.filter(e => e.type === 'acceptance');

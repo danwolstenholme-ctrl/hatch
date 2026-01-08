@@ -12,7 +12,7 @@ import { getTemplateById, Section } from '@/lib/templates'
 function getProjectLimit(tier: string): number {
   if (tier === 'singularity' || tier === 'visionary') return Infinity
   if (tier === 'architect') return 3
-  return 3 // Free tier gets 3 projects
+  return 1 // Free tier gets 1 project
 }
 
 // =============================================================================
@@ -35,7 +35,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Server-side project limit check
-    const accountSubscription = user?.publicMetadata?.accountSubscription as any
+    const accountSubscription = user?.publicMetadata?.accountSubscription as { tier?: string } | undefined
     const tier = accountSubscription?.tier || 'free'
     const limit = getProjectLimit(tier)
     

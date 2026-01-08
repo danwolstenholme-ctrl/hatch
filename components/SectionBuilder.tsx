@@ -3,132 +3,40 @@
 /* eslint-disable react/no-unescaped-entities */
 
 import { useState, useRef, useEffect } from 'react'
-import Image from 'next/image'
 import { motion, AnimatePresence } from 'framer-motion'
+import Image from 'next/image'
 import { 
-  Sparkles, 
-  Wand2, 
-  Send, 
   RefreshCw, 
-  Check, 
-  MessageSquare, 
-  Zap,
-  Cpu,
-  Hammer,
-  Terminal,
-  Edit3,
-  Bot,
-  Layers,
-  ChevronRight,
-  Play,
-  CheckCircle2,
-  X,
-  MousePointer2,
-  Trash2,
-  CopyPlus,
-  Info,
-  Eye,
   ArrowRight,
-  Lock,
-  Settings,
-  Palette,
-  Image as ImageIcon,
-  Code2 as Code,
-  Smartphone,
-  Tablet,
+  AlertCircle,
+  Layers,
   Monitor,
-  Command,
-  AlertCircle
+  Tablet,
+  Smartphone,
+  Settings,
+  Sparkles,
+  Cpu,
+  Palette,
+  ImageIcon,
+  Code,
+  Zap,
+  Lock
 } from 'lucide-react'
 import GeneratingModal from './builder/GeneratingModal'
-import GuestPromptModal from './GuestPromptModal'
-import Pip from './Pip'
-import Button from './singularity/Button'
+import { LogoMark } from './Logo'
 
 // =============================================================================
-// STREAMING CODE EFFECT - Fake code animation for loading state
+// INLINE PROMPT INPUT - Clean, minimal input for section prompts
 // =============================================================================
-const FAKE_CODE_LINES = [
-  { text: "'use client'", color: 'text-purple-400' },
-  { text: '', color: '' },
-  { text: "import { useState } from 'react'", color: 'text-blue-400' },
-  { text: "import { motion } from 'framer-motion'", color: 'text-blue-400' },
-  { text: "import { Check, Star, Zap } from 'lucide-react'", color: 'text-blue-400' },
-  { text: '', color: '' },
-  { text: 'export default function PricingSection() {', color: 'text-yellow-400' },
-  { text: '  const [selected, setSelected] = useState(1)', color: 'text-zinc-300' },
-  { text: '', color: '' },
-  { text: '  const tiers = [', color: 'text-zinc-300' },
-  { text: "    { name: 'Starter', price: 19, features: [...] },", color: 'text-emerald-400' },
-  { text: "    { name: 'Pro', price: 49, popular: true },", color: 'text-emerald-400' },
-  { text: "    { name: 'Enterprise', price: 99 },", color: 'text-emerald-400' },
-  { text: '  ]', color: 'text-zinc-300' },
-  { text: '', color: '' },
-  { text: '  return (', color: 'text-zinc-300' },
-  { text: '    <section className="py-24 bg-gradient-to-b">', color: 'text-green-400' },
-  { text: '      <div className="max-w-6xl mx-auto px-6">', color: 'text-green-400' },
-  { text: '        <motion.h2', color: 'text-yellow-400' },
-  { text: '          initial={{ opacity: 0, y: 20 }}', color: 'text-orange-400' },
-  { text: '          animate={{ opacity: 1, y: 0 }}', color: 'text-orange-400' },
-  { text: '          className="text-4xl font-bold text-center"', color: 'text-green-400' },
-  { text: '        >', color: 'text-yellow-400' },
-  { text: '          Choose Your Plan', color: 'text-zinc-100' },
-  { text: '        </motion.h2>', color: 'text-yellow-400' },
-  { text: '', color: '' },
-  { text: '        <div className="grid md:grid-cols-3 gap-8 mt-16">', color: 'text-green-400' },
-  { text: '          {tiers.map((tier, i) => (', color: 'text-zinc-300' },
-  { text: '            <motion.div', color: 'text-yellow-400' },
-  { text: '              key={tier.name}', color: 'text-orange-400' },
-  { text: '              whileHover={{ scale: 1.02 }}', color: 'text-orange-400' },
-  { text: '              className={`rounded-2xl p-8 ${', color: 'text-green-400' },
-  { text: "                tier.popular ? 'bg-emerald-500' : 'bg-zinc-900'", color: 'text-emerald-400' },
-  { text: '              }`}', color: 'text-green-400' },
-  { text: '            >', color: 'text-yellow-400' },
-]
-
-function StreamingCodeEffect() {
-  const [visibleLines, setVisibleLines] = useState(0)
-  
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setVisibleLines(prev => {
-        if (prev >= FAKE_CODE_LINES.length) {
-          return 0 // Reset and loop
-        }
-        return prev + 1
-      })
-    }, 400) // New line every 400ms
-    
-    return () => clearInterval(interval)
-  }, [])
-  
-  return (
-    <div className="text-[11px] leading-5 font-mono bg-black/50 p-4 rounded-lg border border-white/5 backdrop-blur-sm">
-      {FAKE_CODE_LINES.slice(0, visibleLines).map((line, i) => (
-        <motion.div
-          key={i}
-          initial={{ opacity: 0, x: -5 }}
-          animate={{ opacity: 1, x: 0 }}
-          className={line.color || 'text-zinc-500'}
-        >
-          {line.text || '\u00A0'}
-        </motion.div>
-      ))}
-      {visibleLines < FAKE_CODE_LINES.length && (
-        <motion.span
-          animate={{ opacity: [1, 0] }}
-          transition={{ duration: 0.5, repeat: Infinity }}
-          className="inline-block w-2 h-4 bg-emerald-500 ml-0.5"
-        />
-      )}
-    </div>
-  )
-}
-
-// =============================================================================
-// INLINE PROMPT INPUT - Split view: prompt left, preview right
-// =============================================================================
-function InlinePromptInput({ onSubmit }: { onSubmit: (prompt: string) => void }) {
+function InlinePromptInput({ 
+  onSubmit, 
+  sectionName = 'Section',
+  placeholder = 'Describe what you want...'
+}: { 
+  onSubmit: (prompt: string) => void
+  sectionName?: string
+  placeholder?: string 
+}) {
   const [prompt, setPrompt] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
 
@@ -137,153 +45,58 @@ function InlinePromptInput({ onSubmit }: { onSubmit: (prompt: string) => void })
   const handleSubmit = () => {
     if (!isValid) return
     setIsSubmitting(true)
-    setTimeout(() => {
-      onSubmit(prompt)
-    }, 300)
+    setTimeout(() => onSubmit(prompt), 300)
   }
 
   return (
-    <div className="h-full flex flex-col lg:flex-row bg-zinc-950">
-      {/* Left Panel - Prompt Input */}
-      <div className="flex-1 lg:max-w-xl xl:max-w-2xl flex flex-col border-r border-zinc-800/50 overflow-auto">
-        <div className="flex-1 p-4 sm:p-6 lg:p-8 flex flex-col">
-          {/* Header */}
-          <div className="mb-6">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-center">
-                <Image src="/icon.svg" alt="HatchIt" width={24} height={24} />
-              </div>
-              <div>
-                <p className="text-[10px] uppercase tracking-[0.3em] text-zinc-600">Builder</p>
-                <h1 className="text-lg sm:text-xl font-semibold text-white">What are we building?</h1>
-              </div>
-            </div>
-            <p className="text-sm text-zinc-400">
-              Describe your component or page. Be specific about colors, style, and purpose.
-            </p>
-          </div>
-
-          {/* Input Area */}
-          <div className="flex-1 flex flex-col">
-            <div className="flex-1 bg-zinc-900/50 border border-zinc-800/60 rounded-xl overflow-hidden transition-colors focus-within:border-emerald-500/30">
-              <textarea
-                value={prompt}
-                onChange={(e) => setPrompt(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' && !e.shiftKey && isValid) {
-                    e.preventDefault()
-                    handleSubmit()
-                  }
-                }}
-                placeholder="e.g. A landing page for a premium fitness app called 'Elevate' with dark theme, neon accents, pricing cards, and testimonials..."
-                className="w-full h-full min-h-[120px] bg-transparent p-4 text-sm text-white placeholder-zinc-600 resize-none focus:outline-none"
-                autoFocus
-              />
-            </div>
-
-            {/* Tips */}
-            {!prompt.trim() && (
-              <div className="mt-4 space-y-2 text-xs text-zinc-500">
-                <p className="text-emerald-400 font-medium">💡 Tips:</p>
-                <ul className="space-y-1 text-zinc-500">
-                  <li>• Mention colors, style, and purpose</li>
-                  <li>• Include your brand name</li>
-                  <li>• Describe sections: hero, pricing, etc.</li>
-                </ul>
-              </div>
-            )}
-
-            {/* Submit */}
-            <div className="mt-4 flex items-center justify-between">
-              <span className="text-xs text-zinc-600">
-                {!isValid && prompt.trim().length > 0 && `${10 - prompt.trim().length} more chars`}
-              </span>
-              <motion.button
-                whileTap={{ scale: isValid && !isSubmitting ? 0.97 : 1 }}
-                onClick={handleSubmit}
-                disabled={!isValid || isSubmitting}
-                className={`relative inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-sm font-semibold transition-all overflow-hidden
-                  ${isValid && !isSubmitting
-                    ? 'bg-emerald-500/15 border border-emerald-500/40 text-white shadow-[0_0_20px_rgba(16,185,129,0.25)]'
-                    : 'bg-zinc-900/60 border border-zinc-800 text-zinc-500 cursor-not-allowed'}`}
-              >
-                {isValid && !isSubmitting && (
-                  <motion.span
-                    className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/15 to-white/0"
-                    animate={{ x: ['-200%', '200%'] }}
-                    transition={{ duration: 3, repeat: Infinity, ease: 'linear' }}
-                  />
-                )}
-                {isSubmitting ? (
-                  <>
-                    <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    <span>Building...</span>
-                  </>
-                ) : (
-                  <>
-                    <span>Generate</span>
-                    <ArrowRight className="w-4 h-4" />
-                  </>
-                )}
-              </motion.button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Right Panel - Preview Area */}
-      <div className="hidden lg:flex flex-1 flex-col bg-zinc-900/30 relative overflow-hidden">
-        {/* Top bar */}
-        <div className="h-10 border-b border-zinc-800/50 bg-zinc-900/50 flex items-center justify-between px-4">
-          <div className="flex items-center gap-2">
-            <div className="flex items-center gap-1 px-2 py-1 bg-zinc-800/50 rounded text-[10px] text-zinc-400">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500/50" />
-              Preview
-            </div>
-          </div>
-          <div className="flex items-center gap-1 bg-zinc-800/30 rounded p-0.5">
-            <button title="Mobile" className="p-1 rounded text-zinc-500"><Smartphone className="w-3.5 h-3.5" /></button>
-            <button title="Tablet" className="p-1 rounded text-zinc-500"><Tablet className="w-3.5 h-3.5" /></button>
-            <button title="Desktop" className="p-1 rounded bg-zinc-700/50 text-zinc-300"><Monitor className="w-3.5 h-3.5" /></button>
-          </div>
-        </div>
-
-        {/* Preview content - streaming code effect */}
-        <div className="flex-1 relative">
-          <div className="absolute inset-0 p-6">
-            <StreamingCodeEffect />
+    <div className="h-full flex flex-col bg-zinc-950">
+      {/* Main content area - compact input at bottom */}
+      <div className="flex-1 flex items-end justify-center p-4 pb-6">
+        <div className="w-full max-w-2xl">
+          {/* Section context */}
+          <div className="mb-3 text-center">
+            <p className="text-xs text-zinc-500 uppercase tracking-wider">Building</p>
+            <p className="text-sm text-zinc-300 font-medium">{sectionName}</p>
           </div>
           
-          {/* Overlay with message */}
-          <div className="absolute inset-0 flex items-center justify-center bg-zinc-950/60 backdrop-blur-sm">
-            <div className="text-center px-6">
-              <motion.div
-                animate={{ y: [0, -5, 0] }}
-                transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-                className="w-16 h-16 mx-auto mb-4"
-              >
-                <Image src="/icon.svg" alt="HatchIt" width={64} height={64} className="opacity-60" />
-              </motion.div>
-              <p className="text-sm text-zinc-400 mb-1">Your React component will appear here</p>
-              <p className="text-xs text-zinc-600">Live preview • Edit text directly • Refine with AI</p>
-            </div>
+          {/* Input bar - inline style like chat */}
+          <div className="relative">
+            <input
+              type="text"
+              value={prompt}
+              onChange={(e) => setPrompt(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && isValid) {
+                  e.preventDefault()
+                  handleSubmit()
+                }
+              }}
+              placeholder={placeholder}
+              className="w-full bg-zinc-900/60 border border-zinc-800 rounded-xl px-4 py-3 pr-24 text-sm text-zinc-200 placeholder-zinc-500 focus:outline-none focus:border-emerald-500/40 transition-all"
+              autoFocus
+            />
+            <button
+              onClick={handleSubmit}
+              disabled={!isValid || isSubmitting}
+              className={`absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition-all
+                ${isValid && !isSubmitting
+                  ? 'bg-emerald-500/15 border border-emerald-500/40 hover:bg-emerald-500/20 text-white'
+                  : 'bg-zinc-800/50 border border-zinc-700/50 text-zinc-500 cursor-not-allowed'}`}
+            >
+              {isSubmitting ? '...' : 'Build'}
+              {!isSubmitting && <ArrowRight className="w-3 h-3" />}
+            </button>
           </div>
-        </div>
-
-        {/* Feature badges */}
-        <div className="px-4 py-3 border-t border-zinc-800/50 bg-zinc-900/30 flex items-center justify-center gap-4 text-[10px] text-zinc-500">
-          <span className="flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-            Live preview
-          </span>
-          <span className="flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-            Production React
-          </span>
-          <span className="flex items-center gap-1.5">
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-            One-click deploy
-          </span>
+          
+          {/* Tech stack indicator */}
+          <div className="mt-2 flex items-center justify-center gap-2 text-[10px] text-zinc-600">
+            <span className="w-1 h-1 rounded-full bg-emerald-500/60" />
+            <span>Claude Sonnet 4.5</span>
+            <span className="text-zinc-700">·</span>
+            <span>React 19</span>
+            <span className="text-zinc-700">·</span>
+            <span>Tailwind 4</span>
+          </div>
         </div>
       </div>
     </div>
@@ -292,10 +105,8 @@ function InlinePromptInput({ onSubmit }: { onSubmit: (prompt: string) => void })
 
 import { Section } from '@/lib/templates'
 import { DbSection, DbBrandConfig } from '@/lib/supabase'
-import { SectionCompleteIndicator } from './SectionProgress'
 import SectionPreview from './SectionPreview'
 import { useSubscription } from '@/contexts/SubscriptionContext'
-import BuildProgressDisplay from './BuildProgressDisplay'
 import { chronosphere } from '@/lib/chronosphere'
 import { buildProgress } from '@/lib/build-progress'
 import { useRouter } from 'next/navigation'
@@ -336,135 +147,9 @@ const unwrapCodePayload = (payload: unknown): string => {
   return ''
 }
 
-function GuestRefineBar({
-  refinePrompt,
-  setRefinePrompt,
-  isUserRefining,
-  isGuestRefineLocked,
-  handleUserRefine,
-  goToSignUp,
-  reasoning,
-  refinementChanges,
-}: {
-  refinePrompt: string
-  setRefinePrompt: (v: string) => void
-  isUserRefining: boolean
-  isGuestRefineLocked: boolean
-  handleUserRefine: () => void
-  goToSignUp: () => void
-  reasoning: string
-  refinementChanges: string[]
-}) {
-  const [isFocused, setIsFocused] = useState(false)
-  const [promptIndex, setPromptIndex] = useState(0)
-  
-  // Cycle through prompts when focused
-  useEffect(() => {
-    if (!isFocused) return
-    const interval = setInterval(() => {
-      setPromptIndex(prev => (prev + 1) % REFINE_PROMPTS.length)
-    }, 2500)
-    return () => clearInterval(interval)
-  }, [isFocused])
-  
-  // Determine what message to show
-  const getMessage = () => {
-    if (isGuestRefineLocked) {
-      return { prefix: "Limit reached.", text: "Sign up to keep refining." }
-    }
-    if (refinementChanges.length > 0) {
-      return { prefix: "Done.", text: refinementChanges[refinementChanges.length - 1] }
-    }
-    if (reasoning) {
-      const short = reasoning.length > 60 ? reasoning.slice(0, 60) + '...' : reasoning
-      return { prefix: "Built.", text: short }
-    }
-    return { prefix: "Ready.", text: "Click below to refine this section." }
-  }
-  
-  const message = getMessage()
-  
-  return (
-    <div className="space-y-3">
-      {/* AI Message - subtle presence */}
-      <motion.div
-        initial={{ opacity: 0, y: 5 }}
-        animate={{ opacity: 1, y: 0 }}
-        key={refinementChanges.length}
-        className="flex items-center gap-2 sm:gap-2.5 px-1"
-      >
-        <motion.div 
-          className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center flex-shrink-0"
-          animate={{ scale: [1, 1.1, 1], opacity: [0.8, 1, 0.8] }}
-          transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
-        >
-          <Sparkles className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-emerald-400" />
-        </motion.div>
-        <AnimatePresence mode="wait">
-          <motion.p
-            key={message.text}
-            initial={{ opacity: 0, x: -5 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: 5 }}
-            className="text-xs sm:text-sm"
-          >
-            <span className="text-emerald-400 font-medium">{message.prefix}</span>{' '}
-            <span className="text-zinc-400">{message.text}</span>
-          </motion.p>
-        </AnimatePresence>
-      </motion.div>
-
-      {/* Input Row - Premium Glass */}
-      <div className="flex items-center gap-2 sm:gap-3">
-        {/* Main Input Container */}
-        <div className="relative flex-1 group">
-          {/* Input wrapper */}
-          <div className="relative flex items-center bg-zinc-900/50 border border-zinc-800/50 rounded-lg sm:rounded-xl overflow-hidden transition-all duration-300 focus-within:border-emerald-500/30">
-            <input
-              type="text"
-              value={refinePrompt}
-              onChange={(e) => setRefinePrompt(e.target.value)}
-              onFocus={() => setIsFocused(true)}
-              onBlur={() => setIsFocused(false)}
-              onKeyDown={(e) => e.key === 'Enter' && refinePrompt.trim() && !isGuestRefineLocked && handleUserRefine()}
-              disabled={isUserRefining || isGuestRefineLocked}
-              placeholder={isFocused ? REFINE_PROMPTS[promptIndex] : "What would you change?"}
-              className="flex-1 bg-transparent px-3 py-2.5 sm:px-4 sm:py-3.5 text-xs sm:text-sm text-zinc-200 placeholder-zinc-500 focus:outline-none disabled:opacity-50"
-            />
-            <button
-              onClick={handleUserRefine}
-              disabled={!refinePrompt.trim() || isUserRefining || isGuestRefineLocked}
-              className="relative px-3 py-2.5 sm:px-5 sm:py-3.5 bg-zinc-900/50 hover:bg-zinc-800/50 border-l border-zinc-800/50 text-zinc-300 hover:text-zinc-100 text-xs sm:text-sm font-medium transition-all duration-200 disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-1.5 sm:gap-2"
-            >
-              {isUserRefining ? (
-                <RefreshCw className="w-3.5 h-3.5 sm:w-4 sm:h-4 animate-spin text-emerald-400" />
-              ) : (
-                <>
-                  <Wand2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-emerald-400" />
-                  <span>Refine</span>
-                </>
-              )}
-            </button>
-          </div>
-        </div>
-        
-        {/* Save CTA - Sign up button */}
-        <button
-          onClick={() => goToSignUp()}
-          className="group relative flex-shrink-0 px-4 py-2.5 sm:px-6 sm:py-3.5 rounded-lg sm:rounded-xl overflow-hidden transition-all duration-300"
-        >
-          {/* Button glass background */}
-          <div className="absolute inset-0 bg-emerald-500/15 border border-emerald-500/30 rounded-lg sm:rounded-xl transition-all duration-300 group-hover:bg-emerald-500/25 group-hover:border-emerald-500/40" />
-          <span className="relative z-10 text-zinc-100 text-xs sm:text-sm font-semibold">Save<span className="hidden sm:inline"> & Continue</span></span>
-        </button>
-      </div>
-    </div>
-  )
-}
-
 // =============================================================================
 // AUTH REFINE BAR - For logged-in users
-// Shows refine input + Next Section button (user controls when to move on)
+// Refine input + Next Section button
 // =============================================================================
 function AuthRefineBar({
   refinePrompt,
@@ -473,14 +158,6 @@ function AuthRefineBar({
   handleUserRefine,
   onNextSection,
   isLastSection,
-  reasoning,
-  refinementChanges,
-  showPipChat,
-  setShowPipChat,
-  pipMessages,
-  sendPipMessage,
-  isPipLoading,
-  selectedElement,
 }: {
   refinePrompt: string
   setRefinePrompt: (v: string) => void
@@ -488,93 +165,54 @@ function AuthRefineBar({
   handleUserRefine: () => void
   onNextSection: () => void
   isLastSection: boolean
-  reasoning: string
-  refinementChanges: string[]
-  showPipChat?: boolean
-  setShowPipChat?: (v: boolean) => void
-  pipMessages?: { role: 'user' | 'assistant'; content: string }[]
-  sendPipMessage?: (msg: string) => void
-  isPipLoading?: boolean
-  selectedElement?: { tagName: string; text: string; className: string } | null
 }) {
-  const [isFocused, setIsFocused] = useState(false)
-  const [promptIndex, setPromptIndex] = useState(0)
-  
-  useEffect(() => {
-    if (!isFocused) return
-    const interval = setInterval(() => {
-      setPromptIndex(prev => (prev + 1) % REFINE_PROMPTS.length)
-    }, 2500)
-    return () => clearInterval(interval)
-  }, [isFocused])
-  
   return (
-    <div className="space-y-2">
-      {/* Single-row compact refine bar */}
-      <div className="flex items-center gap-2">
-        {/* Pip indicator - minimal */}
+    <div className="flex items-center gap-2">
+      {/* Input with glass styling */}
+      <div className="relative flex-1">
         <motion.div 
-          className="flex-shrink-0 w-6 h-6 flex items-center justify-center"
-          animate={{ scale: [1, 1.05, 1] }}
-          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+          initial={false}
+          animate={{ 
+            borderColor: refinePrompt.trim() ? 'rgba(16, 185, 129, 0.3)' : 'rgba(63, 63, 70, 0.5)'
+          }}
+          className="flex items-center bg-zinc-900/60 backdrop-blur-sm border rounded-xl overflow-hidden transition-all focus-within:border-emerald-500/40 focus-within:shadow-[0_0_15px_rgba(16,185,129,0.1)]"
         >
-          <Pip size={18} animate={true} float={false} glow={true} />
+          <motion.div 
+            animate={{ opacity: [0.5, 1, 0.5] }}
+            transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+            className="pl-4 text-emerald-500"
+          >
+            <Sparkles className="w-4 h-4" />
+          </motion.div>
+          <input
+            type="text"
+            value={refinePrompt}
+            onChange={(e) => setRefinePrompt(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && refinePrompt.trim() && handleUserRefine()}
+            disabled={isUserRefining}
+            placeholder="What should change?"
+            className="flex-1 bg-transparent px-3 py-3 text-sm text-zinc-200 placeholder-zinc-500 focus:outline-none disabled:opacity-50"
+          />
+          <button
+            onClick={handleUserRefine}
+            disabled={!refinePrompt.trim() || isUserRefining}
+            className="px-5 py-3 bg-zinc-800/80 hover:bg-zinc-700/80 border-l border-zinc-700/50 text-zinc-300 text-sm font-medium transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+          >
+            {isUserRefining ? <RefreshCw className="w-4 h-4 animate-spin" /> : 'Refine'}
+          </button>
         </motion.div>
-        
-        {/* Input */}
-        <div className="relative flex-1">
-          <div className="flex items-center bg-zinc-950/50 border border-zinc-700/50 rounded-lg overflow-hidden transition-all duration-200 focus-within:border-emerald-500/40">
-            <input
-              type="text"
-              value={refinePrompt}
-              onChange={(e) => setRefinePrompt(e.target.value)}
-              onFocus={() => setIsFocused(true)}
-              onBlur={() => setIsFocused(false)}
-              onKeyDown={(e) => e.key === 'Enter' && refinePrompt.trim() && handleUserRefine()}
-              disabled={isUserRefining}
-              placeholder={isFocused ? REFINE_PROMPTS[promptIndex] : "What would you change?"}
-              className="flex-1 bg-transparent px-3 py-2.5 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none disabled:opacity-50"
-            />
-            <button
-              onClick={handleUserRefine}
-              disabled={!refinePrompt.trim() || isUserRefining}
-              className="px-4 py-2.5 bg-emerald-500/10 hover:bg-emerald-500/20 border-l border-zinc-700/50 text-emerald-400 text-xs font-semibold transition-colors disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-1.5"
-            >
-              {isUserRefining ? (
-                <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-              ) : (
-                <>
-                  <Wand2 className="w-3.5 h-3.5" />
-                  <span>Refine</span>
-                </>
-              )}
-            </button>
-          </div>
-        </div>
-        
-        {/* Next Section button */}
-        <button
-          onClick={onNextSection}
-          className="flex-shrink-0 px-4 py-2.5 rounded-lg bg-emerald-500/15 border border-emerald-500/40 hover:bg-emerald-500/25 text-emerald-400 text-xs font-semibold transition-all flex items-center gap-1.5"
-        >
-          {isLastSection ? 'Finish' : 'Next'}
-          <ArrowRight className="w-3.5 h-3.5" />
-        </button>
       </div>
       
-      {/* Quick suggestions - inline, subtle */}
-      <div className="flex items-center gap-3 px-1">
-        <span className="text-[10px] text-zinc-500">Try:</span>
-        {PIP_SUGGESTIONS.slice(0, 4).map((sug, i) => (
-          <button
-            key={i}
-            onClick={() => setRefinePrompt(sug)}
-            className="text-[10px] text-zinc-400 hover:text-emerald-400 transition-colors"
-          >
-            {sug}
-          </button>
-        ))}
-      </div>
+      {/* Next Section button */}
+      <motion.button
+        whileHover={{ scale: 1.02 }}
+        whileTap={{ scale: 0.98 }}
+        onClick={onNextSection}
+        className="flex-shrink-0 px-5 py-3 rounded-xl bg-emerald-500/15 border border-emerald-500/40 hover:bg-emerald-500/20 hover:border-emerald-500/50 text-white text-sm font-medium transition-all shadow-[0_0_15px_rgba(16,185,129,0.15)] flex items-center gap-2"
+      >
+        {isLastSection ? 'Finish' : 'Next'}
+        <ArrowRight className="w-4 h-4" />
+      </motion.button>
     </div>
   )
 }
@@ -582,25 +220,7 @@ function AuthRefineBar({
 // =============================================================================
 // =============================================================================
 // COMMAND BAR - The main builder interface
-// 3 AIs: Builder (quiet, does the work), Healer (auto-fixes), Pip (refiner, interactive)
 // =============================================================================
-const DEMO_PROMPTS = [
-  "A SaaS landing page for a project management tool",
-  "A portfolio site for a UX designer",
-  "A startup landing page with waitlist signup",
-  "A modern agency website with dark theme",
-  "A product launch page with countdown timer",
-]
-
-// Pip's contextual suggestions based on what's been built
-const PIP_SUGGESTIONS = [
-  "Make it bolder",
-  "Add more contrast",
-  "Bigger headline",
-  "More whitespace",
-  "Add a testimonial",
-  "Make CTA pop more",
-]
 
 function DemoCommandBar({
   stage,
@@ -613,13 +233,6 @@ function DemoCommandBar({
   handleUserRefine,
   goToSignUp,
   reasoning,
-  refinementChanges,
-  showPipChat,
-  setShowPipChat,
-  pipMessages,
-  sendPipMessage,
-  isPipLoading,
-  selectedElement,
 }: {
   stage: BuildStage
   prompt: string
@@ -631,161 +244,64 @@ function DemoCommandBar({
   handleUserRefine: () => void
   goToSignUp: () => void
   reasoning: string
-  refinementChanges: string[]
-  showPipChat?: boolean
-  setShowPipChat?: (v: boolean) => void
-  pipMessages?: { role: 'user' | 'assistant'; content: string }[]
-  sendPipMessage?: (msg: string) => void
-  isPipLoading?: boolean
-  selectedElement?: { tagName: string; text: string; className: string } | null
 }) {
-  const [isFocused, setIsFocused] = useState(false)
-  const [promptIndex, setPromptIndex] = useState(0)
-  const [pipInput, setPipInput] = useState('')
-  const pipChatRef = useRef<HTMLDivElement>(null)
   const isInitialState = stage === 'input' && !reasoning
   
-  // Cycle through prompts when focused
-  useEffect(() => {
-    if (!isFocused) return
-    const prompts = isInitialState ? DEMO_PROMPTS : REFINE_PROMPTS
-    const interval = setInterval(() => {
-      setPromptIndex(prev => (prev + 1) % prompts.length)
-    }, 2500)
-    return () => clearInterval(interval)
-  }, [isFocused, isInitialState])
-  
-  // Auto-scroll pip chat
-  useEffect(() => {
-    if (pipChatRef.current && showPipChat) {
-      pipChatRef.current.scrollTo({ top: pipChatRef.current.scrollHeight, behavior: 'smooth' })
-    }
-  }, [pipMessages, showPipChat])
-  
-  // Get the right value and handlers based on state
   const inputValue = isInitialState ? prompt : refinePrompt
   const setInputValue = isInitialState ? setPrompt : setRefinePrompt
   const handleSubmit = isInitialState ? () => onBuild(inputValue) : handleUserRefine
   const placeholderText = isInitialState 
-    ? "Describe your landing page..."
-    : "What would you change?"
+    ? "Describe your site..."
+    : "What should change?"
   const buttonText = isInitialState ? "Build" : "Refine"
   
-  // Pip's contextual message
-  const getPipMessage = () => {
-    if (selectedElement) {
-      return `Selected: ${selectedElement.tagName.toLowerCase()} - what should I change?`
-    }
-    if (isInitialState) {
-      return "What are we building?"
-    }
-    if (refinementChanges.length > 0) {
-      return "Done! What else? ✨"
-    }
-    if (reasoning) {
-      return "Looking good! What should I tweak?"
-    }
-    return "Tell me what to change."
-  }
-  
-  const handlePipSubmit = () => {
-    if (!pipInput.trim() || isPipLoading) return
-    sendPipMessage?.(pipInput)
-    setPipInput('')
-  }
-  
-  // Minimal Pip - just the essentials
-  const showQuickTips = !isInitialState && !showPipChat
-  
   return (
-    <div className="space-y-2">
-      {/* Main Input Row - Clean and simple */}
-      <div className="flex items-center gap-2">
-        {/* Pip indicator - subtle, not a big header */}
+    <motion.div 
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
+    >
+      {/* Input with glass styling */}
+      <motion.div 
+        initial={false}
+        animate={{ 
+          borderColor: inputValue.trim() ? 'rgba(16, 185, 129, 0.3)' : 'rgba(63, 63, 70, 0.5)'
+        }}
+        className="flex items-center bg-zinc-900/60 backdrop-blur-sm border border-zinc-800/50 rounded-xl overflow-hidden transition-all focus-within:border-emerald-500/40 focus-within:shadow-[0_0_15px_rgba(16,185,129,0.1)]"
+      >
         <motion.div 
-          className="flex-shrink-0 w-6 h-6 flex items-center justify-center"
-          animate={!isInitialState ? { scale: [1, 1.05, 1] } : {}}
-          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+          animate={{ scale: [1, 1.05, 1] }}
+          transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
+          className="pl-3 sm:pl-4 flex-shrink-0"
         >
-          <Pip size={18} animate={!isInitialState} float={false} glow={!isInitialState} />
+          <LogoMark size={20} className="w-5 h-5" />
         </motion.div>
-        
-        {/* Input */}
-        <div className="relative flex-1">
-          <div className="flex items-center bg-zinc-950/50 border border-zinc-700/50 rounded-lg overflow-hidden transition-all duration-200 focus-within:border-emerald-500/40">
-            <input
-              type="text"
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-              onFocus={() => setIsFocused(true)}
-              onBlur={() => setIsFocused(false)}
-              onKeyDown={(e) => e.key === 'Enter' && inputValue.trim() && handleSubmit()}
-              disabled={isUserRefining}
-              placeholder={isFocused 
-                ? (isInitialState ? DEMO_PROMPTS : REFINE_PROMPTS)[promptIndex] 
-                : placeholderText
-              }
-              className="flex-1 bg-transparent px-3 py-2.5 text-sm text-zinc-100 placeholder-zinc-500 focus:outline-none disabled:opacity-50"
-            />
-            <button
-              onClick={handleSubmit}
-              disabled={!inputValue.trim() || isUserRefining}
-              className="px-4 py-2.5 bg-emerald-500/10 hover:bg-emerald-500/20 border-l border-zinc-700/50 text-emerald-400 text-xs font-semibold transition-colors disabled:opacity-30 disabled:cursor-not-allowed flex items-center gap-1.5"
-            >
-              {isUserRefining ? (
-                <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-              ) : (
-                <>
-                  <Sparkles className="w-3.5 h-3.5" />
-                  <span>{buttonText}</span>
-                </>
-              )}
-            </button>
-          </div>
-        </div>
-        
-        {/* Sign up CTA - only when preview exists */}
-        {!isInitialState && (
-          <button
-            onClick={() => goToSignUp()}
-            className="flex-shrink-0 px-4 py-2.5 rounded-lg bg-emerald-500/15 border border-emerald-500/40 hover:bg-emerald-500/25 text-emerald-400 text-xs font-semibold transition-all"
-          >
-            Sign up
-          </button>
-        )}
-      </div>
-      
-      {/* Contextual tips - inline, not a big panel */}
-      {showQuickTips && (
-        <div className="flex items-center gap-3 px-1">
-          <span className="text-[10px] text-zinc-500">Try:</span>
-          {PIP_SUGGESTIONS.slice(0, 4).map((sug, i) => (
-            <button
-              key={i}
-              onClick={() => setRefinePrompt(sug)}
-              className="text-[10px] text-zinc-400 hover:text-emerald-400 transition-colors"
-            >
-              {sug}
-            </button>
-          ))}
-        </div>
-      )}
-      
-      {/* Sandbox badge for initial state */}
-      {isInitialState && (
-        <div className="flex items-center gap-1.5 px-1">
-          <div className="w-1.5 h-1.5 rounded-full bg-amber-400" />
-          <span className="text-[9px] uppercase tracking-wider text-zinc-500">Sandbox</span>
-        </div>
-      )}
-    </div>
+        <input
+          type="text"
+          value={inputValue}
+          onChange={(e) => setInputValue(e.target.value)}
+          onKeyDown={(e) => e.key === 'Enter' && inputValue.trim() && handleSubmit()}
+          disabled={isUserRefining}
+          placeholder={placeholderText}
+          className="flex-1 bg-transparent px-3 py-3 sm:py-3.5 text-sm text-zinc-200 placeholder-zinc-500 focus:outline-none disabled:opacity-50"
+        />
+        <motion.button
+          whileHover={{ backgroundColor: 'rgba(63, 63, 70, 0.8)' }}
+          whileTap={{ scale: 0.98 }}
+          onClick={handleSubmit}
+          disabled={!inputValue.trim() || isUserRefining}
+          className="px-4 sm:px-5 py-3 sm:py-3.5 bg-zinc-800/60 border-l border-zinc-700/50 text-zinc-300 text-sm font-medium transition-all disabled:opacity-30 disabled:cursor-not-allowed"
+        >
+          {isUserRefining ? <RefreshCw className="w-4 h-4 animate-spin" /> : buttonText}
+        </motion.button>
+      </motion.div>
+    </motion.div>
   )
 }
 
 // =============================================================================
 // SECTION BUILDER
 // The actual interface for building one section at a time
-// Now with opt-in Opus refinement (not automatic)
 // =============================================================================
 
 interface SectionBuilderProps {
@@ -793,297 +309,18 @@ interface SectionBuilderProps {
   dbSection: DbSection
   projectId: string
   onComplete: (code: string, refined: boolean, refinementChanges?: string[]) => void
-  onNextSection: () => void // Navigate to next section
-  isLastSection?: boolean // Hide "Next" on last section
-  allSectionsCode: Record<string, string> // For preview context
-  demoMode?: boolean // Local testing without API
-  brandConfig?: DbBrandConfig | null // Brand styling from branding step
-  isPaid?: boolean // Whether project is hatched (paid)
-  isDemo?: boolean // Simplified UI for unauthenticated users
-  initialPrompt?: string // Prompt passed from demo page - use this to skip empty state
-  onHealingStateChange?: (isHealing: boolean, message?: string) => void // Report healing to parent
+  onNextSection: () => void
+  isLastSection?: boolean
+  allSectionsCode: Record<string, string>
+  demoMode?: boolean
+  brandConfig?: DbBrandConfig | null
+  isPaid?: boolean
+  isDemo?: boolean
+  initialPrompt?: string
+  onHealingStateChange?: (isHealing: boolean, message?: string) => void
 }
 
 type BuildStage = 'input' | 'generating' | 'refining' | 'complete'
-
-// Contact form handling instructions
-const ContactFormInstructions = () => (
-  <motion.div
-    initial={{ opacity: 0, y: 10 }}
-    animate={{ opacity: 1, y: 0 }}
-    className="mt-4 p-4 bg-blue-500/10 border border-blue-500/20 rounded-xl"
-  >
-    <div className="flex items-start gap-3">
-      <span className="text-xl">📬</span>
-      <div>
-        <h4 className="text-sm font-semibold text-blue-400 mb-2">Contact Form Setup</h4>
-        <p className="text-xs text-zinc-400 mb-3">
-          Your contact form is ready! Here's how to handle enquiries:
-        </p>
-        <ul className="text-xs text-zinc-400 space-y-2">
-          <li className="flex items-start gap-2">
-            <span className="text-blue-400">1.</span>
-            <span>Form submissions will be sent to your configured email or webhook endpoint</span>
-          </li>
-          <li className="flex items-start gap-2">
-            <span className="text-blue-400">2.</span>
-            <span>Add your email in the deployment settings, or integrate with Formspree/Netlify Forms</span>
-          </li>
-          <li className="flex items-start gap-2">
-            <span className="text-blue-400">3.</span>
-            <span>For custom handling, set up a serverless function at <code className="text-blue-300">/api/contact</code></span>
-          </li>
-        </ul>
-        <a 
-          href="https://formspree.io" 
-          target="_blank" 
-          rel="noopener noreferrer"
-          className="inline-flex items-center gap-1 mt-3 text-xs text-blue-400 hover:text-blue-300 transition-colors"
-        >
-          Learn more about form handling →
-        </a>
-      </div>
-    </div>
-  </motion.div>
-)
-
-// Demo mode mock code generator
-const generateMockCode = (sectionType: string, sectionName: string, userPrompt: string): string => {
-  return `{/* ${sectionName} Section */}
-<section className="py-20 px-6 bg-black">
-  <div className="max-w-6xl mx-auto">
-    <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
-      ${sectionName}
-    </h2>
-    <p className="text-xl text-zinc-400 max-w-2xl">
-      ${userPrompt.slice(0, 200)}${userPrompt.length > 200 ? '...' : ''}
-    </p>
-    <div className="mt-10 grid md:grid-cols-3 gap-6">
-      <div className="p-6 bg-zinc-900 rounded-2xl border border-zinc-800">
-        <div className="w-12 h-12 bg-purple-500/20 rounded-xl flex items-center justify-center mb-4">
-          <span className="text-2xl">✨</span>
-        </div>
-        <h3 className="text-lg font-semibold text-white mb-2">Feature One</h3>
-        <p className="text-zinc-400 text-sm">Demo content for ${sectionType}</p>
-      </div>
-      <div className="p-6 bg-zinc-900 rounded-2xl border border-zinc-800">
-        <div className="w-12 h-12 bg-violet-500/20 rounded-xl flex items-center justify-center mb-4">
-          <span className="text-2xl">🚀</span>
-        </div>
-        <h3 className="text-lg font-semibold text-white mb-2">Feature Two</h3>
-        <p className="text-zinc-400 text-sm">Placeholder for your content</p>
-      </div>
-      <div className="p-6 bg-zinc-900 rounded-2xl border border-zinc-800">
-        <div className="w-12 h-12 bg-blue-500/20 rounded-xl flex items-center justify-center mb-4">
-          <span className="text-2xl">💡</span>
-        </div>
-        <h3 className="text-lg font-semibold text-white mb-2">Feature Three</h3>
-        <p className="text-zinc-400 text-sm">AI will generate real content</p>
-      </div>
-    </div>
-  </div>
-</section>`
-}
-
-// Color swatch component - uses CSS variable to avoid inline style linter warning
-const ColorDot = ({ color, size = 'sm', title }: { color: string; size?: 'sm' | 'md'; title?: string }) => {
-  const dimensionClass = size === 'sm' ? 'w-3 h-3' : 'w-4 h-4'
-
-  return (
-    <span
-      title={title}
-      className={`${dimensionClass} inline-flex items-center justify-center rounded-full border border-white/20`}
-    >
-      <svg viewBox="0 0 16 16" className="w-full h-full" aria-hidden="true" focusable="false">
-        <circle cx="8" cy="8" r="7" fill={color} />
-      </svg>
-    </span>
-  )
-}
-
-// Brand Quick Reference - Shows current brand settings in the builder
-function BrandQuickReference({ brandConfig }: { brandConfig: DbBrandConfig }) {
-  const [expanded, setExpanded] = useState(false)
-  
-  return (
-    <motion.div 
-      className="mt-4 bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden"
-      initial={false}
-    >
-      <button
-        onClick={() => setExpanded(!expanded)}
-        className="w-full px-3 py-2 flex items-center justify-between text-left hover:bg-zinc-800 transition-colors"
-      >
-        <div className="flex items-center gap-2">
-          <span className="text-sm">🎨</span>
-          <span className="text-xs font-medium text-zinc-300">
-            {brandConfig.brandName}
-          </span>
-          {/* Color dots preview */}
-          <div className="flex items-center gap-1 ml-2">
-            <ColorDot color={brandConfig.colors.primary} title="Primary" />
-            <ColorDot color={brandConfig.colors.secondary} title="Secondary" />
-            <ColorDot color={brandConfig.colors.accent} title="Accent" />
-          </div>
-        </div>
-        <motion.span 
-          animate={{ rotate: expanded ? 180 : 0 }}
-          className="text-zinc-500 text-xs"
-        >
-          ▼
-        </motion.span>
-      </button>
-      
-      <AnimatePresence>
-        {expanded && (
-          <motion.div
-            initial={{ height: 0, opacity: 0 }}
-            animate={{ height: 'auto', opacity: 1 }}
-            exit={{ height: 0, opacity: 0 }}
-            transition={{ duration: 0.2 }}
-            className="border-t border-zinc-700/50"
-          >
-            <div className="px-3 py-3 space-y-3 text-xs">
-              {/* Brand Name & Tagline */}
-              <div>
-                <span className="text-zinc-500">Brand:</span>
-                <p className="text-white font-medium">{brandConfig.brandName}</p>
-                {brandConfig.tagline && (
-                  <p className="text-zinc-400 italic">"{brandConfig.tagline}"</p>
-                )}
-              </div>
-              
-              {/* Colors */}
-              <div>
-                <span className="text-zinc-500 block mb-1.5">Colors:</span>
-                <div className="flex gap-2 flex-wrap">
-                  <div className="flex items-center gap-1.5 bg-zinc-900/50 px-2 py-1 rounded">
-                    <ColorDot color={brandConfig.colors.primary} size="md" />
-                    <span className="text-zinc-300">Primary</span>
-                    <span className="text-zinc-500 font-mono text-[10px]">{brandConfig.colors.primary}</span>
-                  </div>
-                  <div className="flex items-center gap-1.5 bg-zinc-900/50 px-2 py-1 rounded">
-                    <ColorDot color={brandConfig.colors.secondary} size="md" />
-                    <span className="text-zinc-300">Secondary</span>
-                    <span className="text-zinc-500 font-mono text-[10px]">{brandConfig.colors.secondary}</span>
-                  </div>
-                  <div className="flex items-center gap-1.5 bg-zinc-900/50 px-2 py-1 rounded">
-                    <ColorDot color={brandConfig.colors.accent} size="md" />
-                    <span className="text-zinc-300">Accent</span>
-                    <span className="text-zinc-500 font-mono text-[10px]">{brandConfig.colors.accent}</span>
-                  </div>
-                </div>
-              </div>
-              
-              {/* Style & Font */}
-              <div className="flex gap-4">
-                <div>
-                  <span className="text-zinc-500">Style:</span>
-                  <p className="text-zinc-300 capitalize">{brandConfig.styleVibe}</p>
-                </div>
-                <div>
-                  <span className="text-zinc-500">Font:</span>
-                  <p className="text-zinc-300 capitalize">{brandConfig.fontStyle}</p>
-                </div>
-              </div>
-              
-              {/* Logo */}
-              {brandConfig.logoUrl && (
-                <div>
-                  <span className="text-zinc-500 block mb-1">Logo:</span>
-                  <div className="w-10 h-10 bg-zinc-900 rounded-lg overflow-hidden relative">
-                    <Image 
-                      src={brandConfig.logoUrl} 
-                      alt="Brand logo" 
-                      fill
-                      className="object-contain"
-                      unoptimized
-                    />
-                  </div>
-                </div>
-              )}
-              
-              {/* AI Notice */}
-              <div className="pt-2 border-t border-zinc-700/50">
-                <p className="text-zinc-500 flex items-center gap-1">
-                  <span>✨</span>
-                  AI will use these settings when building sections
-                </p>
-              </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </motion.div>
-  )
-}
-
-// Builder Guide Overlay
-const BuilderGuide = ({ onClose }: { onClose: () => void }) => (
-  <motion.div
-    initial={{ opacity: 0 }}
-    animate={{ opacity: 1 }}
-    exit={{ opacity: 0 }}
-    className="absolute inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
-  >
-    <motion.div
-      initial={{ scale: 0.9, y: 20 }}
-      animate={{ scale: 1, y: 0 }}
-      className="bg-zinc-900 border border-zinc-800 rounded-2xl p-6 max-w-md w-full shadow-2xl relative overflow-hidden"
-    >
-      
-      <div className="relative z-10">
-        <div className="w-12 h-12 bg-zinc-800 rounded-xl flex items-center justify-center mb-4 border border-zinc-700">
-          <Terminal className="w-6 h-6 text-emerald-400" />
-        </div>
-        
-        <h3 className="text-xl font-bold text-white mb-2">System Initialized</h3>
-        <p className="text-zinc-400 text-sm mb-6">
-          The interface is ready. Describe your vision to begin.
-        </p>
-        
-        <div className="space-y-4 mb-8">
-          <div className="flex gap-3">
-            <div className="w-8 h-8 rounded-lg bg-zinc-800 flex items-center justify-center shrink-0">
-              <Wand2 className="w-4 h-4 text-emerald-400" />
-            </div>
-            <div>
-              <h4 className="text-sm font-medium text-zinc-200">Build Sections</h4>
-              <p className="text-xs text-zinc-500">Generate code instantly. Free users get 10 builds.</p>
-            </div>
-          </div>
-          
-          <div className="flex gap-3">
-            <div className="w-8 h-8 rounded-lg bg-purple-500/10 flex items-center justify-center shrink-0">
-              <Wand2 className="w-4 h-4 text-purple-400" />
-            </div>
-            <div>
-              <h4 className="text-sm font-medium text-zinc-200">Refine & Polish</h4>
-              <p className="text-xs text-zinc-500">Refine with AI. Free users get 1 trial refinement.</p>
-            </div>
-          </div>
-          
-          <div className="flex gap-3">
-            <div className="w-8 h-8 rounded-lg bg-blue-500/10 flex items-center justify-center shrink-0">
-              <Zap className="w-4 h-4 text-blue-400" />
-            </div>
-            <div>
-              <h4 className="text-sm font-medium text-zinc-200">Deploy</h4>
-              <p className="text-xs text-zinc-500">Export or deploy live. Requires an upgrade.</p>
-            </div>
-          </div>
-        </div>
-        
-        <button
-          onClick={onClose}
-          className="w-full py-3 bg-white text-black font-semibold rounded-xl hover:bg-zinc-200 transition-colors"
-        >
-          Initialize Builder
-        </button>
-      </div>
-    </motion.div>
-  </motion.div>
-)
 
 export default function SectionBuilder({
   section,
@@ -1179,7 +416,7 @@ export default function SectionBuilder({
     savedPreview ? 'complete' : (dbSection.status === 'complete' ? 'complete' : (hasInitialPrompt ? 'generating' : 'input'))
   )
   const [generatedCode, setGeneratedCode] = useState(savedPreview?.code || dbSection.code || '')
-  const [isPreviewReady, setIsPreviewReady] = useState(false)
+  const [, setIsPreviewReady] = useState(false)
   const [streamingCode, setStreamingCode] = useState('') // For real-time display
   const [reasoning, setReasoning] = useState(savedPreview?.reasoning || '') // AI's design reasoning
   const [refined, setRefined] = useState(dbSection.refined)
@@ -1195,44 +432,23 @@ export default function SectionBuilder({
   const [mobileTab, setMobileTab] = useState<'input' | 'preview'>('input') // Mobile tab state
   const [inspectorMode, setInspectorMode] = useState(false) // Visual element selector
   const [selectedElement, setSelectedElement] = useState<{ tagName: string; text: string; className: string } | null>(null)
-  const [hudTab, setHudTab] = useState<'styles' | 'animate' | 'explain'>('styles') // Style HUD tab state
   const [explanation, setExplanation] = useState<string | null>(null)
   const [isExplaining, setIsExplaining] = useState(false)
   const [isDreaming, setIsDreaming] = useState(false)
   
   // Guest prompt modal - shows when guest arrives with no prompt (actual guests only)
-  const [showGuestPromptModal, setShowGuestPromptModal] = useState(
+  const [, setShowGuestPromptModal] = useState(
     !isSignedIn && !effectivePrompt && !savedPreview
   )
   
-  // Pip Chat State (interactive refiner after first build)
-  const [showPipChat, setShowPipChat] = useState(false)
-  const [pipMessages, setPipMessages] = useState<{ role: 'user' | 'assistant'; content: string }[]>([])
-  const [isPipLoading, setIsPipLoading] = useState(false)
-  const pipChatRef = useRef<HTMLDivElement>(null)
-
   useEffect(() => {
     setIsPreviewReady(false)
   }, [generatedCode])
 
   // Paywall Logic
-  const { subscription, tier } = useSubscription()
+  const { tier } = useSubscription()
   const isPaidTier = tier === 'architect' || tier === 'visionary' || tier === 'singularity'
   const isProOrHigher = tier === 'visionary' || tier === 'singularity'
-  const isGuest = !isPaid && !isPaidTier
-  
-  const freeCreditsUsed = (user?.publicMetadata?.freeCreditsUsed as number) || 0
-  const architectRefinementsUsed = (user?.publicMetadata?.architectRefinementsUsed as number) || 0
-  
-  // =============================================================================
-  // GENERATION LIMITS - REMOVED
-  // All users get unlimited generations. Paywall is at deploy/download only.
-  // This makes the product sticky - they build amazing stuff, then pay to ship it.
-  // =============================================================================
-  const GUEST_BUILD_LIMIT = Infinity
-  const GUEST_REFINE_LIMIT = Infinity
-  const FREE_BUILD_LIMIT = Infinity
-  const FREE_REFINE_LIMIT = Infinity
   
   // Check guest build count from localStorage
   const getGuestBuilds = () => {
@@ -1316,49 +532,7 @@ export default function SectionBuilder({
   // NO MORE CREDIT TRACKING - Paywall is at deploy/export only
   // All generation/refinement limits removed
 
-  // Dynamic placeholder effect
-  const [placeholderIndex, setPlaceholderIndex] = useState(0)
-  const [placeholderText, setPlaceholderText] = useState('')
-  const [isDeletingPlaceholder, setIsDeletingPlaceholder] = useState(false)
-  
-  useEffect(() => {
-    if (stage !== 'input') return
-    
-    const placeholders = [
-      "Describe the layout of this section...",
-      "e.g. A minimalist hero with large typography...",
-      "e.g. A dark mode features grid with glowing cards...",
-      "e.g. A contact form with a map on the right...",
-      "e.g. A pricing table with 3 tiers and a toggle..."
-    ]
-    
-    const currentFullText = placeholders[placeholderIndex]
-    const typeSpeed = isDeletingPlaceholder ? 30 : 50
-    const pauseTime = 2000
-    
-    const timeout = setTimeout(() => {
-      if (!isDeletingPlaceholder) {
-        // Typing
-        if (placeholderText.length < currentFullText.length) {
-          setPlaceholderText(currentFullText.slice(0, placeholderText.length + 1))
-        } else {
-          // Finished typing, wait then delete
-          setTimeout(() => setIsDeletingPlaceholder(true), pauseTime)
-        }
-      } else {
-        // Deleting
-        if (placeholderText.length > 0) {
-          setPlaceholderText(currentFullText.slice(0, placeholderText.length - 1))
-        } else {
-          // Finished deleting, move to next
-          setIsDeletingPlaceholder(false)
-          setPlaceholderIndex((prev) => (prev + 1) % placeholders.length)
-        }
-      }
-    }, typeSpeed)
-    
-    return () => clearTimeout(timeout)
-  }, [placeholderText, isDeletingPlaceholder, placeholderIndex, stage])
+  const inputPlaceholder = 'Describe what you want to build…'
   
   // Visual Feedback Loop (The Retina)
   const [captureTrigger, setCaptureTrigger] = useState(0)
@@ -1481,13 +655,6 @@ export default function SectionBuilder({
       console.error('Failed to evolve style DNA:', e)
     }
   }
-  
-  // Get subscription info for Architect credits
-  const architectCreditsUsed = (typeof window !== 'undefined' && subscription) 
-    ? (window as unknown as { __architectUsed?: number }).__architectUsed || 0 
-    : 0
-  // NO LIMITS - architectCreditsRemaining is now always unlimited for everyone
-  const architectCreditsRemaining = '∞'
   
   // Prompt Helper (Hatch) state
   const [showPromptHelper, setShowPromptHelper] = useState(false)
@@ -1770,63 +937,6 @@ export default function SectionBuilder({
       setTimeout(() => textareaRef.current?.focus(), 100)
     }
   }
-
-  // Pip Chat - Interactive refiner that appears after first build
-  // This is the conversational interface where users can ask Pip for help
-  const sendPipMessage = async (userMessage: string) => {
-    if (!userMessage.trim() || isPipLoading) return
-    
-    setPipMessages(prev => [...prev, { role: 'user', content: userMessage }])
-    setIsPipLoading(true)
-    
-    try {
-      const response = await fetch('/api/prompt-helper', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          sectionType: section.id,
-          sectionName: section.name,
-          templateType: 'Landing Page',
-          userMessage: `[Context: User has built a section and wants to refine it. ${selectedElement ? `They clicked on a <${selectedElement.tagName}> element with text "${selectedElement.text.slice(0, 50)}".` : ''}]\n\nUser: ${userMessage}`,
-          conversationHistory: pipMessages,
-          brandName: brandConfig?.brandName,
-          brandTagline: brandConfig?.tagline,
-        }),
-      })
-      
-      if (response.ok) {
-        const { message } = await response.json()
-        setPipMessages(prev => [...prev, { role: 'assistant', content: message }])
-        
-        // If Pip suggested a refinement, auto-fill the refine input
-        if (message.toLowerCase().includes('try:') || message.toLowerCase().includes('ask for:')) {
-          const match = message.match(/['"]([^'"]+)['"]/);
-          if (match) {
-            setRefinePrompt(match[1])
-          }
-        }
-      }
-    } catch (err) {
-      console.error('Pip chat error:', err)
-      setPipMessages(prev => [...prev, { role: 'assistant', content: 'Oops, something went wrong. Try again?' }])
-    } finally {
-      setIsPipLoading(false)
-    }
-  }
-  
-  // Initialize Pip with a greeting when the build completes
-  useEffect(() => {
-    if (stage === 'complete' && generatedCode && pipMessages.length === 0) {
-      // Give Pip a contextual greeting
-      const greetings = [
-        "Nice! What should we tweak? 🎯",
-        "Looking good! Want any changes?",
-        "Built it! Click anything to refine it.",
-        "Done! I can help you polish this.",
-      ]
-      setPipMessages([{ role: 'assistant', content: greetings[Math.floor(Math.random() * greetings.length)] }])
-    }
-  }, [stage, generatedCode, pipMessages.length])
 
   const handleBuildSection = async (options?: { skipGuestCredit?: boolean; overridePrompt?: string }) => {
     const skipGuestCredit = options?.skipGuestCredit
@@ -2250,7 +1360,6 @@ export default function SectionBuilder({
   // LOADING STAGE PROGRESS - for premium feel during generation
   // =============================================================================
   const [loadingStage, setLoadingStage] = useState(0)
-  const [factIndex, setFactIndex] = useState(0)
   const loadingStages = [
     'Analyzing prompt',
     'Designing structure', 
@@ -2258,34 +1367,18 @@ export default function SectionBuilder({
     'Adding polish',
   ]
   
-  const loadingFacts = [
-    { emoji: '⚡', text: 'Your code is 100% yours — no lock-in, export anytime' },
-    { emoji: '🎨', text: 'Built with React + Tailwind. Production-ready.' },
-    { emoji: '✨', text: 'After this, try "Make it darker" to see instant AI refinement' },
-    { emoji: '🚀', text: 'Average user ships their first section in under 3 minutes' },
-    { emoji: '🔒', text: 'Your work auto-saves. Come back anytime.' },
-    { emoji: '💡', text: 'Pro tip: Be specific. "Bold headline, emerald accents" works great' },
-    { emoji: '🌐', text: 'One-click deploy to your own domain (Pro feature)' },
-    { emoji: '🎯', text: 'Built by indie devs who got tired of templates' },
-  ]
-  
   // Progress through loading stages (loop to fill long waits)
   useEffect(() => {
     if (stage === 'generating' || (isDemo && !generatedCode && !!effectivePrompt)) {
       setLoadingStage(0)
-      setFactIndex(0)
       const stageInterval = setInterval(() => {
         setLoadingStage(prev => (prev + 1) % loadingStages.length)
       }, 8000)
-      const factInterval = setInterval(() => {
-        setFactIndex(prev => (prev + 1) % loadingFacts.length)
-      }, 5000) // Rotate facts every 5 seconds
       return () => {
         clearInterval(stageInterval)
-        clearInterval(factInterval)
       }
     }
-  }, [stage, isDemo, generatedCode, effectivePrompt, loadingStages.length, loadingFacts.length])
+  }, [stage, isDemo, generatedCode, effectivePrompt, loadingStages.length])
 
   // =============================================================================
   // UNIFIED PREMIUM EXPERIENCE - Same beautiful UI for everyone
@@ -2307,6 +1400,7 @@ export default function SectionBuilder({
       
       {/* Generating Modal - keeps users engaged during the wait */}
         <GeneratingModal 
+          key={showGenerating ? 'open' : 'closed'}
           isOpen={showGenerating}
           stage={loadingStages[loadingStage]}
           stageIndex={loadingStage}
@@ -2433,7 +1527,7 @@ export default function SectionBuilder({
                 <div className="flex-1 relative">
                   {/* Fake streaming code effect */}
                   <div className="absolute inset-0 p-4 font-mono text-[10px] leading-relaxed overflow-hidden">
-                    <StreamingCodeEffect />
+                    <div className="h-full w-full" />
                   </div>
                   
                   {/* Blur overlay */}
@@ -2467,24 +1561,6 @@ export default function SectionBuilder({
                       >
                         {loadingStages[loadingStage]}
                       </motion.p>
-                      <p className="text-xs text-zinc-500 mb-4">Claude Sonnet 4.5</p>
-                      
-                      {/* Rotating facts to keep users engaged */}
-                      <AnimatePresence mode="wait">
-                        <motion.div
-                          key={factIndex}
-                          initial={{ opacity: 0, y: 10 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          exit={{ opacity: 0, y: -10 }}
-                          transition={{ duration: 0.3 }}
-                          className="max-w-xs mx-auto"
-                        >
-                          <p className="text-xs text-zinc-400">
-                            <span className="mr-1.5">{loadingFacts[factIndex].emoji}</span>
-                            {loadingFacts[factIndex].text}
-                          </p>
-                        </motion.div>
-                      </AnimatePresence>
                     </motion.div>
                   </div>
                 </div>
@@ -2550,11 +1626,18 @@ export default function SectionBuilder({
             </div>
           ) : showInlinePromptInput ? (
             // Inline Prompt Input - integrated into main content area (not a modal)
-            <InlinePromptInput onSubmit={handleGuestPromptSubmit} />
+            <InlinePromptInput 
+              onSubmit={handleGuestPromptSubmit} 
+              sectionName={section.name}
+              placeholder={section.prompt || `Describe your ${section.name.toLowerCase()}...`}
+            />
           ) : (
             // Empty state - guide users on how to prompt well (responsive)
             <div className="h-full flex flex-col items-center justify-center bg-zinc-950 p-4 sm:p-6 overflow-auto">
-              <div className="max-w-md w-full space-y-4 sm:space-y-6">
+              {/* Subtle emerald glow backdrop */}
+              <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(16,185,129,0.06),transparent_60%)]" />
+              
+              <div className="relative max-w-md w-full space-y-4 sm:space-y-5">
                 {/* Header */}
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
@@ -2569,7 +1652,7 @@ export default function SectionBuilder({
                   </p>
                 </motion.div>
 
-                {/* What to include - 2x2 grid on mobile, same on desktop */}
+                {/* What to include - 2x2 grid with glass cards */}
                 <motion.div
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
@@ -2582,52 +1665,59 @@ export default function SectionBuilder({
                     { label: 'Elements', example: '"Hero, pricing cards"' },
                     { label: 'Audience', example: '"Young professionals"' },
                   ].map((tip, i) => (
-                    <div
+                    <motion.div
                       key={i}
-                      className="p-2 sm:p-2.5 bg-zinc-900/50 border border-zinc-800/50 rounded-lg"
+                      initial={{ opacity: 0, y: 5 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      transition={{ delay: 0.1 + i * 0.05 }}
+                      className="p-3 bg-zinc-900/60 backdrop-blur-sm border border-zinc-800/60 rounded-xl hover:border-zinc-700/60 transition-colors group"
                     >
-                      <p className="text-[10px] sm:text-xs font-medium text-zinc-400">{tip.label}</p>
-                      <p className="text-[9px] sm:text-[10px] text-zinc-600 truncate">{tip.example}</p>
-                    </div>
+                      <p className="text-xs font-medium text-zinc-300 group-hover:text-white transition-colors">{tip.label}</p>
+                      <p className="text-[10px] text-zinc-500 mt-0.5">{tip.example}</p>
+                    </motion.div>
                   ))}
                 </motion.div>
 
-                {/* Example prompts - scrollable on small screens */}
+                {/* Example prompts - clickable with hover glow */}
                 <motion.div
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   transition={{ delay: 0.2 }}
                   className="space-y-2"
                 >
-                  <p className="text-[9px] sm:text-[10px] uppercase tracking-wider text-zinc-600 text-center">Or try one</p>
-                  <div className="space-y-1.5 max-h-32 sm:max-h-40 overflow-y-auto">
+                  <p className="text-[10px] uppercase tracking-wider text-zinc-600 text-center">Or try one</p>
+                  <div className="space-y-1.5">
                     {[
                       "Dark hero for a dev tool with code snippet and glowing CTA",
                       "Meditation app landing with soft gradients and testimonials",
                       "Agency portfolio with project grid and bold typography",
                     ].map((prompt, i) => (
-                      <button
+                      <motion.button
                         key={i}
+                        initial={{ opacity: 0, x: -5 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: 0.25 + i * 0.05 }}
                         onClick={() => setPrompt(prompt)}
-                        className="w-full text-left px-3 py-2 text-[11px] sm:text-xs text-zinc-400 bg-zinc-900/50 border border-zinc-800/50 rounded-lg hover:border-zinc-700 hover:text-zinc-300 transition-colors line-clamp-2"
+                        className="w-full text-left px-3 py-2.5 text-xs text-zinc-400 bg-zinc-900/40 backdrop-blur-sm border border-zinc-800/50 rounded-xl hover:border-emerald-500/30 hover:bg-emerald-500/5 hover:text-zinc-200 transition-all group"
                       >
+                        <span className="text-emerald-500/60 group-hover:text-emerald-400 mr-1.5 transition-colors">→</span>
                         {prompt}
-                      </button>
+                      </motion.button>
                     ))}
                   </div>
                 </motion.div>
 
-                {/* Arrow - hidden on very small screens */}
+                {/* Arrow indicator */}
                 <motion.div
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  transition={{ delay: 0.3 }}
-                  className="hidden sm:flex justify-center"
+                  transition={{ delay: 0.4 }}
+                  className="hidden sm:flex justify-center pt-2"
                 >
                   <motion.div
                     animate={{ y: [0, 4, 0] }}
                     transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
-                    className="text-zinc-700"
+                    className="text-emerald-500/40"
                   >
                     <ArrowRight className="w-4 h-4 rotate-90" />
                   </motion.div>
@@ -2638,7 +1728,7 @@ export default function SectionBuilder({
         </div>
 
         {/* Bottom Panel - Floating Glass Command Bar */}
-        <div className="flex-shrink-0 p-2 sm:p-3 md:p-4">
+        <div className="flex-shrink-0 p-2 sm:p-3 md:p-4 relative z-10 safe-area-bottom">
           <motion.div
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
@@ -2676,68 +1766,72 @@ export default function SectionBuilder({
                     handleUserRefine={handleUserRefine}
                     goToSignUp={goToSignUp}
                     reasoning={reasoning}
-                    refinementChanges={refinementChanges}
-                    showPipChat={showPipChat}
-                    setShowPipChat={setShowPipChat}
-                    pipMessages={pipMessages}
-                    sendPipMessage={sendPipMessage}
-                    isPipLoading={isPipLoading}
-                    selectedElement={selectedElement}
                   />
                 </div>
               </div>
             )}
 
-            {/* Generating Stage */}
-            {(stage === 'generating' || showGenerating) && (
-              <div className="relative rounded-xl sm:rounded-2xl overflow-hidden">
-                {/* Glass layers - matches sidebar exactly */}
+            {/* Generating Stage - only show when actively generating without preview */}
+            {showGenerating && (
+              <motion.div 
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="relative rounded-2xl overflow-hidden"
+              >
+                {/* Glass layers */}
                 <div className="absolute inset-0 bg-zinc-900/70 backdrop-blur-xl" />
-                <div className="absolute inset-0 bg-gradient-to-b from-white/[0.02] to-transparent pointer-events-none" />
+                <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,rgba(16,185,129,0.05),transparent_70%)]" />
                 <div className="absolute inset-0 border border-zinc-800/50 rounded-2xl" />
-                <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-zinc-700 to-transparent" />
+                <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-emerald-500/30 to-transparent" />
                 
                 {/* Content */}
-                <div className="relative p-3 sm:p-4 space-y-2 sm:space-y-3">
-                  {/* AI Status */}
-                  <div className="flex items-center gap-2 sm:gap-2.5 px-1">
+                <div className="relative p-4">
+                  <div className="flex items-center gap-3">
+                    {/* Animated icon */}
                     <motion.div 
-                      className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center"
-                      animate={{ scale: [1, 1.1, 1], opacity: [0.8, 1, 0.8] }}
-                      transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                      animate={{ 
+                        scale: [1, 1.1, 1],
+                        opacity: [0.7, 1, 0.7]
+                      }}
+                      transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+                      className="relative"
                     >
-                      <Sparkles className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-emerald-400" />
-                    </motion.div>
-                    <p className="text-xs sm:text-sm">
-                      <span className="text-emerald-400 font-medium">Building.</span>{' '}
-                      <span className="text-zinc-400">{loadingStages[loadingStage]}...</span>
-                    </p>
-                  </div>
-
-                  {/* Input placeholder */}
-                  <div className="flex items-center gap-2 sm:gap-3">
-                    <div className="relative flex-1">
-                      <div className="relative flex items-center bg-zinc-900/50 border border-zinc-800/50 rounded-lg sm:rounded-xl overflow-hidden">
-                        <div className="flex-1 px-3 py-2.5 sm:px-4 sm:py-3.5 text-xs sm:text-sm text-zinc-500">
-                          Constructing Reality...
-                        </div>
-                        <div className="px-3 py-2.5 sm:px-5 sm:py-3.5 bg-zinc-900/50 border-l border-zinc-800/50 text-zinc-500 text-xs sm:text-sm font-medium flex items-center gap-1.5 sm:gap-2">
-                          <RefreshCw className="w-3.5 h-3.5 sm:w-4 sm:h-4 animate-spin text-emerald-400" />
-                          <span>Building</span>
-                        </div>
+                      <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center">
+                        <Sparkles className="w-5 h-5 text-emerald-400" />
                       </div>
+                      <motion.div
+                        animate={{ scale: [1, 1.5], opacity: [0.4, 0] }}
+                        transition={{ duration: 1, repeat: Infinity }}
+                        className="absolute inset-0 rounded-xl border border-emerald-500/40"
+                      />
+                    </motion.div>
+                    
+                    {/* Status text */}
+                    <div className="flex-1">
+                      <p className="text-sm font-medium text-white">Building</p>
+                      <p className="text-xs text-zinc-500">{loadingStages[loadingStage]}</p>
                     </div>
                     
-                    <div className="relative px-4 py-2.5 sm:px-7 sm:py-3.5 rounded-lg sm:rounded-xl">
-                      <div className="absolute inset-0 bg-zinc-900/50 border border-zinc-800/50 rounded-lg sm:rounded-xl" />
-                      <span className="relative text-zinc-500 text-xs sm:text-sm font-medium">Deploy</span>
+                    {/* Progress indicator */}
+                    <div className="flex gap-1">
+                      {[0, 1, 2, 3].map((i) => (
+                        <motion.div
+                          key={i}
+                          animate={{
+                            backgroundColor: i <= loadingStage 
+                              ? 'rgb(16, 185, 129)' 
+                              : 'rgb(63, 63, 70)'
+                          }}
+                          className="w-2 h-2 rounded-full"
+                        />
+                      ))}
                     </div>
                   </div>
                 </div>
-              </div>
+              </motion.div>
             )}
 
-            {/* Complete Stage - Only for non-demo (demo uses DemoCommandBar above) */}
+            {/* Complete Stage - Only for authenticated users (demo uses DemoCommandBar above) */}
             {stage === 'complete' && !isDemo && (
               <div className="relative rounded-xl sm:rounded-2xl overflow-hidden">
                 {/* Glass layers - matches sidebar exactly */}
@@ -2746,37 +1840,16 @@ export default function SectionBuilder({
                 <div className="absolute inset-0 border border-zinc-800/50 rounded-xl sm:rounded-2xl" />
                 <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-zinc-700 to-transparent" />
                 
-                {/* Content - Different bar for guests vs signed-in users */}
+                {/* Auth refine bar */}
                 <div className="relative p-3 sm:p-4">
-                  {isSignedIn ? (
-                    <AuthRefineBar
-                      refinePrompt={refinePrompt}
-                      setRefinePrompt={setRefinePrompt}
-                      isUserRefining={isUserRefining}
-                      handleUserRefine={handleUserRefine}
-                      onNextSection={handleNextSection}
-                      isLastSection={isLastSection || false}
-                      reasoning={reasoning}
-                      refinementChanges={refinementChanges}
-                      showPipChat={showPipChat}
-                      setShowPipChat={setShowPipChat}
-                      pipMessages={pipMessages}
-                      sendPipMessage={sendPipMessage}
-                      isPipLoading={isPipLoading}
-                      selectedElement={selectedElement}
-                    />
-                  ) : (
-                    <GuestRefineBar
-                      refinePrompt={refinePrompt}
-                      setRefinePrompt={setRefinePrompt}
-                      isUserRefining={isUserRefining}
-                      isGuestRefineLocked={isGuestRefineLocked}
-                      handleUserRefine={handleUserRefine}
-                      goToSignUp={goToSignUp}
-                      reasoning={reasoning}
-                      refinementChanges={refinementChanges}
-                    />
-                  )}
+                  <AuthRefineBar
+                    refinePrompt={refinePrompt}
+                    setRefinePrompt={setRefinePrompt}
+                    isUserRefining={isUserRefining}
+                    handleUserRefine={handleUserRefine}
+                    onNextSection={handleNextSection}
+                    isLastSection={isLastSection || false}
+                  />
                 </div>
               </div>
             )}

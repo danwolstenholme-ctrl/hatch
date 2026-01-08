@@ -2,12 +2,10 @@
 
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { ArrowRight, Command } from 'lucide-react'
-import Image from 'next/image'
+import { ArrowRight } from 'lucide-react'
 
 // =============================================================================
-// GUEST PROMPT MODAL
-// Cinematic prompt entry for guest users.
+// GUEST PROMPT MODAL - Minimal prompt entry for demo users
 // =============================================================================
 
 interface GuestPromptModalProps {
@@ -17,26 +15,15 @@ interface GuestPromptModalProps {
 
 export default function GuestPromptModal({ isOpen, onSubmit }: GuestPromptModalProps) {
   const [prompt, setPrompt] = useState('')
-  const [isFocused, setIsFocused] = useState(false)
   const [isSubmitting, setIsSubmitting] = useState(false)
 
-  // Validation: Minimum 10 characters
   const isValid = prompt.trim().length >= 10
 
   const handleSubmit = () => {
     if (!isValid) return
     setIsSubmitting(true)
-    setTimeout(() => {
-      onSubmit(prompt)
-    }, 800)
+    setTimeout(() => onSubmit(prompt), 300)
   }
-
-  // Quick prompt suggestions
-  const suggestions = [
-    'Hero with animated gradient background',
-    'Pricing table with 3 tiers',
-    'Testimonial carousel with avatars',
-  ]
 
   return (
     <AnimatePresence>
@@ -45,112 +32,61 @@ export default function GuestPromptModal({ isOpen, onSubmit }: GuestPromptModalP
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-50 flex items-center justify-center overflow-hidden bg-black/80 backdrop-blur-sm"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/90"
         >
-          {/* Main Content */}
           <motion.div
-            initial={{ opacity: 0, scale: 0.95, y: 20 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.95, y: -20 }}
-            transition={{ type: "spring", duration: 0.8, bounce: 0.2 }}
-            className="relative z-10 w-full max-w-xl mx-4"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 10 }}
+            className="w-full max-w-lg mx-4"
           >
-            <div className="relative bg-zinc-950/90 backdrop-blur-xl border border-zinc-800 rounded-2xl overflow-hidden shadow-2xl shadow-black/50 p-8 md:p-10">
-              
-              {/* Header */}
-              <div className="text-center mb-8">
-                <motion.div
-                  initial={{ scale: 0.8, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  transition={{ delay: 0.2 }}
-                  className="w-12 h-12 mx-auto mb-6"
-                >
-                  <Image 
-                    src="/icon.svg" 
-                    alt="HatchIt" 
-                    width={48} 
-                    height={48}
-                    className="w-full h-full"
-                  />
-                </motion.div>
-
-                <h1 className="text-3xl md:text-4xl font-bold text-white mb-3 tracking-tight">
-                  <span className="text-zinc-400">Describe it.</span>
-                  <br />
-                  <span className="text-emerald-400">Watch it build.</span>
-                </h1>
-                <p className="text-zinc-400 text-base md:text-lg max-w-sm mx-auto leading-relaxed">
-                  Type what you want. Get production-ready React + Tailwind in seconds.
-                </p>
+            <div className="bg-zinc-950 border border-zinc-800 rounded-lg overflow-hidden">
+              {/* Terminal header */}
+              <div className="flex items-center gap-2 px-4 py-2 bg-zinc-900 border-b border-zinc-800">
+                <div className="flex gap-1.5">
+                  <div className="w-2.5 h-2.5 rounded-full bg-zinc-700" />
+                  <div className="w-2.5 h-2.5 rounded-full bg-zinc-700" />
+                  <div className="w-2.5 h-2.5 rounded-full bg-zinc-700" />
+                </div>
+                <span className="text-xs text-zinc-500 font-mono ml-2">new build</span>
               </div>
 
-              {/* Input Area */}
-              <div className="bg-zinc-900 border border-zinc-800 rounded-xl overflow-hidden transition-colors focus-within:border-zinc-700">
+              <div className="p-6">
+                <div className="font-mono text-sm text-zinc-500 mb-4">
+                  $ describe your site
+                </div>
+
                 <textarea
                   value={prompt}
                   onChange={(e) => setPrompt(e.target.value)}
-                  onFocus={() => setIsFocused(true)}
-                  onBlur={() => setIsFocused(false)}
                   onKeyDown={(e) => {
-                    if (e.key === 'Enter' && !e.shiftKey && prompt.trim().length > 0) {
+                    if (e.key === 'Enter' && !e.shiftKey && isValid) {
                       e.preventDefault()
                       handleSubmit()
                     }
                   }}
-                  placeholder="e.g. A futuristic landing page for a space tourism agency..."
-                  className="w-full h-32 bg-transparent p-4 text-base text-white placeholder-zinc-600 resize-none focus:outline-none"
+                  placeholder="A landing page for..."
+                  className="w-full h-24 bg-zinc-900 border border-zinc-800 rounded-lg p-4 font-mono text-sm text-zinc-200 placeholder-zinc-600 resize-none focus:outline-none focus:border-zinc-700"
                   autoFocus
                 />
-                
-                <div className="flex items-center justify-between px-4 py-3 bg-zinc-900/50 border-t border-zinc-800/50">
-                  <div className="flex items-center gap-2 text-xs text-zinc-500">
-                    <Command className="w-3 h-3" />
-                    <span>Enter to build</span>
-                    {!isValid && prompt.trim().length > 0 && (
-                      <span className="text-amber-500 ml-2">
-                        ({10 - prompt.trim().length} more chars)
-                      </span>
-                    )}
-                  </div>
-                  
+
+                <div className="flex items-center justify-between mt-4">
+                  <span className="font-mono text-xs text-zinc-600">
+                    {!isValid && prompt.trim().length > 0 && `${10 - prompt.trim().length} more`}
+                  </span>
                   <button
                     onClick={handleSubmit}
                     disabled={!isValid || isSubmitting}
-                    className={`
-                      flex items-center gap-2 px-4 py-1.5 rounded-lg text-sm font-medium transition-colors
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg font-mono text-sm transition-all
                       ${isValid && !isSubmitting
-                        ? 'bg-emerald-600 text-white hover:bg-emerald-500' 
-                        : 'bg-zinc-800 text-zinc-500 cursor-not-allowed'}
-                    `}
+                        ? 'bg-emerald-500/15 border border-emerald-500/40 hover:bg-emerald-500/20 hover:border-emerald-500/50 text-white shadow-[0_0_15px_rgba(16,185,129,0.15)]'
+                        : 'bg-zinc-800 border border-zinc-700 text-zinc-500 cursor-not-allowed'}`}
                   >
-                    {isSubmitting ? (
-                      <>
-                        <div className="w-3 h-3 border-2 border-black/30 border-t-black rounded-full animate-spin" />
-                        <span>Igniting...</span>
-                      </>
-                    ) : (
-                      <>
-                        <span>Build</span>
-                        <ArrowRight className="w-3 h-3" />
-                      </>
-                    )}
+                    {isSubmitting ? 'building...' : 'build'}
+                    {!isSubmitting && <ArrowRight className="w-3 h-3" />}
                   </button>
                 </div>
               </div>
-
-              {/* Suggestions */}
-              <div className="flex flex-wrap justify-center gap-2 mt-4">
-                {suggestions.map((s) => (
-                  <button
-                    key={s}
-                    onClick={() => setPrompt(s)}
-                    className="px-3 py-1 text-xs text-zinc-500 border border-zinc-800/50 rounded-full bg-zinc-900/30 hover:bg-zinc-800 hover:text-zinc-300 transition-colors"
-                  >
-                    {s}
-                  </button>
-                ))}
-              </div>
-
             </div>
           </motion.div>
         </motion.div>

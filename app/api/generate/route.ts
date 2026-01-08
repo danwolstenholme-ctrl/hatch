@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
 import { clerkClient } from '@clerk/nextjs/server'
 import { checkAndIncrementGeneration } from '@/lib/db'
+import { componentLibrary } from '@/lib/components'
 
 // Vercel Pro: extend timeout to 300s (5 min) for AI generation
 export const maxDuration = 300
@@ -81,7 +82,62 @@ function cleanGeneratedCode(code: string): string {
     .trim()
 }
 
-const systemPrompt = `You are HatchIt.dev — a React engineer who builds clean, working websites.
+// Build component reference based on section type
+function getRelevantComponents(sectionType?: string): string {
+  const lib = componentLibrary
+  let components: string[] = []
+  
+  // Always include buttons
+  components.push('## BUTTONS\n' + lib.buttons.variants.map(v => 
+    `**${v.name}**: ${v.description}\n\`\`\`jsx\n${v.code}\n\`\`\``
+  ).join('\n\n'))
+  
+  // Add relevant section components
+  if (sectionType === 'hero') {
+    components.push('## HEROES\n' + lib.heroes.variants.map(v => 
+      `**${v.name}**: ${v.description}\n\`\`\`jsx\n${v.code}\n\`\`\``
+    ).join('\n\n'))
+  } else if (sectionType === 'header' || sectionType === 'nav') {
+    components.push('## NAVIGATION\n' + lib.navs.variants.map(v => 
+      `**${v.name}**: ${v.description}\n\`\`\`jsx\n${v.code}\n\`\`\``
+    ).join('\n\n'))
+  } else if (sectionType === 'features' || sectionType === 'services') {
+    components.push('## FEATURES\n' + lib.features.variants.map(v => 
+      `**${v.name}**: ${v.description}\n\`\`\`jsx\n${v.code}\n\`\`\``
+    ).join('\n\n'))
+    components.push('## CARDS\n' + lib.cards.variants.map(v => 
+      `**${v.name}**: ${v.description}\n\`\`\`jsx\n${v.code}\n\`\`\``
+    ).join('\n\n'))
+  } else if (sectionType === 'pricing') {
+    components.push('## PRICING\n' + lib.pricing.variants.map(v => 
+      `**${v.name}**: ${v.description}\n\`\`\`jsx\n${v.code}\n\`\`\``
+    ).join('\n\n'))
+  } else if (sectionType === 'testimonials') {
+    components.push('## TESTIMONIALS\n' + lib.testimonials.variants.map(v => 
+      `**${v.name}**: ${v.description}\n\`\`\`jsx\n${v.code}\n\`\`\``
+    ).join('\n\n'))
+  } else if (sectionType === 'footer') {
+    components.push('## FOOTERS\n' + lib.footers.variants.map(v => 
+      `**${v.name}**: ${v.description}\n\`\`\`jsx\n${v.code}\n\`\`\``
+    ).join('\n\n'))
+  } else if (sectionType === 'contact' || sectionType === 'cta') {
+    components.push('## CTA / CONTACT\n' + lib.ctas.variants.map(v => 
+      `**${v.name}**: ${v.description}\n\`\`\`jsx\n${v.code}\n\`\`\``
+    ).join('\n\n'))
+    components.push('## FORMS\n' + lib.forms.variants.map(v => 
+      `**${v.name}**: ${v.description}\n\`\`\`jsx\n${v.code}\n\`\`\``
+    ).join('\n\n'))
+  } else {
+    // Default: include cards for generic sections
+    components.push('## CARDS\n' + lib.cards.variants.map(v => 
+      `**${v.name}**: ${v.description}\n\`\`\`jsx\n${v.code}\n\`\`\``
+    ).join('\n\n'))
+  }
+  
+  return components.join('\n\n')
+}
+
+const baseSystemPrompt = `You are HatchIt.dev — a React engineer who builds clean, minimal websites.
 
 ## OUTPUT FORMAT (ALWAYS USE THIS)
 
@@ -91,6 +147,16 @@ const systemPrompt = `You are HatchIt.dev — a React engineer who builds clean,
 [3 short suggestions separated by |]
 ---CODE---
 [Complete React component code]
+
+## DESIGN PHILOSOPHY
+
+You build MINIMAL, CLEAN websites. Avoid generic SaaS looks:
+- Use generous whitespace
+- Prefer left-aligned text over centered everything
+- Avoid gradient backgrounds (use solid colors)
+- No generic hero patterns (centered text + gradient + 3 feature cards)
+- Typography-led design: let the words breathe
+- Subtle, intentional animations only
 
 ## CODE RULES
 
@@ -172,7 +238,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { prompt, history, currentCode, currentPage, allPages, assets, skipComplexityWarning, brand } = body
+    const { prompt, history, currentCode, currentPage, allPages, assets, skipComplexityWarning, brand, sectionType } = body
 
     if (!prompt || typeof prompt !== 'string') {
       return NextResponse.json({ error: 'Invalid prompt' }, { status: 400 })
@@ -188,6 +254,10 @@ export async function POST(request: NextRequest) {
         })
       }
     }
+
+    // Build system prompt with relevant component library
+    const componentRef = getRelevantComponents(sectionType)
+    const systemPrompt = baseSystemPrompt + '\n\n## COMPONENT LIBRARY\nUse these as starting points. Customize colors, text, and layout to match the user\'s request:\n\n' + componentRef
 
     const messages: any[] = []
     

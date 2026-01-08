@@ -152,9 +152,9 @@ export default function GuestCreditBadge({
             className={`
               w-full py-2.5 px-3 rounded-lg font-semibold text-xs
               flex items-center justify-center gap-2
-              transition-colors
+              transition-all
               ${isOut || isCritical 
-                ? 'bg-emerald-600 text-white hover:bg-emerald-500' 
+                ? 'bg-emerald-500/15 border border-emerald-500/40 hover:bg-emerald-500/20 hover:border-emerald-500/50 text-white shadow-[0_0_15px_rgba(16,185,129,0.15)]' 
                 : 'bg-zinc-800 hover:bg-zinc-700 text-white border border-zinc-700'
               }
             `}

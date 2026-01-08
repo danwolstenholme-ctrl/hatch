@@ -353,3 +353,12 @@ input, textarea, select {
     border-radius: 50% 50% 50% 50% / 40% 40% 60% 60%;
   }
 }
+
+/* Safe area insets for mobile devices */
+.safe-area-bottom {
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+.builder-ambient-glow {
+  background: radial-gradient(ellipse at center, rgba(16, 185, 129, 0.10), transparent 65%);
+}

@@ -1,10 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth, clerkClient } from '@clerk/nextjs/server'
 import { AccountSubscription } from '@/types/subscriptions'
-import { getProjectsByUserId } from '@/lib/db/projects'
+import { getProjectsByUserId, getProjectById } from '@/lib/db/projects'
+import { generateProjectScaffold, ProjectConfig } from '@/lib/scaffold'
 
 // =============================================================================
-// EXPORT TO ZIP
+// EXPORT TO ZIP - Now with proper project scaffold!
 // TIER: Architect+ (basic export), Visionary+ (full code export with assets)
 // =============================================================================
 
@@ -54,7 +55,7 @@ export async function POST(req: NextRequest) {
     }, { status: 403 })
   }
 
-  const { code, pages, projectSlug, assets } = await req.json()
+  const { code, pages, projectSlug, projectId, assets } = await req.json()
 
   if (!code && (!pages || pages.length === 0)) {
     return NextResponse.json({ error: 'No code or pages provided' }, { status: 400 })
@@ -63,17 +64,22 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'No pages to export' }, { status: 400 })
   }
 
-  if (!projectSlug) {
-    return NextResponse.json({ error: 'Project slug required' }, { status: 400 })
+  if (!projectSlug && !projectId) {
+    return NextResponse.json({ error: 'Project slug or ID required' }, { status: 400 })
   }
 
-  // Verify project ownership - use clerk_id directly
+  // Verify project ownership and get project data
+  let project = null
   try {
     const userProjects = await getProjectsByUserId(userId)
-    const ownsProject = userProjects.some((p: { slug: string }) => p.slug === projectSlug)
-    if (!ownsProject) {
+    const foundProject = userProjects.find((p: { slug: string; id: string }) => 
+      p.slug === projectSlug || p.id === projectId
+    )
+    if (!foundProject) {
       return NextResponse.json({ error: 'Project not found or access denied' }, { status: 403 })
     }
+    // Get full project with brand config
+    project = await getProjectById(foundProject.id)
   } catch {
     return NextResponse.json({ error: 'Failed to verify project ownership' }, { status: 500 })
   }
@@ -114,128 +120,37 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Failed to verify subscription' }, { status: 500 })
   }
 
-  const files: Record<string, string> = {
-    'package.json': JSON.stringify({
-      name: 'my-hatchit-project',
-      version: '0.1.0',
-      private: true,
-      scripts: {
-        dev: 'next dev',
-        build: 'next build',
-        start: 'next start',
-        lint: 'eslint'
-      },
-      dependencies: {
-        next: '14.1.0',
-        react: '18.2.0',
-        'react-dom': '18.2.0',
-        'framer-motion': '^11.0.0',
-        'lucide-react': '^0.300.0'
-      },
-      devDependencies: {
-        '@types/node': '^20',
-        '@types/react': '^18',
-        '@types/react-dom': '^18',
-        tailwindcss: '^3.4.0',
-        postcss: '^8.4.0',
-        autoprefixer: '^10.4.0',
-        typescript: '^5'
-      }
-    }, null, 2),
+  const files: Record<string, string> = {}
 
-    'tsconfig.json': JSON.stringify({
-      compilerOptions: {
-        target: 'es5',
-        lib: ['dom', 'dom.iterable', 'esnext'],
-        allowJs: true,
-        skipLibCheck: true,
-        strict: true,
-        noEmit: true,
-        esModuleInterop: true,
-        module: 'esnext',
-        moduleResolution: 'bundler',
-        resolveJsonModule: true,
-        isolatedModules: true,
-        jsx: 'preserve',
-        incremental: true,
-        plugins: [{ name: 'next' }],
-        paths: { '@/*': ['./*'] }
-      },
-      include: ['next-env.d.ts', '**/*.ts', '**/*.tsx', '.next/types/**/*.ts'],
-      exclude: ['node_modules']
-    }, null, 2),
+  // Generate proper scaffold from project config
+  const brandConfig = project?.brand_config as Record<string, string | undefined> | null
+  
+  const scaffoldConfig: ProjectConfig = {
+    name: project?.name || 'My HatchIt Project',
+    slug: project?.slug || 'my-hatchit-project',
+    description: '', // Projects don't have description field yet
+    brand: {
+      primaryColor: brandConfig?.primaryColor || '#10b981',
+      secondaryColor: brandConfig?.secondaryColor || '#059669',
+      font: brandConfig?.font || 'Inter',
+      headingFont: brandConfig?.headingFont || brandConfig?.font || 'Inter',
+      mode: (brandConfig?.mode as 'dark' | 'light') || 'dark',
+    },
+    seo: {
+      title: project?.name || 'My HatchIt Project',
+      description: 'Built with HatchIt.dev',
+    },
+  }
 
-    'postcss.config.js': `module.exports = {
-  plugins: {
-    tailwindcss: {},
-    autoprefixer: {},
-  },
-}`,
-
-    'next.config.js': `/** @type {import('next').NextConfig} */
-const nextConfig = {}
-module.exports = nextConfig`,
-
-    'app/globals.css': `@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
-html, body {
-  height: 100%;
-  width: 100%;
-  margin: 0;
-}`,
-
-    'tailwind.config.js': `/** @type {import('tailwindcss').Config} */
-module.exports = {
-  content: [
-    './pages/**/*.{js,ts,jsx,tsx,mdx}',
-    './components/**/*.{js,ts,jsx,tsx,mdx}',
-    './app/**/*.{js,ts,jsx,tsx,mdx}',
-  ],
-  theme: {
-    extend: {},
-  },
-  plugins: [],
-}`,
-
-    'app/layout.tsx': `import type { Metadata } from "next";
-import "./globals.css";
-
-export const metadata: Metadata = {
-  title: "My HatchIt.dev Project",
-  description: "Built with HatchIt.dev",
-};
-
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  return (
-    <html lang="en">
-      <body>{children}</body>
-    </html>
-  );
-}`,
-
-    'README.md': `# My HatchIt.dev Project
-
-Built with [HatchIt.dev](https://hatchit.dev)
-
-## Getting Started
-
-\`\`\`bash
-npm install
-npm run dev
-\`\`\`
-
-Open [http://localhost:3000](http://localhost:3000) to see your component.
-
-## Deploy
-
-Push to GitHub and connect to [Vercel](https://vercel.com) for instant deployment.
-`
+  // Generate scaffold files
+  const scaffoldFiles = generateProjectScaffold(scaffoldConfig)
+  
+  // Add scaffold files (but we'll override page.tsx with actual content)
+  for (const file of scaffoldFiles) {
+    // Skip page files - we'll add those with actual generated content
+    if (!file.path.endsWith('page.tsx')) {
+      files[file.path] = file.content
+    }
   }
 
   // Helper: Extract Lucide icon names from code
@@ -253,17 +168,35 @@ Push to GitHub and connect to [Vercel](https://vercel.com) for instant deploymen
     return Array.from(icons)
   }
 
-  // Add page files
+  // Add page files with generated content
   if (pages && pages.length > 0) {
-    // Multi-page project
-    pages.forEach((page: { path: string; code: string }) => {
+    // Multi-page project - export sections as individual component files
+    const sectionComponents: Record<string, string> = {}
+    
+    pages.forEach((page: { path: string; code: string; sectionId?: string; name?: string }) => {
       const icons = extractLucideIcons(page.code)
-      const lucideImport = icons.length > 0 ? `import { ${icons.join(', ')} } from 'lucide-react'\n` : ''
+      const lucideImport = icons.length > 0 ? `import { ${icons.join(', ')} } from 'lucide-react'` : ''
       
+      // If this is a section, save it as a component
+      if (page.sectionId) {
+        const componentName = page.sectionId.charAt(0).toUpperCase() + page.sectionId.slice(1).replace(/-/g, '')
+        sectionComponents[page.sectionId] = componentName
+        
+        files[`components/sections/${componentName}.tsx`] = `'use client'
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+${lucideImport}
+
+${page.code}
+`
+      }
+      
+      // Still create page files
       const pageCode = `'use client'
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 ${lucideImport}
+
 ${page.code}`
       
       if (page.path === '/') {
@@ -273,15 +206,29 @@ ${page.code}`
         files[`app/${routeName}/page.tsx`] = pageCode
       }
     })
+    
+    // Update the sections index to export all generated sections
+    if (Object.keys(sectionComponents).length > 0) {
+      files['components/sections/index.ts'] = `// Section components - generated by HatchIt builder
+export { default as Header } from '../Header'
+export { default as Footer } from '../Footer'
+
+// Generated sections:
+${Object.entries(sectionComponents).map(([, name]) => 
+  `export { default as ${name} } from './${name}'`
+).join('\n')}
+`
+    }
   } else {
     // Single-page project
     const icons = extractLucideIcons(code)
-    const lucideImport = icons.length > 0 ? `import { ${icons.join(', ')} } from 'lucide-react'\n` : ''
+    const lucideImport = icons.length > 0 ? `import { ${icons.join(', ')} } from 'lucide-react'` : ''
     
     files['app/page.tsx'] = `'use client'
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-${lucideImport}import Component from '@/components/Generated'
+${lucideImport}
+import Component from '@/components/Generated'
 
 export default function Home() {
   return <Component />
@@ -291,6 +238,7 @@ export default function Home() {
 import { useState, useEffect, useMemo, useCallback, useRef } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 ${lucideImport}
+
 ${code}`
   }
 

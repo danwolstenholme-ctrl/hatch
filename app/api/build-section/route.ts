@@ -3,10 +3,77 @@ import { auth, currentUser } from '@clerk/nextjs/server'
 import { getProjectById, getOrCreateUser, completeSection, checkAndIncrementGeneration } from '@/lib/db'
 import { getUserDNA } from '@/lib/db/chronosphere'
 import { StyleDNA } from '@/lib/supabase'
+import { componentLibrary } from '@/lib/components'
 
 // =============================================================================
 // CLAUDE SONNET 4.5 - THE ARCHITECT (BUILDER MODE)
 // =============================================================================
+
+// Build component reference based on section type
+function getComponentReference(sectionType: string): string {
+  const lib = componentLibrary
+  let components: string[] = []
+  
+  // Map section types to relevant components
+  if (sectionType === 'hero') {
+    components.push('### Hero Variants\n' + lib.heroes.variants.map(v => 
+      `**${v.name}**: ${v.description}`
+    ).join('\n'))
+    components.push('### Button Styles\n' + lib.buttons.variants.map(v => 
+      `**${v.name}**: ${v.description}`
+    ).join('\n'))
+  } else if (sectionType === 'header' || sectionType === 'nav') {
+    components.push('### Navigation Variants\n' + lib.navs.variants.map(v => 
+      `**${v.name}**: ${v.description}`
+    ).join('\n'))
+  } else if (sectionType === 'features' || sectionType === 'services') {
+    components.push('### Feature Layouts\n' + lib.features.variants.map(v => 
+      `**${v.name}**: ${v.description}`
+    ).join('\n'))
+    components.push('### Card Styles\n' + lib.cards.variants.map(v => 
+      `**${v.name}**: ${v.description}`
+    ).join('\n'))
+  } else if (sectionType === 'pricing') {
+    components.push('### Pricing Layouts\n' + lib.pricing.variants.map(v => 
+      `**${v.name}**: ${v.description}`
+    ).join('\n'))
+  } else if (sectionType === 'testimonials') {
+    components.push('### Testimonial Styles\n' + lib.testimonials.variants.map(v => 
+      `**${v.name}**: ${v.description}`
+    ).join('\n'))
+  } else if (sectionType === 'footer') {
+    components.push('### Footer Layouts\n' + lib.footers.variants.map(v => 
+      `**${v.name}**: ${v.description}`
+    ).join('\n'))
+  } else if (sectionType === 'contact' || sectionType === 'cta') {
+    components.push('### CTA/Contact Styles\n' + lib.ctas.variants.map(v => 
+      `**${v.name}**: ${v.description}`
+    ).join('\n'))
+    components.push('### Form Elements\n' + lib.forms.variants.map(v => 
+      `**${v.name}**: ${v.description}`
+    ).join('\n'))
+  } else {
+    // Default: include cards
+    components.push('### Card Styles\n' + lib.cards.variants.map(v => 
+      `**${v.name}**: ${v.description}`
+    ).join('\n'))
+  }
+  
+  if (components.length === 0) return ''
+  
+  return `\n## COMPONENT REFERENCE (Minimal Style Guide)
+Use these patterns as inspiration. Pick ONE variant and customize:
+
+${components.join('\n\n')}
+
+DESIGN RULES:
+- Avoid generic SaaS layouts (centered text + gradient + 3 cards)
+- Use generous whitespace
+- Prefer left-aligned text over centered everything  
+- Typography-led design: let the words breathe
+- Subtle, intentional animations only
+`
+}
 
 // Rate limiting: 20 requests per minute per user
 const rateLimitMap = new Map<string, { count: number; resetTime: number }>()
@@ -167,6 +234,8 @@ Build a "${sectionName}" section for a website.
 Description: ${sectionDescription}
 ${sectionPromptHint ? `Specific Requirement: ${sectionPromptHint}` : ''}
 
+${getComponentReference(templateType)}
+
 ## TECHNICAL STACK
 - React 19 (Functional Components)
 - Tailwind CSS 4 (Utility-first)
@@ -205,6 +274,7 @@ Example JSON structure:
 - Make it feel expensive.
 - Use subtle animations (fade-in, slide-up) with Framer Motion.
 - Ensure high contrast and readability.
+- AVOID: Generic centered hero + gradient background + 3 cards layout
 
 Now build the ${sectionName} section.`
 }

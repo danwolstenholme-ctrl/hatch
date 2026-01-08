@@ -3,52 +3,70 @@
 import { useState } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { 
-  Home, 
   Plus, 
   Layers, 
   Sparkles, 
   MessageSquare, 
   Eye,
-  Globe,
   Zap,
-  Shield,
-  Download,
-  Rocket,
-  Lock,
-  ChevronDown,
   ChevronRight,
-  FileCode,
   Settings,
   Check,
-  Crown,
-  Star,
-  ArrowRight
+  ArrowUp,
+  ArrowDown,
+  ArrowRight,
+  Trash2,
+  Layout,
+  Type,
+  Image as ImageIcon,
+  Quote,
+  DollarSign,
+  HelpCircle,
+  Mail,
+  BarChart3,
+  Users,
+  Briefcase,
+  Menu as MenuIcon,
+  Star
 } from 'lucide-react'
-import Link from 'next/link'
-import Image from 'next/image'
 
 // =============================================================================
-// SIDEBAR - ONE layout for both demo and live modes
-// Demo mode: tier='demo', features locked, sign-up CTAs
-// Live mode: tier based on subscription, features unlock progressively
+// BUILDER SIDEBAR - Clean, minimal, infrastructure-focused
 // =============================================================================
 
 type Tier = 'demo' | 'free' | 'architect' | 'visionary' | 'singularity'
+
+const SECTION_TYPES = [
+  { id: 'header', name: 'Header', icon: MenuIcon, pinned: 'top' },
+  { id: 'hero', name: 'Hero', icon: Layout },
+  { id: 'features', name: 'Features', icon: Star },
+  { id: 'services', name: 'Services', icon: Briefcase },
+  { id: 'about', name: 'About', icon: Users },
+  { id: 'testimonials', name: 'Testimonials', icon: Quote },
+  { id: 'pricing', name: 'Pricing', icon: DollarSign },
+  { id: 'stats', name: 'Stats', icon: BarChart3 },
+  { id: 'work', name: 'Portfolio', icon: ImageIcon },
+  { id: 'faq', name: 'FAQ', icon: HelpCircle },
+  { id: 'cta', name: 'CTA', icon: Zap },
+  { id: 'contact', name: 'Contact', icon: Mail },
+  { id: 'footer', name: 'Footer', icon: Type, pinned: 'bottom' },
+] as const
 
 interface SidebarProps {
   currentSection: number
   totalSections: number
   sectionNames?: string[]
   allSectionNames?: string[]
+  sectionIds?: string[]
   isGenerating: boolean
   projectName?: string
   userTier: Tier
-  // Status indicators
   isHealing?: boolean
   lastHealMessage?: string
-  // Feature callbacks
   onOpenSettings?: () => void
   onAddSection?: () => void
+  onAddSectionOfType?: (sectionType: string) => void
+  onRemoveSection?: (index: number) => void
   onOpenOracle?: () => void
   onOpenWitness?: () => void
   onOpenArchitect?: () => void
@@ -58,13 +76,12 @@ interface SidebarProps {
   onExport?: () => void
   onAddPage?: () => void
   onSelectSection?: (index: number) => void
+  onMoveSection?: (fromIndex: number, toIndex: number) => void
   onUpgrade?: (requiredTier: Tier) => void
-  onSignUp?: () => void  // For demo mode - redirect to sign up
+  onSignUp?: () => void
 }
 
-// Singularity-branded feature names with tier requirements
-// Healer is NOT a clickable tool - it runs automatically in background
-const FEATURES: Array<{
+const AI_TOOLS: Array<{
   id: string
   icon: typeof Plus
   name: string
@@ -72,30 +89,20 @@ const FEATURES: Array<{
   tier: Tier
   action: keyof SidebarProps
 }> = [
-  { id: 'genesis', icon: Plus, name: 'Genesis', desc: 'Add new section', tier: 'free', action: 'onAddSection' },
-  { id: 'oracle', icon: MessageSquare, name: 'Oracle', desc: 'AI assistant', tier: 'free', action: 'onOpenOracle' },
-  { id: 'witness', icon: Eye, name: 'Witness', desc: 'AI observations', tier: 'free', action: 'onOpenWitness' },
-  { id: 'architect', icon: Sparkles, name: 'Architect', desc: 'Prompt optimizer', tier: 'free', action: 'onOpenArchitect' },
-  { id: 'pages', icon: FileCode, name: 'Pages', desc: 'Multi-page sites', tier: 'architect', action: 'onAddPage' },
-  { id: 'deploy', icon: Rocket, name: 'Deploy', desc: 'Ship to web', tier: 'architect', action: 'onDeploy' },
-  { id: 'export', icon: Download, name: 'Export', desc: 'Download code', tier: 'architect', action: 'onExport' },
-  { id: 'auditor', icon: Shield, name: 'Auditor', desc: 'Quality check', tier: 'visionary', action: 'onRunAudit' },
-  { id: 'replicator', icon: Globe, name: 'Replicator', desc: 'Clone any site', tier: 'singularity', action: 'onOpenReplicator' },
+  { id: 'oracle', icon: MessageSquare, name: 'Assistant', desc: 'Get help', tier: 'free', action: 'onOpenOracle' },
+  { id: 'architect', icon: Sparkles, name: 'Prompt Helper', desc: 'Optimize prompts', tier: 'free', action: 'onOpenArchitect' },
+  { id: 'witness', icon: Eye, name: 'Witness', desc: 'AI insights', tier: 'singularity', action: 'onOpenWitness' },
 ]
 
-// Demo is below free - nothing unlocked except witness
 const TIER_ORDER: Tier[] = ['demo', 'free', 'architect', 'visionary', 'singularity']
-
-const TIER_CONFIG: Record<Tier, { name: string; color: string; icon: typeof Star }> = {
-  demo: { name: 'Sandbox', color: 'text-amber-400', icon: Star },
-  free: { name: 'Free', color: 'text-zinc-400', icon: Star },
-  architect: { name: 'Architect', color: 'text-emerald-400', icon: Star },
-  visionary: { name: 'Visionary', color: 'text-violet-400', icon: Crown },
-  singularity: { name: 'Singularity', color: 'text-amber-400', icon: Crown },
-}
 
 function canAccess(userTier: Tier, requiredTier: Tier): boolean {
   return TIER_ORDER.indexOf(userTier) >= TIER_ORDER.indexOf(requiredTier)
+}
+
+function getSectionIcon(sectionId: string) {
+  const type = SECTION_TYPES.find(t => t.id === sectionId)
+  return type?.icon || Layers
 }
 
 export default function LiveSidebar({
@@ -103,31 +110,25 @@ export default function LiveSidebar({
   totalSections,
   sectionNames,
   allSectionNames,
+  sectionIds,
   isGenerating,
-  projectName = 'Untitled Project',
+  projectName = 'Untitled',
   userTier,
   isHealing,
-  lastHealMessage,
   onOpenSettings,
   onAddSection,
+  onAddSectionOfType,
+  onRemoveSection,
   onOpenOracle,
   onOpenWitness,
   onOpenArchitect,
-  onOpenReplicator,
-  onRunAudit,
-  onDeploy,
-  onExport,
-  onAddPage,
   onSelectSection,
+  onMoveSection,
   onUpgrade,
   onSignUp,
 }: SidebarProps) {
-  const [expandedSection, setExpandedSection] = useState<string | null>('build')
+  const [showAddMenu, setShowAddMenu] = useState(false)
   const isDemo = userTier === 'demo'
-
-  const tierConfig = TIER_CONFIG[userTier]
-  const TierIcon = tierConfig.icon
-  const [showHealerInfo, setShowHealerInfo] = useState(false)
 
   const getSectionLabel = (index: number) => {
     const names = allSectionNames || sectionNames
@@ -137,272 +138,218 @@ export default function LiveSidebar({
     return `Section ${index + 1}`
   }
 
-  const handleFeatureClick = (feature: typeof FEATURES[0]) => {
-    // Demo users go to sign up for locked features
-    if (!canAccess(userTier, feature.tier)) {
+  const handleAIToolClick = (tool: typeof AI_TOOLS[0]) => {
+    if (!canAccess(userTier, tool.tier)) {
       if (isDemo && onSignUp) {
         onSignUp()
       } else {
-        onUpgrade?.(feature.tier)
+        onUpgrade?.(tool.tier)
       }
       return
     }
     
     const callbacks: Record<string, (() => void) | undefined> = {
-      onAddSection,
       onOpenOracle,
       onOpenWitness,
       onOpenArchitect,
-      onOpenReplicator,
-      onRunAudit,
-      onDeploy,
-      onExport,
-      onAddPage,
     }
     
-    callbacks[feature.action]?.()
+    callbacks[tool.action]?.()
   }
 
-  // Group features by access level
-  const unlockedFeatures = FEATURES.filter(f => canAccess(userTier, f.tier))
-  const lockedFeatures = FEATURES.filter(f => !canAccess(userTier, f.tier))
+  const availableSectionTypes = SECTION_TYPES.filter(type => {
+    if (!('pinned' in type)) return true
+    return !sectionIds?.includes(type.id)
+  })
+
+  const unlockedAITools = AI_TOOLS.filter(t => canAccess(userTier, t.tier))
 
   return (
-    <div className="w-64 lg:w-72 flex flex-col h-full relative overflow-hidden">
-      {/* Glass background */}
-      <div className="absolute inset-0 bg-zinc-900/70 backdrop-blur-xl" />
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(16,185,129,0.04),transparent_60%)]" />
-      <div className="absolute inset-0 bg-gradient-to-b from-white/[0.02] to-transparent pointer-events-none" />
-      <div className="absolute inset-y-0 right-0 w-px bg-gradient-to-b from-transparent via-zinc-700/50 to-transparent" />
-      
-      <div className="relative flex-1 overflow-y-auto scrollbar-thin">
-        {/* Header */}
+    <div className="w-full h-full flex flex-col bg-zinc-950">
+      <div className="flex-1 overflow-y-auto">
+        {/* Project Header */}
         <div className="px-4 py-4 border-b border-zinc-800/50">
-          <Link href={isDemo ? "/" : "/dashboard"} className="flex items-center gap-2 text-xs text-zinc-500 hover:text-white transition-colors mb-3">
-            <Home className="w-3.5 h-3.5" />
-            {isDemo ? 'Exit Demo' : 'Dashboard'}
-          </Link>
-          
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-zinc-800 border border-zinc-700 flex items-center justify-center">
-              <Image src="/icon.svg" alt="HatchIt" width={20} height={20} />
-            </div>
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-1.5">
-                <TierIcon className={`w-3 h-3 ${tierConfig.color}`} />
-                <p className={`text-[10px] uppercase tracking-wider ${tierConfig.color}`}>{tierConfig.name}</p>
-              </div>
-              <h2 className="text-sm font-medium text-white truncate">{projectName}</h2>
-            </div>
+          <h2 className="text-sm font-medium text-white truncate">{projectName}</h2>
+          <div className="flex items-center gap-2 mt-1">
+            <div className={`w-1.5 h-1.5 rounded-full ${isHealing ? 'bg-amber-400 animate-pulse' : 'bg-emerald-500'}`} />
+            <span className="text-[10px] text-zinc-500">
+              {isHealing ? 'Fixing...' : 'Ready'}
+            </span>
           </div>
         </div>
 
-        {/* System Status - Healer (click for info) */}
-        <div className="px-4 py-2 border-b border-zinc-800/50">
-          <button 
-            onClick={() => setShowHealerInfo(!showHealerInfo)}
-            className="w-full flex items-center gap-2 hover:opacity-80 transition-opacity"
-          >
-            <div className={`w-2 h-2 rounded-full ${isHealing ? 'bg-amber-400 animate-pulse' : 'bg-emerald-500'}`} />
-            <Zap className={`w-3 h-3 ${isHealing ? 'text-amber-400' : 'text-zinc-600'}`} />
-            <span className="text-[10px] uppercase tracking-wider text-zinc-600">Healer</span>
-            {isHealing && (
-              <motion.div
-                initial={{ opacity: 0, x: -5 }}
-                animate={{ opacity: 1, x: 0 }}
-                className="flex items-center gap-1 ml-auto"
-              >
-                <Sparkles className="w-3 h-3 text-amber-400 animate-spin" />
-                <span className="text-[10px] text-amber-400">Fixing...</span>
-              </motion.div>
-            )}
-            {!isHealing && lastHealMessage && (
-              <span className="text-[10px] text-emerald-400/70 ml-auto truncate max-w-[120px]">
-                ✓ Fixed
-              </span>
-            )}
-            {!isHealing && !lastHealMessage && (
-              <span className="text-[10px] text-zinc-600 ml-auto">Ready</span>
-            )}
-          </button>
+        {/* Sections */}
+        <div className="p-4">
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-[10px] uppercase tracking-wider text-zinc-500">Sections</span>
+            <span className="text-[10px] text-zinc-600">{currentSection}/{totalSections}</span>
+          </div>
           
-          {/* Healer Info Panel */}
-          <AnimatePresence>
-            {showHealerInfo && (
-              <motion.div
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: 'auto', opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
-                className="overflow-hidden"
-              >
-                <div className="mt-2 p-2.5 bg-zinc-900/50 rounded-lg border border-zinc-800/50">
-                  <p className="text-[10px] text-zinc-400 leading-relaxed">
-                    {isHealing ? (
-                      <>Healer detected an issue and is automatically fixing it. No action needed.</>
-                    ) : lastHealMessage ? (
-                      <>Last fix: {lastHealMessage}</>
-                    ) : (
-                      <>Healer monitors your builds for errors and automatically fixes them. It runs in the background - you don&apos;t need to do anything.</>
-                    )}
-                  </p>
-                  <div className="mt-2 flex items-center gap-2">
-                    <div className={`w-1.5 h-1.5 rounded-full ${isHealing ? 'bg-amber-400' : 'bg-emerald-500'}`} />
-                    <span className="text-[9px] uppercase tracking-wider text-zinc-500">
-                      {isHealing ? 'Working' : 'Standby'}
-                    </span>
-                  </div>
-                </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
+          <div className="space-y-0.5">
+            {Array.from({ length: allSectionNames?.length || totalSections }).map((_, i) => {
+              const isActive = i === currentSection - 1
+              const isCompleted = i < currentSection - 1
+              const isClickable = isCompleted || isActive
+              const id = sectionIds?.[i]
+              const SectionIcon = getSectionIcon(id || '')
 
-        {/* Build Timeline */}
-        <div className="px-4 py-3 border-b border-zinc-800/50">
-          <button
-            onClick={() => setExpandedSection(expandedSection === 'build' ? null : 'build')}
-            className="w-full flex items-center justify-between text-left"
-          >
-            <div className="flex items-center gap-2">
-              <Layers className="w-4 h-4 text-emerald-400" />
-              <span className="text-xs font-medium text-zinc-200">Sections</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <span className="text-[10px] text-zinc-500">{currentSection}/{totalSections}</span>
-              <ChevronDown className={`w-3.5 h-3.5 text-zinc-500 transition-transform ${expandedSection === 'build' ? 'rotate-180' : ''}`} />
-            </div>
-          </button>
-          
-          <AnimatePresence>
-            {expandedSection === 'build' && (
-              <motion.div
-                initial={{ height: 0, opacity: 0 }}
-                animate={{ height: 'auto', opacity: 1 }}
-                exit={{ height: 0, opacity: 0 }}
-                className="overflow-hidden"
-              >
-                <div className="pt-3 space-y-1">
-                  {Array.from({ length: allSectionNames?.length || totalSections }).map((_, i) => {
-                    const isActive = i === currentSection - 1
-                    const isCompleted = i < currentSection - 1
-                    const isClickable = isCompleted || isActive
-                    
-                    return (
-                      <button
-                        key={i}
-                        onClick={() => isClickable && onSelectSection?.(i)}
-                        disabled={!isClickable}
-                        className={`w-full flex items-center gap-2 px-2 py-1.5 rounded-md transition-all ${
-                          isActive 
-                            ? 'bg-emerald-500/10 border border-emerald-500/20' 
-                            : isClickable 
-                              ? 'hover:bg-zinc-800/50 cursor-pointer' 
-                              : 'opacity-40 cursor-not-allowed'
-                        }`}
-                      >
-                        <div className={`w-2 h-2 rounded-full flex-shrink-0 ${
-                          isCompleted ? 'bg-emerald-500' : isActive ? 'bg-emerald-400 animate-pulse' : 'bg-zinc-700'
-                        }`} />
-                        <span className={`text-xs truncate ${isActive ? 'text-white font-medium' : 'text-zinc-400'}`}>
-                          {getSectionLabel(i)}
-                        </span>
-                        {isCompleted && <Check className="w-3 h-3 text-emerald-500 ml-auto flex-shrink-0" />}
-                        {isActive && isGenerating && (
-                          <span className="text-[10px] text-emerald-400 ml-auto flex-shrink-0">Building...</span>
-                        )}
-                      </button>
-                    )
-                  })}
-                  
-                  {/* Add Section Button */}
+              const isHeader = id === 'header'
+              const isFooter = id === 'footer'
+              const wouldSwapWithHeader = sectionIds?.[i - 1] === 'header'
+              const wouldSwapWithFooter = sectionIds?.[i + 1] === 'footer'
+
+              const canMoveUp = i > 0 && !isHeader && !isFooter && !wouldSwapWithHeader
+              const canMoveDown = i < (totalSections - 1) && !isHeader && !isFooter && !wouldSwapWithFooter
+              const canRemove = !isHeader && !isFooter && onRemoveSection
+              
+              return (
+                <div key={i} className="group relative">
                   <button
-                    onClick={() => handleFeatureClick(FEATURES[0])}
-                    className="w-full flex items-center gap-2 px-2 py-1.5 rounded-md border border-dashed border-zinc-700 hover:border-emerald-500/40 hover:bg-emerald-500/5 transition-all mt-2"
+                    onClick={() => isClickable && onSelectSection?.(i)}
+                    disabled={!isClickable}
+                    className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-lg transition-all text-left ${
+                      isActive 
+                        ? 'bg-emerald-500/10 border border-emerald-500/30' 
+                        : isClickable 
+                          ? 'hover:bg-zinc-900 border border-transparent' 
+                          : 'opacity-40 cursor-not-allowed border border-transparent'
+                    }`}
                   >
-                    <Plus className="w-3.5 h-3.5 text-zinc-500" />
-                    <span className="text-xs text-zinc-500">Add section</span>
+                    <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${
+                      isCompleted ? 'bg-emerald-500' : isActive && isGenerating ? 'bg-amber-400 animate-pulse' : isActive ? 'bg-emerald-400' : 'bg-zinc-700'
+                    }`} />
+                    <SectionIcon className={`w-3.5 h-3.5 flex-shrink-0 ${isActive ? 'text-emerald-400' : 'text-zinc-600'}`} />
+                    <span className={`flex-1 text-xs truncate ${isActive ? 'text-white' : 'text-zinc-400'}`}>
+                      {getSectionLabel(i)}
+                    </span>
+                    {isCompleted && !isActive && <Check className="w-3 h-3 text-emerald-500/70 flex-shrink-0" />}
                   </button>
+
+                  {(canMoveUp || canMoveDown || canRemove) && (
+                    <div className="absolute right-1 top-1/2 -translate-y-1/2 flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                      {canMoveUp && (
+                        <button
+                          onClick={(e) => { e.stopPropagation(); onMoveSection?.(i, i - 1) }}
+                          className="p-1 rounded hover:bg-zinc-800"
+                        >
+                          <ArrowUp className="w-3 h-3 text-zinc-500" />
+                        </button>
+                      )}
+                      {canMoveDown && (
+                        <button
+                          onClick={(e) => { e.stopPropagation(); onMoveSection?.(i, i + 1) }}
+                          className="p-1 rounded hover:bg-zinc-800"
+                        >
+                          <ArrowDown className="w-3 h-3 text-zinc-500" />
+                        </button>
+                      )}
+                      {canRemove && (
+                        <button
+                          onClick={(e) => { e.stopPropagation(); onRemoveSection?.(i) }}
+                          className="p-1 rounded hover:bg-red-500/10"
+                        >
+                          <Trash2 className="w-3 h-3 text-zinc-500 hover:text-red-400" />
+                        </button>
+                      )}
+                    </div>
+                  )}
                 </div>
-              </motion.div>
-            )}
-          </AnimatePresence>
+              )
+            })}
+          </div>
+          
+          {/* Add Section */}
+          <div className="relative mt-3">
+            <button
+              onClick={() => setShowAddMenu(!showAddMenu)}
+              className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-400 hover:text-white text-xs transition-all"
+            >
+              <Plus className="w-3.5 h-3.5" />
+              Add Section
+            </button>
+
+            <AnimatePresence>
+              {showAddMenu && (
+                <>
+                  <div className="fixed inset-0 z-40" onClick={() => setShowAddMenu(false)} />
+                  <motion.div
+                    initial={{ opacity: 0, y: 5 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 5 }}
+                    className="absolute left-0 right-0 bottom-full mb-2 bg-zinc-900 border border-zinc-800 rounded-xl shadow-2xl z-50 overflow-hidden"
+                  >
+                    <div className="p-2 max-h-64 overflow-y-auto">
+                      <p className="px-2 py-1.5 text-[10px] text-zinc-500 uppercase tracking-wider">
+                        Section Type
+                      </p>
+                      <div className="grid grid-cols-2 gap-1 mt-1">
+                        {availableSectionTypes.map((type) => {
+                          const Icon = type.icon
+                          return (
+                            <button
+                              key={type.id}
+                              onClick={() => {
+                                if (onAddSectionOfType) {
+                                  onAddSectionOfType(type.id)
+                                } else if (onAddSection) {
+                                  onAddSection()
+                                }
+                                setShowAddMenu(false)
+                              }}
+                              className="flex items-center gap-2 px-2.5 py-2 rounded-lg hover:bg-zinc-800 text-left transition-colors"
+                            >
+                              <Icon className="w-3.5 h-3.5 text-zinc-500" />
+                              <span className="text-xs text-zinc-300">{type.name}</span>
+                            </button>
+                          )
+                        })}
+                      </div>
+                    </div>
+                  </motion.div>
+                </>
+              )}
+            </AnimatePresence>
+          </div>
         </div>
 
-        {/* Unlocked Features */}
-        <div className="px-4 py-3 border-b border-zinc-800/50">
-          <p className="text-[10px] uppercase tracking-wider text-zinc-600 mb-2">Tools</p>
-          <div className="space-y-1">
-            {unlockedFeatures.slice(1).map((feature) => ( // Skip Genesis, it's in timeline
+        {/* AI Tools */}
+        <div className="px-4 py-3 border-t border-zinc-800/50">
+          <p className="text-[10px] uppercase tracking-wider text-zinc-600 mb-2">AI Tools</p>
+          <div className="space-y-0.5">
+            {unlockedAITools.map((tool) => (
               <button
-                key={feature.id}
-                onClick={() => handleFeatureClick(feature)}
-                className="w-full flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-zinc-800/50 transition-all group"
+                key={tool.id}
+                onClick={() => handleAIToolClick(tool)}
+                className="w-full flex items-center gap-3 px-2.5 py-2 rounded-lg hover:bg-zinc-900 transition-all group"
               >
-                <div className="p-1.5 rounded-md bg-zinc-800/80 group-hover:bg-emerald-500/10 transition-colors">
-                  <feature.icon className="w-3.5 h-3.5 text-zinc-400 group-hover:text-emerald-400 transition-colors" />
-                </div>
+                <tool.icon className="w-3.5 h-3.5 text-zinc-500 group-hover:text-emerald-400 transition-colors" />
                 <div className="flex-1 text-left">
-                  <p className="text-xs font-medium text-zinc-300 group-hover:text-white transition-colors">{feature.name}</p>
+                  <p className="text-xs text-zinc-400 group-hover:text-white transition-colors">{tool.name}</p>
                 </div>
-                <ChevronRight className="w-3.5 h-3.5 text-zinc-600 group-hover:text-zinc-400 transition-colors" />
+                <ChevronRight className="w-3 h-3 text-zinc-700 group-hover:text-zinc-500 transition-colors" />
               </button>
             ))}
           </div>
         </div>
-
-        {/* Locked Features */}
-        {lockedFeatures.length > 0 && (
-          <div className="px-4 py-3">
-            <p className="text-[10px] uppercase tracking-wider text-zinc-600 mb-2">Upgrade to Unlock</p>
-            <div className="space-y-1">
-              {lockedFeatures.map((feature) => {
-                const requiredTierConfig = TIER_CONFIG[feature.tier]
-                return (
-                  <button
-                    key={feature.id}
-                    onClick={() => onUpgrade?.(feature.tier)}
-                    className="w-full flex items-center gap-3 px-2 py-2 rounded-lg bg-zinc-800/20 border border-zinc-800/30 hover:border-zinc-700 transition-all group opacity-60 hover:opacity-80"
-                  >
-                    <div className="p-1.5 rounded-md bg-zinc-900/80">
-                      <feature.icon className="w-3.5 h-3.5 text-zinc-600" />
-                    </div>
-                    <div className="flex-1 text-left">
-                      <p className="text-xs font-medium text-zinc-500">{feature.name}</p>
-                      <p className={`text-[10px] ${requiredTierConfig.color}`}>{requiredTierConfig.name}</p>
-                    </div>
-                    <Lock className="w-3 h-3 text-zinc-600" />
-                  </button>
-                )
-              })}
-            </div>
-          </div>
-        )}
       </div>
 
-      {/* Bottom - Settings or Sign Up CTA */}
-      <div className="relative p-4 border-t border-zinc-800/50">
-        <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-zinc-700/50 to-transparent" />
-        
+      {/* Bottom */}
+      <div className="p-4 border-t border-zinc-800/50">
         {isDemo && onSignUp ? (
           <button
             onClick={onSignUp}
-            className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 transition-all"
+            className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-xl bg-emerald-500/15 border border-emerald-500/40 hover:bg-emerald-500/20 transition-all"
           >
-            <span className="text-sm font-semibold text-black">Sign Up Free</span>
-            <ArrowRight className="w-4 h-4 text-black" />
+            <span className="text-sm font-medium text-white">Sign Up Free</span>
+            <ArrowRight className="w-4 h-4 text-white" />
           </button>
         ) : onOpenSettings ? (
           <button
             onClick={onOpenSettings}
-            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl bg-zinc-900/40 border border-zinc-800/50 hover:border-zinc-700 transition-all"
+            className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 hover:border-zinc-700 transition-all"
           >
-            <div className="p-1.5 rounded-lg bg-zinc-800/80">
-              <Settings className="w-4 h-4 text-zinc-400" />
-            </div>
-            <div className="flex-1 text-left">
-              <span className="text-xs font-medium text-zinc-300">Project Settings</span>
-              <p className="text-[10px] text-zinc-500">SEO, brand, integrations</p>
-            </div>
+            <Settings className="w-4 h-4 text-zinc-500" />
+            <span className="text-xs text-zinc-400">Settings</span>
           </button>
         ) : null}
       </div>

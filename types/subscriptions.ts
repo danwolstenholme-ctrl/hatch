@@ -62,11 +62,11 @@ export const PRICING_TIERS: Record<string, PricingTier> = {
     deployedSitesLimit: 3,
     architectRefinementsPerMonth: -1, // Unlimited
     features: [
-      'Unlimited Builds & Refinements',
-      '3 Deployed Sites',
+      'Unlimited AI generations',
       'Deploy to hatchitsites.dev',
-      'Basic Export (ZIP)',
-      'Community Support'
+      'Download source code (ZIP)',
+      'Push to your GitHub',
+      '3 projects',
     ],
   },
   visionary: {
@@ -76,13 +76,11 @@ export const PRICING_TIERS: Record<string, PricingTier> = {
     architectRefinementsPerMonth: -1,
     features: [
       'Everything in Architect',
-      'Unlimited Deployed Sites',
-      'Custom Domains',
-      'The Auditor (AI Quality Check)',
-      'The Healer (Auto-Fix Errors)',
-      'Full Code Export',
-      'Remove HatchIt Branding',
-      'Priority Support'
+      'Unlimited projects',
+      'Custom domain support',
+      'Remove HatchIt branding',
+      'The Auditor (AI quality check)',
+      'The Healer (auto-fix errors)',
     ],
   },
   singularity: {
@@ -92,13 +90,11 @@ export const PRICING_TIERS: Record<string, PricingTier> = {
     architectRefinementsPerMonth: -1,
     features: [
       'Everything in Visionary',
-      'The Replicator (Clone Any Website)',
-      'The Chronosphere (Style DNA Evolution)',
-      'The Witness (AI Deployment Insights)',
-      'The Dream Engine (Self-Evolving UI)',
-      'White Label / Agency License',
-      'API Access',
-      'Dedicated Support'
+      'The Replicator (clone any site)',
+      'Commercial / white-label license',
+      'API access',
+      'Priority support',
+      'Early access to new features',
     ],
   },
 }

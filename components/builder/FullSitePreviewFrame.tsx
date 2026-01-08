@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useMemo } from 'react'
 
 // Sanitize SVG data URLs to prevent XSS
 const sanitizeSvgDataUrls = (input: string) => {
@@ -22,12 +22,9 @@ interface FullSitePreviewFrameProps {
 // =============================================================================
 
 export default function FullSitePreviewFrame({ sections, deviceView, seo }: FullSitePreviewFrameProps) {
-  const [srcDoc, setSrcDoc] = useState('')
-
-  useEffect(() => {
+  const srcDoc = useMemo(() => {
     if (!sections || sections.length === 0) {
-      setSrcDoc('');
-      return;
+      return ''
     }
 
     // 1. Extract all Lucide imports to ensure they are available
@@ -89,9 +86,35 @@ export default function FullSitePreviewFrame({ sections, deviceView, seo }: Full
       }
 
       function App() {
+        const Header = ${sections.findIndex((s) => s.id === 'header') >= 0 ? `Section_${sections.findIndex((s) => s.id === 'header')}` : 'null'};
+        const Footer = ${sections.findIndex((s) => s.id === 'footer') >= 0 ? `Section_${sections.findIndex((s) => s.id === 'footer')}` : 'null'};
+        const BodySections = [
+          ${sections
+            .map((_, i) => i)
+            .filter((i) => sections[i]?.id !== 'header' && sections[i]?.id !== 'footer')
+            .map((i) => `Section_${i}`)
+            .join(', ')}
+        ];
+
         return (
-          <div className="min-h-screen bg-zinc-950 text-white">
-            ${sections.map((_, i) => `<SafeSection component={Section_${i}} />`).join('\n            ')}
+          <div className="min-h-screen bg-zinc-950 text-white flex flex-col">
+            {Header ? (
+              <div className="shrink-0">
+                <SafeSection component={Header} />
+              </div>
+            ) : null}
+
+            <div className="flex-1">
+              {BodySections.map((C, idx) => (
+                <SafeSection key={idx} component={C} />
+              ))}
+            </div>
+
+            {Footer ? (
+              <div className="shrink-0">
+                <SafeSection component={Footer} />
+              </div>
+            ) : null}
           </div>
         );
       }
@@ -302,7 +325,7 @@ ${Array.from(allLucideImports).map((name) => {
 </body>
 </html>`;
 
-    setSrcDoc(html);
+    return html
   }, [sections, seo])
 
   return (

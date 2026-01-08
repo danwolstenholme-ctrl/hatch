@@ -8,6 +8,14 @@ import { UserButton } from '@clerk/nextjs'
 
 export default function DashboardLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname()
+
+  const navItems = [
+    { href: '/dashboard', label: 'Overview' },
+    { href: '/dashboard/features', label: 'Features' },
+    { href: '/dashboard/builds', label: 'Builds' },
+    { href: '/dashboard/billing', label: 'Billing' },
+    { href: '/dashboard/settings', label: 'Settings' },
+  ]
   
   return (
     <div className="min-h-screen bg-zinc-950 text-zinc-200 selection:bg-emerald-500/30">
@@ -30,26 +38,22 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
             </Link>
             
             <nav className="flex items-center gap-0.5 sm:gap-1 bg-zinc-900/50 p-0.5 sm:p-1 rounded-lg border border-zinc-800/50">
-              <Link 
-                href="/dashboard"
-                className={`px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-md text-xs sm:text-sm font-medium transition-all ${
-                  pathname === '/dashboard' 
-                    ? 'text-white bg-zinc-800 shadow-sm' 
-                    : 'text-zinc-400 hover:text-zinc-200'
-                }`}
-              >
-                Dashboard
-              </Link>
-              <Link 
-                href="/dashboard/billing"
-                className={`px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-md text-xs sm:text-sm font-medium transition-all ${
-                  pathname === '/dashboard/billing' 
-                    ? 'text-white bg-zinc-800 shadow-sm' 
-                    : 'text-zinc-400 hover:text-zinc-200'
-                }`}
-              >
-                Billing
-              </Link>
+              {navItems.map((item) => {
+                const isActive = pathname === item.href
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={`px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-md text-xs sm:text-sm font-medium transition-all ${
+                      isActive
+                        ? 'text-white bg-zinc-800 shadow-sm'
+                        : 'text-zinc-400 hover:text-zinc-200'
+                    }`}
+                  >
+                    {item.label}
+                  </Link>
+                )
+              })}
             </nav>
           </div>
 
