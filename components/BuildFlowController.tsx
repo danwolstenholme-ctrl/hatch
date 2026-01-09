@@ -1115,6 +1115,41 @@ export default function BuildFlowController({ existingProjectId, initialPrompt, 
     }
   }
 
+  // Handle inline text edits from the preview
+  const handleTextEdit = useCallback((oldText: string, newText: string, sectionId: string) => {
+    if (!buildState || !sectionId) return
+    
+    const sectionCode = buildState.sectionCode[sectionId]
+    if (!sectionCode) return
+    
+    // Simple find/replace - escape special regex chars in oldText
+    const escapedOld = oldText.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+    const regex = new RegExp(escapedOld, 'g')
+    const updatedCode = sectionCode.replace(regex, newText)
+    
+    if (updatedCode !== sectionCode) {
+      setBuildState(prev => {
+        if (!prev) return prev
+        return {
+          ...prev,
+          sectionCode: {
+            ...prev.sectionCode,
+            [sectionId]: updatedCode
+          }
+        }
+      })
+      
+      // Persist to server if not demo mode
+      if (!demoMode && project?.id) {
+        fetch(`/api/project/${project.id}/sections/${sectionId}`, {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ generated_code: updatedCode })
+        }).catch(err => console.error('Failed to save text edit:', err))
+      }
+    }
+  }, [buildState, demoMode, project?.id])
+
   const handleNextSection = () => {
     if (!buildState) return
 
@@ -2063,6 +2098,8 @@ export default function GeneratedPage() {
                     <FullSitePreviewFrame 
                       sections={previewSections}
                       deviceView="mobile"
+                      editMode={previewEditMode}
+                      onTextEdit={handleTextEdit}
                       seo={brandConfig?.seo ? {
                         title: brandConfig.seo.title || '',
                         description: brandConfig.seo.description || '',
@@ -2130,6 +2167,19 @@ export default function GeneratedPage() {
                     
                     {previewSections.length > 0 && (
                       <div className="flex items-center gap-3">
+                        {/* Edit Mode Toggle */}
+                        <button
+                          onClick={() => setPreviewEditMode(!previewEditMode)}
+                          className={`p-1.5 rounded transition-all ${
+                            previewEditMode 
+                              ? 'bg-purple-500/20 text-purple-400 ring-1 ring-purple-500/50' 
+                              : 'text-zinc-500 hover:text-zinc-300 bg-zinc-800/50'
+                          }`}
+                          title={previewEditMode ? 'Exit Edit Mode' : 'Edit Text (double-click)'}
+                        >
+                          <Edit3 className="w-3.5 h-3.5" />
+                        </button>
+                        
                         {/* Device Toggle */}
                         <div className="flex items-center gap-1 bg-zinc-800/50 rounded-md p-0.5">
                           <button
@@ -2180,6 +2230,8 @@ export default function GeneratedPage() {
                           sections={previewSections}
                           deviceView={previewDevice}
                           ref={previewIframeRef}
+                          editMode={previewEditMode}
+                          onTextEdit={handleTextEdit}
                           seo={brandConfig?.seo ? {
                             title: brandConfig.seo.title || '',
                             description: brandConfig.seo.description || '',

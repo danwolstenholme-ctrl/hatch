@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, forwardRef } from 'react'
+import { useMemo, forwardRef, useEffect, useImperativeHandle, useRef } from 'react'
 
 // Sanitize SVG data URLs to prevent XSS
 const sanitizeSvgDataUrls = (input: string) => {
@@ -14,6 +14,8 @@ interface FullSitePreviewFrameProps {
   sections: { id: string; code: string }[]
   deviceView: 'mobile' | 'tablet' | 'desktop'
   seo?: { title: string; description: string; keywords: string }
+  editMode?: boolean
+  onTextEdit?: (oldText: string, newText: string, sectionId: string) => void
 }
 
 // =============================================================================
@@ -21,7 +23,30 @@ interface FullSitePreviewFrameProps {
 // Renders all assembled sections in an iframe - simplified for reliability
 // =============================================================================
 
-const FullSitePreviewFrame = forwardRef<HTMLIFrameElement, FullSitePreviewFrameProps>(function FullSitePreviewFrame({ sections, deviceView, seo }, ref) {
+const FullSitePreviewFrame = forwardRef<HTMLIFrameElement, FullSitePreviewFrameProps>(function FullSitePreviewFrame({ sections, deviceView, seo, editMode = false, onTextEdit }, ref) {
+  const internalRef = useRef<HTMLIFrameElement>(null)
+  
+  // Expose the internal ref to parent
+  useImperativeHandle(ref, () => internalRef.current as HTMLIFrameElement)
+  
+  // Send edit mode state to iframe
+  useEffect(() => {
+    if (internalRef.current?.contentWindow) {
+      internalRef.current.contentWindow.postMessage({ type: 'set-edit-mode', enabled: editMode }, '*')
+    }
+  }, [editMode])
+  
+  // Listen for text edit messages from iframe
+  useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+      if (event.data?.type === 'text-edited' && onTextEdit) {
+        onTextEdit(event.data.oldText, event.data.newText, event.data.sectionId || '')
+      }
+    }
+    window.addEventListener('message', handleMessage)
+    return () => window.removeEventListener('message', handleMessage)
+  }, [onTextEdit])
+  
   const srcDoc = useMemo(() => {
     if (!sections || sections.length === 0) {
       return ''
@@ -143,6 +168,134 @@ const FullSitePreviewFrame = forwardRef<HTMLIFrameElement, FullSitePreviewFrameP
 
       const root = ReactDOM.createRoot(document.getElementById('root'));
       root.render(<App />);
+      
+      // ============================================
+      // EDIT MODE - Double-click to edit text inline
+      // ============================================
+      let editModeEnabled = false;
+      let activeEditor = null;
+      
+      window.addEventListener('message', (event) => {
+        if (event.data.type === 'set-edit-mode') {
+          editModeEnabled = event.data.enabled;
+          document.body.style.cursor = editModeEnabled ? 'text' : '';
+          
+          // Add visual indicator when edit mode is active
+          const indicator = document.getElementById('edit-mode-indicator');
+          if (editModeEnabled && !indicator) {
+            const div = document.createElement('div');
+            div.id = 'edit-mode-indicator';
+            div.style.cssText = 'position:fixed;top:8px;left:50%;transform:translateX(-50%);background:#a855f7;color:white;padding:4px 12px;border-radius:9999px;font-size:11px;z-index:99999;font-family:system-ui;pointer-events:none;';
+            div.textContent = '✏️ Edit Mode - Double-click text to edit';
+            document.body.appendChild(div);
+          } else if (!editModeEnabled && indicator) {
+            indicator.remove();
+          }
+        }
+      });
+      
+      // Text elements that can be edited
+      const editableSelectors = 'h1, h2, h3, h4, h5, h6, p, span, a, button, li, label, td, th';
+      
+      // Find which section an element belongs to
+      function findSectionId(element) {
+        let el = element;
+        while (el && el !== document.body) {
+          if (el.id && el.id.startsWith('section-')) {
+            return el.id.replace('section-', '');
+          }
+          el = el.parentElement;
+        }
+        return '';
+      }
+      
+      document.addEventListener('dblclick', (e) => {
+        if (!editModeEnabled) return;
+        
+        const target = e.target;
+        if (!target.matches(editableSelectors)) return;
+        if (target === document.body || target.id === 'root') return;
+        
+        // Don't edit if already editing
+        if (activeEditor) return;
+        
+        e.preventDefault();
+        e.stopPropagation();
+        
+        const originalText = target.innerText;
+        const originalBg = target.style.backgroundColor;
+        const originalOutline = target.style.outline;
+        const sectionId = findSectionId(target);
+        
+        // Make editable
+        target.contentEditable = 'true';
+        target.style.outline = '2px solid #a855f7';
+        target.style.backgroundColor = 'rgba(168, 85, 247, 0.1)';
+        target.focus();
+        
+        // Select all text
+        const range = document.createRange();
+        range.selectNodeContents(target);
+        const selection = window.getSelection();
+        selection.removeAllRanges();
+        selection.addRange(range);
+        
+        activeEditor = target;
+        
+        const finishEdit = () => {
+          if (!activeEditor) return;
+          
+          target.contentEditable = 'false';
+          target.style.outline = originalOutline;
+          target.style.backgroundColor = originalBg;
+          
+          const newText = target.innerText.trim();
+          if (newText !== originalText) {
+            // Flash green to confirm
+            target.style.backgroundColor = 'rgba(16, 185, 129, 0.2)';
+            setTimeout(() => { target.style.backgroundColor = originalBg; }, 500);
+            
+            window.parent.postMessage({
+              type: 'text-edited',
+              oldText: originalText,
+              newText: newText,
+              sectionId: sectionId
+            }, '*');
+          }
+          
+          activeEditor = null;
+        };
+        
+        target.addEventListener('blur', finishEdit, { once: true });
+        target.addEventListener('keydown', (ke) => {
+          if (ke.key === 'Enter' && !ke.shiftKey) {
+            ke.preventDefault();
+            target.blur();
+          }
+          if (ke.key === 'Escape') {
+            target.innerText = originalText;
+            target.blur();
+          }
+        });
+      }, true);
+      
+      // Hover effect in edit mode
+      document.addEventListener('mouseover', (e) => {
+        if (!editModeEnabled || activeEditor) return;
+        const target = e.target;
+        if (!target.matches || !target.matches(editableSelectors)) return;
+        target.style.outline = '1px dashed #a855f7';
+        target.style.cursor = 'text';
+      }, true);
+      
+      document.addEventListener('mouseout', (e) => {
+        if (!editModeEnabled || activeEditor) return;
+        const target = e.target;
+        if (target.style) {
+          target.style.outline = '';
+          target.style.cursor = '';
+        }
+      }, true);
     `;
 
     // 4. Construct the script
@@ -357,7 +510,7 @@ ${Array.from(allLucideImports).map((name) => {
       'max-w-full'
     }`}>
       <iframe
-        ref={ref}
+        ref={internalRef}
         title="Preview"
         srcDoc={srcDoc}
         className="w-full h-full border-0 bg-zinc-950"
