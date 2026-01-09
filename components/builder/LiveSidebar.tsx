@@ -1,6 +1,8 @@
 'use client'
 
 import { useState } from 'react'
+import DesignPanel from '@/components/DesignPanel'
+import { DesignTokens, defaultTokens } from '@/lib/tokens'
 import Image from 'next/image'
 import { motion, AnimatePresence, LayoutGroup } from 'framer-motion'
 import { 
@@ -81,6 +83,8 @@ interface SidebarProps {
   onMoveSection?: (fromIndex: number, toIndex: number) => void
   onUpgrade?: (requiredTier: Tier) => void
   onSignUp?: () => void
+  designTokens?: DesignTokens
+  onDesignTokensChange?: (tokens: DesignTokens) => void
 }
 
 const AI_TOOLS: Array<{
@@ -129,6 +133,8 @@ export default function LiveSidebar({
   onMoveSection,
   onUpgrade,
   onSignUp,
+  designTokens,
+  onDesignTokensChange,
 }: SidebarProps) {
   const [showAddMenu, setShowAddMenu] = useState(false)
   const isDemo = userTier === 'demo'
@@ -369,6 +375,14 @@ export default function LiveSidebar({
           </div>
         </div>
       </div>
+
+      {/* Design Controls */}
+      <DesignPanel
+        tokens={designTokens || defaultTokens}
+        onChange={(tokens) => onDesignTokensChange?.(tokens)}
+        isLocked={userTier === 'demo' || userTier === 'free'}
+        onUpgrade={() => onUpgrade?.('visionary')}
+      />
 
       {/* Bottom - Settings / Sign Up */}
       <div className="p-3 border-t border-zinc-800 bg-zinc-900/30">
