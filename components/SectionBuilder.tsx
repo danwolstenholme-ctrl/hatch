@@ -5,8 +5,8 @@
 import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import Image from 'next/image'
-import { 
-  RefreshCw, 
+import {
+  RefreshCw,
   ArrowRight,
   AlertCircle,
   Layers,
@@ -21,7 +21,8 @@ import {
   Code,
   Zap,
   Lock,
-  MessageSquare
+  MessageSquare,
+  Check
 } from 'lucide-react'
 import GeneratingModal from './builder/GeneratingModal'
 import { LogoMark } from './Logo'
@@ -1820,49 +1821,11 @@ export default function SectionBuilder({
             </motion.div>
           )}
           {generatedCode ? (
-            // Section Complete - Success state (preview is in right panel)
-            // Minimal state - user should focus on the preview, not this panel
-            <div className="h-full flex flex-col items-center justify-center bg-zinc-950 p-4">
-              <div className="text-center space-y-3">
-                {/* Logo */}
-                <motion.div
-                  initial={{ scale: 0.9, opacity: 0 }}
-                  animate={{ scale: 1, opacity: 1 }}
-                  className="mx-auto"
-                >
-                  <Image
-                    src="/assets/hatchit_definitive.svg"
-                    alt="HatchIt"
-                    width={40}
-                    height={40}
-                    className="opacity-60"
-                  />
-                </motion.div>
-                
-                {/* Section info */}
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  transition={{ delay: 0.1 }}
-                >
-                  <p className="text-sm font-medium text-white">{section.name} ready</p>
-                  <p className="text-xs text-zinc-500 mt-1">Check the preview →</p>
-                </motion.div>
-                
-                {/* Reasoning - collapsed by default */}
-                {reasoning && (
-                  <motion.details
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ delay: 0.2 }}
-                    className="text-left max-w-sm mx-auto"
-                  >
-                    <summary className="text-[10px] text-zinc-600 cursor-pointer hover:text-zinc-400 transition-colors">
-                      View design decisions
-                    </summary>
-                    <p className="text-[11px] text-zinc-500 mt-2 leading-relaxed">{reasoning}</p>
-                  </motion.details>
-                )}
+            // Section Complete - Minimal state, focus is on the preview
+            <div className="h-full flex items-center justify-center bg-zinc-950">
+              <div className="text-center">
+                <Check className="w-6 h-6 text-emerald-500 mx-auto mb-2" />
+                <p className="text-sm text-zinc-400">{section.name} ready</p>
               </div>
             </div>
           ) : showGenerating ? (

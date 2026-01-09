@@ -3,13 +3,12 @@
 import { Suspense, useEffect } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { useUser } from '@clerk/nextjs'
-import SingularityLoader from '@/components/singularity/SingularityLoader'
 import BuildFlowController from '@/components/BuildFlowController'
 
 // =============================================================================
 // DEMO PAGE - Full builder experience, localStorage only
 // Premium actions (deploy, download) show signup modal
-// If signed in, redirect to /dashboard to migrate guest work
+// If signed in, redirect to /builder
 // =============================================================================
 
 function DemoContent() {
@@ -17,24 +16,24 @@ function DemoContent() {
   const router = useRouter()
   const { isSignedIn, isLoaded } = useUser()
   const prompt = searchParams.get('prompt')
-  
+
   // If user is signed in, redirect to builder
   useEffect(() => {
     if (isLoaded && isSignedIn) {
       router.replace('/builder')
     }
   }, [isLoaded, isSignedIn, router])
-  
-  // Show loading while checking auth
+
+  // While checking auth, render nothing
   if (!isLoaded) {
-    return <SingularityLoader text="LOADING" />
+    return null
   }
-  
-  // If signed in, don't render - we're redirecting
+
+  // If signed in, redirecting - render nothing
   if (isSignedIn) {
-    return <SingularityLoader text="REDIRECTING" />
+    return null
   }
-  
+
   return (
     <BuildFlowController 
       isDemo={true}
@@ -45,7 +44,7 @@ function DemoContent() {
 
 export default function DemoPage() {
   return (
-    <Suspense fallback={<SingularityLoader text="LOADING" />}>
+    <Suspense fallback={null}>
       <DemoContent />
     </Suspense>
   )

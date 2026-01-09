@@ -7,7 +7,6 @@ import { useUser } from '@clerk/nextjs'
 import { motion, useInView, AnimatePresence } from 'framer-motion'
 import { Terminal, Layers, Shield, Zap, Code2, Globe, ArrowRight, CheckCircle2, Layout, Smartphone } from 'lucide-react'
 import HomepageWelcome from '@/components/HomepageWelcome'
-import SingularityTransition from '@/components/singularity/SingularityTransition'
 
 // Section wrapper - staggered fade-in with depth
 function Section({ children, className = '', id = '', delay = 0 }: { children: React.ReactNode; className?: string; id?: string; delay?: number }) {
@@ -31,23 +30,14 @@ function Section({ children, className = '', id = '', delay = 0 }: { children: R
 export default function Home() {
   const { isSignedIn } = useUser()
   const router = useRouter()
-  const [isTransitioning, setIsTransitioning] = useState(false)
 
-  const handleTransitionComplete = () => {
+  const handleStart = () => {
     router.push(isSignedIn ? '/builder' : '/demo')
-  }
-
-  const triggerTransition = () => {
-    setIsTransitioning(true)
   }
   
   return (
     <main className="min-h-screen bg-zinc-950 text-zinc-200">
-      <AnimatePresence>
-        {isTransitioning && <SingularityTransition onComplete={handleTransitionComplete} />}
-      </AnimatePresence>
-      
-      <HomepageWelcome onStart={triggerTransition} />
+      <HomepageWelcome onStart={handleStart} />
 
       {/* HERO */}
       <section className="relative min-h-[90vh] flex items-center px-4 sm:px-6 pt-32 pb-24 border-b border-zinc-900 overflow-hidden">
@@ -132,7 +122,7 @@ export default function Home() {
             >
               <motion.button
                 whileTap={{ scale: 0.98 }}
-                onClick={triggerTransition}
+                onClick={handleStart}
                 className="group relative inline-flex justify-center items-center gap-2 px-5 py-2.5 bg-emerald-500/15 backdrop-blur-2xl border border-emerald-500/40 hover:bg-emerald-500/20 hover:border-emerald-500/50 text-white text-sm font-medium rounded-lg transition-all shadow-[0_0_15px_rgba(16,185,129,0.15)] overflow-hidden"
               >
                 <div className="absolute inset-0 bg-gradient-to-br from-white/[0.08] via-transparent to-transparent rounded-xl pointer-events-none" />
@@ -527,7 +517,7 @@ export default function Home() {
             viewport={{ once: true }}
             transition={{ delay: 0.3, duration: 0.6 }}
             whileTap={{ scale: 0.95 }}
-            onClick={triggerTransition}
+            onClick={handleStart}
             className="group relative inline-flex items-center justify-center gap-2 px-5 py-2.5 bg-emerald-500/15 backdrop-blur-2xl border border-emerald-500/40 hover:bg-emerald-500/20 hover:border-emerald-500/50 text-white text-sm font-medium rounded-lg transition-all shadow-[0_0_15px_rgba(16,185,129,0.15)] overflow-hidden"
           >
             <div className="absolute inset-0 bg-gradient-to-br from-white/[0.08] via-transparent to-transparent rounded-xl pointer-events-none" />

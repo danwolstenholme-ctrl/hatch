@@ -4,12 +4,12 @@ import { Suspense, useEffect } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { useUser } from '@clerk/nextjs'
 import BuildFlowController from '@/components/BuildFlowController'
-import SingularityLoader from '@/components/singularity/SingularityLoader'
 
 // =============================================================================
-// BUILDER PAGE - Same as demo but with auth + persistence
+// BUILDER PAGE - Auth users only
 // Unauthenticated users → /demo
-// Authenticated users → full builder with project persistence
+// No page-level loading states - SingularityTransition handles entry from homepage
+// BuildFlowController handles its own loading internally
 // =============================================================================
 
 function BuilderContent() {
@@ -27,12 +27,17 @@ function BuilderContent() {
     }
   }, [isLoaded, isSignedIn, prompt, router])
 
-  // Show loading while checking auth or redirecting
-  if (!isLoaded || (isLoaded && !isSignedIn)) {
-    return <SingularityLoader text={!isLoaded ? "AUTHENTICATING" : "REDIRECTING"} />
+  // While checking auth, render nothing - let homepage transition or BuildFlowController handle loading
+  if (!isLoaded) {
+    return null
   }
 
-  // Authenticated user - same UI as demo, just with persistence
+  // Redirecting to demo - render nothing
+  if (!isSignedIn) {
+    return null
+  }
+
+  // Authenticated user - BuildFlowController handles all loading states
   return (
     <BuildFlowController 
       existingProjectId={projectId || undefined}
@@ -44,7 +49,7 @@ function BuilderContent() {
 
 export default function BuilderPage() {
   return (
-    <Suspense fallback={<SingularityLoader text="LOADING" />}>
+    <Suspense fallback={null}>
       <BuilderContent />
     </Suspense>
   )

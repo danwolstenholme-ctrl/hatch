@@ -50,7 +50,6 @@ import { useGitHub } from '@/hooks/useGitHub'
 import { Github } from 'lucide-react'
 import FullSitePreviewFrame from './builder/FullSitePreviewFrame'
 import BuildSuccessModal from './BuildSuccessModal'
-import SingularityLoader from './singularity/SingularityLoader'
 import Button from './singularity/Button'
 import ReplicatorModal from './ReplicatorModal'
 import { Sidebar } from './builder'
@@ -157,7 +156,10 @@ export default function BuildFlowController({ existingProjectId, initialPrompt, 
   const [hatchModalReason, setHatchModalReason] = useState<'generation_limit' | 'code_access' | 'deploy' | 'download' | 'proactive' | 'running_low' | 'guest_lock'>('proactive')
   const [showPaywallTransition, setShowPaywallTransition] = useState(false)
   const [paywallReason] = useState<'limit_reached' | 'site_complete'>('limit_reached')
-  const skipLoadingScreen = !!initialPrompt
+  // Skip the loading screen when:
+  // 1. Coming from FirstContact with a prompt (initialPrompt)
+  // 2. Coming from dashboard with an existing project (page already handled auth loading)
+  const skipLoadingScreen = !!initialPrompt || !!existingProjectId
   
   const [dbSections, setDbSections] = useState<DbSection[]>([])
   const [isLoading, setIsLoading] = useState(true) // Start loading immediately
@@ -1772,14 +1774,9 @@ export default function GeneratedPage() {
     router.push('/')
   }
 
-  // Only show loading screen if NOT coming from FirstContact
+  // Skip loading UI - pages handle their own loading states
   if (isLoading && !skipLoadingScreen) {
-    // Short, branded loading messages
-    let loadingMessage = 'LOADING'
-    if (existingProjectId) loadingMessage = 'RESUMING PROJECT'
-    else if (!isLoaded) loadingMessage = 'CONNECTING'
-    
-    return <SingularityLoader text={loadingMessage} />
+    return null
   }
 
   if (error) {

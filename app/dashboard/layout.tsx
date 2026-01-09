@@ -1,22 +1,25 @@
 ﻿'use client'
 
-import { ReactNode } from 'react'
+import { ReactNode, useState } from 'react'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { UserButton, useUser } from '@clerk/nextjs'
-import { 
-  LayoutDashboard, 
-  Sparkles, 
-  Activity, 
-  CreditCard, 
+import {
+  LayoutDashboard,
+  Sparkles,
+  Activity,
+  CreditCard,
   Settings,
   Rocket
 } from 'lucide-react'
 import { LogoMark } from '@/components/Logo'
+import Button from '@/components/singularity/Button'
 
 export default function DashboardLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname()
+  const router = useRouter()
   const { user } = useUser()
+  const [isCreating, setIsCreating] = useState(false)
 
   const accountSubscription = user?.publicMetadata?.accountSubscription as { tier?: string } | undefined
   const tier = accountSubscription?.tier || 'free'
@@ -33,7 +36,28 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
     if (href === '/dashboard') return pathname === '/dashboard'
     return pathname.startsWith(href)
   }
-  
+
+  const handleNewProject = async () => {
+    setIsCreating(true)
+    try {
+      const res = await fetch('/api/project', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: 'Untitled Project', templateId: 'website' }),
+      })
+      const data = await res.json()
+      if (res.ok && data.project) {
+        router.push(`/builder?project=${data.project.id}`)
+      } else if (res.status === 403) {
+        router.push('/dashboard/billing')
+      }
+    } catch (e) {
+      console.error('Failed to create project', e)
+    } finally {
+      setIsCreating(false)
+    }
+  }
+
   return (
     <div className="min-h-screen bg-zinc-950 text-white selection:bg-zinc-500/20">
       <div className="fixed inset-0 bg-[linear-gradient(rgba(255,255,255,0.015)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.015)_1px,transparent_1px)] bg-[size:64px_64px] pointer-events-none" />
@@ -68,16 +92,21 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
           </nav>
 
           <div className="p-3 border-t border-zinc-800/60 space-y-3">
-            <Link
-              href="/builder"
-              className="flex items-center justify-center gap-2 w-full px-3 py-2 text-[13px] font-medium text-white bg-emerald-600 hover:bg-emerald-500 rounded-md transition-colors"
+            <Button
+              variant="primary"
+              size="sm"
+              fullWidth
+              loading={isCreating}
+              icon={<Rocket className="w-4 h-4" />}
+              iconPosition="left"
+              onClick={handleNewProject}
+              disabled={isCreating}
             >
-              <Rocket className="w-4 h-4" />
-              New Project
-            </Link>
+              {isCreating ? 'Creating' : 'New Project'}
+            </Button>
 
             <div className="flex items-center gap-3 px-2 py-1.5">
-              <UserButton 
+              <UserButton
                 appearance={{
                   elements: {
                     avatarBox: "w-7 h-7 ring-1 ring-zinc-700"

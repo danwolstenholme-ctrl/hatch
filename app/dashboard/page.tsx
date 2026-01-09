@@ -1,14 +1,14 @@
-﻿'use client'
+'use client'
 
 import { useEffect, useMemo, useState } from 'react'
 import type { MouseEvent } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { AnimatePresence, motion } from 'framer-motion'
-import { 
-  Plus, 
-  Trash2, 
-  ExternalLink, 
+import {
+  Plus,
+  Trash2,
+  ExternalLink,
   ChevronRight,
   X,
   Github,
@@ -25,8 +25,8 @@ import {
 import { useUser } from '@clerk/nextjs'
 import { formatDistanceToNow } from 'date-fns'
 import { DbProject } from '@/lib/supabase'
-import { LogoMark } from '@/components/Logo'
 import { useGitHub } from '@/hooks/useGitHub'
+import Button from '@/components/singularity/Button'
 
 type ProjectWithProgress = DbProject & {
   total_sections?: number
@@ -139,15 +139,9 @@ export default function DashboardPage() {
     if (res.ok) setProjects(prev => prev.filter(project => project.id !== id))
   }
 
+  // Simple loading state - no extra components
   if (!isLoaded || !isSignedIn || isLoading) {
-    return (
-      <div className="flex items-center justify-center py-32">
-        <div className="flex flex-col items-center gap-3">
-          <LogoMark size={24} />
-          <div className="text-[10px] text-zinc-500 font-mono tracking-wider">LOADING</div>
-        </div>
-      </div>
-    )
+    return null
   }
 
   return (
@@ -174,18 +168,17 @@ export default function DashboardPage() {
           <h1 className="text-xl font-semibold text-white">Overview</h1>
           <p className="text-sm text-zinc-500 mt-1">Manage your projects and deployments</p>
         </div>
-        <button
+        <Button
+          variant="primary"
+          size="md"
+          icon={<Plus className="w-4 h-4" />}
+          iconPosition="left"
           onClick={handleCreate}
+          loading={isCreating}
           disabled={isCreating}
-          className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-500 rounded-lg transition-colors disabled:opacity-50"
         >
-          {isCreating ? (
-            <div className="w-4 h-4 border-2 border-zinc-600 border-t-white rounded-full animate-spin" />
-          ) : (
-            <Plus className="w-4 h-4" />
-          )}
           New Project
-        </button>
+        </Button>
       </header>
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
@@ -214,10 +207,17 @@ export default function DashboardPage() {
                 </div>
                 <p className="text-sm text-zinc-300 mb-2">No projects yet</p>
                 <p className="text-xs text-zinc-500 mb-6">Create your first project to get started</p>
-                <button onClick={handleCreate} disabled={isCreating} className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-emerald-600 hover:bg-emerald-500 rounded-lg transition-colors">
-                  <Plus className="w-4 h-4" />
+                <Button
+                  variant="primary"
+                  size="md"
+                  icon={<Plus className="w-4 h-4" />}
+                  iconPosition="left"
+                  onClick={handleCreate}
+                  loading={isCreating}
+                  disabled={isCreating}
+                >
                   Create Project
-                </button>
+                </Button>
               </div>
             ) : (
               <div className="divide-y divide-zinc-800">
@@ -244,7 +244,6 @@ export default function DashboardPage() {
                               </div>
                               <span className="text-[10px] text-zinc-500 tabular-nums">{completed}/{total}</span>
                             </div>
-                            <span className="text-[10px] text-zinc-600"></span>
                             <span className="text-[10px] text-zinc-500 flex items-center gap-1">
                               <Clock className="w-3 h-3" />
                               {project.updated_at ? formatDistanceToNow(new Date(project.updated_at), { addSuffix: true }) : 'Just created'}
@@ -286,17 +285,30 @@ export default function DashboardPage() {
             {gitHub.connected ? (
               <div className="space-y-3">
                 <p className="text-xs text-zinc-500">Push your projects directly to your repositories.</p>
-                <button onClick={async () => { await gitHub.disconnect(); await gitHub.refresh() }} className="w-full px-3 py-2 text-xs text-zinc-400 border border-zinc-700 hover:border-zinc-600 hover:text-zinc-300 rounded-lg transition-all">
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  fullWidth
+                  onClick={async () => { await gitHub.disconnect(); await gitHub.refresh() }}
+                >
                   Disconnect
-                </button>
+                </Button>
               </div>
             ) : (
               <div className="space-y-3">
                 <p className="text-xs text-zinc-500">Connect to push code to your repos.</p>
-                <button onClick={() => gitHub.connect()} disabled={gitHub.loading} className="w-full flex items-center justify-center gap-2 px-3 py-2 text-sm text-zinc-100 bg-zinc-800 hover:bg-zinc-700 border border-zinc-700 rounded-lg transition-all">
-                  <Github className="w-4 h-4" />
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  fullWidth
+                  icon={<Github className="w-4 h-4" />}
+                  iconPosition="left"
+                  onClick={() => gitHub.connect()}
+                  loading={gitHub.loading}
+                  disabled={gitHub.loading}
+                >
                   Connect GitHub
-                </button>
+                </Button>
               </div>
             )}
           </div>
