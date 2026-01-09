@@ -5,6 +5,7 @@ import { ArrowRight } from 'lucide-react'
 import { useUser } from '@clerk/nextjs'
 import Link from 'next/link'
 import { Modal } from './singularity'
+import { LogoMark } from './Logo'
 
 // =============================================================================
 // BUILDER WELCOME - Welcome back for authenticated users
@@ -39,23 +40,28 @@ export default function BuilderWelcome({ onClose }: BuilderWelcomeProps) {
   return (
     <Modal isOpen={isOpen} onClose={handleDismiss} size="sm" showClose={false}>
       <div className="text-center">
+        {/* Logo */}
+        <div className="mb-4">
+          <LogoMark size={48} className="w-12 h-12 mx-auto" />
+        </div>
+        
         <h2 className="text-lg font-semibold text-white mb-2">
           Welcome back, {firstName}
         </h2>
-        <p className="text-sm text-zinc-400 mb-6">
+        <p className="text-sm text-zinc-400 mb-5">
           Projects sync automatically.
         </p>
 
         <div className="flex gap-3">
           <Link
             href="/dashboard"
-            className="flex-1 text-center px-4 py-3 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 font-medium rounded-lg transition-colors"
+            className="flex-1 text-center px-4 py-2.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-200 font-medium text-sm rounded-xl transition-colors"
           >
             Dashboard
           </Link>
           <button
             onClick={handleDismiss}
-            className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-emerald-500/15 border border-emerald-500/40 hover:bg-emerald-500/20 hover:border-emerald-500/50 text-white font-medium rounded-lg transition-all shadow-[0_0_15px_rgba(16,185,129,0.15)]"
+            className="flex-1 flex items-center justify-center gap-2 px-4 py-2.5 bg-emerald-500/15 border border-emerald-500/40 hover:bg-emerald-500/20 hover:border-emerald-500/50 text-white font-medium text-sm rounded-xl transition-all shadow-[0_0_15px_rgba(16,185,129,0.15)]"
           >
             Build
             <ArrowRight className="w-4 h-4" />

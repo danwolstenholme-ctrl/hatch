@@ -2,23 +2,33 @@
 
 import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { X, Share2, Sparkles, Quote } from 'lucide-react'
+import { X, Share2, Sparkles, Quote, ExternalLink, Check, Globe } from 'lucide-react'
 
 interface TheWitnessProps {
   isOpen: boolean
   onClose: () => void
   note: string | null
   isLoading: boolean
+  deployedUrl?: string | null
 }
 
-export default function TheWitness({ isOpen, onClose, note, isLoading }: TheWitnessProps) {
+export default function TheWitness({ isOpen, onClose, note, isLoading, deployedUrl }: TheWitnessProps) {
   const [copied, setCopied] = useState(false)
+  const [urlCopied, setUrlCopied] = useState(false)
 
   const handleCopy = () => {
     if (note) {
       navigator.clipboard.writeText(note)
       setCopied(true)
       setTimeout(() => setCopied(false), 2000)
+    }
+  }
+
+  const handleCopyUrl = () => {
+    if (deployedUrl) {
+      navigator.clipboard.writeText(deployedUrl)
+      setUrlCopied(true)
+      setTimeout(() => setUrlCopied(false), 2000)
     }
   }
 

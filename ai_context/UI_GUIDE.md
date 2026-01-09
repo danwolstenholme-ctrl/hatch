@@ -49,12 +49,45 @@ Buttons:      font-medium, text-sm or text-base
 
 ## Colors
 
+### Base Palette
 ```
-Background:   bg-zinc-950, bg-zinc-900
-Borders:      border-zinc-800
-Text:         text-white, text-zinc-400, text-zinc-500
-Accent:       emerald-500, emerald-400 (lightened Jan 8)
-Error:        red-500
+Background:   bg-zinc-950
+Surfaces:     bg-zinc-900/30, bg-zinc-800/50
+Borders:      border-zinc-800/60 (subtle), border-zinc-700/50 (emphasis)
+Text:         text-white, text-zinc-400, text-zinc-500, text-zinc-600
+```
+
+### Accent Usage (Updated January 9)
+```
+Emerald ONLY for:
+- Status dots (completed items): bg-emerald-500
+- Checkmarks (subtle): text-emerald-500/70
+- Primary CTA text: text-emerald-400
+- "Live" badges: bg-emerald-500/10 text-emerald-400
+
+NOT for:
+- Active states (use zinc-800 instead)
+- Hover backgrounds (use zinc-900 instead)
+- Borders (use zinc-700/50 instead)
+```
+
+---
+
+## Dashboard/Builder Typography (Updated January 9)
+
+```
+Headers:      text-xs font-medium text-white (12px)
+Labels:       text-[10px] uppercase tracking-wide text-zinc-500 (10px)
+Body:         text-xs text-zinc-400 (12px)
+Descriptions: text-[10px] text-zinc-600 (10px)
+Counters:     text-[10px] text-zinc-400 tabular-nums
+```
+
+### Spacing
+```
+Padding:      p-2, p-3 (compact)
+Gaps:         gap-0.5, gap-1, gap-1.5, gap-2
+Margins:      mt-1, mt-1.5, mt-2 (tight)
 ```
 
 ---
@@ -229,15 +262,28 @@ GOOD: "Deploy to hatchitsites.dev" or "Push to your GitHub"
 
 ---
 
-## Loading States
+## Loading States (Updated January 9)
 
-| State | Component | Appearance |
-|-------|-----------|------------|
-| Auth check | `SingularityLoader` | "loading" + subtle animation |
-| Page transition | `SingularityTransition` | Full-screen fade |
-| Generating | `GeneratingModal` | Code streaming + status text |
-| Refining | inline bar | Spinner + "Refining..." |
-| GitHub push | inline | Spinner + "Pushing to GitHub..." |
+**Single unified loading state:** LogoMark with pulse animation
+
+```tsx
+<motion.div animate={{ opacity: [0.5, 1, 0.5] }} transition={{ duration: 2, repeat: Infinity }}>
+  <LogoMark size={32} />
+</motion.div>
+```
+
+| State | Appearance |
+|-------|------------|
+| Auth check | LogoMark pulse |
+| Builder loading | LogoMark pulse |
+| Page transition | LogoMark pulse |
+| Generating | Code streaming in preview |
+| Refining | Status text in toolbar |
+
+**Removed:**
+- SingularityLoader
+- SingularityTransition
+- Background blur blobs in layouts
 
 ---
 

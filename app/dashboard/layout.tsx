@@ -11,7 +11,6 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname()
   const router = useRouter()
   const { user } = useUser()
-  const [isCreating, setIsCreating] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
 
   const accountSubscription = user?.publicMetadata?.accountSubscription as { tier?: string } | undefined
@@ -20,6 +19,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
   const navItems = [
     { href: '/dashboard', label: 'Overview' },
     { href: '/dashboard/projects', label: 'Projects' },
+    { href: '/dashboard/replicator', label: 'Replicator' },
     { href: '/dashboard/billing', label: 'Billing' },
     { href: '/dashboard/settings', label: 'Settings' },
   ]
@@ -29,25 +29,8 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
     return pathname.startsWith(href)
   }
 
-  const handleNewProject = async () => {
-    setIsCreating(true)
-    try {
-      const res = await fetch('/api/project', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: 'Untitled Project', templateId: 'website' }),
-      })
-      const data = await res.json()
-      if (res.ok && data.project) {
-        router.push(`/builder?project=${data.project.id}`)
-      } else if (res.status === 403) {
-        router.push('/dashboard/billing')
-      }
-    } catch (e) {
-      console.error('Failed to create project', e)
-    } finally {
-      setIsCreating(false)
-    }
+  const handleNewProject = () => {
+    router.push('/dashboard/projects/new')
   }
 
   const handleNavClick = (href: string) => {
@@ -105,10 +88,9 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
                     setMobileMenuOpen(false)
                     handleNewProject()
                   }}
-                  disabled={isCreating}
-                  className="w-full text-left px-3 py-2 text-sm text-emerald-400 hover:text-emerald-300 transition-colors disabled:opacity-50"
+                  className="w-full text-left px-3 py-2 text-sm text-emerald-400 hover:text-emerald-300 transition-colors"
                 >
-                  {isCreating ? 'Creating...' : '+ New Project'}
+                  + New Project
                 </button>
               </div>
             </nav>
@@ -146,10 +128,9 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
           <div className="p-3 border-t border-zinc-800/50 space-y-3">
             <button
               onClick={handleNewProject}
-              disabled={isCreating}
-              className="w-full px-3 py-1.5 text-[13px] text-left text-emerald-400 hover:text-emerald-300 transition-colors disabled:opacity-50"
+              className="w-full px-3 py-1.5 text-[13px] text-left text-emerald-400 hover:text-emerald-300 transition-colors"
             >
-              {isCreating ? 'Creating...' : '+ New Project'}
+              + New Project
             </button>
 
             <div className="flex items-center gap-2 px-2">

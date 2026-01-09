@@ -17,7 +17,21 @@ function formatDate(value: string | undefined) {
   })
 }
 
-const SECTION_TYPES = ['header', 'hero', 'features', 'pricing', 'testimonials', 'cta', 'about', 'contact', 'footer']
+const SECTION_TYPES = ['header', 'hero', 'features', 'pricing', 'testimonials', 'cta', 'about', 'contact', 'footer', 'services', 'faq']
+
+const SECTION_INFO: Record<string, { name: string; desc: string }> = {
+  header: { name: 'Header', desc: 'Navigation bar' },
+  hero: { name: 'Hero', desc: 'Main banner' },
+  features: { name: 'Features', desc: 'Feature grid' },
+  about: { name: 'About', desc: 'About section' },
+  services: { name: 'Services', desc: 'Service offerings' },
+  pricing: { name: 'Pricing', desc: 'Pricing tables' },
+  testimonials: { name: 'Testimonials', desc: 'Reviews' },
+  faq: { name: 'FAQ', desc: 'Questions' },
+  cta: { name: 'CTA', desc: 'Call to action' },
+  contact: { name: 'Contact', desc: 'Contact form' },
+  footer: { name: 'Footer', desc: 'Site footer' },
+}
 
 export default function ProjectConfigPage() {
   const params = useParams<{ id: string }>()
@@ -37,8 +51,10 @@ export default function ProjectConfigPage() {
     secondaryColor: '#059669',
     bodyFont: 'Inter',
     headingFont: 'Inter',
-    mode: 'dark' as 'dark' | 'light'
+    mode: 'dark' as 'dark' | 'light',
+    logoUrl: '' as string
   })
+  const [logoUploading, setLogoUploading] = useState(false)
 
   // SEO state
   const [seo, setSeo] = useState({
@@ -76,7 +92,8 @@ export default function ProjectConfigPage() {
         secondaryColor: bc.colors?.secondary || '#059669',
         bodyFont: bc.fontStyle || 'Inter',
         headingFont: bc.fontStyle || 'Inter',
-        mode: 'dark'
+        mode: 'dark',
+        logoUrl: bc.logoUrl || ''
       })
       if (bc.seo) {
         setSeo({
@@ -110,18 +127,90 @@ export default function ProjectConfigPage() {
     if (!projectId) return
     setSaving(true)
     try {
-      await fetch(`/api/project/${projectId}/brand`, {
+      await fetch(`/api/project/${projectId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          colors: { primary: brand.primaryColor, secondary: brand.secondaryColor },
-          fontStyle: brand.bodyFont,
-          seo: seo
+          brandConfig: {
+            colors: { 
+              primary: brand.primaryColor, 
+              secondary: brand.secondaryColor,
+              accent: brand.primaryColor 
+            },
+            fontStyle: brand.bodyFont,
+            logoUrl: brand.logoUrl,
+            seo: seo
+          }
         })
       })
       await refresh()
     } finally {
       setSaving(false)
+    }
+  }
+
+  // Section management
+  const handleMoveSection = async (index: number, direction: 'up' | 'down') => {
+    if (!projectId) return
+    const newIndex = direction === 'up' ? index - 1 : index + 1
+    if (newIndex < 0 || newIndex >= sections.length) return
+
+    // Create new order
+    const newOrder = [...sections]
+    const [moved] = newOrder.splice(index, 1)
+    newOrder.splice(newIndex, 0, moved)
+
+    // Optimistic update
+    setSections(newOrder)
+
+    // Save to server
+    try {
+      await fetch(`/api/project/${projectId}/sections/order`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ order: newOrder.map(s => s.section_id) })
+      })
+    } catch {
+      // Revert on error
+      await refresh()
+    }
+  }
+
+  const handleDeleteSection = async (sectionId: string) => {
+    if (!projectId) return
+    if (sectionId === 'header' || sectionId === 'footer') return
+
+    // Optimistic update
+    setSections(prev => prev.filter(s => s.section_id !== sectionId))
+
+    try {
+      await fetch(`/api/project/${projectId}/sections/${sectionId}`, {
+        method: 'DELETE'
+      })
+    } catch {
+      await refresh()
+    }
+  }
+
+  const handleAddSection = async (sectionId: string) => {
+    if (!projectId) return
+    
+    // Find insertion point (before footer)
+    const footerIndex = sections.findIndex(s => s.section_id === 'footer')
+    const insertAt = footerIndex >= 0 ? footerIndex : sections.length
+
+    try {
+      const res = await fetch(`/api/project/${projectId}/sections`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sectionId, orderIndex: insertAt })
+      })
+      
+      if (res.ok) {
+        await refresh()
+      }
+    } catch {
+      // Ignore
     }
   }
 
@@ -336,6 +425,94 @@ export default function ProjectConfigPage() {
             </div>
           </div>
 
+          {/* Logo Section */}
+          <div className="border border-zinc-800/50 rounded-md p-4 bg-zinc-900/30">
+            <h3 className="text-xs text-zinc-500 uppercase tracking-wide mb-4">Logo</h3>
+            
+            {/* Current Logo */}
+            {brand.logoUrl && (
+              <div className="mb-4 p-3 bg-zinc-800/30 rounded border border-zinc-700/30">
+                <img 
+                  src={brand.logoUrl} 
+                  alt="Current logo" 
+                  className="max-h-12 object-contain"
+                />
+                <button
+                  onClick={() => setBrand(b => ({ ...b, logoUrl: '' }))}
+                  className="text-[11px] text-zinc-500 hover:text-red-400 mt-2 transition-colors"
+                >
+                  Remove
+                </button>
+              </div>
+            )}
+
+            {/* Upload Option */}
+            <div className="space-y-3">
+              <div>
+                <label className="text-sm text-zinc-400 block mb-2">Upload Your Logo</label>
+                <div className="border border-dashed border-zinc-700 rounded p-4 text-center">
+                  <input
+                    type="file"
+                    accept=".svg,.png,.jpg,.jpeg,.webp"
+                    onChange={async (e) => {
+                      const file = e.target.files?.[0]
+                      if (!file) return
+                      
+                      // For now, convert to base64 data URL
+                      // TODO: Upload to Supabase storage
+                      setLogoUploading(true)
+                      try {
+                        const reader = new FileReader()
+                        reader.onload = () => {
+                          setBrand(b => ({ ...b, logoUrl: reader.result as string }))
+                          setLogoUploading(false)
+                        }
+                        reader.readAsDataURL(file)
+                      } catch {
+                        setLogoUploading(false)
+                      }
+                    }}
+                    className="hidden"
+                    id="logo-upload"
+                  />
+                  <label 
+                    htmlFor="logo-upload" 
+                    className="cursor-pointer text-sm text-zinc-400 hover:text-white transition-colors"
+                  >
+                    {logoUploading ? 'Uploading...' : 'Click to upload'}
+                  </label>
+                  <p className="text-[10px] text-zinc-600 mt-2">
+                    SVG, PNG, JPG, or WebP. Max 2MB. Transparent background recommended.
+                  </p>
+                </div>
+              </div>
+
+              {/* How it's used */}
+              <div className="text-[11px] text-zinc-600 space-y-1">
+                <p className="text-zinc-500">Where your logo appears:</p>
+                <ul className="list-disc list-inside space-y-0.5 pl-1">
+                  <li>Header navigation (all pages)</li>
+                  <li>Footer section</li>
+                  <li>Open Graph / social share images</li>
+                  <li>Favicon (if SVG or PNG)</li>
+                </ul>
+              </div>
+
+              {/* AI Generation Coming Soon */}
+              <div className="border-t border-zinc-800/50 pt-3 mt-3">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-zinc-400">AI Logo Generation</p>
+                    <p className="text-[10px] text-zinc-600">Generate a logo based on your brand</p>
+                  </div>
+                  <span className="text-[10px] text-zinc-600 px-2 py-1 bg-zinc-800/50 rounded">
+                    Coming Soon
+                  </span>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <button
             onClick={handleSave}
             disabled={saving}
@@ -395,23 +572,116 @@ export default function ProjectConfigPage() {
       )}
 
       {activeTab === 'pages' && (
-        <div className="space-y-4">
+        <div className="space-y-3">
+          {/* Current Sections */}
           <div className="border border-zinc-800/50 rounded-md p-4 bg-zinc-900/30">
-            <h3 className="text-xs text-zinc-500 uppercase tracking-wide mb-4">Site Pages</h3>
-            <p className="text-sm text-zinc-500">
-              Multi-page support coming soon. Currently building single-page sites.
-            </p>
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-[10px] text-zinc-500 uppercase tracking-wide">Sections</h3>
+              <span className="text-[10px] text-zinc-600">{sections.length} total</span>
+            </div>
+            
+            <div className="space-y-1">
+              {sections.map((section, index) => {
+                const info = SECTION_INFO[section.section_id] || { name: section.section_id, desc: '' }
+                const isHeader = section.section_id === 'header'
+                const isFooter = section.section_id === 'footer'
+                const isBuilt = section.status === 'complete'
+                const canMove = !isHeader && !isFooter
+                const canDelete = canMove
+                
+                return (
+                  <div
+                    key={section.id}
+                    className={`flex items-center gap-2 px-3 py-2 rounded text-left transition-colors ${
+                      isBuilt
+                        ? 'bg-zinc-800/80 border border-zinc-700/50'
+                        : 'bg-zinc-900/30 border border-transparent'
+                    } ${(isHeader || isFooter) ? 'opacity-60' : ''}`}
+                  >
+                    {/* Order controls */}
+                    <div className="flex flex-col gap-0.5">
+                      <button
+                        onClick={() => handleMoveSection(index, 'up')}
+                        disabled={!canMove || index === 0 || sections[index - 1]?.section_id === 'header'}
+                        className="text-[9px] text-zinc-600 hover:text-zinc-300 disabled:opacity-30 disabled:cursor-not-allowed"
+                        title="Move up"
+                      >
+                        ▲
+                      </button>
+                      <button
+                        onClick={() => handleMoveSection(index, 'down')}
+                        disabled={!canMove || index === sections.length - 1 || sections[index + 1]?.section_id === 'footer'}
+                        className="text-[9px] text-zinc-600 hover:text-zinc-300 disabled:opacity-30 disabled:cursor-not-allowed"
+                        title="Move down"
+                      >
+                        ▼
+                      </button>
+                    </div>
+
+                    {/* Section info */}
+                    <div className="flex-1 min-w-0">
+                      <span className={`text-xs ${isBuilt ? 'text-white' : 'text-zinc-400'}`}>
+                        {info.name}
+                      </span>
+                      <span className="text-[10px] text-zinc-600 ml-2">{info.desc}</span>
+                    </div>
+
+                    {/* Status */}
+                    <span className={`text-[9px] px-1.5 py-0.5 rounded ${
+                      isBuilt ? 'bg-emerald-500/20 text-emerald-400' :
+                      section.status === 'building' ? 'bg-blue-500/20 text-blue-400' :
+                      section.status === 'skipped' ? 'bg-zinc-500/20 text-zinc-400' :
+                      'bg-zinc-800 text-zinc-500'
+                    }`}>
+                      {isBuilt ? 'built' : section.status}
+                    </span>
+
+                    {/* Pin label or delete */}
+                    {isHeader && <span className="text-[9px] text-zinc-600 w-8 text-right">first</span>}
+                    {isFooter && <span className="text-[9px] text-zinc-600 w-8 text-right">last</span>}
+                    {canDelete && (
+                      <button
+                        onClick={() => handleDeleteSection(section.section_id)}
+                        className="text-[9px] text-zinc-600 hover:text-red-400 w-8 text-right transition-colors"
+                        title="Remove section"
+                      >
+                        ✕
+                      </button>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
           </div>
 
+          {/* Add Section */}
           <div className="border border-zinc-800/50 rounded-md p-4 bg-zinc-900/30">
-            <h3 className="text-xs text-zinc-500 uppercase tracking-wide mb-4">Available Section Types</h3>
-            <div className="flex flex-wrap gap-2">
-              {SECTION_TYPES.map((type) => (
-                <span key={type} className="text-xs text-zinc-400 px-2 py-1 bg-zinc-800/50 rounded capitalize">
-                  {type}
-                </span>
-              ))}
+            <h3 className="text-[10px] text-zinc-500 uppercase tracking-wide mb-3">Add Section</h3>
+            <div className="flex gap-2">
+              <select
+                value=""
+                onChange={(e) => e.target.value && handleAddSection(e.target.value)}
+                className="flex-1 px-2 py-1.5 text-xs bg-zinc-800/50 border border-zinc-700/50 rounded text-zinc-200"
+                title="Add a section"
+              >
+                <option value="">Select section to add...</option>
+                {SECTION_TYPES.filter(type => 
+                  type !== 'header' && 
+                  type !== 'footer' && 
+                  !sections.find(s => s.section_id === type)
+                ).map(type => {
+                  const info = SECTION_INFO[type] || { name: type, desc: '' }
+                  return (
+                    <option key={type} value={type}>
+                      {info.name} — {info.desc}
+                    </option>
+                  )
+                })}
+              </select>
             </div>
+            {sections.filter(s => s.section_id !== 'header' && s.section_id !== 'footer').length === SECTION_TYPES.length - 2 && (
+              <p className="text-[10px] text-zinc-600 mt-2">All available sections added</p>
+            )}
           </div>
         </div>
       )}

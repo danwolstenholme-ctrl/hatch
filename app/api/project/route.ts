@@ -93,8 +93,9 @@ export async function POST(request: NextRequest) {
     }
 
     // Determine sections to create
-    // Priority: wizard pages > customSections > template sections
+    // Priority: wizard pages > customSections (IDs or objects) > template sections
     let sectionsToCreate: Section[] = []
+    const sectionOrder = ['header', 'hero', 'features', 'services', 'about', 'testimonials', 'pricing', 'stats', 'work', 'faq', 'cta', 'contact', 'footer']
     
     if (pages && pages.length > 0) {
       // Use sections from wizard pages (flatten all page sections, deduplicate)
@@ -103,7 +104,6 @@ export async function POST(request: NextRequest) {
         page.sections?.forEach((sectionId: string) => allSectionIds.add(sectionId))
       })
       // Convert section IDs to Section objects
-      const sectionOrder = ['header', 'hero', 'features', 'services', 'about', 'testimonials', 'pricing', 'stats', 'work', 'faq', 'cta', 'contact', 'footer']
       sectionsToCreate = Array.from(allSectionIds).map(id => ({
         id,
         name: id.charAt(0).toUpperCase() + id.slice(1),
@@ -113,8 +113,23 @@ export async function POST(request: NextRequest) {
         required: id === 'header' || id === 'footer',
         order: sectionOrder.indexOf(id) >= 0 ? sectionOrder.indexOf(id) : 99
       })).sort((a, b) => a.order - b.order)
-    } else if (customSections) {
-      sectionsToCreate = customSections
+    } else if (customSections && customSections.length > 0) {
+      // Check if it's an array of IDs (strings) or full Section objects
+      if (typeof customSections[0] === 'string') {
+        // Convert IDs to Section objects
+        sectionsToCreate = (customSections as string[]).map((id, idx) => ({
+          id,
+          name: id.charAt(0).toUpperCase() + id.slice(1).replace(/-/g, ' '),
+          description: `${id.charAt(0).toUpperCase() + id.slice(1)} section`,
+          prompt: '',
+          estimatedTime: '~30 seconds',
+          required: id === 'header' || id === 'footer',
+          order: sectionOrder.indexOf(id) >= 0 ? sectionOrder.indexOf(id) : idx
+        })).sort((a, b) => a.order - b.order)
+      } else {
+        // Already full Section objects
+        sectionsToCreate = customSections
+      }
     } else if (template) {
       sectionsToCreate = template.sections
     } else {

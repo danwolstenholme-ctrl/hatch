@@ -42,16 +42,8 @@ export default function ProjectsPage() {
     })
   }, [projects])
 
-  const handleNew = async () => {
-    const res = await fetch('/api/project', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name: 'Untitled Project', templateId: 'website' }),
-    })
-    const data = await res.json()
-    if (res.ok && data.project) {
-      router.push(`/dashboard/projects/${data.project.id}`)
-    }
+  const handleNew = () => {
+    router.push('/dashboard/projects/new')
   }
 
   if (loading) {

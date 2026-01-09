@@ -3,14 +3,33 @@
 import { Suspense, useEffect } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { useUser } from '@clerk/nextjs'
+import { motion } from 'framer-motion'
 import BuildFlowController from '@/components/BuildFlowController'
+import { LogoMark } from '@/components/Logo'
 
 // =============================================================================
 // BUILDER PAGE - Auth users only
 // Unauthenticated users → /demo
-// No page-level loading states - SingularityTransition handles entry from homepage
-// BuildFlowController handles its own loading internally
 // =============================================================================
+
+function BuilderLoading() {
+  return (
+    <div className="min-h-screen bg-zinc-950 flex items-center justify-center">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.3 }}
+      >
+        <motion.div
+          animate={{ opacity: [0.5, 1, 0.5] }}
+          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+        >
+          <LogoMark size={32} />
+        </motion.div>
+      </motion.div>
+    </div>
+  )
+}
 
 function BuilderContent() {
   const searchParams = useSearchParams()
@@ -27,14 +46,14 @@ function BuilderContent() {
     }
   }, [isLoaded, isSignedIn, prompt, router])
 
-  // While checking auth, render nothing - let homepage transition or BuildFlowController handle loading
+  // While checking auth, show loading
   if (!isLoaded) {
-    return null
+    return <BuilderLoading />
   }
 
-  // Redirecting to demo - render nothing
+  // Redirecting to demo - show loading
   if (!isSignedIn) {
-    return null
+    return <BuilderLoading />
   }
 
   // Authenticated user - BuildFlowController handles all loading states
@@ -49,7 +68,7 @@ function BuilderContent() {
 
 export default function BuilderPage() {
   return (
-    <Suspense fallback={null}>
+    <Suspense fallback={<BuilderLoading />}>
       <BuilderContent />
     </Suspense>
   )

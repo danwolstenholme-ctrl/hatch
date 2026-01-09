@@ -118,7 +118,7 @@ export default function DashboardPage() {
       router.push('/dashboard/billing')
       return
     }
-    setShowWizard(true)
+    router.push('/dashboard/projects/new')
   }
 
   const handleWizardCreate = async (config: {
@@ -265,10 +265,9 @@ export default function DashboardPage() {
               </p>
               <button
                 onClick={handleOpenWizard}
-                disabled={isCreating}
-                className="px-4 py-2 text-sm font-medium text-black bg-white rounded-md hover:bg-zinc-200 transition-colors disabled:opacity-50"
+                className="px-4 py-2 text-sm font-medium text-black bg-white rounded-md hover:bg-zinc-200 transition-colors"
               >
-                {isCreating ? 'Creating...' : 'Create First Project'}
+                Create First Project
               </button>
             </div>
           ) : (
@@ -323,12 +322,7 @@ export default function DashboardPage() {
                             Visit ↗
                           </a>
                         )}
-                        <button
-                          onClick={(e) => handleDelete(e, project.id)}
-                          className="text-xs text-zinc-600 hover:text-red-400 transition-colors opacity-0 group-hover:opacity-100"
-                        >
-                          Delete
-                        </button>
+                        {/* Delete disabled for now - simplify flow */}
                         <span className="text-zinc-700 group-hover:text-zinc-500 transition-colors">→</span>
                       </div>
                     </Link>

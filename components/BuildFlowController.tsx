@@ -1,7 +1,5 @@
 'use client'
 
-/* eslint-disable react/no-unescaped-entities */
-
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react'
 import { useUser } from '@clerk/nextjs'
 import { useRouter } from 'next/navigation'
@@ -10,17 +8,11 @@ import {
   ArrowLeft, 
   Globe, 
   Rocket, 
-  CheckCircle2, 
-  AlertCircle, 
   Eye, 
-  RefreshCw, 
-  Layers,
   Layout,
   MessageSquare,
-  Share2,
   Edit3,
   Plus,
-  Terminal,
   ArrowRight,
   Sparkles,
   Crown,
@@ -28,18 +20,19 @@ import {
   Star,
   Download,
   ExternalLink,
-  Lock,
   Check,
   X,
   Menu,
-  Code
+  Code,
+  Smartphone,
+  Tablet,
+  Monitor
 } from 'lucide-react'
 import { track } from '@vercel/analytics'
 import SectionProgress from './SectionProgress'
 import SectionBuilder from './SectionBuilder'
 import PaywallTransition from './PaywallTransition'
 import HatchModal from './HatchModal'
-import TheWitness from './singularity/TheWitness'
 import WelcomeModal from './WelcomeModal'
 import BuilderWelcome from './BuilderWelcome'
 import DemoWelcome from './DemoWelcome'
@@ -53,6 +46,7 @@ import BuildSuccessModal from './BuildSuccessModal'
 import Button from './singularity/Button'
 import ReplicatorModal from './ReplicatorModal'
 import { Sidebar } from './builder'
+import { LogoMark } from './Logo'
 import { chronosphere } from '@/lib/chronosphere'
 import { Template, Section, getTemplateById, getSectionById, createInitialBuildState, BuildState, websiteTemplate } from '@/lib/templates'
 import { DbProject, DbSection, DbBrandConfig } from '@/lib/supabase'
@@ -89,7 +83,7 @@ type DemoRestoreData = {
 // Orchestrates the entire V3.0 build experience
 // =============================================================================
 
-type BuildPhase = 'initializing' | 'building' | 'review'
+type BuildPhase = 'building'
 
 interface BuildFlowControllerProps {
   existingProjectId?: string
@@ -147,7 +141,7 @@ export default function BuildFlowController({ existingProjectId, initialPrompt, 
   const [openSettingsFromQuery, setOpenSettingsFromQuery] = useState(false)
   
   const [demoMode, setDemoMode] = useState(isDemo)
-  const [phase, setPhase] = useState<BuildPhase>('initializing')
+  const [phase, setPhase] = useState<BuildPhase>('building')
   const [selectedTemplate, setSelectedTemplate] = useState<Template>(SINGULARITY_TEMPLATE)
   const [customizedSections, setCustomizedSections] = useState<Section[]>(SINGULARITY_TEMPLATE.sections)
   const [brandConfig, setBrandConfig] = useState<DbBrandConfig | null>(null)
@@ -177,6 +171,7 @@ export default function BuildFlowController({ existingProjectId, initialPrompt, 
   const [demoSectionsBuilt, setDemoSectionsBuilt] = useState(0)
   const [showMobileSidebar, setShowMobileSidebar] = useState(false)
   const [previewEditMode, setPreviewEditMode] = useState(false)
+  const [previewDevice, setPreviewDevice] = useState<'mobile' | 'tablet' | 'desktop'>('desktop')
 
   // Reset legacy welcome flags so V2 intro shows for all users (esp. mobile)
   useEffect(() => {
@@ -187,11 +182,6 @@ export default function BuildFlowController({ existingProjectId, initialPrompt, 
     }
   }, [])
   
-  // The Witness State
-  const [showWitness, setShowWitness] = useState(false)
-  const [witnessNote, setWitnessNote] = useState<string | null>(null)
-  const [isWitnessLoading, setIsWitnessLoading] = useState(false)
-
   // Healer State (self-healing background process)
   const [isHealing, setIsHealing] = useState(false)
   const [lastHealMessage, setLastHealMessage] = useState<string | null>(null)
@@ -910,9 +900,7 @@ export default function BuildFlowController({ existingProjectId, initialPrompt, 
       state.currentSectionIndex = firstPending === -1 ? Math.max(0, reconstructed.length - 1) : firstPending
       
       setBuildState(state)
-      
-      const allDone = sections.every((s: DbSection) => s.status === 'complete' || s.status === 'skipped')
-      setPhase(allDone ? 'review' : 'building')
+      setPhase('building')
       
     } catch (err) {
       console.error('Error loading project:', err)
@@ -1528,23 +1516,8 @@ export default function GeneratedPage() {
         
         setDeployedUrl(data.url)
 
-        // Trigger The Witness
-        setShowWitness(true)
-        setIsWitnessLoading(true)
-        try {
-          const witnessRes = await fetch('/api/witness', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ dna: chronosphere.getDNA() })
-          })
-          const witnessData = await witnessRes.json()
-          setWitnessNote(witnessData.note)
-        } catch (e) {
-          console.error('Witness failed', e)
-          setWitnessNote("System check complete. Your creation is ready.")
-        } finally {
-          setIsWitnessLoading(false)
-        }
+        // Redirect to dashboard - project page shows live stats
+        router.push(`/dashboard/projects/${project.id}?deployed=true`)
       } else {
         setError(data.error || 'Deploy failed')
       }
@@ -1768,15 +1741,12 @@ export default function GeneratedPage() {
     setError(null) // Clear any error state
     setProject(null)
     setDbSections([])
-    // setSelectedTemplate(null) // Keep default template
-    // setCustomizedSections(null)
     setBrandConfig(null)
     setBuildState(null)
-    setPhase('initializing')
     setDemoMode(false)
     setJustCreatedProjectId(null)
-    // Use window.location for a clean state reset
-    window.location.href = '/builder'
+    // Go to new project wizard for a clean start
+    window.location.href = '/dashboard/projects/new'
   }
 
   const handleGoHome = () => {
@@ -1785,7 +1755,23 @@ export default function GeneratedPage() {
 
   // Skip loading UI - pages handle their own loading states
   if (isLoading && !skipLoadingScreen) {
-    return null
+    return (
+      <div className="min-h-screen bg-zinc-950 flex items-center justify-center">
+        <motion.div
+          initial={{ opacity: 0, scale: 0.9 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.3 }}
+          className="flex flex-col items-center gap-3"
+        >
+          <motion.div
+            animate={{ opacity: [0.5, 1, 0.5] }}
+            transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+          >
+            <LogoMark size={32} />
+          </motion.div>
+        </motion.div>
+      </div>
+    )
   }
 
   if (error) {
@@ -1813,7 +1799,6 @@ export default function GeneratedPage() {
   }
   
   // Note: Loading is handled above with skipLoadingScreen check
-  // phase === 'initializing' is handled there too
 
   return (
     <div className="min-h-screen bg-zinc-950">
@@ -1970,10 +1955,6 @@ export default function GeneratedPage() {
                           setShowOracle(true)
                           setShowMobileSidebar(false)
                         }}
-                        onOpenWitness={() => {
-                          setShowWitness(true)
-                          setShowMobileSidebar(false)
-                        }}
                         onOpenArchitect={() => {
                           setShowArchitect(true)
                           setShowMobileSidebar(false)
@@ -1991,7 +1972,7 @@ export default function GeneratedPage() {
             </AnimatePresence>
 
             {/* Sidebar - XL screens and up */}
-            <div className="hidden xl:flex w-64 flex-shrink-0 flex-col border-r border-zinc-800 bg-zinc-900/30 backdrop-blur-xl overflow-y-auto">
+            <div className="hidden xl:flex w-56 flex-shrink-0 flex-col border-r border-zinc-800/50 bg-zinc-950 overflow-y-auto">
               <Sidebar
                 userTier={demoMode ? 'demo' : (accountSubscription?.status === 'active' ? accountSubscription?.tier : 'free') as 'demo' | 'free' | 'architect' | 'visionary' | 'singularity'}
                 projectName={project?.name || brandConfig?.brandName || (demoMode ? 'Demo Project' : 'Untitled Project')}
@@ -2013,30 +1994,6 @@ export default function GeneratedPage() {
                 onSelectSection={handleSectionClick}
                 onMoveSection={handleMoveSection}
                 onOpenOracle={() => setShowOracle(true)}
-                onOpenWitness={() => {
-                  setShowWitness(true)
-                  if (demoMode) {
-                    setIsWitnessLoading(true)
-                    fetch('/api/witness', {
-                      method: 'POST',
-                      headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify({ 
-                        context: 'Demo user exploring the builder',
-                        prompt: 'A user is trying out the demo builder for the first time',
-                        isDemo: true
-                      })
-                    })
-                      .then(res => res.json())
-                      .then(data => {
-                        setWitnessNote(data.note || "Welcome to the Singularity. I'm here to guide your creative journey.")
-                        setIsWitnessLoading(false)
-                      })
-                      .catch(() => {
-                        setWitnessNote("Welcome to the Singularity. I'm here to guide your creative journey.")
-                        setIsWitnessLoading(false)
-                      })
-                  }
-                }}
                 onOpenArchitect={() => setShowArchitect(true)}
                 onOpenSettings={() => setIsSettingsOpen(true)}
                 onSignUp={demoMode ? () => router.push('/sign-up?redirect_url=/builder') : undefined}
@@ -2172,7 +2129,44 @@ export default function GeneratedPage() {
                     </div>
                     
                     {previewSections.length > 0 && (
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-3">
+                        {/* Device Toggle */}
+                        <div className="flex items-center gap-1 bg-zinc-800/50 rounded-md p-0.5">
+                          <button
+                            onClick={() => setPreviewDevice('mobile')}
+                            className={`p-1.5 rounded transition-all ${
+                              previewDevice === 'mobile' 
+                                ? 'bg-zinc-700 text-white' 
+                                : 'text-zinc-500 hover:text-zinc-300'
+                            }`}
+                            title="Mobile"
+                          >
+                            <Smartphone className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            onClick={() => setPreviewDevice('tablet')}
+                            className={`p-1.5 rounded transition-all ${
+                              previewDevice === 'tablet' 
+                                ? 'bg-zinc-700 text-white' 
+                                : 'text-zinc-500 hover:text-zinc-300'
+                            }`}
+                            title="Tablet"
+                          >
+                            <Tablet className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            onClick={() => setPreviewDevice('desktop')}
+                            className={`p-1.5 rounded transition-all ${
+                              previewDevice === 'desktop' 
+                                ? 'bg-zinc-700 text-white' 
+                                : 'text-zinc-500 hover:text-zinc-300'
+                            }`}
+                            title="Desktop"
+                          >
+                            <Monitor className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
+                        
                         {/* Edit Toggle */}
                         <button
                           onClick={() => setPreviewEditMode(!previewEditMode)}
@@ -2191,10 +2185,12 @@ export default function GeneratedPage() {
                   {/* Preview Content - Scales to fit */}
                   <div className="flex-1 overflow-hidden relative bg-zinc-900/30 p-4">
                     {previewSections.length > 0 ? (
-                      <div className="w-full h-full rounded-lg overflow-hidden border border-zinc-800/50 bg-white shadow-2xl">
+                      <div className={`h-full mx-auto rounded-lg overflow-hidden border border-zinc-800/50 bg-white shadow-2xl transition-all duration-300 ${
+                        previewDevice === 'mobile' ? 'w-[375px]' : previewDevice === 'tablet' ? 'w-[768px]' : 'w-full'
+                      }`}>
                         <FullSitePreviewFrame 
                           sections={previewSections}
-                          deviceView="desktop"
+                          deviceView={previewDevice}
                           ref={previewIframeRef}
                           seo={brandConfig?.seo ? {
                             title: brandConfig.seo.title || '',
@@ -2218,511 +2214,6 @@ export default function GeneratedPage() {
             </div>
           </motion.div>
         ) : null}
-        {phase === 'review' && buildState && templateForBuild && (
-          <motion.div
-            key="review"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="flex flex-col h-screen overflow-hidden bg-zinc-950"
-          >
-            {/* Review Header */}
-            <div className="flex-shrink-0 border-b border-zinc-800/50 bg-zinc-950">
-              <div className="px-3 py-2.5 sm:px-6 sm:py-4 flex items-center justify-between">
-                <div className="flex items-center gap-2 sm:gap-4">
-                  <button
-                    onClick={handleGoHome}
-                    className="text-zinc-500 hover:text-white transition-colors flex items-center gap-1 sm:gap-2 text-xs sm:text-sm font-medium"
-                  >
-                    <ArrowLeft className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                    <span className="hidden sm:inline">Dashboard</span>
-                  </button>
-                  <div className="h-5 sm:h-6 w-px bg-zinc-800 hidden sm:block" />
-                  <div className="flex items-center gap-2 sm:gap-3">
-                    <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-lg bg-zinc-800 border border-zinc-700 flex items-center justify-center">
-                      <Terminal className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-zinc-400" />
-                    </div>
-                    <h1 className="text-base sm:text-lg font-semibold text-white tracking-tight truncate max-w-[120px] sm:max-w-none">{project?.name || 'Untitled Project'}</h1>
-                  </div>
-                  
-                  {/* Tier Badge */}
-                  {tierConfig?.badge && (
-                    <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full border ${tierConfig.badge.border} ${tierConfig.badge.wrapper}`}>
-                      <tierConfig.icon className={`w-3.5 h-3.5 ${tierConfig.badge.icon}`} />
-                      <span className={`text-xs font-bold uppercase tracking-wider ${tierConfig.badge.text}`}>
-                        {tierConfig.name}
-                      </span>
-                    </div>
-                  )}
-                </div>
-                <div className="flex items-center gap-1.5 sm:gap-3">
-                  <button
-                    onClick={handleStartFresh}
-                    className="hidden sm:block px-4 py-2.5 text-sm text-zinc-400 hover:text-zinc-200 transition-colors font-medium"
-                  >
-                    New Project
-                  </button>
-                  <button
-                    onClick={handleDownload}
-                    disabled={!assembledCode}
-                    className="px-3 py-2 sm:px-4 sm:py-2.5 text-sm text-zinc-400 hover:text-zinc-200 transition-colors font-medium flex items-center gap-2"
-                  >
-                    <Download className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                    <span className="hidden sm:inline">Export</span>
-                  </button>
-                  
-                  {/* Deploy Options Dropdown */}
-                  <div className="relative">
-                    {deployedUrl ? (
-                      <a
-                        href={deployedUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="px-2.5 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm bg-white text-zinc-900 border border-zinc-200 rounded-lg hover:bg-zinc-100 transition-colors flex items-center gap-1.5 sm:gap-2 font-medium"
-                      >
-                        <Globe className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                        <span className="hidden sm:inline">Live</span>
-                        <ExternalLink className="w-3 h-3" />
-                      </a>
-                    ) : (
-                      <button
-                        onClick={() => setShowDeployOptions(!showDeployOptions)}
-                        disabled={!assembledCode}
-                        className={`px-5 py-2.5 text-sm font-medium rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 group ${
-                          tierConfig?.color === 'amber' 
-                            ? 'bg-white text-zinc-900 hover:bg-zinc-100'
-                            : tierConfig?.color === 'lime'
-                            ? 'bg-white text-zinc-900 hover:bg-zinc-100'
-                            : 'bg-white text-zinc-900 hover:bg-zinc-100'
-                        }`}
-                      >
-                        <Rocket className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                        <span>Ship</span>
-                        <svg className="w-3 h-3 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                        </svg>
-                      </button>
-                    )}
-                    
-                    {/* Dropdown Menu */}
-                    <AnimatePresence>
-                      {showDeployOptions && !deployedUrl && (
-                        <>
-                          <div className="fixed inset-0 z-40" onClick={() => setShowDeployOptions(false)} />
-                          <motion.div
-                            initial={{ opacity: 0, y: -10 }}
-                            animate={{ opacity: 1, y: 0 }}
-                            exit={{ opacity: 0, y: -10 }}
-                            className="absolute right-0 top-full mt-2 w-72 bg-zinc-900 border border-zinc-800 rounded-xl shadow-2xl z-50 overflow-hidden"
-                          >
-                            <div className="p-2">
-                              {/* Push to GitHub */}
-                              <button
-                                onClick={() => {
-                                  setShowDeployOptions(false)
-                                  handleGitHubPush()
-                                }}
-                                disabled={github.pushing}
-                                className="w-full flex items-center gap-3 p-3 hover:bg-zinc-800 rounded-lg transition-colors text-left group"
-                              >
-                                <div className="w-9 h-9 rounded-lg bg-zinc-800 flex items-center justify-center">
-                                  <Github className="w-5 h-5 text-white" />
-                                </div>
-                                <div className="flex-1">
-                                  <p className="text-sm font-medium text-white group-hover:text-zinc-200">
-                                    {github.connected ? 'Push to GitHub' : 'Connect GitHub'}
-                                  </p>
-                                  <p className="text-xs text-zinc-500">
-                                    {github.connected ? `@${github.username}` : 'Your repo, your code'}
-                                  </p>
-                                </div>
-                                {github.pushing && <RefreshCw className="w-4 h-4 text-zinc-500 animate-spin" />}
-                              </button>
-                              
-                              {/* Deploy to hatchitsites.dev */}
-                              <button
-                                onClick={() => {
-                                  setShowDeployOptions(false)
-                                  handleDeploy()
-                                }}
-                                disabled={isDeploying}
-                                className="w-full flex items-center gap-3 p-3 hover:bg-zinc-800 rounded-lg transition-colors text-left group"
-                              >
-                                <div className="w-9 h-9 rounded-lg bg-zinc-800 flex items-center justify-center">
-                                  <Rocket className="w-5 h-5 text-zinc-400" />
-                                </div>
-                                <div className="flex-1">
-                                  <p className="text-sm font-medium text-white group-hover:text-zinc-200">Deploy to HatchIt</p>
-                                  <p className="text-xs text-zinc-500">Live on hatchitsites.dev</p>
-                                </div>
-                                {!canDeploy && <Lock className="w-4 h-4 text-zinc-500" />}
-                              </button>
-                              
-                              {/* Download ZIP */}
-                              <button
-                                onClick={() => {
-                                  setShowDeployOptions(false)
-                                  handleDownload()
-                                }}
-                                className="w-full flex items-center gap-3 p-3 hover:bg-zinc-800 rounded-lg transition-colors text-left group"
-                              >
-                                <div className="w-9 h-9 rounded-lg bg-zinc-800 flex items-center justify-center">
-                                  <Download className="w-5 h-5 text-zinc-400" />
-                                </div>
-                                <div className="flex-1">
-                                  <p className="text-sm font-medium text-white group-hover:text-zinc-200">Download ZIP</p>
-                                  <p className="text-xs text-zinc-500">Full Next.js project</p>
-                                </div>
-                              </button>
-                            </div>
-                            
-                            {/* GitHub Push Result */}
-                            {githubPushResult?.success && (
-                              <div className="border-t border-zinc-800 p-3 bg-zinc-800/50">
-                                <p className="text-xs text-white font-medium mb-2">Pushed to GitHub</p>
-                                <div className="flex gap-2">
-                                  <a
-                                    href={githubPushResult.repoUrl}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="flex-1 text-xs text-center py-2 bg-zinc-800 hover:bg-zinc-700 rounded-lg text-white"
-                                  >
-                                    View Repo
-                                  </a>
-                                  <a
-                                    href={githubPushResult.vercelImportUrl}
-                                    target="_blank"
-                                    rel="noopener noreferrer"
-                                    className="flex-1 text-xs text-center py-2 bg-white text-black hover:bg-zinc-200 rounded-lg font-medium"
-                                  >
-                                    Deploy on Vercel →
-                                  </a>
-                                </div>
-                              </div>
-                            )}
-                            {githubPushResult?.error && (
-                              <div className="border-t border-zinc-800 p-3 bg-red-500/5">
-                                <p className="text-xs text-red-400">{githubPushResult.error}</p>
-                              </div>
-                            )}
-                          </motion.div>
-                        </>
-                      )}
-                    </AnimatePresence>
-                  </div>
-                </div>
-              </div>
-              {error && (
-                <div className="px-3 sm:px-6 pb-2 sm:pb-3">
-                  <motion.div
-                    initial={{ opacity: 0, y: -20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -20 }}
-                    className="text-sm text-red-400 bg-red-500/10 border border-red-500/20 rounded-lg px-4 py-2 flex items-center gap-2 backdrop-blur-xl"
-                  >
-                    <AlertCircle className="w-4 h-4" />
-                    {error}
-                    <button onClick={() => setError(null)} className="ml-auto text-red-400/60 hover:text-red-400" aria-label="Dismiss error">
-                      <X className="w-4 h-4" />
-                    </button>
-                  </motion.div>
-                </div>
-              )}
-            </div>
-
-            <BuilderTabRail variant="flat" />
-
-            {/* Main Content - Split Panel */}
-            <div className="flex-1 flex flex-col md:flex-row min-h-0 overflow-hidden">
-              
-              {/* Mobile Tab Switcher for Review */}
-              <div className="flex md:hidden border-b border-zinc-800/50 bg-zinc-950 p-1.5">
-                <div className="flex w-full bg-zinc-900/50 rounded-lg p-0.5 border border-zinc-800/50">
-                  <button
-                    onClick={() => setReviewMobileTab('modules')}
-                    className={`flex-1 py-2 text-xs font-medium rounded-md transition-all duration-200 flex items-center justify-center gap-1.5 ${
-                      reviewMobileTab === 'modules' 
-                        ? 'bg-zinc-800 text-white shadow-sm' 
-                        : 'text-zinc-400 hover:text-zinc-300'
-                    }`}
-                  >
-                    <Layers className="w-3.5 h-3.5" />
-                    <span>Modules</span>
-                  </button>
-                  <button
-                    onClick={() => setReviewMobileTab('preview')}
-                    className={`flex-1 py-2 text-xs font-medium rounded-md transition-all duration-200 flex items-center justify-center gap-1.5 ${
-                      reviewMobileTab === 'preview' 
-                        ? 'bg-zinc-800 text-white shadow-sm' 
-                        : 'text-zinc-400 hover:text-zinc-300'
-                    }`}
-                  >
-                    <Eye className="w-3.5 h-3.5" />
-                    <span>Preview</span>
-                  </button>
-                </div>
-              </div>
-
-              {/* Left Panel - Section List */}
-              <div className={`
-                ${reviewMobileTab === 'modules' ? 'flex' : 'hidden'} md:flex
-                w-full md:w-72 border-r border-zinc-800/50 flex-col bg-zinc-900/20 overflow-hidden
-              `}>
-                <div className="p-3 sm:p-4 border-b border-zinc-800/50">
-                  <h2 className="text-xs font-medium text-zinc-400 uppercase tracking-wider">Your Full Site</h2>
-                  {!isPaidUser && (
-                    <p className="text-xs text-zinc-500 mt-1">Hero complete • {allTemplateSections.length - 1} sections ready to customize</p>
-                  )}
-                </div>
-                <div className="flex-1 overflow-auto p-1.5 sm:p-2 space-y-0.5 sm:space-y-1">
-                  {/* Show only completed hero section */}
-                  {allTemplateSections.filter(section => buildState.completedSections.includes(section.id)).map((section, index) => {
-                    const isCompleted = buildState.completedSections.includes(section.id)
-                    
-                    return (
-                      <button
-                        key={section.id}
-                        onClick={() => {
-                          if (isCompleted) {
-                            // Go back to building mode for this section
-                            const sectionIndex = sectionsForBuild.findIndex(s => s.id === section.id)
-                            if (sectionIndex >= 0) {
-                              setBuildState(prev => prev ? ({ ...prev, currentSectionIndex: sectionIndex }) : null)
-                              setPhase('building')
-                            }
-                          }
-                        }}
-                        className="w-full text-left p-2 sm:p-3 rounded-lg mb-0.5 sm:mb-1 transition-all group hover:bg-zinc-800/50 border border-transparent cursor-pointer"
-                      >
-                        <div className="flex items-center gap-3">
-                          <div className="w-6 h-6 rounded flex items-center justify-center text-xs bg-zinc-800 text-zinc-400 border border-zinc-700">
-                            <CheckCircle2 className="w-3.5 h-3.5" />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <h3 className="text-sm font-medium truncate text-zinc-200 group-hover:text-white">{section.name}</h3>
-                          </div>
-                          <Edit3 className="w-3.5 h-3.5 text-zinc-600 group-hover:text-zinc-400" />
-                        </div>
-                      </button>
-                    )
-                  })}
-                </div>
-                
-                {/* Run Audit Button */}
-                <div className="p-4 border-t border-zinc-800 bg-zinc-900/20">
-                  <button
-                    onClick={handleRunAudit}
-                    disabled={isAuditRunning}
-                    className="w-full py-3 text-sm bg-zinc-800 border border-zinc-700 text-zinc-200 rounded-lg hover:bg-zinc-700 hover:text-white transition-all flex items-center justify-center gap-2 disabled:opacity-50 group font-medium"
-                  >
-                    {isAuditRunning ? (
-                      <>
-                        <RefreshCw className="w-4 h-4 animate-spin" />
-                        <span>Running Diagnostics...</span>
-                      </>
-                    ) : (
-                      <>
-                        <Terminal className="w-4 h-4 text-zinc-400 group-hover:text-zinc-200" />
-                        <span>Run System Audit</span>
-                      </>
-                    )}
-                  </button>
-                  {buildState.finalAuditComplete && (
-                    <div className="mt-3 flex items-center justify-center gap-2 text-xs text-zinc-400 font-mono bg-zinc-800 py-1.5 rounded border border-zinc-700">
-                      <CheckCircle2 className="w-3.5 h-3.5" />
-                      <span>Optimized: {buildState.finalAuditChanges?.length || 0} improvements</span>
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              {/* Right Panel - Full Site Preview */}
-              <div className={`
-                ${reviewMobileTab === 'preview' ? 'flex' : 'hidden'} md:flex
-                flex-1 flex-col bg-zinc-950 min-h-0 relative
-              `}>
-                
-                {/* Preview Header */}
-                <div className="p-4 border-b border-zinc-800 flex items-center justify-between relative z-10 bg-zinc-950">
-                  <div className="flex items-center gap-2">
-                    <div className="w-1.5 h-1.5 rounded-full bg-zinc-500" />
-                    <h3 className="text-xs font-medium text-zinc-400 uppercase tracking-wider">Live Preview</h3>
-                  </div>
-                </div>
-
-                {/* Preview Container - Responsive Desktop */}
-                <div className="flex-1 overflow-auto relative z-0">
-                    <FullSitePreviewFrame 
-                      sections={previewSections} 
-                      deviceView="desktop"
-                      seo={project?.brand_config?.seo}
-                    />
-                </div>
-              </div>
-            </div>
-
-
-
-            {/* Success Modal after Deploy - "Ship it. Share it." */}
-            <AnimatePresence>
-              {deployedUrl && (
-                <motion.div
-                  initial={{ opacity: 0 }}
-                  animate={{ opacity: 1 }}
-                  exit={{ opacity: 0 }}
-                  className="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4"
-                  onClick={() => setDeployedUrl(null)}
-                >
-                  <motion.div
-                    initial={{ opacity: 0, scale: 0.9, y: 20 }}
-                    animate={{ opacity: 1, scale: 1, y: 0 }}
-                    exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                    className="bg-zinc-950 border border-zinc-800 rounded-2xl p-8 max-w-lg w-full shadow-2xl relative overflow-hidden"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    
-                    <div className="text-center relative z-10">
-                      <motion.div
-                        initial={{ scale: 0 }}
-                        animate={{ scale: 1 }}
-                        transition={{ type: 'spring', bounce: 0.5, delay: 0.2 }}
-                        className="w-20 h-20 mx-auto mb-6 rounded-full bg-zinc-900 border border-zinc-700 flex items-center justify-center"
-                      >
-                        <Rocket className="w-10 h-10 text-emerald-400" />
-                      </motion.div>
-                      <h2 className="text-2xl font-bold text-white mb-2">Ship it. Share it.</h2>
-                      <p className="text-zinc-400 mb-6">Your site is live — now show it off.</p>
-                      
-                      {/* Big prominent share button */}
-                      <button
-                        onClick={() => {
-                          navigator.clipboard.writeText(deployedUrl)
-                          setShareUrlCopied(true)
-                          setTimeout(() => setShareUrlCopied(false), 2000)
-                        }}
-                        className="w-full inline-flex items-center justify-center gap-3 px-6 py-4 bg-emerald-500/20 backdrop-blur-xl border border-emerald-500/40 hover:bg-emerald-500/30 text-white font-semibold rounded-xl transition-colors group mb-4"
-                      >
-                        {shareUrlCopied ? (
-                          <>
-                            <Check className="w-5 h-5" />
-                            <span>Link Copied!</span>
-                          </>
-                        ) : (
-                          <>
-                            <Share2 className="w-5 h-5" />
-                            <span>Copy Share Link</span>
-                          </>
-                        )}
-                      </button>
-                      
-                      <a
-                        href={deployedUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="inline-flex items-center gap-2 px-6 py-3 bg-zinc-900 border border-zinc-800 text-zinc-300 font-medium rounded-xl hover:bg-zinc-800 hover:text-white transition-colors group"
-                      >
-                        <Globe className="w-5 h-5" />
-                        <span>View Live Site</span>
-                        <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                      </a>
-                      
-                      <div className="mt-4 p-3 bg-zinc-900 border border-zinc-800 rounded-lg">
-                        <code className="text-xs text-zinc-400 font-mono break-all">{deployedUrl}</code>
-                      </div>
-                    </div>
-
-                    {/* Next Steps - Tier-aware */}
-                    <div className="mt-8 pt-6 border-t border-zinc-800 relative z-10">
-                      <h3 className="text-xs font-mono text-zinc-500 uppercase tracking-wider mb-4">What's Next</h3>
-                      <div className="space-y-2">
-                        {/* Push to GitHub */}
-                        <button
-                          onClick={() => {
-                            setDeployedUrl(null)
-                            handleGitHubPush()
-                          }}
-                          disabled={github.pushing}
-                          className="w-full flex items-center gap-3 p-3 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 rounded-lg transition-colors text-left group"
-                        >
-                          <div className="w-8 h-8 rounded-lg bg-zinc-800 flex items-center justify-center">
-                            <Github className="w-4 h-4 text-white" />
-                          </div>
-                          <div className="flex-1">
-                            <p className="text-sm font-medium text-white group-hover:text-emerald-300 transition-colors">
-                              {github.connected ? 'Push to GitHub' : 'Connect GitHub'}
-                            </p>
-                            <p className="text-xs text-zinc-500">
-                              {github.connected ? `Own your code @${github.username}` : 'Your repo, your control'}
-                            </p>
-                          </div>
-                          {github.pushing && <RefreshCw className="w-4 h-4 text-zinc-500 animate-spin" />}
-                        </button>
-                        
-                        <button
-                          onClick={() => setDeployedUrl(null)}
-                          className="w-full flex items-center gap-3 p-3 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 rounded-lg transition-colors text-left group"
-                        >
-                          <div className="w-8 h-8 rounded-lg bg-teal-500/10 flex items-center justify-center">
-                            <Edit3 className="w-4 h-4 text-teal-400" />
-                          </div>
-                          <div>
-                            <p className="text-sm font-medium text-white group-hover:text-teal-300 transition-colors">Continue Building</p>
-                            <p className="text-xs text-zinc-500">Refine sections and add new modules</p>
-                          </div>
-                        </button>
-                        
-                        {/* Pro Feature: Custom Domain */}
-                        {isProUser ? (
-                          <button
-                            onClick={() => setIsSettingsOpen(true)}
-                            className="w-full flex items-center gap-3 p-3 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 rounded-lg transition-colors text-left group"
-                          >
-                            <div className="w-8 h-8 rounded-lg bg-zinc-800 flex items-center justify-center">
-                              <Globe className="w-4 h-4 text-emerald-400" />
-                            </div>
-                            <div className="flex-1">
-                              <p className="text-sm font-medium text-white group-hover:text-emerald-300 transition-colors">Connect Custom Domain</p>
-                              <p className="text-xs text-zinc-500">Use your own domain name</p>
-                            </div>
-                            <span className="text-[10px] font-mono text-emerald-400 bg-zinc-800 px-2 py-0.5 rounded">PRO</span>
-                          </button>
-                        ) : (
-                          <div className="w-full flex items-center gap-3 p-3 bg-zinc-900 border border-zinc-800 rounded-lg opacity-50 cursor-not-allowed">
-                            <div className="w-8 h-8 rounded-lg bg-zinc-800 flex items-center justify-center">
-                              <Globe className="w-4 h-4 text-zinc-500" />
-                            </div>
-                            <div className="flex-1">
-                              <p className="text-sm font-medium text-zinc-500">Custom Domain</p>
-                              <p className="text-xs text-zinc-600">Upgrade to Pro to unlock</p>
-                            </div>
-                            <span className="text-[10px] font-mono text-zinc-500 bg-zinc-800 px-2 py-0.5 rounded">PRO</span>
-                          </div>
-                        )}
-                        
-                        <button
-                          onClick={handleStartFresh}
-                          className="w-full flex items-center gap-3 p-3 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 rounded-lg transition-colors text-left group"
-                        >
-                          <div className="w-8 h-8 rounded-lg bg-zinc-800 flex items-center justify-center">
-                            <Plus className="w-4 h-4 text-emerald-400" />
-                          </div>
-                          <div>
-                            <p className="text-sm font-medium text-white group-hover:text-emerald-300 transition-colors">Start New Project</p>
-                            <p className="text-xs text-zinc-500">
-                              {tierConfig?.projectLimit === Infinity 
-                                ? 'Unlimited projects on your plan' 
-                                : `${tierConfig?.projectLimit || 3} projects on your plan`}
-                            </p>
-                          </div>
-                        </button>
-                      </div>
-                    </div>
-                  </motion.div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </motion.div>
-        )}
       </AnimatePresence>
 
       {/* Hatch Modal - paywall for deploy */}
@@ -2759,13 +2250,6 @@ export default function GeneratedPage() {
         sectionName={lastCompletedSection}
         buildsRemaining={Math.max(0, 3 - guestBuildsUsed)}
         isGuest={!isSignedIn}
-      />
-
-      <TheWitness
-        isOpen={showWitness}
-        onClose={() => setShowWitness(false)}
-        note={witnessNote}
-        isLoading={isWitnessLoading}
       />
 
       <WelcomeModal 

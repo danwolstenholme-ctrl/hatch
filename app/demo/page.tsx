@@ -3,13 +3,34 @@
 import { Suspense, useEffect } from 'react'
 import { useSearchParams, useRouter } from 'next/navigation'
 import { useUser } from '@clerk/nextjs'
+import { motion } from 'framer-motion'
 import BuildFlowController from '@/components/BuildFlowController'
+import { LogoMark } from '@/components/Logo'
 
 // =============================================================================
 // DEMO PAGE - Full builder experience, localStorage only
 // Premium actions (deploy, download) show signup modal
 // If signed in, redirect to /builder
 // =============================================================================
+
+function DemoLoading() {
+  return (
+    <div className="min-h-screen bg-zinc-950 flex items-center justify-center">
+      <motion.div
+        initial={{ opacity: 0, scale: 0.9 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.3 }}
+      >
+        <motion.div
+          animate={{ opacity: [0.5, 1, 0.5] }}
+          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+        >
+          <LogoMark size={32} />
+        </motion.div>
+      </motion.div>
+    </div>
+  )
+}
 
 function DemoContent() {
   const searchParams = useSearchParams()
@@ -24,14 +45,14 @@ function DemoContent() {
     }
   }, [isLoaded, isSignedIn, router])
 
-  // While checking auth, render nothing
+  // While checking auth, show loading
   if (!isLoaded) {
-    return null
+    return <DemoLoading />
   }
 
-  // If signed in, redirecting - render nothing
+  // If signed in, redirecting - show loading
   if (isSignedIn) {
-    return null
+    return <DemoLoading />
   }
 
   return (
@@ -44,7 +65,7 @@ function DemoContent() {
 
 export default function DemoPage() {
   return (
-    <Suspense fallback={null}>
+    <Suspense fallback={<DemoLoading />}>
       <DemoContent />
     </Suspense>
   )

@@ -9,6 +9,4 @@ export { default as Card } from './Card'
 export { default as Input } from './Input'
 export { default as Badge } from './Badge'
 export { default as Modal } from './Modal'
-
-// AI Components
-export { default as TheWitness } from './TheWitness'
+export { default as DeploySuccessModal } from './DeploySuccessModal'

@@ -35,7 +35,6 @@ import SectionPreview from '../SectionPreview'
 import FullSitePreviewFrame from './FullSitePreviewFrame'
 import HatchModal from '../HatchModal'
 import SiteSettingsModal, { SiteSettings } from '../SiteSettingsModal'
-import TheWitness from '../singularity/TheWitness'
 import { LogoMark } from '../Logo'
 
 import { useGitHub } from '@/hooks/useGitHub'
@@ -103,9 +102,6 @@ export default function UnifiedBuilder({
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
   const [showHatchModal, setShowHatchModal] = useState(false)
   const [hatchModalReason, setHatchModalReason] = useState<'deploy' | 'download' | 'proactive'>('proactive')
-  const [showWitness, setShowWitness] = useState(false)
-  const [witnessNote, setWitnessNote] = useState<string | null>(null)
-  const [isWitnessLoading, setIsWitnessLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   // Build State
@@ -334,23 +330,6 @@ export default function GeneratedPage() {
         // Poll for readiness
         await new Promise(r => setTimeout(r, 8000))
         setDeployedUrl(data.url)
-
-        // Trigger Witness
-        setShowWitness(true)
-        setIsWitnessLoading(true)
-        try {
-          const witnessRes = await fetch('/api/witness', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ dna: chronosphere.getDNA() })
-          })
-          const witnessData = await witnessRes.json()
-          setWitnessNote(witnessData.note)
-        } catch {
-          setWitnessNote("System check complete. Your creation is ready.")
-        } finally {
-          setIsWitnessLoading(false)
-        }
       } else {
         setError(data.error || 'Deploy failed')
       }
@@ -697,7 +676,6 @@ export default function GeneratedPage() {
             onSelectSection={handleSelectSection}
             onMoveSection={handleMoveSection}
             onOpenOracle={() => {}}
-            onOpenWitness={() => setShowWitness(true)}
             onOpenArchitect={() => {}}
             onOpenReplicator={() => {}}
             onRunAudit={() => {}}
@@ -816,13 +794,6 @@ export default function GeneratedPage() {
         currentBrand={project.brand_config || undefined}
         onSave={handleSaveSettings}
         projectName={project.name}
-      />
-
-      <TheWitness
-        isOpen={showWitness}
-        onClose={() => setShowWitness(false)}
-        note={witnessNote}
-        isLoading={isWitnessLoading}
       />
 
       {/* Deploy Success Modal */}
