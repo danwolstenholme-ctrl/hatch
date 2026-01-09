@@ -1,6 +1,6 @@
 # HATCHIT
 > The only context file. Single source of truth.
-> Last Updated: January 9, 2026 (Evening)
+> Last Updated: January 9, 2026 (Late Night)
 
 ---
 
@@ -11,6 +11,18 @@ AI-assisted website builder. User describes → AI generates React/Tailwind → 
 **Differentiator:** Full ownership. Your GitHub, your Vercel, your code. Not locked to our platform.
 
 **Tagline:** "Describe it. Build it. Ship it."
+
+---
+
+## Recent Fixes (Jan 9 Night)
+
+| Issue | Fix |
+|-------|-----|
+| Ship button spinning forever | Removed 2-min polling loop, now 3s redirect |
+| AI Assistant broken | Created missing `/api/assistant/route.ts` |
+| Deployed sites failing build | Added blocklist for invalid Lucide imports (Icon, Button, etc.) |
+| No deploy error feedback | Added `/api/deploy/status` + polling banner on project page |
+| Text edit missing | Restored Edit3 button + contentEditable in FullSitePreviewFrame |
 
 ---
 
