@@ -682,8 +682,7 @@ export default function GeneratedPage() {
             onAddSection={handleNextSection}
             onSelectSection={handleSelectSection}
             onMoveSection={handleMoveSection}
-            onOpenOracle={() => {}}
-            onOpenArchitect={() => {}}
+            onOpenHatch={() => {}}
             onOpenReplicator={() => {}}
             onRunAudit={() => {}}
             onDeploy={handleDeploy}

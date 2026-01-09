@@ -505,8 +505,7 @@ function AuthRefineBar({
   handleUserRefine,
   onNextSection,
   isLastSection,
-  onOpenAssistant,
-  onOpenPromptHelper,
+  onOpenHatch,
 }: {
   refinePrompt: string
   setRefinePrompt: (v: string) => void
@@ -514,8 +513,7 @@ function AuthRefineBar({
   handleUserRefine: () => void
   onNextSection: () => void
   isLastSection: boolean
-  onOpenAssistant?: () => void
-  onOpenPromptHelper?: () => void
+  onOpenHatch?: () => void
 }) {
   const quickActions = [
     { label: 'Make darker', prompt: 'Make this section darker, more contrast' },
@@ -545,23 +543,14 @@ function AuthRefineBar({
         {/* Divider */}
         <div className="w-px h-4 bg-zinc-700 mx-1 flex-shrink-0" />
         
-        {/* AI Tool buttons */}
-        {onOpenAssistant && (
+        {/* Hatch AI button */}
+        {onOpenHatch && (
           <button
-            onClick={onOpenAssistant}
-            className="flex-shrink-0 flex items-center gap-1 px-2.5 py-1 text-[11px] rounded-md bg-blue-500/10 border border-blue-500/30 text-blue-400 hover:text-blue-300 hover:bg-blue-500/20 transition-all"
+            onClick={onOpenHatch}
+            className="flex-shrink-0 flex items-center gap-1 px-2.5 py-1 text-[11px] rounded-md bg-amber-500/10 border border-amber-500/30 text-amber-400 hover:text-amber-300 hover:bg-amber-500/20 transition-all"
           >
             <MessageSquare className="w-3 h-3" />
-            Assistant
-          </button>
-        )}
-        {onOpenPromptHelper && (
-          <button
-            onClick={onOpenPromptHelper}
-            className="flex-shrink-0 flex items-center gap-1 px-2.5 py-1 text-[11px] rounded-md bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/20 transition-all"
-          >
-            <Sparkles className="w-3 h-3" />
-            Enhance
+            Hatch
           </button>
         )}
       </div>
@@ -706,8 +695,7 @@ interface SectionBuilderProps {
   isDemo?: boolean
   initialPrompt?: string
   onHealingStateChange?: (isHealing: boolean, message?: string) => void
-  onOpenAssistant?: () => void
-  onOpenPromptHelper?: () => void
+  onOpenHatch?: () => void
 }
 
 type BuildStage = 'input' | 'generating' | 'refining' | 'complete'
@@ -726,8 +714,7 @@ export default function SectionBuilder({
   isDemo = false,
   initialPrompt,
   onHealingStateChange,
-  onOpenAssistant,
-  onOpenPromptHelper,
+  onOpenHatch,
 }: SectionBuilderProps) {
   const router = useRouter()
   const { isSignedIn, user } = useUser()
@@ -2225,8 +2212,7 @@ export default function SectionBuilder({
                   handleUserRefine={handleUserRefine}
                   onNextSection={handleNextSection}
                   isLastSection={isLastSection || false}
-                  onOpenAssistant={onOpenAssistant}
-                  onOpenPromptHelper={onOpenPromptHelper}
+                  onOpenHatch={onOpenHatch}
                 />
               </div>
             )}

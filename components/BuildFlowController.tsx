@@ -37,8 +37,7 @@ import WelcomeModal from './WelcomeModal'
 import BuilderWelcome from './BuilderWelcome'
 import DemoWelcome from './DemoWelcome'
 import SiteSettingsModal, { SiteSettings } from './SiteSettingsModal'
-import AssistantModal from './builder/AssistantModal'
-import PromptHelperModal from './builder/PromptHelperModal'
+import HatchAssistantModal from './builder/HatchModal'
 import { useGitHub } from '@/hooks/useGitHub'
 import { Github } from 'lucide-react'
 import FullSitePreviewFrame from './builder/FullSitePreviewFrame'
@@ -188,8 +187,7 @@ export default function BuildFlowController({ existingProjectId, initialPrompt, 
 
   // Singularity Feature Modals
   const [showReplicator, setShowReplicator] = useState(false)
-  const [showOracle, setShowOracle] = useState(false)
-  const [showArchitect, setShowArchitect] = useState(false)
+  const [showHatch, setShowHatch] = useState(false)
 
   const [showReset, setShowReset] = useState(false)
   const [isReplicationReady, setIsReplicationReady] = useState(false)
@@ -1329,11 +1327,11 @@ export default function BuildFlowController({ existingProjectId, initialPrompt, 
       active: phase === 'building',
     },
     {
-      id: 'oracle' as const,
-      label: 'Assistant',
-      meta: 'Help',
+      id: 'hatch' as const,
+      label: 'Hatch',
+      meta: 'AI Help',
       icon: MessageSquare,
-      action: () => setShowOracle(true),
+      action: () => setShowHatch(true),
       active: false,
     },
     {
@@ -2140,12 +2138,8 @@ export default function GeneratedPage() {
                           setShowMobileSidebar(false)
                         }}
                         onMoveSection={handleMoveSection}
-                        onOpenOracle={() => {
-                          setShowOracle(true)
-                          setShowMobileSidebar(false)
-                        }}
-                        onOpenArchitect={() => {
-                          setShowArchitect(true)
+                        onOpenHatch={() => {
+                          setShowHatch(true)
                           setShowMobileSidebar(false)
                         }}
                         onOpenSettings={() => {
@@ -2182,8 +2176,7 @@ export default function GeneratedPage() {
                 onRemoveSection={handleRemoveSection}
                 onSelectSection={handleSectionClick}
                 onMoveSection={handleMoveSection}
-                onOpenOracle={() => setShowOracle(true)}
-                onOpenArchitect={() => setShowArchitect(true)}
+                onOpenHatch={() => setShowHatch(true)}
                 onOpenSettings={() => setIsSettingsOpen(true)}
                 onSignUp={demoMode ? () => router.push('/sign-up?redirect_url=/builder') : undefined}
               />
@@ -2240,8 +2233,7 @@ export default function GeneratedPage() {
                         setIsHealing(healing)
                         if (message) setLastHealMessage(message)
                       }}
-                      onOpenAssistant={() => setShowOracle(true)}
-                      onOpenPromptHelper={() => setShowArchitect(true)}
+                      onOpenHatch={() => setShowHatch(true)}
                     />
                   </div>
                 )}
@@ -2554,24 +2546,15 @@ export default function GeneratedPage() {
         }}
       />
 
-      {/* Assistant Modal - AI help chat */}
-      <AssistantModal
-        isOpen={showOracle}
-        onClose={() => setShowOracle(false)}
+      {/* Hatch - AI Building Assistant */}
+      <HatchAssistantModal
+        isOpen={showHatch}
+        onClose={() => setShowHatch(false)}
         currentCode={buildState?.sectionCode[getCurrentSection()?.id || ''] || ''}
         sectionName={getCurrentSection()?.name}
         projectName={project?.name}
-      />
-
-      {/* Prompt Helper Modal - Enhance prompts */}
-      <PromptHelperModal
-        isOpen={showArchitect}
-        onClose={() => setShowArchitect(false)}
-        currentSectionType={getCurrentSection()?.name}
         onUsePrompt={(prompt) => {
-          // Set the prompt in the active section's input
-          setShowArchitect(false)
-          // Could dispatch to prompt input - for now just copy to clipboard
+          setShowHatch(false)
           navigator.clipboard.writeText(prompt)
         }}
       />

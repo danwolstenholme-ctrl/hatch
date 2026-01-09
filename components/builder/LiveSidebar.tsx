@@ -70,8 +70,7 @@ interface SidebarProps {
   onAddSection?: () => void
   onAddSectionOfType?: (sectionType: string) => void
   onRemoveSection?: (index: number) => void
-  onOpenOracle?: () => void
-  onOpenArchitect?: () => void
+  onOpenHatch?: () => void
   onOpenReplicator?: () => void
   onRunAudit?: () => void
   onDeploy?: () => void
@@ -93,7 +92,7 @@ const AI_TOOLS: Array<{
   tier: Tier
   action: keyof SidebarProps
 }> = [
-  { id: 'oracle', icon: MessageSquare, name: 'AI Assistant', desc: 'Design tips & help', tier: 'free', action: 'onOpenOracle' },
+  { id: 'hatch', icon: MessageSquare, name: 'Hatch', desc: 'AI building buddy', tier: 'free', action: 'onOpenHatch' },
 ]
 
 const TIER_ORDER: Tier[] = ['demo', 'free', 'architect', 'visionary', 'singularity']
@@ -122,8 +121,7 @@ export default function LiveSidebar({
   onAddSection,
   onAddSectionOfType,
   onRemoveSection,
-  onOpenOracle,
-  onOpenArchitect,
+  onOpenHatch,
   onSelectSection,
   onMoveSection,
   onUpgrade,
@@ -153,8 +151,7 @@ export default function LiveSidebar({
     }
     
     const callbacks: Record<string, (() => void) | undefined> = {
-      onOpenOracle,
-      onOpenArchitect,
+      onOpenHatch,
     }
     
     callbacks[tool.action]?.()
