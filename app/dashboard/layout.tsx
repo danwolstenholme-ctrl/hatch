@@ -5,18 +5,7 @@ import Link from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
 import { UserButton, useUser } from '@clerk/nextjs'
 import { motion, AnimatePresence } from 'framer-motion'
-import {
-  LayoutDashboard,
-  Sparkles,
-  Activity,
-  CreditCard,
-  Settings,
-  Rocket,
-  Menu,
-  X
-} from 'lucide-react'
 import { LogoMark } from '@/components/Logo'
-import Button from '@/components/singularity/Button'
 
 export default function DashboardLayout({ children }: { children: ReactNode }) {
   const pathname = usePathname()
@@ -29,11 +18,10 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
   const tier = accountSubscription?.tier || 'free'
 
   const navItems = [
-    { href: '/dashboard', label: 'Overview', icon: LayoutDashboard },
-    { href: '/dashboard/features', label: 'Features', icon: Sparkles },
-    { href: '/dashboard/builds', label: 'Builds', icon: Activity },
-    { href: '/dashboard/billing', label: 'Billing', icon: CreditCard },
-    { href: '/dashboard/settings', label: 'Settings', icon: Settings },
+    { href: '/dashboard', label: 'Overview' },
+    { href: '/dashboard/projects', label: 'Projects' },
+    { href: '/dashboard/billing', label: 'Billing' },
+    { href: '/dashboard/settings', label: 'Settings' },
   ]
 
   const isActive = (href: string) => {
@@ -68,177 +56,118 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
   }
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-white selection:bg-zinc-500/20">
-      <div className="fixed inset-0 bg-[linear-gradient(rgba(255,255,255,0.015)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.015)_1px,transparent_1px)] bg-[size:64px_64px] pointer-events-none" />
-
+    <div className="min-h-screen bg-zinc-950 text-white">
       {/* Mobile Header */}
-      <div className="lg:hidden fixed top-0 left-0 right-0 z-40 h-14 border-b border-zinc-800/60 bg-zinc-950/90 backdrop-blur-xl">
+      <div className="lg:hidden fixed top-0 left-0 right-0 z-40 h-12 border-b border-zinc-800/50 bg-zinc-950/95 backdrop-blur-sm">
         <div className="flex items-center justify-between h-full px-4">
           <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-            <LogoMark size={18} />
-            <span className="text-sm font-semibold text-white">HatchIt</span>
+            <LogoMark size={16} />
+            <span className="text-sm font-medium text-white">HatchIt</span>
           </Link>
           <button
-            onClick={() => setMobileMenuOpen(true)}
-            className="p-2 -mr-2 text-zinc-400 hover:text-white transition-colors"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="text-xs text-zinc-400 hover:text-white transition-colors"
+            aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
           >
-            <Menu className="w-5 h-5" />
+            {mobileMenuOpen ? 'Close' : 'Menu'}
           </button>
         </div>
       </div>
 
-      {/* Mobile Menu Overlay */}
+      {/* Mobile Menu */}
       <AnimatePresence>
         {mobileMenuOpen && (
-          <>
-            <motion.div
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              className="lg:hidden fixed inset-0 bg-black/60 backdrop-blur-sm z-50"
-              onClick={() => setMobileMenuOpen(false)}
-            />
-            <motion.div
-              initial={{ x: '100%' }}
-              animate={{ x: 0 }}
-              exit={{ x: '100%' }}
-              transition={{ type: 'spring', damping: 25, stiffness: 300 }}
-              className="lg:hidden fixed inset-y-0 right-0 w-72 z-50 bg-zinc-900 border-l border-zinc-800 shadow-2xl"
-            >
-              <div className="flex flex-col h-full">
-                {/* Mobile Menu Header */}
-                <div className="flex items-center justify-between p-4 border-b border-zinc-800/60">
-                  <span className="text-sm font-semibold text-white">Menu</span>
+          <motion.div
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.15 }}
+            className="lg:hidden fixed top-12 left-0 right-0 z-50 bg-zinc-900 border-b border-zinc-800/50"
+          >
+            <nav className="p-2">
+              {navItems.map((item) => {
+                const active = isActive(item.href)
+                return (
                   <button
-                    onClick={() => setMobileMenuOpen(false)}
-                    className="p-2 -mr-2 text-zinc-400 hover:text-white transition-colors"
+                    key={item.href}
+                    onClick={() => handleNavClick(item.href)}
+                    className={`w-full text-left px-3 py-2 text-sm transition-colors ${
+                      active ? 'text-white' : 'text-zinc-500 hover:text-zinc-300'
+                    }`}
                   >
-                    <X className="w-5 h-5" />
+                    {item.label}
                   </button>
-                </div>
-
-                {/* Mobile Nav */}
-                <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
-                  {navItems.map((item) => {
-                    const active = isActive(item.href)
-                    return (
-                      <button
-                        key={item.href}
-                        onClick={() => handleNavClick(item.href)}
-                        className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm transition-all ${
-                          active
-                            ? 'text-white bg-zinc-800/80'
-                            : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/40'
-                        }`}
-                      >
-                        <item.icon className={`w-4 h-4 ${active ? 'text-emerald-400' : 'text-zinc-500'}`} />
-                        {item.label}
-                      </button>
-                    )
-                  })}
-                </nav>
-
-                {/* Mobile Menu Footer */}
-                <div className="p-4 border-t border-zinc-800/60 space-y-3">
-                  <Button
-                    variant="primary"
-                    size="sm"
-                    fullWidth
-                    loading={isCreating}
-                    icon={<Rocket className="w-4 h-4" />}
-                    iconPosition="left"
-                    onClick={() => {
-                      setMobileMenuOpen(false)
-                      handleNewProject()
-                    }}
-                    disabled={isCreating}
-                  >
-                    {isCreating ? 'Creating' : 'New Project'}
-                  </Button>
-
-                  <div className="flex items-center gap-3 px-2 py-1.5">
-                    <UserButton
-                      appearance={{
-                        elements: {
-                          avatarBox: "w-8 h-8 ring-1 ring-zinc-700"
-                        }
-                      }}
-                    />
-                    <div className="flex-1 min-w-0">
-                      <p className="text-xs text-zinc-400 truncate">{user?.primaryEmailAddress?.emailAddress}</p>
-                      <p className="text-[10px] text-zinc-500 capitalize">{tier} plan</p>
-                    </div>
-                  </div>
-                </div>
+                )
+              })}
+              <div className="border-t border-zinc-800/50 mt-2 pt-2">
+                <button
+                  onClick={() => {
+                    setMobileMenuOpen(false)
+                    handleNewProject()
+                  }}
+                  disabled={isCreating}
+                  className="w-full text-left px-3 py-2 text-sm text-emerald-400 hover:text-emerald-300 transition-colors disabled:opacity-50"
+                >
+                  {isCreating ? 'Creating...' : '+ New Project'}
+                </button>
               </div>
-            </motion.div>
-          </>
+            </nav>
+          </motion.div>
         )}
       </AnimatePresence>
 
-      <div className="relative z-10 flex min-h-screen">
+      <div className="relative flex min-h-screen">
         {/* Desktop Sidebar */}
-        <aside className="hidden lg:flex w-56 border-r border-zinc-800/60 bg-zinc-950/80 backdrop-blur-xl flex-col fixed h-full">
-          <div className="p-4 border-b border-zinc-800/60">
-            <Link href="/" className="flex items-center gap-2.5 hover:opacity-80 transition-opacity">
-              <LogoMark size={20} />
-              <span className="text-sm font-semibold text-white">HatchIt</span>
+        <aside className="hidden lg:flex w-48 border-r border-zinc-800/50 bg-zinc-950 flex-col fixed h-full">
+          <div className="p-4 border-b border-zinc-800/50">
+            <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+              <LogoMark size={18} />
+              <span className="text-sm font-medium text-white">HatchIt</span>
             </Link>
           </div>
 
-          <nav className="flex-1 p-3 space-y-0.5">
+          <nav className="flex-1 p-2">
             {navItems.map((item) => {
               const active = isActive(item.href)
               return (
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`flex items-center gap-2.5 px-3 py-2 rounded-md text-[13px] transition-all ${
-                    active
-                      ? 'text-white bg-zinc-800/80'
-                      : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800/40'
+                  className={`block px-3 py-1.5 text-[13px] transition-colors ${
+                    active ? 'text-white' : 'text-zinc-500 hover:text-zinc-300'
                   }`}
                 >
-                  <item.icon className={`w-4 h-4 ${active ? 'text-emerald-400' : 'text-zinc-500'}`} />
                   {item.label}
                 </Link>
               )
             })}
           </nav>
 
-          <div className="p-3 border-t border-zinc-800/60 space-y-3">
-            <Button
-              variant="primary"
-              size="sm"
-              fullWidth
-              loading={isCreating}
-              icon={<Rocket className="w-4 h-4" />}
-              iconPosition="left"
+          <div className="p-3 border-t border-zinc-800/50 space-y-3">
+            <button
               onClick={handleNewProject}
               disabled={isCreating}
+              className="w-full px-3 py-1.5 text-[13px] text-left text-emerald-400 hover:text-emerald-300 transition-colors disabled:opacity-50"
             >
-              {isCreating ? 'Creating' : 'New Project'}
-            </Button>
+              {isCreating ? 'Creating...' : '+ New Project'}
+            </button>
 
-            <div className="flex items-center gap-3 px-2 py-1.5">
+            <div className="flex items-center gap-2 px-2">
               <UserButton
                 appearance={{
                   elements: {
-                    avatarBox: "w-7 h-7 ring-1 ring-zinc-700"
+                    avatarBox: "w-6 h-6"
                   }
                 }}
               />
-              <div className="flex-1 min-w-0">
-                <p className="text-[11px] text-zinc-400 truncate">{user?.primaryEmailAddress?.emailAddress}</p>
-                <p className="text-[10px] text-zinc-500 capitalize">{tier} plan</p>
-              </div>
+              <p className="text-[11px] text-zinc-500 truncate flex-1 capitalize">{tier}</p>
             </div>
           </div>
         </aside>
 
         {/* Main content */}
-        <main className="flex-1 lg:ml-56 pt-14 lg:pt-0">
-          <div className="max-w-5xl mx-auto px-4 py-6 lg:px-8 lg:py-8">
+        <main className="flex-1 lg:ml-48 pt-12 lg:pt-0">
+          <div className="max-w-4xl mx-auto px-4 py-8 lg:px-6 lg:py-10">
             {children}
           </div>
         </main>

@@ -118,10 +118,10 @@ export default function DashboardFeaturesPage() {
           <div className="flex items-center gap-3 mb-4">
             <h2 className="text-xs font-medium text-zinc-400 uppercase tracking-wider">{section.category}</h2>
             {section.category === 'Coming Soon' && (
-              <span className="text-[10px] px-2 py-0.5 bg-zinc-800 text-zinc-500 rounded font-medium">Roadmap</span>
+              <span className="text-[10px] px-1.5 py-0.5 bg-zinc-800/60 text-zinc-500 rounded-sm font-medium">Roadmap</span>
             )}
           </div>
-          <div className="grid gap-px bg-zinc-800 rounded-lg overflow-hidden border border-zinc-800">
+          <div className="grid gap-px bg-zinc-800/50 rounded-md overflow-hidden border border-zinc-800/60">
             {section.items.map((feature, index) => (
               <motion.div
                 key={feature.title}
@@ -132,14 +132,14 @@ export default function DashboardFeaturesPage() {
                 {feature.link ? (
                   <Link
                     href={feature.link}
-                    className={`block px-5 py-4 bg-zinc-950 hover:bg-zinc-900 transition-colors group ${
+                    className={`block px-4 py-3 bg-zinc-900/50 hover:bg-zinc-900 transition-colors group ${
                       feature.status === 'soon' ? 'opacity-50' : ''
                     }`}
                   >
                     <FeatureRow feature={feature} hasLink />
                   </Link>
                 ) : (
-                  <div className={`px-5 py-4 bg-zinc-950 ${feature.status === 'soon' ? 'opacity-50' : ''}`}>
+                  <div className={`px-4 py-3 bg-zinc-900/50 ${feature.status === 'soon' ? 'opacity-50' : ''}`}>
                     <FeatureRow feature={feature} />
                   </div>
                 )}
@@ -172,7 +172,7 @@ function FeatureRow({ feature, hasLink = false }: { feature: typeof features[0][
         <div className="flex items-center gap-3">
           <h3 className="text-sm font-medium text-zinc-100">{feature.title}</h3>
           {'tier' in feature && feature.tier && feature.tier !== 'free' && (
-            <span className={`text-[10px] px-2 py-0.5 rounded font-medium ${
+            <span className={`text-[10px] px-1.5 py-0.5 rounded-sm font-medium ${
               feature.tier === 'visionary'
                 ? 'bg-emerald-500/10 text-emerald-400'
                 : feature.tier === 'singularity'

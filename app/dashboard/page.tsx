@@ -9,8 +9,6 @@ import { useUser } from '@clerk/nextjs'
 import { formatDistanceToNow } from 'date-fns'
 import { DbProject } from '@/lib/supabase'
 import { useGitHub } from '@/hooks/useGitHub'
-import Button from '@/components/singularity/Button'
-import Badge from '@/components/singularity/Badge'
 import ProjectWizard from '@/components/ProjectWizard'
 
 // =============================================================================
@@ -205,7 +203,7 @@ export default function DashboardPage() {
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
-            className="fixed top-4 right-4 z-50 flex items-center gap-3 px-4 py-3 rounded-lg bg-red-500/10 border border-red-500/20 text-red-400 text-sm"
+            className="fixed top-4 right-4 z-50 flex items-center gap-3 px-4 py-2.5 rounded-md bg-red-500/10 border border-red-500/20 text-red-400 text-sm"
           >
             <span>{createError}</span>
             <button onClick={() => setCreateError(null)} className="text-red-400 hover:text-red-300">
@@ -216,35 +214,30 @@ export default function DashboardPage() {
       </AnimatePresence>
 
       {/* Header */}
-      <header className="mb-10">
+      <header className="mb-8">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <div className="flex items-center gap-3 mb-1">
-              <h1 className="text-2xl font-semibold text-white">
-                Welcome back, {firstName}
-              </h1>
-              <Badge variant={tierConfig.variant}>{tierConfig.name}</Badge>
-            </div>
+            <h1 className="text-lg font-medium text-white mb-1">
+              Welcome back, {firstName}
+            </h1>
             <p className="text-sm text-zinc-500">
               {projects.length === 0
                 ? 'Create your first project to get started'
-                : `Managing ${projects.length} project${projects.length !== 1 ? 's' : ''}`}
+                : `${projects.length} project${projects.length !== 1 ? 's' : ''}`}
             </p>
           </div>
-          <Button
-            variant="primary"
-            size="lg"
+          <button
             onClick={handleOpenWizard}
-            loading={isCreating}
             disabled={isCreating || isAtLimit}
+            className="text-sm text-emerald-400 hover:text-emerald-300 transition-colors disabled:opacity-50"
           >
             {isAtLimit ? 'Upgrade for more' : '+ New Project'}
-          </Button>
+          </button>
         </div>
       </header>
 
       {/* Stats */}
-      <div className="grid grid-cols-4 gap-px bg-zinc-800 rounded-lg overflow-hidden mb-10">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-px bg-zinc-800/50 rounded-md overflow-hidden mb-10">
         <StatCell label="Projects" value={stats.totalProjects} suffix={tierConfig.limit !== Infinity ? `/${tierConfig.limit}` : ''} />
         <StatCell label="Deployed" value={stats.deployed} highlight={stats.deployed > 0} />
         <StatCell label="In Progress" value={stats.building} />
@@ -265,21 +258,21 @@ export default function DashboardPage() {
           </div>
 
           {projects.length === 0 ? (
-            <div className="rounded-lg border border-zinc-800 bg-zinc-950 px-6 py-16 text-center">
+            <div className="rounded-md border border-zinc-800/60 bg-zinc-900/30 px-6 py-12 text-center">
               <h3 className="text-lg font-medium text-white mb-2">No projects yet</h3>
               <p className="text-sm text-zinc-500 max-w-sm mx-auto mb-6">
                 Create your first project to start building.
               </p>
-              <Button
-                variant="primary"
+              <button
                 onClick={handleOpenWizard}
-                loading={isCreating}
+                disabled={isCreating}
+                className="px-4 py-2 text-sm font-medium text-black bg-white rounded-md hover:bg-zinc-200 transition-colors disabled:opacity-50"
               >
-                Create First Project
-              </Button>
+                {isCreating ? 'Creating...' : 'Create First Project'}
+              </button>
             </div>
           ) : (
-            <div className="rounded-lg border border-zinc-800 overflow-hidden">
+            <div className="rounded-md border border-zinc-800/60 overflow-hidden">
               {sortedProjects.slice(0, 5).map((project, index) => {
                 const completed = project.completed_sections ?? 0
                 const total = project.total_sections ?? 0
@@ -303,7 +296,7 @@ export default function DashboardPage() {
                             {project.name || 'Untitled Project'}
                           </p>
                           {isDeployed && (
-                            <span className="text-[10px] px-2 py-0.5 bg-emerald-500/10 text-emerald-400 rounded font-medium">
+                            <span className="text-[10px] px-1.5 py-0.5 bg-emerald-500/10 text-emerald-400 rounded-sm font-medium">
                               Live
                             </span>
                           )}
@@ -349,72 +342,55 @@ export default function DashboardPage() {
         {/* Sidebar */}
         <div className="space-y-6">
           {/* GitHub */}
-          <div className="rounded-lg border border-zinc-800 bg-zinc-950 p-5">
-            <div className="flex items-center justify-between mb-3">
+          <div className="rounded-md border border-zinc-800/60 bg-zinc-900/30 p-4">
+            <div className="flex items-center justify-between mb-2">
               <h3 className="text-sm font-medium text-white">GitHub</h3>
               {gitHub.connected && (
                 <span className="text-xs text-emerald-400">Connected</span>
               )}
             </div>
-            <p className="text-xs text-zinc-500 mb-4">
+            <p className="text-xs text-zinc-500 mb-3">
               {gitHub.connected
-                ? `Logged in as @${gitHub.username}`
-                : 'Connect to push projects to your repositories.'}
+                ? `@${gitHub.username}`
+                : 'Push to your repositories'}
             </p>
             {gitHub.connected ? (
               <button
                 onClick={async () => { await gitHub.disconnect(); await gitHub.refresh() }}
-                className="text-xs text-zinc-500 hover:text-white transition-colors"
+                className="text-xs text-zinc-500 hover:text-zinc-300 transition-colors"
               >
                 Disconnect
               </button>
             ) : (
-              <Button
-                variant="secondary"
-                size="sm"
-                fullWidth
+              <button
                 onClick={() => gitHub.connect()}
-                loading={gitHub.loading}
                 disabled={gitHub.loading || tier === 'free'}
+                className="text-xs text-zinc-500 hover:text-zinc-300 transition-colors disabled:opacity-50"
               >
-                {tier === 'free' ? 'Upgrade to Connect' : 'Connect GitHub'}
-              </Button>
+                {tier === 'free' ? 'Upgrade to connect' : 'Connect'}
+              </button>
             )}
           </div>
 
           {/* Plan */}
-          <div className={`rounded-lg border p-5 ${
-            tier === 'free' ? 'border-zinc-800 bg-zinc-950' : 'border-emerald-500/20 bg-emerald-500/5'
-          }`}>
-            <h3 className="text-sm font-medium text-white mb-1">{tierConfig.name} Plan</h3>
+          <div className="rounded-md border border-zinc-800/60 bg-zinc-900/30 p-4">
+            <h3 className="text-sm font-medium text-white mb-1">{tierConfig.name}</h3>
             <p className="text-xs text-zinc-500 mb-4">
-              {tier === 'free' ? 'Upgrade to deploy' : 'Full access enabled'}
+              {tier === 'free' ? 'Upgrade to deploy' : 'Full access'}
             </p>
-            <ul className="space-y-2 mb-4">
+            <ul className="space-y-1.5 mb-4">
               {tierConfig.features.map((feature, i) => (
                 <li key={i} className="text-xs text-zinc-400">
-                  • {feature}
+                  {feature}
                 </li>
               ))}
             </ul>
-            <Button
-              variant={tier === 'free' ? 'primary' : 'ghost'}
-              size="sm"
-              fullWidth
-              onClick={() => router.push('/dashboard/billing')}
+            <Link
+              href="/dashboard/billing"
+              className="text-xs text-zinc-500 hover:text-zinc-300 transition-colors"
             >
-              {tier === 'free' ? 'Upgrade Plan' : 'Manage Subscription'}
-            </Button>
-          </div>
-
-          {/* Quick Links */}
-          <div className="rounded-lg border border-zinc-800 bg-zinc-950 p-5">
-            <h3 className="text-sm font-medium text-white mb-3">Quick Actions</h3>
-            <div className="space-y-2">
-              <QuickLink href="/dashboard/builds" label="All Builds" />
-              <QuickLink href="/dashboard/billing" label="Billing" />
-              <QuickLink href="/dashboard/settings" label="Settings" />
-            </div>
+              {tier === 'free' ? 'Upgrade' : 'Manage'} →
+            </Link>
           </div>
         </div>
       </div>
@@ -432,24 +408,12 @@ export default function DashboardPage() {
 
 function StatCell({ label, value, suffix = '', highlight = false }: { label: string; value: number; suffix?: string; highlight?: boolean }) {
   return (
-    <div className={`px-5 py-4 ${highlight ? 'bg-emerald-500/5' : 'bg-zinc-950'}`}>
-      <p className="text-xs text-zinc-500 mb-1">{label}</p>
-      <p className="text-xl font-semibold text-white tabular-nums">
+    <div className={`px-4 py-3 ${highlight ? 'bg-emerald-500/5' : 'bg-zinc-900/50'}`}>
+      <p className="text-[11px] text-zinc-500 mb-0.5">{label}</p>
+      <p className="text-lg font-medium text-white tabular-nums">
         {value}
         {suffix && <span className="text-zinc-600 text-sm">{suffix}</span>}
       </p>
     </div>
-  )
-}
-
-function QuickLink({ href, label }: { href: string; label: string }) {
-  return (
-    <Link
-      href={href}
-      className="flex items-center justify-between py-2 text-sm text-zinc-400 hover:text-white transition-colors"
-    >
-      <span>{label}</span>
-      <span className="text-zinc-600">→</span>
-    </Link>
   )
 }

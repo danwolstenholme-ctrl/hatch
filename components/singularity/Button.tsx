@@ -68,7 +68,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(({
       whileTap={isDisabled ? undefined : { scale: 0.98 }}
       disabled={isDisabled}
       className={`
-        group relative inline-flex items-center justify-center font-semibold rounded-lg
+        group relative inline-flex items-center justify-center font-medium rounded-md
         transition-all duration-200 overflow-hidden
         disabled:opacity-50 disabled:cursor-not-allowed
         ${variants[variant]}
@@ -80,7 +80,7 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(({
     >
       {/* Glass gradient overlay for primary */}
       {isPrimary && (
-        <div className="absolute inset-0 bg-gradient-to-br from-white/[0.08] via-transparent to-transparent rounded-lg pointer-events-none" />
+        <div className="absolute inset-0 bg-gradient-to-br from-white/[0.08] via-transparent to-transparent rounded-md pointer-events-none" />
       )}
       
       {/* Shimmer effect for primary */}

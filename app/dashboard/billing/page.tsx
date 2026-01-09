@@ -1,7 +1,6 @@
 'use client'
 
 import { useUser } from '@clerk/nextjs'
-import { Check, X, Sparkles } from 'lucide-react'
 
 export default function BillingPage() {
   const { user } = useUser()
@@ -79,10 +78,13 @@ export default function BillingPage() {
 
   return (
     <div className="space-y-6">
-      <p className="text-xs text-zinc-500">Manage your subscription and billing details.</p>
+      <div>
+        <h1 className="text-lg font-medium text-white">Billing</h1>
+        <p className="text-xs text-zinc-500 mt-1">Manage your subscription and billing</p>
+      </div>
 
       {/* Current plan info */}
-      <div className="p-4 bg-zinc-900 border border-zinc-800 rounded-lg">
+      <div className="p-4 bg-zinc-900/50 border border-zinc-800/60 rounded-md">
         <div className="flex items-center justify-between">
           <div>
             <p className="text-[10px] text-zinc-500 uppercase tracking-wider font-medium mb-1">Current plan</p>
@@ -104,17 +106,16 @@ export default function BillingPage() {
         {plans.map((plan) => (
           <div
             key={plan.id}
-            className={`relative p-4 rounded-lg border transition-all ${
+            className={`relative p-4 rounded-md border transition-all ${
               plan.current
-                ? 'bg-emerald-500/5 border-emerald-500/30'
+                ? 'bg-zinc-900/50 border-zinc-700/60'
                 : plan.recommended
-                ? 'bg-zinc-900 border-zinc-700 shadow-sm hover:border-zinc-600'
-                : 'bg-zinc-900 border-zinc-800 hover:border-zinc-700'
+                ? 'bg-zinc-900/50 border-zinc-700/60 shadow-sm hover:border-zinc-600'
+                : 'bg-zinc-900/50 border-zinc-800/60 hover:border-zinc-700'
             }`}
           >
             {plan.recommended && !plan.current && (
-              <div className="absolute -top-2.5 left-3 px-2 py-0.5 bg-emerald-500 text-white text-[9px] font-medium rounded flex items-center gap-1">
-                <Sparkles className="w-2.5 h-2.5" />
+              <div className="absolute -top-2.5 left-3 px-2 py-0.5 bg-emerald-500 text-white text-[9px] font-medium rounded-sm">
                 RECOMMENDED
               </div>
             )}
@@ -132,18 +133,16 @@ export default function BillingPage() {
             <ul className="space-y-1.5 mb-4">
               {plan.features.map((feature, i) => (
                 <li key={i} className={`flex items-start gap-2 text-[11px] ${feature.included ? 'text-zinc-400' : 'text-zinc-600'}`}>
-                  {feature.included ? (
-                    <Check className="w-3 h-3 text-emerald-500 mt-0.5 flex-shrink-0" />
-                  ) : (
-                    <X className="w-3 h-3 text-zinc-700 mt-0.5 flex-shrink-0" />
-                  )}
+                  <span className={`mt-0.5 flex-shrink-0 ${feature.included ? 'text-emerald-500' : 'text-zinc-700'}`}>
+                    {feature.included ? '✓' : '—'}
+                  </span>
                   <span>{feature.text}</span>
                 </li>
               ))}
             </ul>
 
             {plan.current ? (
-              <div className="w-full py-1.5 text-center text-[11px] text-emerald-400 border border-emerald-500/30 rounded-md bg-emerald-500/10">
+              <div className="w-full py-1.5 text-center text-[11px] text-zinc-400 border border-zinc-700 rounded-md bg-zinc-800/50">
                 Current plan
               </div>
             ) : plan.free ? (
