@@ -48,29 +48,86 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json()
-    const { templateId, name, sections: customSections, brand, initialPrompt, guestSections } = body
+    const { 
+      templateId, 
+      name, 
+      sections: customSections, 
+      brand, 
+      initialPrompt, 
+      guestSections,
+      // Wizard fields
+      description,
+      siteType,
+      pages,
+      seo
+    } = body
 
-    if (!templateId || !name) {
+    if (!name) {
       return NextResponse.json(
-        { error: 'Missing required fields: templateId, name' },
+        { error: 'Missing required field: name' },
         { status: 400 }
       )
     }
 
-    // Validate template
-    const template = getTemplateById(templateId)
-    if (!template) {
-      return NextResponse.json({ error: 'Invalid template' }, { status: 400 })
-    }
+    // Validate template if provided
+    const template = templateId ? getTemplateById(templateId) : null
+    
+    // Build brand config from wizard data or use provided brand
+    const brandConfig = brand || (siteType ? {
+      primaryColor: body.primaryColor || '#10b981',
+      secondaryColor: body.secondaryColor || '#059669',
+      font: body.bodyFont || 'Inter',
+      headingFont: body.headingFont || 'Inter',
+      mode: body.mode || 'dark',
+      seo: seo || {
+        title: body.seoTitle || name,
+        description: body.seoDescription || description || '',
+        keywords: body.seoKeywords || ''
+      }
+    } : null)
 
     // Create project with brand config (use clerkId, not dbUser.id)
-    const project = await createProject(clerkId, name, templateId, brand || null)
+    const project = await createProject(clerkId, name, templateId || 'website', brandConfig)
     if (!project) {
       return NextResponse.json({ error: 'Failed to create project' }, { status: 500 })
     }
 
-    // Create sections from template (or custom sections if provided)
-    const sectionsToCreate: Section[] = customSections || template.sections
+    // Determine sections to create
+    // Priority: wizard pages > customSections > template sections
+    let sectionsToCreate: Section[] = []
+    
+    if (pages && pages.length > 0) {
+      // Use sections from wizard pages (flatten all page sections, deduplicate)
+      const allSectionIds = new Set<string>()
+      pages.forEach((page: { sections: string[] }) => {
+        page.sections?.forEach((sectionId: string) => allSectionIds.add(sectionId))
+      })
+      // Convert section IDs to Section objects
+      const sectionOrder = ['header', 'hero', 'features', 'services', 'about', 'testimonials', 'pricing', 'stats', 'work', 'faq', 'cta', 'contact', 'footer']
+      sectionsToCreate = Array.from(allSectionIds).map(id => ({
+        id,
+        name: id.charAt(0).toUpperCase() + id.slice(1),
+        description: `${id.charAt(0).toUpperCase() + id.slice(1)} section`,
+        prompt: '',
+        estimatedTime: '~30 seconds',
+        required: id === 'header' || id === 'footer',
+        order: sectionOrder.indexOf(id) >= 0 ? sectionOrder.indexOf(id) : 99
+      })).sort((a, b) => a.order - b.order)
+    } else if (customSections) {
+      sectionsToCreate = customSections
+    } else if (template) {
+      sectionsToCreate = template.sections
+    } else {
+      // Default sections
+      sectionsToCreate = [
+        { id: 'header', name: 'Header', description: 'Site header', prompt: '', estimatedTime: '~30 seconds', required: true, order: 0 },
+        { id: 'hero', name: 'Hero', description: 'Hero section', prompt: '', estimatedTime: '~30 seconds', required: false, order: 1 },
+        { id: 'features', name: 'Features', description: 'Features section', prompt: '', estimatedTime: '~30 seconds', required: false, order: 2 },
+        { id: 'cta', name: 'CTA', description: 'Call to action', prompt: '', estimatedTime: '~30 seconds', required: false, order: 3 },
+        { id: 'footer', name: 'Footer', description: 'Site footer', prompt: '', estimatedTime: '~30 seconds', required: true, order: 4 }
+      ]
+    }
+    
     const dbSections = await createSectionsFromTemplate(project.id, sectionsToCreate, initialPrompt, guestSections)
 
     return NextResponse.json({

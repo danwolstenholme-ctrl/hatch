@@ -511,6 +511,7 @@ export default function BuildFlowController({ existingProjectId, initialPrompt, 
   // Track if we're in the middle of creating a project to prevent reload
   const [isCreatingProject, setIsCreatingProject] = useState(false)
   const autoInitAttemptedRef = useRef(false)
+  const previewIframeRef = useRef<HTMLIFrameElement>(null)
 
   // AUTO-INITIALIZATION LOGIC
   useEffect(() => {
@@ -1046,6 +1047,14 @@ export default function BuildFlowController({ existingProjectId, initialPrompt, 
 
     if (isAccessible) {
       setBuildState({ ...buildState, currentSectionIndex: sectionIndex })
+      
+      // Scroll to section in preview iframe
+      if (previewIframeRef.current?.contentWindow) {
+        previewIframeRef.current.contentWindow.postMessage(
+          { type: 'scrollToSection', sectionId: section.id },
+          '*'
+        )
+      }
     }
   }
 
@@ -2186,6 +2195,7 @@ export default function GeneratedPage() {
                         <FullSitePreviewFrame 
                           sections={previewSections}
                           deviceView="desktop"
+                          ref={previewIframeRef}
                           seo={brandConfig?.seo ? {
                             title: brandConfig.seo.title || '',
                             description: brandConfig.seo.description || '',
@@ -2890,3 +2900,8 @@ export default function GeneratedPage() {
     </div>
   )
 }
+
+
+
+
+

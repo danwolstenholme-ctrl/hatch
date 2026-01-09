@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo } from 'react'
+import { useMemo, forwardRef } from 'react'
 
 // Sanitize SVG data URLs to prevent XSS
 const sanitizeSvgDataUrls = (input: string) => {
@@ -21,7 +21,7 @@ interface FullSitePreviewFrameProps {
 // Renders all assembled sections in an iframe - simplified for reliability
 // =============================================================================
 
-export default function FullSitePreviewFrame({ sections, deviceView, seo }: FullSitePreviewFrameProps) {
+const FullSitePreviewFrame = forwardRef<HTMLIFrameElement, FullSitePreviewFrameProps>(function FullSitePreviewFrame({ sections, deviceView, seo }, ref) {
   const srcDoc = useMemo(() => {
     if (!sections || sections.length === 0) {
       return ''
@@ -85,6 +85,11 @@ export default function FullSitePreviewFrame({ sections, deviceView, seo }: Full
         }
       }
 
+      // Section ID mapping for scroll-to functionality
+      const sectionIdMap = {
+        ${sections.map((s, i) => `${i}: '${s.id}'`).join(',\n        ')}
+      };
+
       function App() {
         const Header = ${sections.findIndex((s) => s.id === 'header') >= 0 ? `Section_${sections.findIndex((s) => s.id === 'header')}` : 'null'};
         const Footer = ${sections.findIndex((s) => s.id === 'footer') >= 0 ? `Section_${sections.findIndex((s) => s.id === 'footer')}` : 'null'};
@@ -92,26 +97,43 @@ export default function FullSitePreviewFrame({ sections, deviceView, seo }: Full
           ${sections
             .map((_, i) => i)
             .filter((i) => sections[i]?.id !== 'header' && sections[i]?.id !== 'footer')
-            .map((i) => `Section_${i}`)
-            .join(', ')}
+            .map((i) => `{ component: Section_${i}, id: '${sections[i]?.id}', index: ${i} }`)
+            .join(',\n          ')}
         ];
+
+        // Listen for scroll-to-section messages from parent
+        useEffect(() => {
+          const handleMessage = (event) => {
+            if (event.data?.type === 'scrollToSection') {
+              const sectionId = event.data.sectionId;
+              const element = document.getElementById('section-' + sectionId);
+              if (element) {
+                element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+              }
+            }
+          };
+          window.addEventListener('message', handleMessage);
+          return () => window.removeEventListener('message', handleMessage);
+        }, []);
 
         return (
           <div className="min-h-screen bg-zinc-950 text-white flex flex-col">
             {Header ? (
-              <div className="shrink-0">
+              <div id="section-header" className="shrink-0 scroll-mt-4">
                 <SafeSection component={Header} />
               </div>
             ) : null}
 
             <div className="flex-1">
-              {BodySections.map((C, idx) => (
-                <SafeSection key={idx} component={C} />
+              {BodySections.map((item, idx) => (
+                <div key={idx} id={'section-' + item.id} className="scroll-mt-4">
+                  <SafeSection component={item.component} />
+                </div>
               ))}
             </div>
 
             {Footer ? (
-              <div className="shrink-0">
+              <div id="section-footer" className="shrink-0 scroll-mt-4">
                 <SafeSection component={Footer} />
               </div>
             ) : null}
@@ -335,6 +357,7 @@ ${Array.from(allLucideImports).map((name) => {
       'max-w-full'
     }`}>
       <iframe
+        ref={ref}
         title="Preview"
         srcDoc={srcDoc}
         className="w-full h-full border-0 bg-zinc-950"
@@ -342,4 +365,6 @@ ${Array.from(allLucideImports).map((name) => {
       />
     </div>
   )
-}
+})
+
+export default FullSitePreviewFrame

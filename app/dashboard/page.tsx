@@ -27,6 +27,7 @@ import { formatDistanceToNow } from 'date-fns'
 import { DbProject } from '@/lib/supabase'
 import { useGitHub } from '@/hooks/useGitHub'
 import Button from '@/components/singularity/Button'
+import ProjectWizard from '@/components/ProjectWizard'
 
 type ProjectWithProgress = DbProject & {
   total_sections?: number
@@ -42,6 +43,7 @@ export default function DashboardPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [isCreating, setIsCreating] = useState(false)
   const [createError, setCreateError] = useState<string | null>(null)
+  const [showWizard, setShowWizard] = useState(false)
 
   const accountSubscription = user?.publicMetadata?.accountSubscription as { tier?: string } | undefined
   const tier = accountSubscription?.tier || 'free'
@@ -99,6 +101,76 @@ export default function DashboardPage() {
     const completedSections = projects.reduce((acc, p) => acc + (p.completed_sections || 0), 0)
     return { totalProjects, deployed, building, totalSections, completedSections }
   }, [projects])
+
+  const handleOpenWizard = () => {
+    if (isAtLimit) {
+      router.push('/dashboard/billing')
+      return
+    }
+    setShowWizard(true)
+  }
+
+  const handleWizardCreate = async (config: {
+    name: string
+    description: string
+    siteType: string
+    primaryColor: string
+    secondaryColor: string
+    bodyFont: string
+    headingFont: string
+    mode: 'dark' | 'light'
+    pages: { name: string; path: string; sections: string[] }[]
+    seoTitle: string
+    seoDescription: string
+    seoKeywords: string
+    pushToGithub: boolean
+  }) => {
+    setIsCreating(true)
+    setCreateError(null)
+    try {
+      const res = await fetch('/api/project', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: config.name,
+          templateId: 'website',
+          description: config.description,
+          siteType: config.siteType,
+          primaryColor: config.primaryColor,
+          secondaryColor: config.secondaryColor,
+          bodyFont: config.bodyFont,
+          headingFont: config.headingFont,
+          mode: config.mode,
+          pages: config.pages,
+          seoTitle: config.seoTitle,
+          seoDescription: config.seoDescription,
+          seoKeywords: config.seoKeywords,
+        }),
+      })
+      const data = await res.json()
+      if (res.ok && data.project) {
+        setProjects(prev => [data.project, ...prev])
+        setShowWizard(false)
+        
+        // Push to GitHub if requested
+        if (config.pushToGithub && gitHub.connected) {
+          // GitHub push happens in builder after sections are built
+        }
+        
+        router.push(`/builder?project=${data.project.id}`)
+      } else {
+        if (res.status === 403) {
+          router.push('/dashboard/billing')
+        } else {
+          throw new Error(data.error || 'Failed to create project')
+        }
+      }
+    } catch (err) {
+      throw err
+    } finally {
+      setIsCreating(false)
+    }
+  }
 
   const handleCreate = async () => {
     if (isAtLimit) {
@@ -173,7 +245,7 @@ export default function DashboardPage() {
           size="md"
           icon={<Plus className="w-4 h-4" />}
           iconPosition="left"
-          onClick={handleCreate}
+          onClick={handleOpenWizard}
           loading={isCreating}
           disabled={isCreating}
         >
@@ -212,7 +284,7 @@ export default function DashboardPage() {
                   size="md"
                   icon={<Plus className="w-4 h-4" />}
                   iconPosition="left"
-                  onClick={handleCreate}
+                  onClick={handleOpenWizard}
                   loading={isCreating}
                   disabled={isCreating}
                 >
@@ -332,6 +404,13 @@ export default function DashboardPage() {
           </div>
         </div>
       </div>
+      {/* Project Wizard */}
+      <ProjectWizard
+        isOpen={showWizard}
+        onClose={() => setShowWizard(false)}
+        onCreate={handleWizardCreate}
+        githubConnected={gitHub.connected}
+      />
     </>
   )
 }
@@ -350,3 +429,9 @@ function StatCard({ icon: Icon, label, value, suffix = '', iconColor = 'text-zin
     </div>
   )
 }
+
+
+
+
+
+
