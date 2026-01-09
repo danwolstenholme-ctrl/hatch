@@ -123,8 +123,6 @@ export function RenewalTimer({ className = '' }: { className?: string }) {
   if (!isPaidUser || daysUntilRenewal === null) return null
 
   const isUrgent = daysUntilRenewal <= 3
-  const tierEmoji = tier === 'singularity' ? '👑' : tier === 'visionary' ? '⚡' : tier === 'architect' ? '🏗️' : '🥚'
-
   return (
     <AnimatePresence>
       <motion.div
@@ -132,7 +130,6 @@ export function RenewalTimer({ className = '' }: { className?: string }) {
         animate={{ opacity: 1, y: 0 }}
         className={`inline-flex items-center gap-2 px-3 py-1.5 rounded-lg ${tierColor.bgSubtle} border ${tierColor.border} ${className}`}
       >
-        <span>{tierEmoji}</span>
         <div className="flex flex-col">
           <span className={`text-xs ${isUrgent ? 'text-red-400' : tierColor.text}`}>
             {daysUntilRenewal <= 0 
@@ -167,7 +164,6 @@ export function SubscriptionStatusCard() {
     isSyncing 
   } = useSubscription()
 
-  const tierEmoji = tier === 'singularity' ? '👑' : tier === 'visionary' ? '⚡' : tier === 'architect' ? '🏗️' : '🥚'
   const tierName = tier === 'singularity' ? 'Singularity' : tier === 'visionary' ? 'Visionary' : tier === 'architect' ? 'Architect' : 'Free'
   const price = tier === 'singularity' ? '$99' : tier === 'visionary' ? '$29' : tier === 'architect' ? '$9' : '$0'
 
@@ -175,7 +171,6 @@ export function SubscriptionStatusCard() {
     <div className={`p-6 rounded-2xl ${tierColor.bgSubtle} border ${tierColor.border}`}>
       <div className="flex items-start justify-between mb-4">
         <div className="flex items-center gap-3">
-          <span className="text-3xl">{tierEmoji}</span>
           <div>
             <h3 className={`text-xl font-bold bg-gradient-to-r ${tierColor.gradient} bg-clip-text text-transparent`}>
               {tierName} Plan

@@ -2379,7 +2379,7 @@ export default function GeneratedPage() {
                             {/* GitHub Push Result */}
                             {githubPushResult?.success && (
                               <div className="border-t border-zinc-800 p-3 bg-zinc-800/50">
-                                <p className="text-xs text-white font-medium mb-2">✓ Pushed to GitHub</p>
+                                <p className="text-xs text-white font-medium mb-2">Pushed to GitHub</p>
                                 <div className="flex gap-2">
                                   <a
                                     href={githubPushResult.repoUrl}

@@ -79,7 +79,7 @@ export default function BuildProgressDisplay() {
               animate={{ opacity: 1, x: 0 }}
               className="flex items-center gap-2 text-zinc-400"
             >
-              <span className="text-emerald-500">✓</span>
+              <span className="text-emerald-500">Done</span>
               <span>{log}</span>
             </motion.div>
           ))}

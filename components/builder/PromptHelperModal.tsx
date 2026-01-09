@@ -269,7 +269,7 @@ export default function PromptHelperModal({
                   className="space-y-3"
                 >
                   <div className="flex items-center justify-between">
-                    <label className="text-xs font-medium text-emerald-400">✨ Enhanced prompt</label>
+                    <label className="text-xs font-medium text-emerald-400">Enhanced prompt</label>
                     <button
                       onClick={reset}
                       className="text-xs text-zinc-500 hover:text-white flex items-center gap-1"
