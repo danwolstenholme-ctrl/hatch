@@ -821,7 +821,8 @@ export default function SectionBuilder({
   const [isArchitectPolishing, setIsArchitectPolishing] = useState(false) // Opt-in Architect polish
   const [isSelfHealing, setIsSelfHealing] = useState(false) // Auto-fix runtime errors
   const [hasSelfHealed, setHasSelfHealed] = useState(false) // Prevent infinite loops
-  const [mobileTab, setMobileTab] = useState<'input' | 'preview'>('input') // Mobile tab state
+  const [mobileTab, setMobileTab] = useState<'input' | 'preview'>('input')
+  const [showCodePanel, setShowCodePanel] = useState(false) // Mobile tab state
   const [inspectorMode, setInspectorMode] = useState(false) // Visual element selector
   const [selectedElement, setSelectedElement] = useState<{ tagName: string; text: string; className: string } | null>(null)
   const [explanation, setExplanation] = useState<string | null>(null)
@@ -1821,11 +1822,62 @@ export default function SectionBuilder({
             </motion.div>
           )}
           {generatedCode ? (
-            // Section Complete - Minimal state, focus is on the preview
-            <div className="h-full flex items-center justify-center bg-zinc-950">
-              <div className="text-center">
-                <Check className="w-6 h-6 text-emerald-500 mx-auto mb-2" />
-                <p className="text-sm text-zinc-400">{section.name} ready</p>
+            // Section Complete - Code Panel with tier-gated access
+            <div className="h-full flex flex-col bg-zinc-950">
+              {/* Code Panel Toggle */}
+              <div className="flex-shrink-0 px-4 py-2 border-b border-zinc-800/50 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                  <Check className="w-4 h-4 text-emerald-500" />
+                  <span className="text-sm text-zinc-300">{section.name} ready</span>
+                </div>
+                <button
+                  onClick={() => setShowCodePanel(!showCodePanel)}
+                  className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-md text-xs font-medium transition-all ${
+                    showCodePanel
+                      ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30'
+                      : 'text-zinc-400 hover:text-zinc-200 hover:bg-zinc-800'
+                  }`}
+                >
+                  <Code className="w-3.5 h-3.5" />
+                  <span>{showCodePanel ? 'Hide' : 'View'} Code</span>
+                  {!isPaidTier && <Lock className="w-3 h-3 text-amber-400" />}
+                </button>
+              </div>
+              
+              {/* Code Content */}
+              <div className="flex-1 overflow-hidden">
+                {showCodePanel ? (
+                  isPaidTier ? (
+                    <div className="h-full overflow-auto p-4">
+                      <pre className="text-xs font-mono text-zinc-200 whitespace-pre-wrap leading-relaxed">
+                        {generatedCode}
+                      </pre>
+                    </div>
+                  ) : (
+                    <div className="h-full flex flex-col items-center justify-center p-6 text-center">
+                      <div className="w-12 h-12 rounded-full bg-zinc-800 border border-zinc-700 flex items-center justify-center mb-4">
+                        <Lock className="w-5 h-5 text-amber-400" />
+                      </div>
+                      <h3 className="text-base font-semibold text-white mb-2">Code Access</h3>
+                      <p className="text-sm text-zinc-400 mb-4 max-w-xs">
+                        Upgrade to Architect or higher to view and export your React + Tailwind code.
+                      </p>
+                      <button
+                        onClick={() => goToSignUp('architect')}
+                        className="px-4 py-2 bg-emerald-500 hover:bg-emerald-400 text-black text-sm font-semibold rounded-lg transition-colors"
+                      >
+                        Unlock Code
+                      </button>
+                    </div>
+                  )
+                ) : (
+                  <div className="h-full flex items-center justify-center">
+                    <div className="text-center">
+                      <Code className="w-6 h-6 text-zinc-600 mx-auto mb-2" />
+                      <p className="text-xs text-zinc-500">Click &quot;View Code&quot; to see generated React</p>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           ) : showGenerating ? (
