@@ -1,6 +1,6 @@
 # HATCHIT UI GUIDE
 > How it should look and feel.
-> Last Updated: January 8, 2026 (Session 2 - Launch Prep)
+> Last Updated: January 9, 2026 (Session 3 - UX Refinement)
 
 ---
 
@@ -56,6 +56,26 @@ Text:         text-white, text-zinc-400, text-zinc-500
 Accent:       emerald-500, emerald-400 (lightened Jan 8)
 Error:        red-500
 ```
+
+---
+
+## Icons (Updated January 9)
+
+**Minimum size:** 16px (`w-4 h-4`) for all interactive elements.
+
+```tsx
+// Interactive icons - always 16px minimum
+<ChevronRight className="w-4 h-4" />
+<ArrowUp className="w-4 h-4" />
+<Check className="w-4 h-4" />
+
+// Smaller icons only for decorative/status indicators
+<div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />  // Status dot
+```
+
+**Banned sizes:**
+- `w-3 h-3` (12px) - too small for touch
+- `w-3.5 h-3.5` (14px) - inconsistent
 
 ---
 
@@ -184,6 +204,8 @@ Long feature grids in modals
 Glass effects with shimmer animations
 Gradient button backgrounds
 Generic "centered hero + 3 cards" layouts
+Device simulation toggles - REMOVED (January 9) ✅
+Pop-out preview modals - REMOVED (January 9) ✅
 ```
 
 ---
@@ -216,6 +238,27 @@ GOOD: "Deploy to hatchitsites.dev" or "Push to your GitHub"
 | Generating | `GeneratingModal` | Code streaming + status text |
 | Refining | inline bar | Spinner + "Refining..." |
 | GitHub push | inline | Spinner + "Pushing to GitHub..." |
+
+---
+
+## Preview Panels (Updated January 9)
+
+**Principle:** No device simulation. Always show responsive desktop view.
+
+```tsx
+// Preview container - responsive, fills available space
+<div className="flex-1 min-w-[400px] overflow-auto">
+  <FullSitePreviewFrame 
+    sections={sections} 
+    deviceView="desktop"  // Always desktop
+  />
+</div>
+```
+
+**Removed (January 9):**
+- Device toggles (mobile/tablet/desktop buttons)
+- Pop-out modal for expanded preview
+- Device chrome (phone bezels, notches)
 
 ---
 

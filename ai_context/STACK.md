@@ -1,6 +1,6 @@
 # HATCHIT STACK
 > Technical reference. Single source of truth.
-> Last Updated: January 8, 2026 (Session 2)
+> Last Updated: January 9, 2026 (Session 3)
 
 ---
 
@@ -12,8 +12,10 @@
 ├──────────────────────────────┬──────────────────────────────────┤
 │  /demo (Guest)               │  /builder (Auth)                 │
 │  • isDemo=true               │  • isDemo=false                  │
+│  • userTier='demo'           │  • userTier from subscription    │
 │  • localStorage persistence  │  • Supabase persistence          │
 │  • Redirect if signed in     │  • Redirect if not signed in     │
+│  • Hero section only         │  • Full section access           │
 └──────────────────────────────┴──────────────────────────────────┘
                     ↓                        ↓
               BuildFlowController (components/BuildFlowController.tsx)
@@ -124,8 +126,36 @@ User Input → AI Generation → Preview → Ship
 | File | Purpose |
 |------|---------|
 | `GeneratingModal.tsx` | Overlay during generation |
-| `FullSitePreviewFrame.tsx` | Full-site preview iframe |
-| `LiveSidebar.tsx` | Desktop sidebar (exported as `Sidebar`) |
+| `FullSitePreviewFrame.tsx` | Full-site preview iframe (always desktop view) |
+| `LiveSidebar.tsx` | Desktop sidebar with section nav, reordering, Add Section (exported as `Sidebar`) |
+
+### BuildFlowController Deep Dive
+**File:** `components/BuildFlowController.tsx` (~2900 lines)
+
+**Phases:**
+```
+'initializing' → Loading project/template data
+'building'     → Section-by-section generation (main builder UI)
+'review'       → Full site preview, deploy options
+```
+
+**Build Stages (within 'building' phase):**
+```
+'input'      → User entering prompt (no code yet)
+'generating' → Calling Claude, streaming code
+'complete'   → Code ready, preview showing
+'refining'   → Calling Claude for refinement
+```
+
+**Preview Panels (January 9 Simplification):**
+- Both build and review phases show responsive desktop preview
+- No device toggles (mobile/tablet/desktop removed)
+- No pop-out modal for expanded preview
+- `FullSitePreviewFrame` always receives `deviceView="desktop"`
+
+**Demo Mode Restrictions:**
+- `userTier === 'demo'` hides "Add Section" button
+- Demo users can only build the hero section
 
 ---
 
@@ -327,6 +357,13 @@ GITHUB_CLIENT_SECRET=        # OAuth App Secret
 ---
 
 ## Key Decisions Log
+
+### January 9, 2026 (Session 3 - UX REFINEMENT)
+1. **Preview Simplification** - Removed device toggles, made preview responsive desktop only
+2. **Demo Restrictions** - Add Section button hidden for demo users (hero only)
+3. **Icon Standardization** - All interactive icons now 16px (`w-4 h-4`) minimum
+4. **Build Error Fixes** - Removed invalid `'draft'` status check, added type guards
+5. **Duplicate Loader Fix** - Removed redundant SingularityLoader return
 
 ### January 8, 2026 (Session 2 - LAUNCH PREP)
 1. **Pip Cleanup** - Removed all Pip usages, replaced with "It" branding
