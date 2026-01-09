@@ -51,7 +51,7 @@ function PostPaymentContent() {
     },
     {
       title: 'Polish & Dream',
-      body: 'Use AI polishes and the Singularity to evolve your site. Credits reset monthly.',
+      body: 'Use AI to polish and evolve your site. Credits reset monthly.',
       cta: 'Refine now',
       onClick: () => router.push('/builder?step=refine'),
       icon: Wand2,

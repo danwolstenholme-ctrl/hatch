@@ -92,29 +92,29 @@ const features = [
     items: [
       {
         icon: Brain,
-        title: 'The Witness',
-        description: 'AI companion that observes and guides your build process.',
+        title: 'Session Insights',
+        description: 'Analysis of your build patterns and suggestions.',
         status: 'active',
         tier: 'free'
       },
       {
         icon: Terminal,
-        title: 'The Auditor',
-        description: 'AI quality check that optimizes your generated code.',
+        title: 'Code Audit',
+        description: 'Quality check that optimizes generated code.',
         status: 'active',
         tier: 'visionary'
       },
       {
         icon: RefreshCw,
-        title: 'The Healer',
-        description: 'Auto-fix errors and issues in generated sections.',
+        title: 'Auto-Fix',
+        description: 'Automatic error detection and repair.',
         status: 'active',
         tier: 'visionary'
       },
       {
         icon: Zap,
-        title: 'The Replicator',
-        description: 'Clone any website and make it your own.',
+        title: 'Site Cloner',
+        description: 'Reverse-engineer any site into build prompts.',
         status: 'active',
         tier: 'singularity'
       }

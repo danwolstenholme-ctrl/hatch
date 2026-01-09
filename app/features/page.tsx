@@ -46,7 +46,7 @@ export default function FeaturesPage() {
     {
       icon: <MessageSquare className="w-6 h-6" />,
       title: 'AI Prompt Helper',
-      description: 'Stuck on what to say? The Architect helps you craft the perfect prompt. Just describe your business, and it generates optimized prompts for each section.',
+      description: 'Stuck on what to say? Get help crafting the right prompt for each section.',
       tier: 'All tiers',
       tierColor: 'text-zinc-400'
     },
@@ -67,21 +67,21 @@ export default function FeaturesPage() {
     {
       icon: <RefreshCw className="w-6 h-6" />,
       title: 'Self-Healing Code',
-      description: 'When errors happen, The Healer automatically detects and fixes them. Runtime errors trigger a regeneration cycle until the component works.',
+      description: 'When errors happen, Automatic error detection and repair. When something breaks, it gets fixed.',
       tier: 'Visionary+',
       tierColor: 'text-violet-400'
     },
     {
       icon: <Copy className="w-6 h-6" />,
       title: 'Website Cloner',
-      description: 'See a site you love? Paste the URL. The Replicator reverse-engineers it into a Hatch prompt structure—colors, layout, copy, everything.',
+      description: 'See a site you love? Paste the URL. Reverse-engineer it into build prompts—colors, layout, copy, everything.',
       tier: 'Singularity',
       tierColor: 'text-amber-400'
     },
     {
       icon: <Wand2 className="w-6 h-6" />,
       title: 'Dream Engine',
-      description: 'The Singularity mutates your UI based on your style DNA. It evolves components autonomously—adding animations, changing colors, making it "alive."',
+      description: 'Your style DNA shapes future generations. The system learns your preferences and evolves designs—adding animations, changing colors, making it "alive."',
       tier: 'Singularity',
       tierColor: 'text-amber-400'
     },
@@ -258,14 +258,14 @@ export default function FeaturesPage() {
                 {
                   name: "Claude Haiku 4",
                   role: "Quality Audit",
-                  desc: "The witness. Fast, cheap verification layer that checks every component for errors and best practices.",
+                  desc: "Fast, cheap verification layer that checks every component for errors and best practices.",
                   color: "violet",
                   borderColor: "border-violet-500/20 hover:border-violet-500/40"
                 },
                 {
                   name: "Gemini 2 Flash",
                   role: "Vision + Analysis",
-                  desc: "The Replicator's eyes. Screenshots websites, extracts structure, reverse-engineers designs into prompts.",
+                  desc: "Screenshots websites, extracts structure, reverse-engineers designs into prompts.",
                   color: "amber",
                   borderColor: "border-amber-500/20 hover:border-amber-500/40"
                 }

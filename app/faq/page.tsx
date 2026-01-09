@@ -18,7 +18,7 @@ export default function FAQPage() {
       },
       {
         q: 'How does the fabrication process function?',
-        a: 'The System utilizes a Tri-Core Neural Pipeline. 1) Vector Selection (Template), 2) Identity Matrix (Branding), 3) Sequential Fabrication (Section Building). The Architect constructs, refines, and audits. The Architect Interface Entity assists with prompt extrapolation.',
+        a: 'The system utilizes a three-stage pipeline. 1) Vector Selection (Template), 2) Identity Matrix (Branding), 3) Sequential Fabrication (Section Building). The system builds, refines, and audits each section. The prompt helper assists with prompt extrapolation.',
       },
       {
         q: 'Is coding knowledge required for operation?',
@@ -26,7 +26,7 @@ export default function FAQPage() {
       },
       {
         q: 'Identify the System Architect.',
-        a: 'The Architect is a high-level cognitive sub-routine. Powered by Claude Haiku, it bridges the gap between User intent and System execution, capable of extrapolating complex prompts from minimal input.',
+        a: 'The prompt helper is powered by Claude Haiku, it bridges the gap between User intent and System execution, capable of extrapolating complex prompts from minimal input.',
       },
     ],
   },
@@ -80,7 +80,7 @@ export default function FAQPage() {
       },
       {
         q: 'Who retains code sovereignty?',
-        a: 'The Architect retains 100% sovereignty over all generated code. Full rights to modify, distribute, and commercialize are granted. No platform lock-in.',
+        a: 'You retain 100% ownership over all generated code. Full rights to modify, distribute, and commercialize are granted. No platform lock-in.',
       },
       {
         q: 'Can the code be exported?',
