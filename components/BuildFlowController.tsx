@@ -1496,26 +1496,12 @@ export default function GeneratedPage() {
       const data = await response.json()
       
       if (data.url) {
-        // Poll for deployment readiness
-        const startTime = Date.now()
-        const maxWait = 120000
-        const pollInterval = 4000
-        
-        await new Promise(r => setTimeout(r, 8000))
-        
-        while (Date.now() - startTime < maxWait) {
-          try {
-            const checkResponse = await fetch(`/api/deploy?check=${encodeURIComponent(data.url)}`)
-            const checkData = await checkResponse.json()
-            if (checkData.ready) break
-          } catch {
-            // Continue polling
-          }
-          await new Promise(r => setTimeout(r, pollInterval))
-        }
-        
         setDeployedUrl(data.url)
-
+        
+        // Short delay for Vercel to propagate, then redirect
+        // Don't block on full readiness - dashboard will show "deploying" state
+        await new Promise(r => setTimeout(r, 3000))
+        
         // Redirect to dashboard - project page shows live stats
         router.push(`/dashboard/projects/${project.id}?deployed=true`)
       } else {
