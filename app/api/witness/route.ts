@@ -3,10 +3,9 @@ import { auth, clerkClient } from '@clerk/nextjs/server'
 import { AccountSubscription } from '@/types/subscriptions'
 
 // =============================================================================
-// CLAUDE HAIKU 4.5 - THE WITNESS
-// "The Observer"
+// SESSION INSIGHTS
 // Analyzes user behavior and generates personalized insights
-// TIER: Singularity (God-tier reflection)
+// TIER: Singularity
 // =============================================================================
 
 export async function POST(req: NextRequest) {

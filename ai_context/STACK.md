@@ -84,8 +84,8 @@ User Input → AI Generation → Preview → Ship
 ### Loading States
 | File | Purpose | Used Where |
 |------|---------|------------|
-| `components/singularity/SingularityLoader.tsx` | Full-page loading | `/demo`, `/builder` auth check |
-| `components/singularity/SingularityTransition.tsx` | Homepage → Builder transition | `/` → `/demo` or `/builder` |
+| `components/singularity/Returns `null` | Auth/project loading | Pages return null until ready |
+| `components/singularity/` |
 | `components/builder/GeneratingModal.tsx` | Generating overlay | SectionBuilder |
 
 ### Layout
@@ -119,8 +119,8 @@ User Input → AI Generation → Preview → Ship
 | `Card.tsx` | Styled card | Card |
 | `Badge.tsx` | Tier badges | Badge |
 | `TheWitness.tsx` | Session analysis sidebar | TheWitness |
-| `SingularityLoader.tsx` | Loading spinner | SingularityLoader |
-| `SingularityTransition.tsx` | Page transition | SingularityTransition |
+
+
 
 ### Builder Helpers (components/builder/)
 | File | Purpose |

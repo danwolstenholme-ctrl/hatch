@@ -3,7 +3,7 @@ import { auth } from '@clerk/nextjs/server'
 import { GoogleGenAI } from '@google/genai'
 
 // =============================================================================
-// PIP - The Refiner 🟢
+// PROMPT HELPER
 // Interactive AI that helps users craft better prompts and refine their builds
 // =============================================================================
 
