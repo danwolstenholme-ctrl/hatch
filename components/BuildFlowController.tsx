@@ -2184,30 +2184,33 @@ export default function GeneratedPage() {
 
             {/* Main Build Area - Glass container with padding */}
             <div className="flex-1 flex flex-col overflow-hidden p-2 sm:p-3 lg:p-4">
-              {/* Mobile Tab Switcher for Build/Preview */}
+              {/* Mobile Tab Switcher for Build/Preview - More prominent */}
               <div className="flex lg:hidden mb-2 sm:mb-3">
-                <div className="flex w-full bg-zinc-900/50 rounded-lg p-0.5 border border-zinc-800/50 backdrop-blur-xl">
+                <div className="flex w-full bg-zinc-900/80 rounded-xl p-1 border border-zinc-800/50 backdrop-blur-xl shadow-lg\">
                   <button
                     onClick={() => setBuildMobileTab('build')}
-                    className={`flex-1 py-2 text-xs font-medium rounded-md transition-all duration-200 flex items-center justify-center gap-1.5 ${
+                    className={`flex-1 py-2.5 text-xs font-medium rounded-lg transition-all duration-200 flex items-center justify-center gap-2 ${
                       buildMobileTab === 'build' 
-                        ? 'bg-zinc-800 text-white shadow-sm' 
-                        : 'text-zinc-400 hover:text-zinc-300'
+                        ? 'bg-white text-black shadow-md' 
+                        : 'text-zinc-400 active:bg-zinc-800'
                     }`}
                   >
-                    <Code className="w-3.5 h-3.5" />
+                    <Code className="w-4 h-4" />
                     <span>Build</span>
                   </button>
                   <button
                     onClick={() => setBuildMobileTab('preview')}
-                    className={`flex-1 py-2 text-xs font-medium rounded-md transition-all duration-200 flex items-center justify-center gap-1.5 ${
+                    className={`flex-1 py-2.5 text-xs font-medium rounded-lg transition-all duration-200 flex items-center justify-center gap-2 ${
                       buildMobileTab === 'preview' 
-                        ? 'bg-zinc-800 text-white shadow-sm' 
-                        : 'text-zinc-400 hover:text-zinc-300'
+                        ? 'bg-white text-black shadow-md' 
+                        : 'text-zinc-400 active:bg-zinc-800'
                     }`}
                   >
-                    <Eye className="w-3.5 h-3.5" />
+                    <Eye className="w-4 h-4" />
                     <span>Preview</span>
+                    {previewSections.length > 0 && (
+                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                    )}
                   </button>
                 </div>
               </div>
@@ -2256,10 +2259,19 @@ export default function GeneratedPage() {
                 )}
                 
                 {buildMobileTab === 'preview' && previewSections.length === 0 && (
-                  <div className="flex-1 flex lg:hidden items-center justify-center">
+                  <div className="flex-1 flex lg:hidden items-center justify-center bg-gradient-to-br from-zinc-900/50 to-zinc-950\">
                     <div className="text-center p-6">
-                      <Eye className="w-8 h-8 text-zinc-700 mx-auto mb-3" />
-                      <p className="text-sm text-zinc-500">Build a section to see preview</p>
+                      <div className="w-16 h-16 rounded-2xl bg-zinc-800/50 border border-zinc-700/50 flex items-center justify-center mx-auto mb-4">
+                        <Eye className="w-7 h-7 text-zinc-600" />
+                      </div>
+                      <p className="text-sm font-medium text-zinc-400 mb-1">Preview will appear here</p>
+                      <p className="text-xs text-zinc-600">Build your first section to see it live</p>
+                      <button
+                        onClick={() => setBuildMobileTab('build')}
+                        className="mt-4 px-4 py-2 rounded-lg bg-zinc-800 text-white text-xs font-medium active:bg-zinc-700 transition-colors"
+                      >
+                        Start Building
+                      </button>
                     </div>
                   </div>
                 )}

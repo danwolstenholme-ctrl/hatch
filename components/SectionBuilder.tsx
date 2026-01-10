@@ -585,8 +585,8 @@ function AuthRefineBar({
 
   return (
     <div className="space-y-2">
-      {/* Quick action chips + AI Tools */}
-      <div className="flex items-center gap-1.5 overflow-x-auto pb-1">
+      {/* Quick action chips + AI Tools - scrollable on mobile */}
+      <div className="flex items-center gap-1.5 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-hide">
         <span className="text-[10px] text-emerald-500/70 uppercase tracking-wider flex-shrink-0">Quick:</span>
         {quickActions.map((action, i) => (
           <button
@@ -595,7 +595,7 @@ function AuthRefineBar({
               setRefinePrompt(action.prompt)
             }}
             disabled={isUserRefining}
-            className="flex-shrink-0 px-2.5 py-1 text-[11px] rounded-md bg-zinc-800/80 border border-zinc-700/50 text-zinc-400 hover:text-white hover:bg-emerald-500/10 hover:border-emerald-500/30 transition-all disabled:opacity-30"
+            className="flex-shrink-0 px-3 py-1.5 text-[11px] rounded-lg bg-zinc-800/80 border border-zinc-700/50 text-zinc-400 hover:text-white active:bg-emerald-500/20 hover:bg-emerald-500/10 hover:border-emerald-500/30 transition-all disabled:opacity-30"
           >
             {action.label}
           </button>
@@ -608,7 +608,7 @@ function AuthRefineBar({
         {onOpenHatch && (
           <button
             onClick={onOpenHatch}
-            className="flex-shrink-0 flex items-center gap-1 px-2.5 py-1 text-[11px] rounded-md bg-amber-500/10 border border-amber-500/30 text-amber-400 hover:text-amber-300 hover:bg-amber-500/20 transition-all"
+            className="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 text-[11px] rounded-lg bg-amber-500/10 border border-amber-500/30 text-amber-400 active:bg-amber-500/30 hover:text-amber-300 hover:bg-amber-500/20 transition-all"
           >
             <MessageSquare className="w-3 h-3" />
             Hatch
@@ -616,10 +616,10 @@ function AuthRefineBar({
         )}
       </div>
       
-      {/* Main refine input */}
-      <div className="flex items-center gap-2">
+      {/* Main refine input - larger touch targets on mobile */}
+      <div className="flex items-stretch gap-2">
         <div className="relative flex-1">
-          <div className="flex items-center bg-zinc-950 border border-zinc-700 rounded-lg overflow-hidden focus-within:border-emerald-500/50 focus-within:ring-1 focus-within:ring-emerald-500/20">
+          <div className="flex items-center bg-zinc-950 border border-zinc-700 rounded-xl overflow-hidden focus-within:border-emerald-500/50 focus-within:ring-1 focus-within:ring-emerald-500/20">
             <input
               type="text"
               value={refinePrompt}
@@ -627,14 +627,14 @@ function AuthRefineBar({
               onKeyDown={(e) => e.key === 'Enter' && refinePrompt.trim() && handleUserRefine()}
               disabled={isUserRefining}
               placeholder="Describe what should change..."
-              className="flex-1 bg-transparent px-4 py-3 text-sm text-white placeholder-zinc-500 focus:outline-none disabled:opacity-50"
+              className="flex-1 bg-transparent px-4 py-3.5 text-sm text-white placeholder-zinc-500 focus:outline-none disabled:opacity-50"
             />
             <button
               onClick={handleUserRefine}
               disabled={!refinePrompt.trim() || isUserRefining}
-              className={`px-4 py-3 text-sm font-medium transition-all ${
+              className={`px-4 py-3.5 text-sm font-medium transition-all ${
                 refinePrompt.trim() && !isUserRefining
-                  ? 'bg-emerald-500 text-white hover:bg-emerald-400'
+                  ? 'bg-emerald-500 text-white active:bg-emerald-600 hover:bg-emerald-400'
                   : 'bg-zinc-800 text-zinc-500 cursor-not-allowed'
               }`}
             >
@@ -643,10 +643,10 @@ function AuthRefineBar({
           </div>
         </div>
         
-        {/* Next button */}
+        {/* Next button - larger on mobile */}
         <button
           onClick={onNextSection}
-          className="flex items-center gap-1.5 px-5 py-3 rounded-lg bg-white text-black hover:bg-zinc-200 text-sm font-medium transition-all"
+          className="flex items-center gap-1.5 px-4 sm:px-5 py-3.5 rounded-xl bg-white text-black active:bg-zinc-300 hover:bg-zinc-200 text-sm font-medium transition-all"
         >
           {isLastSection ? 'Finish' : 'Next'}
           <ArrowRight className="w-4 h-4" />
@@ -697,12 +697,12 @@ function DemoCommandBar({
   const buttonText = isInitialState ? "Build" : "Refine"
   
   return (
-    <div className="flex items-center gap-2">
-      {/* Input */}
-      <div className="flex-1 flex items-center bg-zinc-900/80 border border-zinc-800/60 rounded-lg overflow-hidden focus-within:border-zinc-700">
+    <div className="flex items-stretch gap-2">
+      {/* Input - larger touch targets */}
+      <div className="flex-1 flex items-center bg-zinc-900/80 border border-zinc-800/60 rounded-xl overflow-hidden focus-within:border-zinc-600">
         <div className="pl-3 flex-shrink-0">
-          <div className="w-4 h-4 rounded bg-zinc-800 flex items-center justify-center">
-            <div className="w-1.5 h-1.5 rounded-full bg-zinc-400" />
+          <div className="w-5 h-5 rounded-md bg-zinc-800 flex items-center justify-center">
+            <div className="w-2 h-2 rounded-full bg-zinc-400" />
           </div>
         </div>
         <input
@@ -712,12 +712,12 @@ function DemoCommandBar({
           onKeyDown={(e) => e.key === 'Enter' && inputValue.trim() && handleSubmit()}
           disabled={isUserRefining}
           placeholder={placeholderText}
-          className="flex-1 bg-transparent px-3 py-2 text-sm text-zinc-200 placeholder-zinc-600 focus:outline-none disabled:opacity-50"
+          className="flex-1 bg-transparent px-3 py-3 text-sm text-zinc-200 placeholder-zinc-600 focus:outline-none disabled:opacity-50"
         />
         <button
           onClick={handleSubmit}
           disabled={!inputValue.trim() || isUserRefining}
-          className="px-3 py-2 text-xs font-medium bg-zinc-800/80 border-l border-zinc-700/50 text-zinc-400 hover:text-white transition-all disabled:opacity-30"
+          className="px-4 py-3 text-xs font-medium bg-zinc-800/80 border-l border-zinc-700/50 text-zinc-400 active:bg-zinc-700 hover:text-white transition-all disabled:opacity-30"
         >
           {isUserRefining ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : buttonText}
         </button>
@@ -727,7 +727,7 @@ function DemoCommandBar({
       {!isInitialState && (
         <button
           onClick={goToSignUp}
-          className="flex items-center gap-1.5 px-3 py-2 rounded-lg bg-white text-zinc-900 hover:bg-zinc-100 text-xs font-medium transition-all whitespace-nowrap"
+          className="flex items-center gap-1.5 px-4 py-3 rounded-xl bg-white text-zinc-900 active:bg-zinc-300 hover:bg-zinc-100 text-xs font-medium transition-all whitespace-nowrap"
         >
           Sign up
           <ArrowRight className="w-3 h-3" />
@@ -2030,27 +2030,45 @@ export default function SectionBuilder({
                       animate={{ opacity: 1, scale: 1 }}
                       className="text-center px-6"
                     >
-                      <motion.div
-                        animate={{ scale: [1, 1.05, 1], opacity: [0.6, 1, 0.6] }}
-                        transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-                        className="w-12 h-12 mx-auto mb-3"
-                      >
-                        <Image 
-                          src="/icon.svg" 
-                          alt="Building" 
-                          width={48} 
-                          height={48}
-                          className="w-full h-full"
+                      {/* Glow ring */}
+                      <div className="relative w-16 h-16 mx-auto mb-4">
+                        <motion.div
+                          animate={{ scale: [1, 1.2, 1], opacity: [0.3, 0.6, 0.3] }}
+                          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                          className="absolute inset-0 rounded-full bg-white/10 blur-xl"
                         />
-                      </motion.div>
+                        <motion.div
+                          animate={{ scale: [1, 1.05, 1], opacity: [0.8, 1, 0.8] }}
+                          transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+                          className="relative w-full h-full"
+                        >
+                          <Image 
+                            src="/icon.svg" 
+                            alt="Building" 
+                            width={64} 
+                            height={64}
+                            className="w-full h-full drop-shadow-lg"
+                          />
+                        </motion.div>
+                      </div>
                       <motion.p 
                         key={loadingStage}
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
+                        initial={{ opacity: 0, y: 5 }}
+                        animate={{ opacity: 1, y: 0 }}
                         className="text-sm font-medium text-white mb-1"
                       >
                         {loadingStages[loadingStage]}
                       </motion.p>
+                      <div className="flex justify-center gap-1 mt-2">
+                        {loadingStages.map((_, i) => (
+                          <div
+                            key={i}
+                            className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ${
+                              i <= loadingStage ? 'bg-white' : 'bg-zinc-700'
+                            }`}
+                          />
+                        ))}
+                      </div>
                     </motion.div>
                   </div>
                 </div>

@@ -356,14 +356,26 @@ export default function LiveSidebar({
               <button
                 key={tool.id}
                 onClick={() => handleAIToolClick(tool)}
-                className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-md hover:bg-zinc-900 transition-all group"
+                className="w-full flex items-center gap-2 px-2.5 py-1.5 rounded-md hover:bg-amber-950/30 transition-all group"
               >
-                <tool.icon className="w-3.5 h-3.5 text-zinc-500 group-hover:text-zinc-300" />
-                <span className="flex-1 text-left text-xs text-zinc-500 group-hover:text-white">{tool.name}</span>
-                <ChevronRight className="w-3 h-3 text-zinc-700 group-hover:text-zinc-400" />
+                <div className="w-5 h-5 rounded bg-gradient-to-br from-amber-500/20 to-orange-500/20 flex items-center justify-center">
+                  <tool.icon className="w-3 h-3 text-amber-400" />
+                </div>
+                <span className="flex-1 text-left text-xs text-zinc-400 group-hover:text-white">{tool.name}</span>
+                <ChevronRight className="w-3 h-3 text-zinc-700 group-hover:text-amber-400" />
               </button>
             ))}
           </div>
+          
+          {/* Self-healing indicator for Visionary+ */}
+          {(userTier === 'visionary' || userTier === 'singularity') && (
+            <div className="mt-2 px-2.5 py-1.5 rounded-md bg-emerald-950/20 border border-emerald-500/10">
+              <div className="flex items-center gap-2">
+                <div className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                <span className="text-[10px] text-emerald-400/70">Auto-fix enabled</span>
+              </div>
+            </div>
+          )}
         </div>
       </div>
 
