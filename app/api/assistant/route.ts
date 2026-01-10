@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 
 // =============================================================================
 // AI ASSISTANT API - Help with design, debugging, and prompts
-// Uses Claude Haiku for fast, helpful responses
+// Uses Claude Haiku 4.5 for fast, helpful responses
 // =============================================================================
 
 interface Message {
@@ -82,7 +82,7 @@ ${context.length > 0 ? `\nContext:\n${context.join('\n')}` : ''}`
         'anthropic-version': '2023-06-01'
       },
       body: JSON.stringify({
-        model: 'claude-3-5-haiku-20241022',
+        model: 'claude-haiku-4-5-20251001',
         max_tokens: 1024,
         system: systemPrompt,
         messages

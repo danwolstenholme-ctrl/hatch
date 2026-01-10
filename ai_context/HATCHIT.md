@@ -1,6 +1,6 @@
 # HATCHIT
 > The only context file. Single source of truth.
-> Last Updated: January 9, 2026 (Late Night)
+> Last Updated: January 10, 2026 (Late Night)
 
 ---
 
@@ -14,15 +14,29 @@ AI-assisted website builder. User describes → AI generates React/Tailwind → 
 
 ---
 
-## Recent Fixes (Jan 9 Night)
+## Recent Fixes (Jan 10 Night)
+
+| Issue | Fix |
+|-------|-----|
+| Multiple AI helpers mess | Removed Tips/Assistant/Prompt Helper tabs from SectionBuilder |
+| "Hatch" chicken persona | Renamed to "AI Help", emerald theme, no mascot |
+| Prompt → result unclear | Added "AI understood" summary after generation |
+| Preview felt caged/boxy | Removed heavy border, added floating shadow |
+| Device views stuck | Fixed tablet to `w-[768px]` instead of max-w |
+| Mobile builder rough | Larger touch targets, better tab switcher, active states |
+| No self-healing indicator | Added "Auto-fix enabled" badge for Visionary+ |
+| Generating animation basic | Added glow ring, progress dots, smoother transitions |
+
+### Previous Fixes (Jan 9 Night)
 
 | Issue | Fix |
 |-------|-----|
 | Ship button spinning forever | Removed 2-min polling loop, now 3s redirect |
-| AI Assistant broken | Created missing `/api/assistant/route.ts` |
-| Deployed sites failing build | Added blocklist for invalid Lucide imports (Icon, Button, etc.) |
+| AI Assistant broken | Created `/api/assistant/route.ts` |
+| Deployed sites failing build | Added blocklist for invalid Lucide imports (Icon, Button, Card, Section, Header, Footer, Nav, etc.) |
 | No deploy error feedback | Added `/api/deploy/status` + polling banner on project page |
 | Text edit missing | Restored Edit3 button + contentEditable in FullSitePreviewFrame |
+| Preview black screen | Added TypeScript stripping (`: string`, `: number`, `as any`) |
 
 ---
 
@@ -102,9 +116,30 @@ Code streams into preview
 
 ### Preview Device Modes
 `previewDevice` state: `'mobile' | 'tablet' | 'desktop'`
-- Mobile: 375px width
-- Tablet: 768px width  
+- Mobile: 375px fixed width
+- Tablet: 768px fixed width  
 - Desktop: 100% width
+
+### Ship Dropdown
+Replaced single Ship button with dropdown menu:
+```
+┌─────────────────────────────┐
+│ 🚀 Deploy to HatchIt        │  → hatchitsites.dev subdomain
+│ 🐙 Push to GitHub           │  → Creates repo + pushes Next.js
+│ 📦 Download ZIP             │  → Full source code
+│ 🌐 Custom Domain (Visionary)│  → Connect own domain
+└─────────────────────────────┘
+```
+
+### AI Understood Summary
+After generation, shows collapsible summary:
+```
+✓ AI understood your request
+  → Dark gradient background
+  → Centered headline with animation
+  → Green CTA button
+```
+Helps users see what their prompt became before refining.
 
 ---
 
@@ -141,10 +176,11 @@ Step 5: Review  → Summary with edit links → Create
 ### Core Flow
 | File | Purpose |
 |------|---------|
-| `components/BuildFlowController.tsx` | Main orchestrator (~2900 lines) |
-| `components/SectionBuilder.tsx` | Generation UI, prompt, preview |
+| `components/BuildFlowController.tsx` | Main orchestrator (~2570 lines) |
+| `components/SectionBuilder.tsx` | Generation UI, prompt, preview (~2350 lines) |
 | `components/SectionPreview.tsx` | Live iframe preview |
 | `components/builder/LiveSidebar.tsx` | Section nav, pages, AI tools |
+| `components/builder/FullSitePreviewFrame.tsx` | Full site preview with all sections |
 
 ### Welcome Modals
 | File | Route |
@@ -167,10 +203,15 @@ Step 5: Review  → Summary with edit links → Create
 ### Other Modals
 | File | Purpose |
 |------|---------|
-| `components/HatchModal.tsx` | Sign-up prompt (paywall) |
+| `components/HatchModal.tsx` | Sign-up prompt (paywall for deploy/export) |
+| `components/builder/HatchModal.tsx` | "Hatch" AI assistant (amber theme, friendly intro) |
 | `components/BuildSuccessModal.tsx` | After first build (guests) |
 | `components/ReplicatorModal.tsx` | URL cloning (Singularity tier) |
 | `components/SiteSettingsModal.tsx` | Brand config |
+
+**Note:** Two HatchModals exist:
+- `components/HatchModal.tsx` - Paywall modal when user tries to deploy/export without subscription
+- `components/builder/HatchModal.tsx` - AI assistant "Hatch" with amber theme, quick actions, prompt suggestions
 
 ---
 
@@ -181,6 +222,7 @@ Step 5: Review  → Summary with edit links → Create
 |-------|-------|---------|
 | `/api/build-section` | Claude Sonnet 4.5 | Code generation |
 | `/api/refine-section` | Claude Sonnet 4.5 | Iterative changes |
+| `/api/assistant` | Claude Haiku | "Hatch" AI chat helper (HatchIt-aware) |
 | `/api/heal` | Claude Haiku 4.5 | Auto-fix runtime errors (Visionary+) |
 | `/api/audit` | Claude Sonnet 4.5 | Quality check (Visionary+) |
 | `/api/replicator` | Gemini 2.0 Flash | URL cloning (Singularity) |
@@ -199,6 +241,7 @@ Step 5: Review  → Summary with edit links → Create
 | Route | Purpose |
 |-------|---------|
 | `/api/deploy` | Deploy to Vercel (hatchitsites.dev) |
+| `/api/deploy/status` | Check Vercel deployment status (building/ready/failed) |
 | `/api/export` | Download ZIP |
 | `/api/domain` | Custom domain (Visionary+) |
 
@@ -245,14 +288,15 @@ Step 5: Review  → Summary with edit links → Create
 User clicks "Ship" dropdown
         ↓
 ┌───────────────────────────────────────────────────────┐
-│  1. Push to GitHub   → Creates repo, pushes Next.js  │
-│  2. Deploy to HatchIt → Deploys to hatchitsites.dev  │
-│  3. Download ZIP     → Full source code              │
+│  1. Deploy to HatchIt → Deploys to hatchitsites.dev  │
+│  2. Push to GitHub    → Creates repo, pushes Next.js │
+│  3. Download ZIP      → Full source code             │
+│  4. Custom Domain     → Visionary+ only              │
 └───────────────────────────────────────────────────────┘
         ↓
-Post-deploy: Redirect to /dashboard/projects/[id]?deployed=true
+Post-deploy: 3-second delay then redirect to project page
         ↓
-DeploySuccessModal shows with "View Live Site" button
+Deployment status banner polls for build state (building → ready/failed)
 ```
 
 User owns everything. Can eject anytime.
@@ -375,9 +419,56 @@ AI-referenced patterns to prevent generic output:
 |---------|--------|----------|
 | The Witness | Archived | `.archive/witness/` |
 | Pip mascot | Shelved | `components/Pip.tsx` (unused) |
-| Device toggles | Re-added | Was removed Jan 9, re-added Jan 9 evening |
+| AssistantModal | Removed | Merged into `builder/HatchModal.tsx`, then replaced with AI Help |
+| PromptHelperModal | Removed | Merged into `builder/HatchModal.tsx`, then replaced with AI Help |
+| "Hatch" persona | Removed | Was a chicken mascot, now just "AI Help" |
 
 **The Witness** was an AI that generated "poetry" about the user's build session. Removed for being off-brand and costing API tokens.
+
+**"Hatch" persona** was a chicken-themed AI assistant. Removed Jan 10 - now just called "AI Help" with emerald theme.
+
+---
+
+## AI Help Assistant
+
+**File:** `components/builder/HatchModal.tsx`
+**API:** `/api/assistant` (Claude Haiku)
+**Theme:** Emerald (matches HatchIt brand)
+
+### Features
+- Clean intro: "How can I help?"
+- Quick actions: Ideas, Fix issue, Style tips, Enhance
+- Prompt starters for inspiration
+- "Use as prompt" button to apply suggestions
+- HatchIt-aware system prompt (no generic coding advice)
+
+### System Prompt Focus
+- Knows HatchIt tools (sidebar, preview, ship)
+- Suggests quick fixes first
+- Short, actionable answers
+- Won't suggest leaving HatchIt to code elsewhere
+
+---
+
+## Mobile Considerations
+
+**90% of traffic is mobile.** Builder must be touch-friendly.
+
+### Mobile Patterns
+- Tab switcher: Build / Preview (white active state)
+- Larger touch targets: `py-3.5` instead of `py-2`
+- Active states: `active:bg-*` for immediate feedback
+- Scrollable quick actions with `-mx-1 px-1 scrollbar-hide`
+- Full-width input bars
+- Green dot on Preview tab when content exists
+
+### Responsive Breakpoints
+```
+Mobile:  < 640px  (default)
+SM:      640px+
+LG:      1024px+  (desktop layout splits)
+XL:      1280px+  (sidebar always visible)
+```
 
 ---
 
@@ -458,20 +549,28 @@ types/
 
 ---
 
-## What's Shipped (as of Jan 9, 2026)
+## What's Shipped (as of Jan 10, 2026)
 
 - ✅ Full AI generation pipeline (Claude Sonnet)
+- ✅ "Hatch" AI assistant (Claude Haiku, amber theme)
+- ✅ AI understood summary (shows what AI interpreted)
 - ✅ 5-step new project wizard
 - ✅ Multi-page site support
 - ✅ Device preview toggle (mobile/tablet/desktop)
+- ✅ Ship dropdown (Deploy, GitHub, ZIP, Custom Domain)
 - ✅ GitHub integration (OAuth + push)
 - ✅ Vercel deployment (hatchitsites.dev subdomains)
+- ✅ Deployment status polling (building/ready/failed)
 - ✅ ZIP export
 - ✅ Self-Healing (auto-fix errors, Visionary+)
+- ✅ Self-healing indicator in sidebar
 - ✅ Auditor (quality check, Visionary+)
 - ✅ Replicator (clone URLs, Singularity)
 - ✅ Stripe subscriptions (3 tiers)
 - ✅ Custom domains (Visionary+)
+- ✅ Text editing in preview (double-click)
+- ✅ TypeScript stripping for preview
+- ✅ Mobile-optimized builder (90% of traffic is mobile)
 
 ---
 

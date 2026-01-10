@@ -43,17 +43,6 @@ function InlinePromptInput({
 }) {
   const [prompt, setPrompt] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [activeToolTab, setActiveToolTab] = useState<'tips' | 'assistant' | 'helper'>('tips')
-  
-  // Inline assistant state
-  const [assistantMessages, setAssistantMessages] = useState<Array<{role: 'user' | 'assistant', content: string}>>([])
-  const [assistantInput, setAssistantInput] = useState('')
-  const [isAssistantLoading, setIsAssistantLoading] = useState(false)
-  
-  // Inline prompt helper state
-  const [helperPrompt, setHelperPrompt] = useState('')
-  const [enhancedPrompt, setEnhancedPrompt] = useState('')
-  const [isEnhancing, setIsEnhancing] = useState(false)
 
   const isValid = prompt.trim().length >= 10
 
@@ -62,78 +51,12 @@ function InlinePromptInput({
     setIsSubmitting(true)
     setTimeout(() => onSubmit(prompt), 300)
   }
-  
-  // Inline assistant send
-  const handleAssistantSend = async () => {
-    if (!assistantInput.trim() || isAssistantLoading) return
-    const userMessage = assistantInput.trim()
-    setAssistantInput('')
-    setAssistantMessages(prev => [...prev, { role: 'user', content: userMessage }])
-    setIsAssistantLoading(true)
-    
-    try {
-      const response = await fetch('/api/assistant', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          message: userMessage,
-          sectionType: sectionName,
-          conversationHistory: assistantMessages.slice(-6),
-        }),
-      })
-      if (!response.ok) throw new Error('Failed')
-      const data = await response.json()
-      setAssistantMessages(prev => [...prev, { role: 'assistant', content: data.response }])
-    } catch {
-      setAssistantMessages(prev => [...prev, { role: 'assistant', content: 'Sorry, something went wrong. Try again.' }])
-    } finally {
-      setIsAssistantLoading(false)
-    }
-  }
-  
-  // Inline prompt enhance
-  const handleEnhance = async () => {
-    if (!helperPrompt.trim() || isEnhancing) return
-    setIsEnhancing(true)
-    setEnhancedPrompt('')
-    
-    try {
-      const response = await fetch('/api/prompt-helper', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          prompt: helperPrompt,
-          sectionType: sectionName,
-        }),
-      })
-      if (!response.ok) throw new Error('Failed')
-      const data = await response.json()
-      setEnhancedPrompt(data.enhancedPrompt || data.enhanced || helperPrompt)
-    } catch {
-      setEnhancedPrompt('Enhancement failed. Try again.')
-    } finally {
-      setIsEnhancing(false)
-    }
-  }
-  
-  const useEnhancedPrompt = () => {
-    setPrompt(enhancedPrompt)
-    setHelperPrompt('')
-    setEnhancedPrompt('')
-    setActiveToolTab('tips')
-  }
 
   const tips = [
     { label: 'Style', example: 'Dark, minimal, cinematic' },
     { label: 'Layout', example: 'Split hero, left-aligned' },
     { label: 'Content', example: 'AI startup, dev tools, SaaS' },
     { label: 'Tone', example: 'Professional, confident' },
-  ]
-  
-  const assistantQuickActions = [
-    { label: 'Debug help', prompt: 'What common issues should I avoid?' },
-    { label: 'Design tips', prompt: 'What makes a good hero section?' },
-    { label: 'Best practices', prompt: 'What should I include for conversion?' },
   ]
   
   const examplePrompts: Record<string, string[]> = {
@@ -210,241 +133,35 @@ function InlinePromptInput({
         </div>
       </div>
       
-      {/* AI Tools Area - Expanded below */}
-      <div className="flex-1 flex flex-col min-h-0 overflow-hidden">
-        {/* Tool tabs */}
-        <div className="flex-shrink-0 px-4 pt-3 pb-2 border-b border-zinc-800/50">
-          <div className="max-w-xl mx-auto flex items-center gap-1">
-            <button
-              onClick={() => setActiveToolTab('tips')}
-              className={`px-3 py-1.5 text-xs rounded-md transition-all ${
-                activeToolTab === 'tips' 
-                  ? 'bg-zinc-800 text-white' 
-                  : 'text-zinc-500 hover:text-zinc-300'
-              }`}
-            >
-              Tips
-            </button>
-            <button
-              onClick={() => setActiveToolTab('assistant')}
-              className={`px-3 py-1.5 text-xs rounded-md transition-all flex items-center gap-1.5 ${
-                activeToolTab === 'assistant' 
-                  ? 'bg-blue-500/20 text-blue-400 border border-blue-500/30' 
-                  : 'text-zinc-500 hover:text-zinc-300'
-              }`}
-            >
-              <MessageSquare className="w-3 h-3" />
-              Assistant
-            </button>
-            <button
-              onClick={() => setActiveToolTab('helper')}
-              className={`px-3 py-1.5 text-xs rounded-md transition-all flex items-center gap-1.5 ${
-                activeToolTab === 'helper' 
-                  ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30' 
-                  : 'text-zinc-500 hover:text-zinc-300'
-              }`}
-            >
-              <Sparkles className="w-3 h-3" />
-              Prompt Helper
-            </button>
+      {/* Tips & Examples */}
+      <div className="flex-1 overflow-y-auto p-4">
+        <div className="max-w-xl mx-auto space-y-4">
+          <p className="text-xs text-zinc-500 text-center">Be specific. The more detail, the better the result.</p>
+          
+          {/* Tips grid */}
+          <div className="grid grid-cols-2 gap-2 text-left">
+            {tips.map((tip, i) => (
+              <div key={i} className="p-3 rounded-lg bg-zinc-900/80 border border-zinc-800">
+                <p className="text-[10px] text-zinc-500 uppercase tracking-wider mb-1">{tip.label}</p>
+                <p className="text-xs text-zinc-300">{tip.example}</p>
+              </div>
+            ))}
           </div>
-        </div>
-        
-        {/* Tool content */}
-        <div className="flex-1 overflow-y-auto p-4">
-          <div className="max-w-xl mx-auto h-full">
-            {/* TIPS TAB */}
-            {activeToolTab === 'tips' && (
-              <div className="space-y-4">
-                <p className="text-xs text-zinc-500 text-center">Be specific. The more detail, the better the result.</p>
-                <div className="grid grid-cols-2 gap-2 text-left">
-                  {tips.map((tip, i) => (
-                    <div key={i} className="p-3 rounded-lg bg-zinc-900/80 border border-zinc-800">
-                      <p className="text-[10px] text-zinc-500 uppercase tracking-wider mb-1">{tip.label}</p>
-                      <p className="text-xs text-zinc-300">{tip.example}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-            
-            {/* ASSISTANT TAB - Full chat interface */}
-            {activeToolTab === 'assistant' && (
-              <div className="h-full flex flex-col">
-                {assistantMessages.length === 0 ? (
-                  // Empty state
-                  <div className="flex-1 flex flex-col items-center justify-center text-center">
-                    <div className="w-12 h-12 rounded-full bg-blue-500/10 flex items-center justify-center mb-3">
-                      <MessageSquare className="w-5 h-5 text-blue-400" />
-                    </div>
-                    <p className="text-sm text-white font-medium mb-1">Ask me anything</p>
-                    <p className="text-xs text-zinc-500 mb-4 max-w-xs">
-                      I can help with design ideas, coding tips, or explain concepts.
-                    </p>
-                    <div className="flex flex-wrap gap-2 justify-center">
-                      {assistantQuickActions.map((action, i) => (
-                        <button
-                          key={i}
-                          onClick={() => setAssistantInput(action.prompt)}
-                          className="px-3 py-1.5 text-xs bg-zinc-900 border border-zinc-800 rounded-lg hover:border-blue-500/30 hover:bg-blue-950/20 text-zinc-400 hover:text-white transition-all"
-                        >
-                          {action.label}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                ) : (
-                  // Messages list
-                  <div className="flex-1 overflow-y-auto space-y-3 mb-3">
-                    {assistantMessages.map((msg, i) => (
-                      <div key={i} className={`flex gap-2 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}>
-                        <div className={`w-6 h-6 rounded-full flex-shrink-0 flex items-center justify-center ${
-                          msg.role === 'user' ? 'bg-zinc-800' : 'bg-blue-500/20'
-                        }`}>
-                          {msg.role === 'user' 
-                            ? <span className="text-[10px] text-zinc-400">You</span>
-                            : <MessageSquare className="w-3 h-3 text-blue-400" />
-                          }
-                        </div>
-                        <div className={`max-w-[85%] px-3 py-2 rounded-xl text-xs ${
-                          msg.role === 'user'
-                            ? 'bg-blue-600 text-white'
-                            : 'bg-zinc-800 text-zinc-200'
-                        }`}>
-                          {msg.content}
-                        </div>
-                      </div>
-                    ))}
-                    {isAssistantLoading && (
-                      <div className="flex gap-2">
-                        <div className="w-6 h-6 rounded-full bg-blue-500/20 flex items-center justify-center">
-                          <MessageSquare className="w-3 h-3 text-blue-400 animate-pulse" />
-                        </div>
-                        <div className="px-3 py-2 bg-zinc-800 rounded-xl">
-                          <div className="flex gap-1">
-                            <div className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-bounce" style={{animationDelay: '0ms'}} />
-                            <div className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-bounce" style={{animationDelay: '150ms'}} />
-                            <div className="w-1.5 h-1.5 bg-blue-400 rounded-full animate-bounce" style={{animationDelay: '300ms'}} />
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                )}
-                
-                {/* Input bar */}
-                <div className="flex-shrink-0 flex gap-2">
-                  <input
-                    type="text"
-                    value={assistantInput}
-                    onChange={(e) => setAssistantInput(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && handleAssistantSend()}
-                    placeholder="Ask a question..."
-                    className="flex-1 px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-blue-500/50"
-                  />
-                  <button
-                    onClick={handleAssistantSend}
-                    disabled={!assistantInput.trim() || isAssistantLoading}
-                    className="px-3 py-2 bg-blue-600 hover:bg-blue-500 disabled:bg-zinc-800 disabled:text-zinc-600 text-white text-xs font-medium rounded-lg transition-colors"
-                  >
-                    Send
-                  </button>
-                </div>
-              </div>
-            )}
-            
-            {/* PROMPT HELPER TAB - Full enhancement interface */}
-            {activeToolTab === 'helper' && (
-              <div className="space-y-4">
-                {!enhancedPrompt ? (
-                  <>
-                    <div className="text-center">
-                      <Sparkles className="w-8 h-8 text-emerald-400 mx-auto mb-2" />
-                      <p className="text-sm text-white font-medium">Enhance Your Prompt</p>
-                      <p className="text-xs text-zinc-500 mt-1">
-                        Enter a basic idea and I&apos;ll make it more detailed and effective.
-                      </p>
-                    </div>
-                    
-                    {/* Quick examples */}
-                    <div className="space-y-2">
-                      <p className="text-[10px] text-zinc-500 uppercase tracking-wider">Try an example:</p>
-                      <div className="space-y-1.5">
-                        {currentExamples.map((example, i) => (
-                          <button
-                            key={i}
-                            onClick={() => setHelperPrompt(example)}
-                            className="w-full text-left px-3 py-2 text-xs text-zinc-400 bg-zinc-900 border border-zinc-800 rounded-lg hover:border-emerald-500/30 hover:bg-emerald-950/20 hover:text-white transition-all"
-                          >
-                            {example}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                    
-                    {/* Input */}
-                    <div className="space-y-2">
-                      <textarea
-                        value={helperPrompt}
-                        onChange={(e) => setHelperPrompt(e.target.value)}
-                        placeholder="Describe your section idea..."
-                        rows={3}
-                        className="w-full px-3 py-2 bg-zinc-900 border border-zinc-700 rounded-lg text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-emerald-500/50 resize-none"
-                      />
-                      <button
-                        onClick={handleEnhance}
-                        disabled={!helperPrompt.trim() || isEnhancing}
-                        className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-500 disabled:bg-zinc-800 disabled:text-zinc-600 text-white text-sm font-medium rounded-lg transition-colors flex items-center justify-center gap-2"
-                      >
-                        {isEnhancing ? (
-                          <>
-                            <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                            Enhancing...
-                          </>
-                        ) : (
-                          <>
-                            <Sparkles className="w-3.5 h-3.5" />
-                            Enhance Prompt
-                          </>
-                        )}
-                      </button>
-                    </div>
-                  </>
-                ) : (
-                  // Show enhanced result
-                  <div className="space-y-4">
-                    <div className="text-center">
-                      <div className="w-10 h-10 rounded-full bg-emerald-500/20 flex items-center justify-center mx-auto mb-2">
-                        <Sparkles className="w-5 h-5 text-emerald-400" />
-                      </div>
-                      <p className="text-sm text-white font-medium">Enhanced!</p>
-                    </div>
-                    
-                    <div className="p-3 bg-emerald-950/30 border border-emerald-500/30 rounded-xl">
-                      <p className="text-xs text-emerald-300 leading-relaxed">{enhancedPrompt}</p>
-                    </div>
-                    
-                    <div className="flex gap-2">
-                      <button
-                        onClick={useEnhancedPrompt}
-                        className="flex-1 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-medium rounded-lg transition-colors"
-                      >
-                        Use This Prompt
-                      </button>
-                      <button
-                        onClick={() => {
-                          setEnhancedPrompt('')
-                          setHelperPrompt('')
-                        }}
-                        className="px-4 py-2.5 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-sm font-medium rounded-lg transition-colors"
-                      >
-                        Try Again
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </div>
-            )}
+          
+          {/* Example prompts */}
+          <div className="space-y-2">
+            <p className="text-[10px] text-zinc-500 uppercase tracking-wider">Try an example:</p>
+            <div className="space-y-1.5">
+              {currentExamples.map((example, i) => (
+                <button
+                  key={i}
+                  onClick={() => setPrompt(example)}
+                  className="w-full text-left px-3 py-2 text-xs text-zinc-400 bg-zinc-900 border border-zinc-800 rounded-lg hover:border-emerald-500/30 hover:bg-emerald-950/20 hover:text-white transition-all"
+                >
+                  {example}
+                </button>
+              ))}
+            </div>
           </div>
         </div>
       </div>

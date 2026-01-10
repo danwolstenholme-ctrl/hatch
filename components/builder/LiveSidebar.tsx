@@ -92,7 +92,7 @@ const AI_TOOLS: Array<{
   tier: Tier
   action: keyof SidebarProps
 }> = [
-  { id: 'hatch', icon: MessageSquare, name: 'Hatch', desc: 'AI building buddy', tier: 'free', action: 'onOpenHatch' },
+  { id: 'ai-help', icon: MessageSquare, name: 'AI Help', desc: 'Get building tips', tier: 'free', action: 'onOpenHatch' },
 ]
 
 const TIER_ORDER: Tier[] = ['demo', 'free', 'architect', 'visionary', 'singularity']
