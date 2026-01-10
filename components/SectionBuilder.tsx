@@ -476,6 +476,7 @@ function DemoCommandBar({
   reasoning: string
   sectionName?: string
 }) {
+  const [showAiSummary, setShowAiSummary] = useState(true)
   const isInitialState = stage === 'input' && !reasoning
   
   const placeholderText = isInitialState 
@@ -488,42 +489,53 @@ function DemoCommandBar({
   const buttonText = isInitialState ? "Build" : "Refine"
   
   return (
-    <div className="flex items-stretch gap-2">
-      {/* Input - larger touch targets */}
-      <div className="flex-1 flex items-center bg-zinc-900/80 border border-zinc-800/60 rounded-xl overflow-hidden focus-within:border-zinc-600">
-        <div className="pl-3 flex-shrink-0">
-          <div className="w-5 h-5 rounded-md bg-zinc-800 flex items-center justify-center">
-            <div className="w-2 h-2 rounded-full bg-zinc-400" />
-          </div>
-        </div>
-        <input
-          type="text"
-          value={inputValue}
-          onChange={(e) => setInputValue(e.target.value)}
-          onKeyDown={(e) => e.key === 'Enter' && inputValue.trim() && handleSubmit()}
-          disabled={isUserRefining}
-          placeholder={placeholderText}
-          className="flex-1 bg-transparent px-3 py-3 text-sm text-zinc-200 placeholder-zinc-600 focus:outline-none disabled:opacity-50"
+    <div className="space-y-2">
+      {/* AI understood summary - show after generation */}
+      {!isInitialState && reasoning && (
+        <AiUnderstoodSummary
+          reasoning={reasoning}
+          isExpanded={showAiSummary}
+          onToggle={() => setShowAiSummary(!showAiSummary)}
         />
-        <button
-          onClick={handleSubmit}
-          disabled={!inputValue.trim() || isUserRefining}
-          className="px-4 py-3 text-xs font-medium bg-zinc-800/80 border-l border-zinc-700/50 text-zinc-400 active:bg-zinc-700 hover:text-white transition-all disabled:opacity-30"
-        >
-          {isUserRefining ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : buttonText}
-        </button>
-      </div>
-      
-      {/* Sign up CTA for demo users after first build */}
-      {!isInitialState && (
-        <button
-          onClick={goToSignUp}
-          className="flex items-center gap-1.5 px-4 py-3 rounded-xl bg-white text-zinc-900 active:bg-zinc-300 hover:bg-zinc-100 text-xs font-medium transition-all whitespace-nowrap"
-        >
-          Sign up
-          <ArrowRight className="w-3 h-3" />
-        </button>
       )}
+      
+      <div className="flex items-stretch gap-2">
+        {/* Input - larger touch targets */}
+        <div className="flex-1 flex items-center bg-zinc-900/80 border border-zinc-800/60 rounded-xl overflow-hidden focus-within:border-zinc-600">
+          <div className="pl-3 flex-shrink-0">
+            <div className="w-5 h-5 rounded-md bg-zinc-800 flex items-center justify-center">
+              <div className="w-2 h-2 rounded-full bg-zinc-400" />
+            </div>
+          </div>
+          <input
+            type="text"
+            value={inputValue}
+            onChange={(e) => setInputValue(e.target.value)}
+            onKeyDown={(e) => e.key === 'Enter' && inputValue.trim() && handleSubmit()}
+            disabled={isUserRefining}
+            placeholder={placeholderText}
+            className="flex-1 bg-transparent px-3 py-3 text-sm text-zinc-200 placeholder-zinc-600 focus:outline-none disabled:opacity-50"
+          />
+          <button
+            onClick={handleSubmit}
+            disabled={!inputValue.trim() || isUserRefining}
+            className="px-4 py-3 text-xs font-medium bg-zinc-800/80 border-l border-zinc-700/50 text-zinc-400 active:bg-zinc-700 hover:text-white transition-all disabled:opacity-30"
+          >
+            {isUserRefining ? <RefreshCw className="w-3.5 h-3.5 animate-spin" /> : buttonText}
+          </button>
+        </div>
+        
+        {/* Sign up CTA for demo users after first build */}
+        {!isInitialState && (
+          <button
+            onClick={goToSignUp}
+            className="flex items-center gap-1.5 px-4 py-3 rounded-xl bg-white text-zinc-900 active:bg-zinc-300 hover:bg-zinc-100 text-xs font-medium transition-all whitespace-nowrap"
+          >
+            Sign up
+            <ArrowRight className="w-3 h-3" />
+          </button>
+        )}
+      </div>
     </div>
   )
 }
@@ -1385,8 +1397,13 @@ export default function SectionBuilder({
       return
     }
 
-    if (!refinePrompt.trim() || !generatedCode) {
+    if (!refinePrompt.trim()) {
       setError('Please describe what changes you want')
+      return
+    }
+    
+    if (!generatedCode) {
+      setError('No code to refine - please build first')
       return
     }
 
