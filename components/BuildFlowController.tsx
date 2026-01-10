@@ -2202,8 +2202,8 @@ export default function GeneratedPage() {
             {/* Main Build Area - Glass container with padding */}
             <div className="flex-1 flex flex-col overflow-hidden p-2 sm:p-3 lg:p-4">
               {/* Mobile Tab Switcher for Build/Preview - More prominent */}
-              <div className="flex lg:hidden mb-2 sm:mb-3">
-                <div className="flex w-full bg-zinc-900/80 rounded-xl p-1 border border-zinc-800/50 backdrop-blur-xl shadow-lg\">
+              <div className="flex lg:hidden mb-2 sm:mb-3 gap-2">
+                <div className="flex flex-1 bg-zinc-900/80 rounded-xl p-1 border border-zinc-800/50 backdrop-blur-xl shadow-lg">
                   <button
                     onClick={() => setBuildMobileTab('build')}
                     className={`flex-1 py-2.5 text-xs font-medium rounded-lg transition-all duration-200 flex items-center justify-center gap-2 ${
@@ -2230,6 +2230,20 @@ export default function GeneratedPage() {
                     )}
                   </button>
                 </div>
+                {/* Edit Mode Toggle - Mobile */}
+                {buildMobileTab === 'preview' && previewSections.length > 0 && (
+                  <button
+                    onClick={() => setPreviewEditMode(!previewEditMode)}
+                    className={`p-2.5 rounded-xl border transition-all ${
+                      previewEditMode 
+                        ? 'bg-purple-500/20 text-purple-400 border-purple-500/50' 
+                        : 'bg-zinc-900/80 text-zinc-400 border-zinc-800/50 active:bg-zinc-800'
+                    }`}
+                    title={previewEditMode ? 'Exit Edit Mode' : 'Edit Text'}
+                  >
+                    <Edit3 className="w-4 h-4" />
+                  </button>
+                )}
               </div>
               
               {/* Glass container wrapper */}

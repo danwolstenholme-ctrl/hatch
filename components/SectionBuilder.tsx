@@ -512,19 +512,26 @@ function DemoCommandBar({
     <div className="space-y-2">
       {/* Chat messages - show conversation when no code yet */}
       {!hasCode && chatMessages && chatMessages.length > 0 && (
-        <div className="max-h-48 overflow-y-auto space-y-2 pb-2 border-b border-zinc-800/50">
+        <div className="bg-zinc-900/50 rounded-xl p-3 border border-zinc-800/50 max-h-64 overflow-y-auto space-y-3">
           {chatMessages.map((msg, i) => (
-            <div key={i} className={`text-sm ${msg.role === 'user' ? 'text-zinc-400' : 'text-emerald-300'}`}>
-              <span className="text-[10px] uppercase tracking-wider text-zinc-600 mr-2">
-                {msg.role === 'user' ? 'You' : 'AI'}
-              </span>
-              {msg.content}
+            <div key={i} className={`text-sm ${msg.role === 'user' ? 'text-right' : 'text-left'}`}>
+              <div className={`inline-block max-w-[85%] p-2.5 rounded-xl ${
+                msg.role === 'user' 
+                  ? 'bg-zinc-800 text-zinc-200' 
+                  : 'bg-emerald-500/10 border border-emerald-500/20 text-zinc-200'
+              }`}>
+                {msg.content}
+              </div>
             </div>
           ))}
           {isUserRefining && (
-            <div className="text-sm text-zinc-500 flex items-center gap-2">
-              <RefreshCw className="w-3 h-3 animate-spin" />
-              Thinking...
+            <div className="text-sm text-left">
+              <div className="inline-block p-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-zinc-400">
+                <span className="flex items-center gap-2">
+                  <RefreshCw className="w-3 h-3 animate-spin text-emerald-400" />
+                  Thinking...
+                </span>
+              </div>
             </div>
           )}
           <div ref={chatEndRef} />
@@ -1557,6 +1564,7 @@ ${code.slice(0, 2000)}`,
       // Add user message to chat immediately
       setChatMessages(prev => [...prev, { role: 'user', content: userMsg }])
       setRefinePrompt('')
+      setIsUserRefining(true) // Show loading state
       
       // Call refiner in help mode with conversation history
       try {

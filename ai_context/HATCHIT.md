@@ -641,7 +641,7 @@ Domain verifies → SSL provisioned
 | Database | Supabase (Postgres) | Latest |
 | Payments | Stripe | Latest |
 | AI (Generation) | Claude Sonnet 4.5 | claude-sonnet-4-5-20250929 |
-| AI (Assistant) | Claude Haiku 4.5 | claude-haiku-4-5-20251001 |
+| AI (Refiner) | Claude Opus 4 | claude-opus-4-20250514 |
 | AI (Replicator) | Gemini 2.0 Flash | Latest |
 | Hosting | Vercel | Latest |
 
@@ -784,9 +784,7 @@ created_at            TIMESTAMP
 | Route | Method | Model | Purpose |
 |-------|--------|-------|---------|
 | `/api/build-section` | POST | Claude Sonnet 4.5 | Generate section code |
-| `/api/refine-section` | POST | Claude Sonnet 4.5 | Modify existing code |
-| `/api/assistant` | POST | Claude Haiku 4.5 | AI Help chat |
-| `/api/heal` | POST | Claude Haiku 4.5 | Auto-fix errors (Visionary+) |
+| `/api/refine-section` | POST | Claude Opus 4 | Refine code + conversational help |
 | `/api/audit` | POST | Claude Sonnet 4.5 | Quality check (Visionary+) |
 | `/api/replicator` | POST | Gemini 2.0 Flash | Clone URL (Singularity) |
 | `/api/prompt-helper` | POST | Gemini 2.0 Flash | Enhance prompts |
