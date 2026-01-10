@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useUser } from '@clerk/nextjs'
 import { motion, useInView, AnimatePresence } from 'framer-motion'
-import { Terminal, Layers, Shield, Zap, Code2, Globe, ArrowRight, CheckCircle2, Layout, Smartphone } from 'lucide-react'
+import { Terminal, Layers, Shield, Zap, Code2, Globe, ArrowRight, CheckCircle2, Layout, Smartphone, Cpu } from 'lucide-react'
 import HomepageWelcome from '@/components/HomepageWelcome'
 
 // Section wrapper - staggered fade-in with depth
