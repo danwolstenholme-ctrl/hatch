@@ -1080,26 +1080,38 @@ export default function SectionBuilder({
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          message: `Analyze this React component and suggest 2-3 quick improvements the user could make. Be specific and actionable. Format as a short bulleted list.
-          
+          message: `Look at this code and suggest 2-3 quick refinements. Return ONLY plain text suggestions, one per line. No bullets, no markdown, no formatting. Each line should be a complete refinement prompt the user can paste.
+
+Example output:
+Make the CTA button larger with more padding
+Add a subtle gradient background to the hero
+Increase spacing between sections
+
 Code:
-${code.slice(0, 3000)}`,
+${code.slice(0, 2000)}`,
           sectionName: section.name,
         }),
       })
 
       if (response.ok) {
         const { response: suggestions } = await response.json()
-        // Parse bullet points from the response
-        const bulletPoints = suggestions
+        // Parse lines, strip any markdown/bullets/formatting
+        const lines = suggestions
           .split('\n')
-          .filter((line: string) => line.trim().startsWith('-') || line.trim().startsWith('•'))
-          .map((line: string) => line.replace(/^[-•]\s*/, '').trim())
-          .filter((line: string) => line.length > 0)
+          .map((line: string) => line
+            .replace(/^[-•*]\s*/, '')           // Remove bullets
+            .replace(/^\d+\.\s*/, '')           // Remove numbered lists
+            .replace(/\*\*([^*]+)\*\*/g, '$1')  // Remove bold **text**
+            .replace(/\*([^*]+)\*/g, '$1')      // Remove italic *text*
+            .replace(/`([^`]+)`/g, '$1')        // Remove code `text`
+            .replace(/^["']|["']$/g, '')        // Remove quotes
+            .trim()
+          )
+          .filter((line: string) => line.length > 10 && line.length < 100) // Reasonable length
           .slice(0, 3)
         
-        if (bulletPoints.length > 0) {
-          setRefinerSuggestions(bulletPoints)
+        if (lines.length > 0) {
+          setRefinerSuggestions(lines)
         }
       }
     } catch (err) {
