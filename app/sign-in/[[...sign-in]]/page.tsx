@@ -17,13 +17,15 @@ export default function SignInPage() {
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,rgba(16,185,129,0.1),transparent_50%)]" />
       <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.015)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.015)_1px,transparent_1px)] bg-[size:64px_64px] [mask-image:radial-gradient(ellipse_at_center,black_30%,transparent_80%)]" />
 
-      {/* Left side - Welcome back */}
-      <div className="hidden lg:flex lg:flex-1 flex-col justify-center px-12 xl:px-20 relative z-10">
-        <motion.div
-          initial={{ opacity: 0, x: -30 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
-          className="max-w-md"
+      {/* Centered container */}
+      <div className="w-full max-w-6xl mx-auto flex relative z-10">
+        {/* Left side - Welcome back */}
+        <div className="hidden lg:flex lg:flex-1 flex-col justify-center px-12 xl:px-16 relative z-10">
+          <motion.div
+            initial={{ opacity: 0, x: -30 }}
+            animate={{ opacity: 1, x: 0 }}
+            transition={{ duration: 0.6, ease: [0.16, 1, 0.3, 1] }}
+            className="max-w-md"
         >
           {/* Logo */}
           <Link href="/" className="inline-flex items-center gap-3 mb-10 group">
@@ -61,7 +63,7 @@ export default function SignInPage() {
       </div>
 
       {/* Right side - Sign in form */}
-      <div className="flex-1 lg:flex-none lg:w-[480px] flex flex-col items-center justify-center p-4 sm:p-6 relative z-10">
+      <div className="flex-1 lg:flex-none lg:w-[440px] flex flex-col items-center justify-center p-4 sm:p-6 relative z-10">
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
@@ -101,6 +103,7 @@ export default function SignInPage() {
           />
 
         </motion.div>
+      </div>
       </div>
     </div>
   )
