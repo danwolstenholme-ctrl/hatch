@@ -53,16 +53,22 @@ export default function Navigation() {
             <SignedOut>
               <Link 
                 href="/sign-in" 
-                className="hidden sm:block px-4 py-2 text-sm text-zinc-400 hover:text-white rounded-lg hover:bg-zinc-800/50 transition-all"
+                className="hidden sm:block px-3 py-1.5 text-xs text-zinc-500 hover:text-zinc-300 transition-colors"
               >
-                Sign In
+                Sign in
               </Link>
               <Link 
-                href="/builder" 
-                className="group relative px-5 py-2 text-sm font-medium rounded-lg bg-zinc-800/80 backdrop-blur-xl border border-zinc-700/50 hover:border-emerald-500/40 transition-all overflow-hidden"
+                href="/sign-up" 
+                className="hidden sm:block px-4 py-2 text-sm text-zinc-300 hover:text-white rounded-lg hover:bg-zinc-800/50 border border-zinc-700/50 hover:border-zinc-600 transition-all"
               >
-                <span className="relative z-10 bg-gradient-to-r from-emerald-400 to-emerald-500 bg-clip-text text-transparent">
-                  Start Building
+                Sign Up
+              </Link>
+              <Link 
+                href="/demo" 
+                className="group relative px-5 py-2 text-sm font-medium rounded-lg bg-emerald-500/15 backdrop-blur-xl border border-emerald-500/40 hover:bg-emerald-500/20 hover:border-emerald-500/50 transition-all overflow-hidden shadow-[0_0_12px_rgba(16,185,129,0.1)]"
+              >
+                <span className="relative z-10 text-white">
+                  Try Demo
                 </span>
                 <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
               </Link>
@@ -124,13 +130,27 @@ export default function Navigation() {
               </Link>
             ))}
             <SignedOut>
-              <div className="mt-2 pt-2 border-t border-zinc-800/50">
+              <div className="mt-2 pt-2 border-t border-zinc-800/50 space-y-1">
+                <Link 
+                  href="/demo"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="block px-4 py-3 text-sm text-emerald-400 font-medium hover:bg-zinc-800/50 rounded-lg transition-colors"
+                >
+                  Try Demo
+                </Link>
+                <Link 
+                  href="/sign-up"
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="block px-4 py-3 text-sm text-zinc-300 hover:text-white hover:bg-zinc-800/50 rounded-lg transition-colors"
+                >
+                  Sign Up
+                </Link>
                 <Link 
                   href="/sign-in"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="block px-4 py-3 text-sm text-zinc-400 hover:text-white hover:bg-zinc-800/50 rounded-lg transition-colors"
+                  className="block px-4 py-3 text-xs text-zinc-500 hover:text-zinc-300 rounded-lg transition-colors"
                 >
-                  Sign In
+                  Sign in
                 </Link>
               </div>
             </SignedOut>

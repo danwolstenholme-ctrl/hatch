@@ -131,7 +131,7 @@ export default function Home() {
                   animate={{ x: ['-200%', '200%'] }}
                   transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
                 />
-                <span className="relative">{isSignedIn ? 'Start Building' : 'Start your project'}</span>
+                <span className="relative">{isSignedIn ? 'Start Building' : 'Try the Demo'}</span>
                 <ArrowRight className="relative w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
               </motion.button>
               {isSignedIn ? (
@@ -143,10 +143,10 @@ export default function Home() {
                 </Link>
               ) : (
                 <Link
-                  href="/how-it-works"
+                  href="/sign-up"
                   className="inline-flex items-center justify-center rounded-lg bg-zinc-800/50 hover:bg-zinc-800/60 border border-zinc-700/50 hover:border-zinc-600 px-5 py-2.5 text-sm font-medium text-zinc-300 transition-all"
                 >
-                  How it works
+                  Sign Up
                 </Link>
               )}
             </motion.div>

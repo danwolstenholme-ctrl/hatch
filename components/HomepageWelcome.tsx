@@ -115,6 +115,17 @@ export default function HomepageWelcome({ onStart }: { onStart?: () => void }) {
               <div className="absolute inset-0 bg-gradient-to-b from-white/[0.02] to-transparent pointer-events-none" />
               <div className="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-zinc-700 to-transparent" />
               
+              {/* Close button */}
+              <button
+                onClick={handleDismiss}
+                className="absolute top-4 right-4 p-1.5 text-zinc-500 hover:text-zinc-300 hover:bg-zinc-800/50 rounded-lg transition-all z-10"
+                aria-label="Close"
+              >
+                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+              
               <div className="relative px-5 pt-6 pb-6 sm:px-6 sm:pt-8 sm:pb-8">
                 <motion.div 
                   initial={{ opacity: 0, y: 20 }}
@@ -174,63 +185,39 @@ export default function HomepageWelcome({ onStart }: { onStart?: () => void }) {
                   </motion.div>
                 </motion.div>
 
-                {/* Buttons */}
+                {/* Buttons - Simple two options */}
                 <motion.div
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ delay: 0.5, duration: 0.4 }}
-                  className="space-y-2 max-w-xs mx-auto"
+                  className="flex flex-col sm:flex-row gap-3 max-w-sm mx-auto"
                 >
-                  {resumeUrl && (
-                    <motion.button
-                      whileTap={{ scale: 0.98 }}
-                      onClick={() => {
-                        localStorage.setItem(SEEN_KEY, 'true')
-                        setIsOpen(false)
-                        router.push(resumeUrl)
-                      }}
-                      className="group relative w-full py-2.5 px-4 bg-emerald-500/15 backdrop-blur-2xl border border-emerald-500/40 hover:bg-emerald-500/20 hover:border-emerald-500/50 text-white font-medium text-sm text-center rounded-xl transition-all shadow-[0_0_15px_rgba(16,185,129,0.15)] flex items-center justify-center gap-2 overflow-hidden"
-                    >
-                      <div className="absolute inset-0 bg-gradient-to-br from-white/[0.08] via-transparent to-transparent rounded-xl pointer-events-none" />
-                      <motion.div
-                        className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/10 to-white/0"
-                        animate={{ x: ['-200%', '200%'] }}
-                        transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-                      />
-                      <span className="relative">Resume Session</span>
-                      <ArrowRight className="relative w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                    </motion.button>
-                  )}
-
                   <motion.button
                     whileTap={{ scale: 0.98 }}
                     onClick={handleStart}
-                    className={`group relative w-full py-2.5 px-4 font-medium text-sm text-center rounded-xl transition-all flex items-center justify-center gap-2 overflow-hidden ${
-                      resumeUrl 
-                        ? 'bg-zinc-800/50 backdrop-blur-xl hover:bg-zinc-800/60 text-zinc-200 border border-zinc-700/50'
-                        : 'bg-emerald-500/15 backdrop-blur-2xl border border-emerald-500/40 hover:bg-emerald-500/20 hover:border-emerald-500/50 text-white shadow-[0_0_15px_rgba(16,185,129,0.15)]'
-                    }`}
+                    className="group relative flex-1 py-2.5 px-5 bg-emerald-500/15 backdrop-blur-2xl border border-emerald-500/40 hover:bg-emerald-500/20 hover:border-emerald-500/50 text-white font-medium text-sm text-center rounded-xl transition-all shadow-[0_0_15px_rgba(16,185,129,0.15)] flex items-center justify-center gap-2 overflow-hidden"
                   >
-                    {!resumeUrl && <div className="absolute inset-0 bg-gradient-to-br from-white/[0.08] via-transparent to-transparent rounded-xl pointer-events-none" />}
-                    {!resumeUrl && (
-                      <motion.div
-                        className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/10 to-white/0"
-                        animate={{ x: ['-200%', '200%'] }}
-                        transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
-                      />
-                    )}
-                    <span className="relative">{resumeUrl ? 'Start Fresh' : 'Start Building'}</span>
-                    {!resumeUrl && <ArrowRight className="relative w-4 h-4 group-hover:translate-x-1 transition-transform" />}
+                    <div className="absolute inset-0 bg-gradient-to-br from-white/[0.08] via-transparent to-transparent rounded-xl pointer-events-none" />
+                    <motion.div
+                      className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/10 to-white/0"
+                      animate={{ x: ['-200%', '200%'] }}
+                      transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                    />
+                    <span className="relative">Try the Demo</span>
+                    <ArrowRight className="relative w-4 h-4 group-hover:translate-x-1 transition-transform" />
                   </motion.button>
-                  
-                  <div className="text-center pt-2">
-                    <motion.button
-                      onClick={handleDismiss}
-                      className="text-xs text-zinc-500 hover:text-zinc-300 transition-colors"
-                    >
-                      Continue browsing
-                    </motion.button>
-                  </div>
+
+                  <motion.button
+                    whileTap={{ scale: 0.98 }}
+                    onClick={() => {
+                      localStorage.setItem(SEEN_KEY, 'true')
+                      setIsOpen(false)
+                      router.push('/sign-up')
+                    }}
+                    className="flex-1 py-2.5 px-5 bg-zinc-800/50 backdrop-blur-xl hover:bg-zinc-800/60 text-zinc-200 border border-zinc-700/50 hover:border-zinc-600 font-medium text-sm text-center rounded-xl transition-all flex items-center justify-center gap-2"
+                  >
+                    <span>Sign Up</span>
+                  </motion.button>
                 </motion.div>
               </div>
             </div>
