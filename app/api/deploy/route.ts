@@ -384,6 +384,32 @@ export default function Home() {
       )
     }
 
+    // Explicitly assign the alias to ensure it's set
+    // The alias in deployment request sometimes doesn't work reliably
+    const aliasUrl = `${slug}.hatchitsites.dev`
+    try {
+      const aliasResponse = await fetch(`https://api.vercel.com/v2/deployments/${deployment.id}/aliases?teamId=team_itec4dUtXYYa962mXb7ZnLGg`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${process.env.VERCEL_TOKEN}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          alias: aliasUrl
+        })
+      })
+      
+      if (!aliasResponse.ok) {
+        const aliasError = await aliasResponse.json()
+        console.error('Failed to assign alias:', aliasError)
+        // Don't fail the deployment, just log
+      } else {
+        console.log(`Alias ${aliasUrl} assigned to deployment ${deployment.id}`)
+      }
+    } catch (aliasErr) {
+      console.error('Error assigning alias:', aliasErr)
+    }
+
     // The deployed URL
     const url = `https://${slug}.hatchitsites.dev`
 
