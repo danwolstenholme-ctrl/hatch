@@ -457,30 +457,81 @@ export default function RootLayout({
       'staggerVariants'
     ]
     
+    // Helper function to find the end of an object declaration (handles nested braces)
+    const findObjectEnd = (code: string, startIndex: number): number => {
+      let braceCount = 0
+      let inString = false
+      let stringChar = ''
+      
+      for (let i = startIndex; i < code.length; i++) {
+        const char = code[i]
+        const prevChar = i > 0 ? code[i - 1] : ''
+        
+        // Handle string detection (skip content inside strings)
+        if ((char === '"' || char === "'" || char === '`') && prevChar !== '\\') {
+          if (!inString) {
+            inString = true
+            stringChar = char
+          } else if (char === stringChar) {
+            inString = false
+          }
+          continue
+        }
+        
+        if (inString) continue
+        
+        if (char === '{') {
+          braceCount++
+        } else if (char === '}') {
+          braceCount--
+          if (braceCount === 0) {
+            return i + 1 // Return position after closing brace
+          }
+        }
+      }
+      return -1 // Not found
+    }
+    
     // Helper function to deduplicate variable declarations
     const deduplicateVariables = (codeStr: string): string => {
       let result = codeStr
       
       for (const varName of COMMON_VARIANTS) {
-        // Match all declarations of this variable
-        const regex = new RegExp(`const\\s+${varName}\\s*=\\s*\\{[^}]*(?:\\{[^}]*\\}[^}]*)*\\}`, 'g')
-        const matches = result.match(regex)
+        // Find all occurrences of this variable declaration
+        const declarationRegex = new RegExp(`const\\s+${varName}\\s*=\\s*\\{`, 'g')
+        const occurrences: { start: number; end: number }[] = []
         
-        if (matches && matches.length > 1) {
-          // Keep only the first occurrence, remove duplicates
-          let isFirst = true
-          result = result.replace(regex, (match) => {
-            if (isFirst) {
-              isFirst = false
-              return match
-            }
-            return '' // Remove duplicate
-          })
+        let match
+        let searchStr = result
+        let offset = 0
+        
+        while ((match = declarationRegex.exec(searchStr)) !== null) {
+          const declStart = match.index + offset
+          const objStart = declStart + match[0].length - 1 // Position of opening brace
+          const objEnd = findObjectEnd(result, objStart)
           
-          // Clean up any double newlines left behind
-          result = result.replace(/\n{3,}/g, '\n\n')
+          if (objEnd > 0) {
+            occurrences.push({ start: declStart, end: objEnd })
+          }
+          
+          // Continue searching after this match
+          offset += match.index + match[0].length
+          searchStr = result.slice(offset)
+          declarationRegex.lastIndex = 0
+        }
+        
+        // If more than one occurrence, remove all but the first
+        if (occurrences.length > 1) {
+          // Remove from last to first to preserve indices
+          for (let i = occurrences.length - 1; i > 0; i--) {
+            const { start, end } = occurrences[i]
+            result = result.slice(0, start) + result.slice(end)
+          }
         }
       }
+      
+      // Clean up any excessive newlines left behind
+      result = result.replace(/\n{3,}/g, '\n\n')
       
       return result
     }
