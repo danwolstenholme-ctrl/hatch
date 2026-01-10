@@ -26,7 +26,8 @@ import {
   Code,
   Smartphone,
   Tablet,
-  Monitor
+  Monitor,
+  AlertCircle
 } from 'lucide-react'
 import { track } from '@vercel/analytics'
 import SectionProgress from './SectionProgress'
@@ -161,6 +162,13 @@ export default function BuildFlowController({ existingProjectId, initialPrompt, 
   const [showHatchModal, setShowHatchModal] = useState(false)
   const [isDeploying, setIsDeploying] = useState(false)
   const [deployedUrl, setDeployedUrl] = useState<string | null>(null)
+  const [deploymentStatus, setDeploymentStatus] = useState<{
+    status: 'idle' | 'deploying' | 'building' | 'ready' | 'failed'
+    message?: string
+    error?: string
+    logsUrl?: string
+    deploymentId?: string
+  }>({ status: 'idle' })
   const [shareUrlCopied, setShareUrlCopied] = useState(false)
   const [reviewMobileTab, setReviewMobileTab] = useState<'modules' | 'preview'>('preview')
   const [buildMobileTab, setBuildMobileTab] = useState<'build' | 'preview'>('build')
@@ -1470,6 +1478,7 @@ export default function BuildFlowController({ existingProjectId, initialPrompt, 
     
     setIsDeploying(true)
     setError(null)
+    setDeploymentStatus({ status: 'deploying', message: 'Preparing deploy...' })
     
     try {
       // Process sections to create a valid single-file component
@@ -1565,20 +1574,72 @@ export default function GeneratedPage() {
         throw new Error(data.error || 'Deploy failed')
       }
       
-      if (data.url) {
-        setDeployedUrl(data.url)
+      if (data.deploymentId) {
+        // Start polling for deployment status
+        setDeploymentStatus({ status: 'building', message: 'Building on Vercel...', deploymentId: data.deploymentId })
         setShowDeployOptions(false)
         
-        // Show success toast/notification instead of redirecting
-        // User can see the deployed URL in the header now
+        // Poll for status
+        let attempts = 0
+        const maxAttempts = 45 // ~3 minutes
+        const pollStatus = async () => {
+          try {
+            const statusRes = await fetch(`/api/deploy/status?id=${data.deploymentId}&slug=${project.slug}`)
+            const statusData = await statusRes.json()
+            
+            if (statusData.status === 'ready') {
+              setDeploymentStatus({ status: 'ready' })
+              setDeployedUrl(statusData.url)
+              setIsDeploying(false)
+              return
+            }
+            
+            if (statusData.status === 'failed') {
+              setDeploymentStatus({ 
+                status: 'failed', 
+                error: statusData.error || 'Build failed',
+                logsUrl: statusData.logsUrl
+              })
+              setIsDeploying(false)
+              return
+            }
+            
+            if (statusData.status === 'building') {
+              setDeploymentStatus({ status: 'building', message: 'Building...', deploymentId: data.deploymentId })
+            }
+            
+            attempts++
+            if (attempts < maxAttempts) {
+              setTimeout(pollStatus, 4000)
+            } else {
+              setDeploymentStatus({ 
+                status: 'failed', 
+                error: 'Deployment timed out. Check Vercel dashboard.',
+                logsUrl: `https://vercel.com/hatchit-sites`
+              })
+              setIsDeploying(false)
+            }
+          } catch {
+            setDeploymentStatus({ status: 'failed', error: 'Could not check deployment status' })
+            setIsDeploying(false)
+          }
+        }
+        
+        setTimeout(pollStatus, 3000)
+      } else if (data.url) {
+        // Immediate success (rare)
+        setDeployedUrl(data.url)
+        setDeploymentStatus({ status: 'ready' })
+        setShowDeployOptions(false)
+        setIsDeploying(false)
       } else {
-        throw new Error(data.error || 'Deploy failed - no URL returned')
+        throw new Error(data.error || 'Deploy failed - no deployment ID returned')
       }
     } catch (err) {
       console.error('Deploy failed:', err)
       const message = err instanceof Error ? err.message : 'Deploy failed. Please try again.'
       setError(message)
-    } finally {
+      setDeploymentStatus({ status: 'failed', error: message })
       setIsDeploying(false)
     }
   }
@@ -1923,10 +1984,32 @@ export default function GeneratedPage() {
                   
                   {/* Ship Dropdown */}
                   <div className="relative">
-                    {isDeploying ? (
+                    {deploymentStatus.status === 'deploying' || deploymentStatus.status === 'building' ? (
                       <div className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium bg-emerald-500/20 text-emerald-400 rounded-md border border-emerald-500/30">
                         <div className="w-3.5 h-3.5 border-2 border-emerald-400/30 border-t-emerald-400 rounded-full animate-spin" />
-                        <span className="hidden sm:inline">Deploying...</span>
+                        <span className="hidden sm:inline">{deploymentStatus.message || 'Building...'}</span>
+                      </div>
+                    ) : deploymentStatus.status === 'failed' ? (
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => setDeploymentStatus({ status: 'idle' })}
+                          className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-medium bg-red-500/20 text-red-400 rounded-md border border-red-500/30 hover:bg-red-500/30 transition-colors"
+                          title={deploymentStatus.error}
+                        >
+                          <AlertCircle className="w-3.5 h-3.5" />
+                          <span className="hidden sm:inline">Failed</span>
+                        </button>
+                        {deploymentStatus.logsUrl && (
+                          <a
+                            href={deploymentStatus.logsUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="p-1.5 text-zinc-500 hover:text-white transition-colors"
+                            title="View Vercel logs"
+                          >
+                            <ExternalLink className="w-3.5 h-3.5" />
+                          </a>
+                        )}
                       </div>
                     ) : deployedUrl ? (
                       <a
@@ -1942,7 +2025,7 @@ export default function GeneratedPage() {
                     ) : (
                       <Button
                         onClick={() => setShowDeployOptions(!showDeployOptions)}
-                        disabled={!assembledCode}
+                        disabled={!assembledCode || isDeploying}
                         size="sm"
                         icon={<Rocket className="w-3.5 h-3.5" />}
                         iconPosition="left"
