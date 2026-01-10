@@ -1552,21 +1552,29 @@ export default function GeneratedPage() {
       
       const data = await response.json()
       
+      if (!response.ok) {
+        // Handle specific error cases
+        if (data.requiresUpgrade) {
+          setHatchModalReason('deploy')
+          setShowHatchModal(true)
+          return
+        }
+        throw new Error(data.error || 'Deploy failed')
+      }
+      
       if (data.url) {
         setDeployedUrl(data.url)
+        setShowDeployOptions(false)
         
-        // Short delay for Vercel to start, then redirect with deployment ID for status tracking
-        await new Promise(r => setTimeout(r, 2000))
-        
-        // Redirect to dashboard with deployment info for status polling
-        const deploymentId = data.deploymentId || ''
-        router.push(`/dashboard/projects/${project.id}?deployed=true&deploymentId=${deploymentId}`)
+        // Show success toast/notification instead of redirecting
+        // User can see the deployed URL in the header now
       } else {
-        setError(data.error || 'Deploy failed')
+        throw new Error(data.error || 'Deploy failed - no URL returned')
       }
     } catch (err) {
       console.error('Deploy failed:', err)
-      setError('Deploy failed. Please try again.')
+      const message = err instanceof Error ? err.message : 'Deploy failed. Please try again.'
+      setError(message)
     } finally {
       setIsDeploying(false)
     }
@@ -1912,7 +1920,12 @@ export default function GeneratedPage() {
                   
                   {/* Ship Dropdown */}
                   <div className="relative">
-                    {deployedUrl ? (
+                    {isDeploying ? (
+                      <div className="flex items-center gap-2 px-3 py-1.5 text-xs font-medium bg-emerald-500/20 text-emerald-400 rounded-md border border-emerald-500/30">
+                        <div className="w-3.5 h-3.5 border-2 border-emerald-400/30 border-t-emerald-400 rounded-full animate-spin" />
+                        <span className="hidden sm:inline">Deploying...</span>
+                      </div>
+                    ) : deployedUrl ? (
                       <a
                         href={deployedUrl}
                         target="_blank"

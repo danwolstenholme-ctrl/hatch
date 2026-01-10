@@ -193,10 +193,10 @@ function InlinePromptInput({
                 }
               }}
               placeholder={placeholder}
-              className="flex-1 bg-transparent px-4 py-4 text-sm text-white placeholder-zinc-500 focus:outline-none"
+              className="flex-1 min-w-0 bg-transparent px-3 sm:px-4 py-3.5 sm:py-4 text-sm text-white placeholder-zinc-500 focus:outline-none"
               autoFocus
             />
-            <div className="px-3">
+            <div className="flex-shrink-0 px-2 sm:px-3">
               <Button
                 onClick={handleSubmit}
                 disabled={!isValid || isSubmitting}
@@ -209,9 +209,9 @@ function InlinePromptInput({
             </div>
           </div>
           
-          {/* Animated suggestion */}
-          <div className="mt-4 h-12 flex items-center justify-center">
-            <div className="text-center">
+          {/* Animated suggestion - hidden on small mobile to prevent overflow */}
+          <div className="mt-3 sm:mt-4 hidden xs:flex h-10 items-center justify-center px-2">
+            <div className="text-center max-w-full overflow-hidden">
               <span className="text-zinc-600 text-xs">Try: </span>
               <span className="text-zinc-400 text-xs">"</span>
               <span className="text-zinc-300 text-xs">{displayText}</span>
@@ -221,13 +221,13 @@ function InlinePromptInput({
           </div>
           
           {/* Tech stack hint */}
-          <div className="mt-2 flex items-center justify-center gap-2 text-[10px] text-zinc-600">
+          <div className="mt-3 sm:mt-2 flex items-center justify-center gap-2 text-[10px] text-zinc-600">
             <span className="text-emerald-500/70">●</span>
             <span>Claude Sonnet 4.5</span>
-            <span>·</span>
-            <span>React 19</span>
-            <span>·</span>
-            <span>Tailwind</span>
+            <span className="hidden sm:inline">·</span>
+            <span className="hidden sm:inline">React 19</span>
+            <span className="hidden sm:inline">·</span>
+            <span className="hidden sm:inline">Tailwind</span>
           </div>
         </div>
       </div>
