@@ -30,7 +30,7 @@ import { LogoMark } from './Logo'
 import Button from './singularity/Button'
 
 // =============================================================================
-// INLINE PROMPT INPUT - Command bar at top, AI tools expanded below
+// INLINE PROMPT INPUT - Command bar with animated suggestion
 // =============================================================================
 function InlinePromptInput({ 
   onSubmit, 
@@ -43,6 +43,9 @@ function InlinePromptInput({
 }) {
   const [prompt, setPrompt] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [displayText, setDisplayText] = useState('')
+  const [suggestionIndex, setSuggestionIndex] = useState(0)
+  const [isTyping, setIsTyping] = useState(true)
 
   const isValid = prompt.trim().length >= 10
 
@@ -52,48 +55,111 @@ function InlinePromptInput({
     setTimeout(() => onSubmit(prompt), 300)
   }
 
-  const tips = [
-    { label: 'Style', example: 'Dark, minimal, cinematic' },
-    { label: 'Layout', example: 'Split hero, left-aligned' },
-    { label: 'Content', example: 'AI startup, dev tools, SaaS' },
-    { label: 'Tone', example: 'Professional, confident' },
-  ]
-  
-  const examplePrompts: Record<string, string[]> = {
+  // Context-aware suggestions based on section type
+  const suggestions: Record<string, string[]> = {
+    'Header': [
+      'Minimal dark nav with logo left, links right, glass effect on scroll',
+      'Transparent header with centered logo and hamburger menu',
+      'Sticky nav with subtle border, CTA button on far right',
+    ],
+    'Header/Navigation': [
+      'Minimal dark nav with logo left, links right, glass effect on scroll',
+      'Transparent header with centered logo and hamburger menu',
+      'Sticky nav with subtle border, CTA button on far right',
+    ],
     'Hero': [
-      'Dark, cinematic hero with bold headline and CTA',
-      'Split-screen hero with product mockup on right',
-      'Minimal hero with centered text and gradient',
+      'Dark gradient hero with bold headline left, 3D mockup right',
+      'Full-screen hero with centered text, animated gradient mesh',
+      'Split hero: headline and CTA left, product screenshot right',
     ],
     'Features': [
-      'Bento grid of features with icons',
-      '3-column feature cards with hover effects',
-      'Alternating feature rows with illustrations',
+      'Bento grid layout with icons, dark cards, subtle hover glow',
+      '3-column feature cards with gradient borders',
+      'Alternating rows: text left/image right, then flip',
     ],
     'Pricing': [
-      'Three-tier pricing with popular badge',
-      'Toggle between monthly and yearly plans',
-      'Single featured plan with comparison table',
+      'Three tiers with middle highlighted, dark theme, toggle for yearly',
+      'Single featured plan with comparison checklist below',
+      'Gradient cards with hover lift effect, popular badge',
+    ],
+    'Testimonials': [
+      'Single large quote with avatar, minimal dark background',
+      'Carousel of testimonial cards with company logos',
+      'Grid of short quotes with star ratings',
+    ],
+    'CTA': [
+      'Full-width gradient banner with bold text and two buttons',
+      'Centered CTA with subtle background pattern',
+      'Split CTA: compelling copy left, email signup right',
+    ],
+    'Footer': [
+      'Dark footer with 4 columns: links, social icons, newsletter',
+      'Minimal footer: logo left, essential links right',
+      'Full footer with sitemap, contact info, and legal links',
+    ],
+    'Contact': [
+      'Split layout: contact form left, office info and map right',
+      'Centered form with floating labels, dark input fields',
+      'Minimal contact card with email, phone, and social links',
+    ],
+    'About': [
+      'Team grid with photos, names, and roles on hover',
+      'Story section with timeline and milestone highlights',
+      'Values section with icons and short descriptions',
+    ],
+    'FAQ': [
+      'Accordion style with smooth expand animation',
+      'Two-column FAQ grid with category headers',
+      'Searchable FAQ with highlighted answers',
     ],
     'default': [
-      'Clean, modern, and professional',
-      'Dark theme with neon accents',
-      'Minimalist with lots of whitespace',
+      'Dark, minimal design with subtle gradients and clean typography',
+      'Modern layout with plenty of whitespace and bold headlines',
+      'Professional look with accent color highlights and smooth animations',
     ],
   }
-  
-  const currentExamples = examplePrompts[sectionName] || examplePrompts['default']
+
+  const currentSuggestions = suggestions[sectionName] || suggestions['default']
+
+  // Typewriter effect
+  useEffect(() => {
+    const targetText = currentSuggestions[suggestionIndex]
+    let charIndex = 0
+    let timeoutId: NodeJS.Timeout
+
+    const type = () => {
+      if (charIndex <= targetText.length) {
+        setDisplayText(targetText.slice(0, charIndex))
+        charIndex++
+        timeoutId = setTimeout(type, 30 + Math.random() * 20) // Slight randomness for natural feel
+      } else {
+        setIsTyping(false)
+        // Pause at end, then move to next
+        timeoutId = setTimeout(() => {
+          setIsTyping(true)
+          setSuggestionIndex((prev) => (prev + 1) % currentSuggestions.length)
+        }, 4000)
+      }
+    }
+
+    setIsTyping(true)
+    setDisplayText('')
+    type()
+
+    return () => clearTimeout(timeoutId)
+  }, [suggestionIndex, currentSuggestions])
 
   return (
     <div className="h-full flex flex-col">
       {/* Command bar at top */}
-      <div className="flex-shrink-0 p-4 border-b border-zinc-800 bg-zinc-900/50">
+      <div className="flex-shrink-0 p-4 sm:p-6">
         <div className="max-w-xl mx-auto">
-          <div className="mb-3 text-center">
+          <div className="mb-4 text-center">
             <p className="text-[11px] text-zinc-500 uppercase tracking-wider mb-1">Building</p>
-            <p className="text-lg text-white font-semibold">{sectionName}</p>
+            <p className="text-lg sm:text-xl text-white font-semibold">{sectionName}</p>
           </div>
-          <div className="flex items-center bg-zinc-950 border border-zinc-700 rounded-lg overflow-hidden focus-within:border-emerald-500/50 focus-within:ring-1 focus-within:ring-emerald-500/20">
+          
+          <div className="flex items-center bg-zinc-950 border border-zinc-700 rounded-xl overflow-hidden focus-within:border-emerald-500/50 focus-within:ring-1 focus-within:ring-emerald-500/20 transition-all">
             <input
               type="text"
               value={prompt}
@@ -105,10 +171,10 @@ function InlinePromptInput({
                 }
               }}
               placeholder={placeholder}
-              className="flex-1 bg-transparent px-4 py-3.5 text-sm text-white placeholder-zinc-500 focus:outline-none"
+              className="flex-1 bg-transparent px-4 py-4 text-sm text-white placeholder-zinc-500 focus:outline-none"
               autoFocus
             />
-            <div className="px-2">
+            <div className="px-3">
               <Button
                 onClick={handleSubmit}
                 disabled={!isValid || isSubmitting}
@@ -118,6 +184,17 @@ function InlinePromptInput({
               >
                 Build
               </Button>
+            </div>
+          </div>
+          
+          {/* Animated suggestion */}
+          <div className="mt-4 h-12 flex items-center justify-center">
+            <div className="text-center">
+              <span className="text-zinc-600 text-xs">Try: </span>
+              <span className="text-zinc-400 text-xs">"</span>
+              <span className="text-zinc-300 text-xs">{displayText}</span>
+              <span className={`inline-block w-0.5 h-3.5 bg-emerald-500 ml-0.5 align-middle ${isTyping ? 'animate-pulse' : 'opacity-0'}`} />
+              <span className="text-zinc-400 text-xs">"</span>
             </div>
           </div>
           
@@ -133,38 +210,8 @@ function InlinePromptInput({
         </div>
       </div>
       
-      {/* Tips & Examples */}
-      <div className="flex-1 overflow-y-auto p-4">
-        <div className="max-w-xl mx-auto space-y-4">
-          <p className="text-xs text-zinc-500 text-center">Be specific. The more detail, the better the result.</p>
-          
-          {/* Tips grid */}
-          <div className="grid grid-cols-2 gap-2 text-left">
-            {tips.map((tip, i) => (
-              <div key={i} className="p-3 rounded-lg bg-zinc-900/80 border border-zinc-800">
-                <p className="text-[10px] text-zinc-500 uppercase tracking-wider mb-1">{tip.label}</p>
-                <p className="text-xs text-zinc-300">{tip.example}</p>
-              </div>
-            ))}
-          </div>
-          
-          {/* Example prompts */}
-          <div className="space-y-2">
-            <p className="text-[10px] text-zinc-500 uppercase tracking-wider">Try an example:</p>
-            <div className="space-y-1.5">
-              {currentExamples.map((example, i) => (
-                <button
-                  key={i}
-                  onClick={() => setPrompt(example)}
-                  className="w-full text-left px-3 py-2 text-xs text-zinc-400 bg-zinc-900 border border-zinc-800 rounded-lg hover:border-emerald-500/30 hover:bg-emerald-950/20 hover:text-white transition-all"
-                >
-                  {example}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
+      {/* Empty space below - keeps layout consistent */}
+      <div className="flex-1" />
     </div>
   )
 }
