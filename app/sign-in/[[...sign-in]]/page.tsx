@@ -61,23 +61,17 @@ export default function SignInPage() {
       </div>
 
       {/* Right side - Sign in form */}
-      <div className="flex-1 lg:flex-none lg:w-[520px] flex flex-col items-center justify-center p-6 sm:p-8 relative z-10">
-        {/* Mobile logo */}
-        <Link href="/" className="lg:hidden flex items-center gap-2 mb-8">
-          <LogoMark size={32} />
-          <span className="text-lg font-bold text-white">HatchIt</span>
-        </Link>
-
+      <div className="flex-1 lg:flex-none lg:w-[480px] flex flex-col items-center justify-center p-4 sm:p-6 relative z-10">
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, delay: 0.2 }}
-          className="w-full max-w-md"
+          className="w-full max-w-sm"
         >
           {/* Mobile headline */}
-          <div className="lg:hidden text-center mb-6">
-            <h1 className="text-2xl font-bold text-white mb-2">Welcome back</h1>
-            <p className="text-sm text-zinc-400">Sign in to continue building</p>
+          <div className="lg:hidden text-center mb-4">
+            <h1 className="text-xl font-bold text-white mb-1">Welcome back</h1>
+            <p className="text-sm text-zinc-400">Sign in to continue</p>
           </div>
 
           <SignIn 
