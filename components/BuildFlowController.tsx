@@ -171,6 +171,7 @@ export default function BuildFlowController({ existingProjectId, initialPrompt, 
   const [showMobileSidebar, setShowMobileSidebar] = useState(false)
   const [previewEditMode, setPreviewEditMode] = useState(false)
   const [previewDevice, setPreviewDevice] = useState<'mobile' | 'tablet' | 'desktop'>('desktop')
+  const [showFirstBuildHint, setShowFirstBuildHint] = useState(false)
 
   // Reset legacy welcome flags so V2 intro shows for all users (esp. mobile)
   useEffect(() => {
@@ -962,6 +963,17 @@ export default function BuildFlowController({ existingProjectId, initialPrompt, 
     }
 
     setBuildState(newState)
+    
+    // Auto-switch to preview tab on mobile when build completes
+    setBuildMobileTab('preview')
+    
+    // Show first build hint if never shown before
+    if (typeof window !== 'undefined') {
+      const hasSeenHint = localStorage.getItem('hatch_first_build_hint_seen')
+      if (!hasSeenHint) {
+        setTimeout(() => setShowFirstBuildHint(true), 600)
+      }
+    }
     
     // No auto-advance to review - user clicks "Finish & Review" button
   }
@@ -2246,7 +2258,7 @@ export default function GeneratedPage() {
                 
                 {/* Mobile Preview Panel - visible when preview tab active */}
                 {buildMobileTab === 'preview' && previewSections.length > 0 && (
-                  <div className="flex-1 flex lg:hidden flex-col overflow-hidden">
+                  <div className="flex-1 flex lg:hidden flex-col overflow-hidden relative">
                     <FullSitePreviewFrame 
                       sections={previewSections}
                       deviceView="mobile"
@@ -2258,6 +2270,71 @@ export default function GeneratedPage() {
                         keywords: brandConfig.seo.keywords || ''
                       } : undefined}
                     />
+                    
+                    {/* First Build Hint Overlay */}
+                    <AnimatePresence>
+                      {showFirstBuildHint && (
+                        <motion.div
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          exit={{ opacity: 0 }}
+                          className="absolute inset-0 z-20 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4"
+                          onClick={() => {
+                            setShowFirstBuildHint(false)
+                            localStorage.setItem('hatch_first_build_hint_seen', 'true')
+                          }}
+                        >
+                          <motion.div
+                            initial={{ opacity: 0, scale: 0.95, y: 10 }}
+                            animate={{ opacity: 1, scale: 1, y: 0 }}
+                            exit={{ opacity: 0, scale: 0.95, y: 10 }}
+                            className="bg-zinc-900 border border-zinc-800 rounded-xl p-5 max-w-xs w-full shadow-2xl"
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <div className="flex items-center gap-3 mb-4">
+                              <div className="w-10 h-10 rounded-lg bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center">
+                                <Check className="w-5 h-5 text-emerald-400" />
+                              </div>
+                              <div>
+                                <h3 className="text-base font-semibold text-white">Section Built!</h3>
+                                <p className="text-xs text-zinc-500">Here&apos;s your live preview</p>
+                              </div>
+                            </div>
+                            
+                            <div className="space-y-3 mb-5">
+                              <div className="flex items-start gap-3">
+                                <div className="w-6 h-6 rounded bg-zinc-800 flex items-center justify-center flex-shrink-0 mt-0.5">
+                                  <Edit3 className="w-3 h-3 text-zinc-400" />
+                                </div>
+                                <div>
+                                  <p className="text-sm text-white font-medium">Tap to refine</p>
+                                  <p className="text-xs text-zinc-500">Type changes in the input below</p>
+                                </div>
+                              </div>
+                              <div className="flex items-start gap-3">
+                                <div className="w-6 h-6 rounded bg-zinc-800 flex items-center justify-center flex-shrink-0 mt-0.5">
+                                  <ArrowRight className="w-3 h-3 text-zinc-400" />
+                                </div>
+                                <div>
+                                  <p className="text-sm text-white font-medium">Click Next</p>
+                                  <p className="text-xs text-zinc-500">Move to the next section</p>
+                                </div>
+                              </div>
+                            </div>
+                            
+                            <button
+                              onClick={() => {
+                                setShowFirstBuildHint(false)
+                                localStorage.setItem('hatch_first_build_hint_seen', 'true')
+                              }}
+                              className="w-full py-2.5 bg-white text-black text-sm font-medium rounded-lg active:bg-zinc-200 transition-colors"
+                            >
+                              Got it
+                            </button>
+                          </motion.div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
                   </div>
                 )}
                 

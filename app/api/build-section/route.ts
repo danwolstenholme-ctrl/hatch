@@ -238,22 +238,35 @@ For mobile screens, include a working hamburger menu:
 5. Use AnimatePresence + motion.div for smooth open/close animation
 6. Close menu when a link is clicked: onClick={() => setIsMenuOpen(false)}
 
+CRITICAL STYLING for hamburger button:
+- Make it HIGH CONTRAST - white or light colored icon on dark backgrounds
+- Use a visible background: bg-zinc-800 or bg-white/10 with padding
+- Icon should be clearly visible: text-white or a bright color
+- Add rounded corners: rounded-lg p-2
+- NEVER make the hamburger icon the same color as the header background
+
 Example pattern:
-{/* Mobile hamburger button */}
-<button className="md:hidden" onClick={() => setIsMenuOpen(!isMenuOpen)}>
-  {isMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+{/* Mobile hamburger button - HIGH CONTRAST */}
+<button 
+  className="md:hidden p-2 rounded-lg bg-zinc-800 hover:bg-zinc-700 transition-colors" 
+  onClick={() => setIsMenuOpen(!isMenuOpen)}
+>
+  {isMenuOpen ? <X className="w-6 h-6 text-white" /> : <Menu className="w-6 h-6 text-white" />}
 </button>
 
-{/* Mobile menu */}
+{/* Mobile menu - slides down */}
 <AnimatePresence>
   {isMenuOpen && (
     <motion.div
-      initial={{ opacity: 0, y: -10 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -10 }}
-      className="absolute top-full left-0 right-0 md:hidden bg-zinc-900 border-b border-zinc-800"
+      initial={{ opacity: 0, height: 0 }}
+      animate={{ opacity: 1, height: 'auto' }}
+      exit={{ opacity: 0, height: 0 }}
+      className="absolute top-full left-0 right-0 md:hidden bg-zinc-900 border-b border-zinc-800 shadow-xl"
     >
-      {/* Mobile nav links */}
+      {/* Mobile nav links with good padding */}
+      <div className="p-4 space-y-2">
+        {/* links here */}
+      </div>
     </motion.div>
   )}
 </AnimatePresence>
