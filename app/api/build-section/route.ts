@@ -206,8 +206,8 @@ Or use CSS variables / Tailwind arbitrary values: bg-[${brandConfig.colors.prima
 
   // Forbidden elements per section type - prevents scope bleed
   const forbiddenBySectionType: Record<string, string[]> = {
-    header: ['hero banner', 'pricing table', 'testimonials', 'footer', 'contact form', 'services grid', 'team section', 'FAQ accordion'],
-    hero: ['navigation menu', 'footer', 'pricing table', 'testimonials', 'contact form', 'FAQ accordion', 'team section'],
+    header: ['hero banner', 'hero section', 'large headline with CTA below', 'full-width background images', 'pricing table', 'testimonials', 'footer', 'contact form', 'services grid', 'team section', 'FAQ accordion'],
+    hero: ['navigation menu', 'nav bar', 'footer', 'pricing table', 'testimonials', 'contact form', 'FAQ accordion', 'team section'],
     services: ['navigation', 'hero banner', 'footer', 'pricing table', 'contact form', 'testimonials'],
     features: ['navigation', 'hero banner', 'footer', 'pricing table', 'contact form', 'testimonials'],
     pricing: ['navigation', 'hero banner', 'footer', 'contact form', 'testimonials', 'services grid'],
@@ -221,10 +221,47 @@ Or use CSS variables / Tailwind arbitrary values: bg-[${brandConfig.colors.prima
     gallery: ['navigation', 'footer', 'pricing table', 'contact form', 'hero banner'],
   }
 
+  // What each section type SHOULD contain - explicit scope definition
+  const sectionScopeDefinitions: Record<string, string> = {
+    header: `A HEADER/NAVIGATION is ONLY:
+- A compact horizontal bar (typically 60-80px tall)
+- Logo on the left
+- Navigation links (horizontal on desktop, hamburger menu on mobile)
+- Optional CTA button on the right
+- Optional glass/blur effect on scroll
+A HEADER IS NOT a hero section. It should NOT contain large headlines, taglines, feature descriptions, or call-to-action areas below it.`,
+    hero: `A HERO SECTION is:
+- The first major content section BELOW the header
+- Contains the main headline and value proposition
+- Usually has a CTA button
+- May include an image, illustration, or background
+- Takes up significant viewport height (often 80-100vh)`,
+    services: `A SERVICES section lists 3-6 service offerings in cards or a grid. Brief descriptions, icons, maybe links to learn more.`,
+    features: `A FEATURES section highlights key product/service features. Grid of feature cards with icons, titles, and short descriptions.`,
+    pricing: `A PRICING section shows pricing tiers/plans. 2-4 cards with plan names, prices, feature lists, and CTA buttons.`,
+    testimonials: `A TESTIMONIALS section shows customer quotes. Cards with quote text, customer name, photo/avatar, and company.`,
+    contact: `A CONTACT section has a form (name, email, message) and/or contact details (address, phone, email links).`,
+    footer: `A FOOTER is the bottom section with copyright, links, social icons. Typically darker background, multiple columns.`,
+    about: `An ABOUT section tells the company/person story. Bio text, team intro, mission statement.`,
+    team: `A TEAM section shows team member cards with photos, names, titles.`,
+    faq: `A FAQ section has expandable question/answer pairs, usually with an accordion pattern.`,
+    cta: `A CTA (Call-to-Action) section is a focused banner encouraging one specific action. Big headline + button.`,
+    gallery: `A GALLERY section displays images in a grid or masonry layout. Lightbox on click optional.`,
+  }
+
+  const scopeDefinition = sectionScopeDefinitions[templateType] || ''
   const forbiddenList = forbiddenBySectionType[templateType] || []
-  const forbiddenInstruction = forbiddenList.length > 0 
-    ? `\n## FORBIDDEN ELEMENTS (DO NOT INCLUDE)\n${forbiddenList.map(i => `- ${i}`).join('\n')}\nFocus ONLY on the ${templateType} content.`
-    : ''
+  
+  const sectionConstraintBlock = `
+## ⚠️ CRITICAL: SECTION TYPE CONSTRAINT ⚠️
+You are building a "${templateType.toUpperCase()}" section. This is NOT a full page. This is ONE component.
+
+${scopeDefinition}
+
+${forbiddenList.length > 0 ? `### FORBIDDEN IN THIS SECTION TYPE:
+${forbiddenList.map(i => `❌ ${i}`).join('\n')}
+
+If the user's prompt seems to ask for something outside this section's scope, build what IS appropriate for a ${templateType} and ignore the out-of-scope request.` : ''}`
 
   // Special instructions for headers/navs to ensure mobile menu works
   const mobileNavInstructions = (templateType === 'header' || templateType === 'nav')
@@ -276,6 +313,8 @@ Example pattern:
   return `You are The Architect. You build high-quality, production-ready React components using Tailwind CSS.
 DO NOT include any "powered by" text or AI branding in the output - just clean, professional code.
 
+${sectionConstraintBlock}
+
 ## YOUR MISSION
 Build a "${sectionName}" section for a website.
 Description: ${sectionDescription}
@@ -296,13 +335,12 @@ ${getComponentReference(templateType)}
 - Fully responsive (mobile-first, md: and lg: breakpoints).
 - Accessible (aria-labels, semantic HTML).
 - Modern, clean design with generous whitespace.
-- Use <section> as the root element.
+- Use <${templateType === 'header' || templateType === 'nav' ? 'header' : 'section'}> as the root element.
 - Use placeholder images from "https://placehold.co/600x400/e2e8f0/1e293b?text=Image" if needed.
 ${mobileNavInstructions}
 ${brandInstructions}
 ${chronosphereContext}
 ${previousContext}
-${forbiddenInstruction}
 ${sparseInstruction}
 
 ## OUTPUT FORMAT
