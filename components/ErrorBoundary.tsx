@@ -41,42 +41,17 @@ export default class ErrorBoundary extends Component<Props, State> {
     console.error('[SYSTEM_FAILURE] Component crash detected:', error)
     this.props.onError?.(error, errorInfo)
     
-    // Initiate Self-Healing Protocol
-    this.initiateSelfHealing(error, errorInfo)
+    // Show error state - actual healing happens in SectionBuilder via refiner
+    this.showErrorRecovery()
   }
 
-  async initiateSelfHealing(error: Error, errorInfo: React.ErrorInfo) {
-    try {
-      this.setState({ healStatus: 'analyzing' })
-      
-      const response = await fetch('/api/heal', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          error: error.message,
-          componentStack: errorInfo.componentStack,
-          timestamp: new Date().toISOString()
-        })
-      })
-      
-      if (response.ok) {
-        this.setState({ healStatus: 'patching' })
-        
-        // Simulate patching delay for visual feedback
-        setTimeout(() => {
-          this.setState({ healStatus: 'resolved' })
-          
-          // Auto-reload after success
-          setTimeout(() => {
-            this.setState({ hasError: false, error: null, isHealing: false, healStatus: 'idle' })
-          }, 1000)
-        }, 1500)
-      } else {
-        this.setState({ healStatus: 'failed' })
-      }
-    } catch (e) {
+  showErrorRecovery() {
+    // Simulate quick analysis then show failed state for manual retry
+    this.setState({ healStatus: 'analyzing' })
+    
+    setTimeout(() => {
       this.setState({ healStatus: 'failed' })
-    }
+    }, 1500)
   }
 
   render() {

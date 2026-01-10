@@ -465,6 +465,10 @@ function DemoCommandBar({
   sectionName = 'Section',
   onNextSection,
   isLastSection = false,
+  refinerSuggestions = [],
+  isAnalyzing = false,
+  hasCode = false,
+  chatMessages = [],
 }: {
   stage: BuildStage
   prompt: string
@@ -479,28 +483,85 @@ function DemoCommandBar({
   sectionName?: string
   onNextSection: () => void
   isLastSection?: boolean
+  refinerSuggestions?: string[]
+  isAnalyzing?: boolean
+  hasCode?: boolean
+  chatMessages?: {role: 'user' | 'assistant', content: string}[]
 }) {
   const [showAiSummary, setShowAiSummary] = useState(true)
-  const isInitialState = stage === 'input' && !reasoning
+  const chatEndRef = useRef<HTMLDivElement>(null)
   
-  const placeholderText = isInitialState 
+  // Auto-scroll chat
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' })
+  }, [chatMessages])
+  
+  // Simple logic: if we have code, we're in refine mode. If not, we're in build/chat mode.
+  const isInBuildMode = !hasCode && stage === 'input'
+  
+  const placeholderText = isInBuildMode
     ? (SECTION_PLACEHOLDERS[sectionName] || 'Describe what you want...')
-    : "What should change?"
+    : hasCode ? "What should change?" : "Chat with AI..."
   
-  const inputValue = isInitialState ? prompt : refinePrompt
-  const setInputValue = isInitialState ? setPrompt : setRefinePrompt
-  const handleSubmit = isInitialState ? () => onBuild(inputValue) : handleUserRefine
-  const buttonText = isInitialState ? "Build" : "Refine"
+  const inputValue = isInBuildMode ? prompt : refinePrompt
+  const setInputValue = isInBuildMode ? setPrompt : setRefinePrompt
+  const handleSubmit = isInBuildMode ? () => onBuild(inputValue) : handleUserRefine
+  const buttonText = isInBuildMode ? "Build" : (hasCode ? "Refine" : "Send")
   
   return (
     <div className="space-y-2">
-      {/* AI understood summary - show after generation */}
-      {!isInitialState && reasoning && (
+      {/* Chat messages - show conversation when no code yet */}
+      {!hasCode && chatMessages && chatMessages.length > 0 && (
+        <div className="max-h-48 overflow-y-auto space-y-2 pb-2 border-b border-zinc-800/50">
+          {chatMessages.map((msg, i) => (
+            <div key={i} className={`text-sm ${msg.role === 'user' ? 'text-zinc-400' : 'text-emerald-300'}`}>
+              <span className="text-[10px] uppercase tracking-wider text-zinc-600 mr-2">
+                {msg.role === 'user' ? 'You' : 'AI'}
+              </span>
+              {msg.content}
+            </div>
+          ))}
+          {isUserRefining && (
+            <div className="text-sm text-zinc-500 flex items-center gap-2">
+              <RefreshCw className="w-3 h-3 animate-spin" />
+              Thinking...
+            </div>
+          )}
+          <div ref={chatEndRef} />
+        </div>
+      )}
+      
+      {/* AI understood summary - show when there's reasoning and code */}
+      {hasCode && reasoning && (
         <AiUnderstoodSummary
           reasoning={reasoning}
           isExpanded={showAiSummary}
           onToggle={() => setShowAiSummary(!showAiSummary)}
         />
+      )}
+      
+      {/* Refiner Suggestions - show after build */}
+      {hasCode && (isAnalyzing || refinerSuggestions.length > 0) && (
+        <div className="border-t border-zinc-700/50 pt-2">
+          <div className="flex items-center gap-2 mb-2">
+            <Sparkles className="w-3 h-3 text-emerald-400" />
+            <span className="text-[10px] font-medium text-emerald-400 uppercase tracking-wider">Suggestions</span>
+            {isAnalyzing && <RefreshCw className="w-2.5 h-2.5 text-zinc-500 animate-spin" />}
+          </div>
+          {refinerSuggestions.length > 0 && (
+            <div className="flex flex-wrap gap-1.5">
+              {refinerSuggestions.map((suggestion, i) => (
+                <button
+                  key={i}
+                  onClick={() => setRefinePrompt(suggestion)}
+                  className="px-2.5 py-1.5 text-[11px] text-zinc-400 bg-zinc-800/50 hover:bg-emerald-500/10 hover:text-emerald-300 rounded-lg border border-transparent hover:border-emerald-500/30 transition-all"
+                >
+                  {suggestion.length > 40 ? suggestion.slice(0, 40) + '...' : suggestion}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
       )}
       
       <div className="flex items-stretch gap-2">
@@ -530,7 +591,7 @@ function DemoCommandBar({
         </div>
         
         {/* Next Section button for demo users after build */}
-        {!isInitialState && (
+        {hasCode && (
           <button
             onClick={onNextSection}
             className="flex items-center gap-1.5 px-4 py-3 rounded-xl bg-white text-zinc-900 active:bg-zinc-300 hover:bg-zinc-100 text-xs font-medium transition-all whitespace-nowrap"
@@ -684,6 +745,9 @@ export default function SectionBuilder({
   const [showAiSummary, setShowAiSummary] = useState(true) // Show AI understood summary by default
   const [isExplaining, setIsExplaining] = useState(false)
   const [isDreaming, setIsDreaming] = useState(false)
+  
+  // Conversation state - for chatting with refiner
+  const [chatMessages, setChatMessages] = useState<{role: 'user' | 'assistant', content: string}[]>([])
   
   // Refiner suggestions state - auto-populated after build
   const [refinerSuggestions, setRefinerSuggestions] = useState<string[]>([])
@@ -1475,8 +1539,38 @@ ${code.slice(0, 3000)}`,
       return
     }
     
+    // If no code, treat as a chat/help message instead of error
     if (!generatedCode) {
-      setError('No code to refine - please build first')
+      const userMsg = refinePrompt.trim()
+      // Add user message to chat immediately
+      setChatMessages(prev => [...prev, { role: 'user', content: userMsg }])
+      setRefinePrompt('')
+      
+      // Call refiner in help mode with conversation history
+      try {
+        const response = await fetch('/api/refine-section', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            message: userMsg,
+            sectionName: section.name,
+            conversationHistory: chatMessages,
+            currentCode: generatedCode,
+          }),
+        })
+        
+        if (response.ok) {
+          const { response: aiResponse } = await response.json()
+          // Add AI response to chat
+          setChatMessages(prev => [...prev, { role: 'assistant', content: aiResponse }])
+        } else {
+          setError('Failed to get response')
+        }
+      } catch (err) {
+        setError('Something went wrong')
+      } finally {
+        setIsUserRefining(false)
+      }
       return
     }
 
@@ -2091,6 +2185,10 @@ ${code.slice(0, 3000)}`,
                   reasoning={reasoning}
                   onNextSection={handleNextSection}
                   isLastSection={isLastSection}
+                  refinerSuggestions={refinerSuggestions}
+                  isAnalyzing={isAnalyzing}
+                  hasCode={!!generatedCode}
+                  chatMessages={chatMessages}
                 />
               </div>
             )}

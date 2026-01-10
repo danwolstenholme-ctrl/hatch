@@ -953,11 +953,13 @@ export default function BuildFlowController({ existingProjectId, initialPrompt, 
       )
     )
 
-    // Demo mode: track sections built for soft nudge
-    if (!isSignedIn) {
+    // Demo mode: track UNIQUE sections built for soft nudge
+    // Only increment if this section wasn't already completed
+    if (!isSignedIn && !buildState.completedSections.includes(currentSection.id)) {
       const newCount = demoSectionsBuilt + 1
       setDemoSectionsBuilt(newCount)
-      if (newCount === 3) {
+      // Show nudge only after completing ALL demo sections (header, hero, footer = 3)
+      if (newCount >= sectionsForBuild.length) {
         setShowDemoNudge(true)
       }
     }

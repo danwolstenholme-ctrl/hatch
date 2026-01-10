@@ -52,7 +52,8 @@ export default function GeneratingModal({ isOpen, stageIndex }: GeneratingModalP
   }, [isOpen])
   
   const currentStage = BUILD_STAGES[Math.min(stageIndex, BUILD_STAGES.length - 1)]
-  const progressPercent = Math.min(95, ((stageIndex) / BUILD_STAGES.length) * 100 + (elapsedSeconds * 1.5))
+  // Slower progress: ~0.8% per second means 60 seconds to reach ~50% from time alone
+  const progressPercent = Math.min(90, ((stageIndex) / BUILD_STAGES.length) * 100 + (elapsedSeconds * 0.8))
 
   return (
     <AnimatePresence>
@@ -136,6 +137,11 @@ export default function GeneratingModal({ isOpen, stageIndex }: GeneratingModalP
                   />
                 </div>
               </div>
+              
+              {/* Time hint */}
+              <p className="text-center text-[11px] text-zinc-600 mb-3">
+                {elapsedSeconds > 20 ? 'Complex designs take 30-60s' : ''}
+              </p>
               
               {/* Stage dots */}
               <div className="flex items-center justify-center gap-3">
