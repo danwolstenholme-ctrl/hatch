@@ -690,6 +690,25 @@ export default function SectionBuilder({
     setIsPreviewReady(false)
   }, [generatedCode])
 
+  // Restore from localStorage on client mount (handles SSR hydration mismatch)
+  // This is needed because useState initial values are set during SSR when localStorage isn't available
+  useEffect(() => {
+    if (typeof window === 'undefined') return
+    if (isSignedIn) return // Only for guests/demo users
+    if (generatedCode) return // Already have code, don't overwrite
+    if (stage === 'generating') return // Don't interrupt generation
+    
+    // Try to find any saved preview
+    const preview = getAnySavedPreview()
+    if (preview?.code) {
+      setGeneratedCode(preview.code)
+      setReasoning(preview.reasoning || '')
+      if (preview.prompt) setPrompt(preview.prompt)
+      setStage('complete')
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []) // Run once on mount
+
   // Paywall Logic
   const { tier } = useSubscription()
   const isPaidTier = tier === 'architect' || tier === 'visionary' || tier === 'singularity'
