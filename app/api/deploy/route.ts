@@ -498,12 +498,22 @@ export default function RootLayout({
       }
       
       // Extract and add Lucide icon imports if needed
-      const hasLucideImport = prepared.includes("from 'lucide-react'") || prepared.includes('from "lucide-react"')
-      if (!hasLucideImport) {
-        const icons = extractLucideIcons(prepared)
-        if (icons.length > 0) {
-          const lucideImport = `import { ${icons.join(', ')} } from 'lucide-react'`
-          // Add after 'use client'
+      const usedIcons = extractLucideIcons(prepared)
+      if (usedIcons.length > 0) {
+        const hasLucideImport = prepared.includes("from 'lucide-react'") || prepared.includes('from "lucide-react"')
+        
+        if (hasLucideImport) {
+          // Merge missing icons into existing import
+          const existingImportMatch = prepared.match(/import\s*\{([^}]+)\}\s*from\s*['"]lucide-react['"]/)
+          if (existingImportMatch) {
+            const existingIcons = existingImportMatch[1].split(',').map(s => s.trim()).filter(Boolean)
+            const allIcons = [...new Set([...existingIcons, ...usedIcons])]
+            const newImport = `import { ${allIcons.join(', ')} } from 'lucide-react'`
+            prepared = prepared.replace(/import\s*\{[^}]+\}\s*from\s*['"]lucide-react['"]/, newImport)
+          }
+        } else {
+          // Add new lucide import after 'use client'
+          const lucideImport = `import { ${usedIcons.join(', ')} } from 'lucide-react'`
           prepared = prepared.replace(
             /('use client'|'use client';|"use client"|"use client";)(\s*)/,
             `$1\n${lucideImport}\n`
