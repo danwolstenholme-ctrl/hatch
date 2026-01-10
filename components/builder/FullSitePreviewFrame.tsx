@@ -411,7 +411,34 @@ ${Array.from(allLucideImports).map((name) => {
     * { margin: 0; padding: 0; box-sizing: border-box; }
     body { background: #09090b; color: #fff; }
     ::-webkit-scrollbar { width: 0px; background: transparent; }
+    a { cursor: pointer; }
   </style>
+  <script>
+    // Block ALL navigation in preview - it's a preview, not a live site
+    document.addEventListener('click', function(e) {
+      var target = e.target;
+      while (target && target !== document) {
+        if (target.tagName === 'A' || target.tagName === 'BUTTON') {
+          var href = target.getAttribute('href');
+          // Allow anchor links that scroll within the page
+          if (href && href.startsWith('#')) {
+            // Smooth scroll to section
+            var sectionId = href.slice(1);
+            var element = document.getElementById(sectionId) || document.querySelector('[id$="' + sectionId + '"]');
+            if (element) {
+              e.preventDefault();
+              element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+            return;
+          }
+          // Block all other navigation
+          e.preventDefault();
+          return;
+        }
+        target = target.parentElement;
+      }
+    }, true);
+  </script>
 </head>
 <body>
   <div id="root"></div>
@@ -426,7 +453,7 @@ ${Array.from(allLucideImports).map((name) => {
       var fillStyle = fill ? { position: 'absolute', height: '100%', width: '100%', inset: 0, objectFit: 'cover', ...style } : style;
       return <img src={src} alt={alt || ''} className={className} style={fillStyle} {...rest} />;
     };
-    var Link = ({ href, children, ...props }) => <a href={href} {...props}>{children}</a>;
+    var Link = ({ href, children, ...props }) => <a href={href} onClick={(e) => { e.preventDefault(); }} {...props}>{children}</a>;
     var Head = ({ children }) => null;
     var Script = (props) => null;
     const getPath = () => window.location.hash?.slice(1) || '/';
