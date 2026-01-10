@@ -215,10 +215,10 @@ export default function DashboardPage() {
       </AnimatePresence>
 
       {/* Header */}
-      <header className="mb-8">
-        <div className="flex items-start justify-between gap-4">
+      <header className="mb-6 sm:mb-8">
+        <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
           <div>
-            <h1 className="text-lg font-medium text-white mb-1">
+            <h1 className="text-xl sm:text-lg font-semibold text-white mb-1">
               Welcome back, {firstName}
             </h1>
             <p className="text-sm text-zinc-500">
@@ -230,7 +230,7 @@ export default function DashboardPage() {
           <button
             onClick={handleOpenWizard}
             disabled={isCreating || isAtLimit}
-            className="text-sm text-emerald-400 hover:text-emerald-300 transition-colors disabled:opacity-50"
+            className="w-full sm:w-auto px-5 py-3 sm:py-2 text-sm font-medium rounded-lg bg-emerald-500 hover:bg-emerald-400 text-black transition-all active:scale-[0.98] disabled:opacity-50 disabled:pointer-events-none"
           >
             {isAtLimit ? 'Upgrade for more' : '+ New Project'}
           </button>
@@ -238,15 +238,41 @@ export default function DashboardPage() {
       </header>
 
       {/* Stats */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-px bg-zinc-800/50 rounded-md overflow-hidden mb-10">
+      <div className="grid grid-cols-2 gap-3 sm:gap-px sm:bg-zinc-800/50 rounded-xl sm:rounded-md overflow-hidden mb-8 sm:mb-10">
         <StatCell label="Projects" value={stats.totalProjects} suffix={tierConfig.limit !== Infinity ? `/${tierConfig.limit}` : ''} />
         <StatCell label="Deployed" value={stats.deployed} highlight={stats.deployed > 0} />
         <StatCell label="In Progress" value={stats.building} />
         <StatCell label="Sections Built" value={stats.completedSections} />
       </div>
 
-      {/* Main Content */}
-      <div className="grid lg:grid-cols-3 gap-8">
+      {/* Main Content - Reordered for mobile: Quick Actions first on mobile, sidebar on desktop */}
+      <div className="grid lg:grid-cols-3 gap-6 lg:gap-8">
+        
+        {/* Quick Actions - Shows first on mobile, hidden on desktop (shown in sidebar instead) */}
+        {projects.length > 0 && (
+          <div className="lg:hidden">
+            <div className="flex gap-3">
+              <button
+                onClick={handleOpenWizard}
+                disabled={isAtLimit}
+                className="flex-1 flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black transition-all active:scale-[0.98] disabled:opacity-50"
+              >
+                <Zap className="w-4 h-4" />
+                New Project
+              </button>
+              {projects.length > 0 && projects[0] && (
+                <Link
+                  href={`/builder?project=${projects[0].id}`}
+                  className="flex-1 flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium rounded-xl bg-zinc-800/80 hover:bg-zinc-800 text-white transition-all active:scale-[0.98] border border-zinc-700/50"
+                >
+                  <Rocket className="w-4 h-4" />
+                  Continue
+                </Link>
+              )}
+            </div>
+          </div>
+        )}
+
         {/* Projects List */}
         <div className="lg:col-span-2">
           <div className="flex items-center justify-between mb-4">
@@ -259,17 +285,31 @@ export default function DashboardPage() {
           </div>
 
           {projects.length === 0 ? (
-            <div className="rounded-md border border-zinc-800/60 bg-zinc-900/30 px-6 py-12 text-center">
-              <h3 className="text-lg font-medium text-white mb-2">No projects yet</h3>
-              <p className="text-sm text-zinc-500 max-w-sm mx-auto mb-6">
-                Create your first project to start building.
+            <div className="rounded-xl border border-zinc-800/60 bg-gradient-to-b from-zinc-900/50 to-zinc-950 px-6 py-10 sm:py-12 text-center">
+              {/* Animated egg icon */}
+              <div className="mb-6 flex justify-center">
+                <motion.div
+                  initial={{ scale: 0.9, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ duration: 0.4 }}
+                  className="w-16 h-16 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center"
+                >
+                  <span className="text-3xl">🥚</span>
+                </motion.div>
+              </div>
+              <h3 className="text-xl font-semibold text-white mb-2">Ready to hatch something?</h3>
+              <p className="text-sm text-zinc-400 max-w-sm mx-auto mb-8">
+                Describe your website idea and watch it come to life. Build, preview, and ship — all in minutes.
               </p>
               <button
                 onClick={handleOpenWizard}
-                className="px-4 py-2 text-sm font-medium text-black bg-white rounded-md hover:bg-zinc-200 transition-colors"
+                className="w-full sm:w-auto px-8 py-4 sm:py-3 text-base sm:text-sm font-semibold text-black bg-emerald-500 hover:bg-emerald-400 rounded-xl sm:rounded-lg transition-all active:scale-[0.98] shadow-lg shadow-emerald-500/20"
               >
-                Create First Project
+                🚀 Create Your First Project
               </button>
+              <p className="mt-4 text-xs text-zinc-600">
+                Or <Link href="/demo" className="text-emerald-500 hover:text-emerald-400">try the demo</Link> first
+              </p>
             </div>
           ) : (
             <div className="rounded-md border border-zinc-800/60 overflow-hidden">
@@ -435,11 +475,11 @@ export default function DashboardPage() {
 
 function StatCell({ label, value, suffix = '', highlight = false }: { label: string; value: number; suffix?: string; highlight?: boolean }) {
   return (
-    <div className={`px-4 py-3 ${highlight ? 'bg-emerald-500/5' : 'bg-zinc-900/50'}`}>
-      <p className="text-[11px] text-zinc-500 mb-0.5">{label}</p>
-      <p className="text-lg font-medium text-white tabular-nums">
+    <div className={`px-4 py-4 rounded-xl sm:rounded-none border border-zinc-800/60 sm:border-0 ${highlight ? 'bg-emerald-500/5' : 'bg-zinc-900/50'}`}>
+      <p className="text-xs text-zinc-500 mb-1">{label}</p>
+      <p className="text-2xl sm:text-lg font-semibold text-white tabular-nums">
         {value}
-        {suffix && <span className="text-zinc-600 text-sm">{suffix}</span>}
+        {suffix && <span className="text-zinc-600 text-base sm:text-sm">{suffix}</span>}
       </p>
     </div>
   )
