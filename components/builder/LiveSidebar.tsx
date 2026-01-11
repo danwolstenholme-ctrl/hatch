@@ -212,10 +212,10 @@ export default function LiveSidebar({
               {userTier !== 'demo' && (
                 <button
                   onClick={onAddPage}
-                  className="text-[10px] text-emerald-400 hover:text-emerald-300 flex items-center gap-0.5"
+                  className="text-xs text-emerald-400 hover:text-emerald-300 active:text-emerald-200 flex items-center gap-1 py-1 px-1.5 -mr-1 rounded-md hover:bg-emerald-500/10 active:bg-emerald-500/20 min-h-[32px]"
                 >
-                  <Plus className="w-3 h-3" />
-                  Add
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>Add</span>
                 </button>
               )}
             </div>
@@ -228,7 +228,7 @@ export default function LiveSidebar({
                 return (
                   <div key={page.id} className="group relative">
                     {isEditing ? (
-                      <div className="flex items-center gap-1 px-2 py-1.5">
+                      <div className="flex items-center gap-1.5 px-2 py-1">
                         <input
                           type="text"
                           value={editingPageName}
@@ -248,17 +248,17 @@ export default function LiveSidebar({
                             setEditingPageId(null)
                           }}
                           placeholder="Page name"
-                          className="flex-1 bg-zinc-800 border border-zinc-700 rounded px-2 py-1 text-xs text-white outline-none focus:border-emerald-500"
+                          className="flex-1 bg-zinc-800 border border-zinc-700 rounded px-2.5 py-2 text-sm text-white outline-none focus:border-emerald-500"
                           autoFocus
                         />
                       </div>
                     ) : (
                       <button
                         onClick={() => onSelectPage?.(page.id)}
-                        className={`w-full flex items-center gap-2 px-2.5 py-2 rounded-lg transition-colors text-left ${
+                        className={`w-full flex items-center gap-2 px-2.5 py-2.5 rounded-lg transition-colors text-left min-h-[44px] ${
                           isCurrentPage 
                             ? 'bg-emerald-500/10 border border-emerald-500/30' 
-                            : 'hover:bg-zinc-800/50 border border-transparent'
+                            : 'hover:bg-zinc-800/50 active:bg-zinc-800 border border-transparent'
                         }`}
                       >
                         <Globe className={`w-3.5 h-3.5 flex-shrink-0 ${
@@ -275,19 +275,21 @@ export default function LiveSidebar({
                       </button>
                     )}
                     
-                    {/* Page actions on hover */}
+                    {/* Page actions - visible on hover (desktop) or when selected (mobile) */}
                     {!isEditing && userTier !== 'demo' && (
-                      <div className="absolute right-1.5 top-1/2 -translate-y-1/2 flex items-center gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity bg-zinc-900/95 rounded px-0.5">
+                      <div className={`absolute right-1.5 top-1/2 -translate-y-1/2 flex items-center gap-1 transition-opacity bg-zinc-900/95 rounded px-1 ${
+                        isCurrentPage ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'
+                      }`}>
                         <button
                           onClick={(e) => {
                             e.stopPropagation()
                             setEditingPageId(page.id)
                             setEditingPageName(page.name)
                           }}
-                          className="p-0.5 rounded hover:bg-zinc-700"
+                          className="p-1.5 rounded hover:bg-zinc-700 active:bg-zinc-600"
                           aria-label="Rename page"
                         >
-                          <Type className="w-3 h-3 text-zinc-500" />
+                          <Type className="w-3.5 h-3.5 text-zinc-400" />
                         </button>
                         {canDelete && (
                           <button
@@ -295,10 +297,10 @@ export default function LiveSidebar({
                               e.stopPropagation()
                               onDeletePage?.(page.id)
                             }}
-                            className="p-0.5 rounded hover:bg-red-500/20"
+                            className="p-1.5 rounded hover:bg-red-500/20 active:bg-red-500/30"
                             aria-label="Delete page"
                           >
-                            <Trash2 className="w-3 h-3 text-zinc-500 hover:text-red-400" />
+                            <Trash2 className="w-3.5 h-3.5 text-zinc-400 hover:text-red-400" />
                           </button>
                         )}
                       </div>
