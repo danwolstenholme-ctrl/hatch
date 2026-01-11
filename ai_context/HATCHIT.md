@@ -318,7 +318,7 @@ All changes sync to Supabase
 **Ship Dropdown:**
 ```
 ┌─────────────────────────────┐
-│ 🚀 Deploy to HatchIt        │  → Creates hatchitsites.dev subdomain
+│ 🚀 Deploy to HatchIt        │  → Creates hatchit.dev subdomain
 │ 🐙 Push to GitHub           │  → OAuth flow, creates repo, pushes full Next.js
 │ 📦 Download ZIP             │  → Full source code, ready to run
 │ 🌐 Custom Domain            │  → Visionary+ only, connects user's domain
@@ -575,7 +575,7 @@ All section code combined into single page.tsx
     ↓
 POST /api/deploy with wrapped code
     ↓
-Vercel API creates deployment to hatchitsites.dev
+Vercel API creates deployment to hatchit.dev
     ↓
 2-second delay → Redirect to /dashboard/projects/[id]?deployed=true&deploymentId=xxx
     ↓
@@ -618,7 +618,7 @@ User clicks "Custom Domain"
     ↓
 POST /api/domain
     ↓
-Returns DNS instructions (CNAME to hatchitsites.dev)
+Returns DNS instructions (CNAME to hatchit.dev)
     ↓
 User configures DNS
     ↓
@@ -1030,7 +1030,7 @@ As of January 11, 2026:
 - ✅ Device preview toggle (mobile/tablet/desktop)
 - ✅ Ship dropdown (Deploy, GitHub, ZIP, Custom Domain)
 - ✅ GitHub integration (OAuth + push)
-- ✅ Vercel deployment (hatchitsites.dev subdomains)
+- ✅ Vercel deployment (hatchit.dev subdomains)
 - ✅ Deployment status polling
 - ✅ ZIP export with full Next.js project
 - ✅ Self-Healing auto-fix (Visionary+)

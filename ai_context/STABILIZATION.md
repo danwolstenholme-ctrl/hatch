@@ -150,7 +150,7 @@ After user deployed a full site successfully:
 - Section state reset logic in SectionBuilder is solid - resets all fields on dbSection.id change
 - buildState.sectionCode is properly maintained when navigating between sections
 - handleRebuild and handleRemix functions exist but unused (dead code) - refine flow covers the use case
-- Dashboard derived URL display working: `https://${project.deployed_slug}.hatchitsites.dev`
+- Dashboard derived URL display working: `https://${project.deployed_slug}.hatchit.dev`
 
 ### 11 Jan 2026 - Deploy Failure Prevention
 Added safeguards to prevent build failures reaching Vercel:
@@ -174,3 +174,33 @@ Added safeguards to prevent build failures reaching Vercel:
 - ✅ Rate limiting in place (20 req/min per user)
 - ✅ useMemo/useCallback properly used for performance
 - ✅ Loading states comprehensive throughout builder
+
+### 11 Jan 2026 - Deployment Infrastructure Fix (Major)
+**Problem:** Sites deploying to wrong domain with wrong team, no error visibility
+
+**Root Cause:**
+- Code referenced `hatchit.dev` but Vercel has `*.hatchit.dev` wildcard
+- Team ID was wrong - domain is on `team_jFQEvL36dljJxRCn3ekJ9WdF` (hatchitdev)
+- No deployment tracking - errors invisible to users
+
+**Fixes Applied:**
+- ✅ Global replace: `hatchit.dev` → `hatchit.dev`
+- ✅ Global replace: team ID → `team_jFQEvL36dljJxRCn3ekJ9WdF`
+- ✅ Vercel dashboard URLs → `vercel.com/hatchitdev`
+- ✅ Deployment tracking: deployment_id, deploy_status, deploy_error, deploy_logs_url, deployed_at
+- ✅ New `updateBuildDeployStatus()` function
+- ✅ Deployments tab shows real status, errors, logs links
+- ✅ Image naming conflict fix: Lucide `Image` → `ImageIcon` when next/image used
+- ✅ Dashboard billing page with real Stripe portal
+- ✅ New APIs: `/api/subscription/billing-info`, `/api/subscription/portal`
+
+**Known Limitation:** Multi-page NOT implemented (single-page only)
+
+---
+
+## What's Next (Priority Order)
+
+1. **Test deployment end-to-end** - Deploy a real site, verify it goes to correct domain
+2. **Session 3: Component extraction** - Break up 2,690-line BuildFlowController
+3. **Session 4: Design system** - Shared `/components/ui/` primitives
+4. **Multi-page** - If users request it
