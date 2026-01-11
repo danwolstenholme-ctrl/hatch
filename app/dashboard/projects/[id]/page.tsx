@@ -4,7 +4,7 @@ import { useCallback, useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useParams, useRouter, useSearchParams } from 'next/navigation'
 import { motion, AnimatePresence } from 'framer-motion'
-import { CheckCircle, XCircle, Loader2, ExternalLink, AlertTriangle } from 'lucide-react'
+import { CheckCircle, XCircle, Loader2, ExternalLink, AlertTriangle, Globe, Copy, Check } from 'lucide-react'
 import type { DbProject, DbSection, DbBrandConfig, DbBuild } from '@/lib/supabase'
 
 function formatDate(value: string | undefined) {
@@ -44,13 +44,27 @@ export default function ProjectConfigPage() {
   // Deployment status from URL params
   const justDeployed = searchParams?.get('deployed') === 'true'
   const deploymentId = searchParams?.get('deploymentId')
+  const tabParam = searchParams?.get('tab') as 'overview' | 'brand' | 'seo' | 'pages' | 'deployments' | 'domain' | null
 
   const [project, setProject] = useState<DbProject | null>(null)
   const [sections, setSections] = useState<DbSection[]>([])
   const [builds, setBuilds] = useState<DbBuild[]>([])
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
-  const [activeTab, setActiveTab] = useState<'overview' | 'brand' | 'seo' | 'pages' | 'deployments'>('overview')
+  const [activeTab, setActiveTab] = useState<'overview' | 'brand' | 'seo' | 'pages' | 'deployments' | 'domain'>(
+    tabParam && ['overview', 'brand', 'seo', 'pages', 'deployments', 'domain'].includes(tabParam) ? tabParam : 'overview'
+  )
+  
+  // Domain state
+  const [customDomain, setCustomDomain] = useState('')
+  const [domainStatus, setDomainStatus] = useState<{
+    loading: boolean
+    error: string | null
+    success: boolean
+    dns: { type: string; name: string; value: string } | null
+    verified: boolean
+  }>({ loading: false, error: null, success: false, dns: null, verified: false })
+  const [copiedDns, setCopiedDns] = useState(false)
   
   // Deployment status tracking
   const [deployStatus, setDeployStatus] = useState<{
@@ -419,8 +433,8 @@ export default function ProjectConfigPage() {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-6 border-b border-zinc-800/50">
-        {(['overview', 'brand', 'seo', 'pages', 'deployments'] as const).map((tab) => (
+      <div className="flex gap-6 border-b border-zinc-800/50 overflow-x-auto">
+        {(['overview', 'brand', 'seo', 'pages', 'deployments', 'domain'] as const).map((tab) => (
           <button
             key={tab}
             onClick={() => setActiveTab(tab)}
@@ -1060,6 +1074,238 @@ export default function ProjectConfigPage() {
               </Link>
             </div>
           )}
+        </div>
+      )}
+
+      {activeTab === 'domain' && (
+        <div className="space-y-6 max-w-2xl">
+          {/* Custom Domain Setup */}
+          <div className="border border-zinc-800/50 rounded-md p-5 bg-zinc-900/30">
+            <div className="flex items-start gap-3 mb-4">
+              <div className="p-2 bg-amber-500/10 rounded-lg">
+                <Globe className="w-5 h-5 text-amber-500" />
+              </div>
+              <div>
+                <h3 className="text-sm font-medium text-white">Custom Domain</h3>
+                <p className="text-xs text-zinc-500 mt-0.5">
+                  Connect your own domain to this project (Visionary tier required)
+                </p>
+              </div>
+            </div>
+
+            {!project.deployed_slug ? (
+              <div className="bg-zinc-800/50 rounded-lg p-4 text-center">
+                <p className="text-sm text-zinc-400 mb-3">
+                  Deploy your project first to connect a custom domain
+                </p>
+                <Link
+                  href={`/builder?project=${project.id}`}
+                  className="text-sm text-emerald-400 hover:text-emerald-300"
+                >
+                  Open Builder →
+                </Link>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {/* Current domain info */}
+                <div className="bg-zinc-800/30 rounded-lg p-3">
+                  <p className="text-xs text-zinc-500 mb-1">Current URL</p>
+                  <a
+                    href={`https://${project.deployed_slug}.hatchit.dev`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-sm text-emerald-400 hover:text-emerald-300 flex items-center gap-1"
+                  >
+                    {project.deployed_slug}.hatchit.dev
+                    <ExternalLink className="w-3 h-3" />
+                  </a>
+                </div>
+
+                {/* Add domain form */}
+                <div className="space-y-3">
+                  <label className="block">
+                    <span className="text-xs text-zinc-500">Your Domain</span>
+                    <input
+                      type="text"
+                      value={customDomain}
+                      onChange={(e) => setCustomDomain(e.target.value.toLowerCase().trim())}
+                      placeholder="example.com or www.example.com"
+                      className="mt-1 w-full bg-zinc-800/50 border border-zinc-700 rounded-lg px-3 py-2.5 text-sm text-white placeholder-zinc-600 outline-none focus:border-emerald-500 transition-colors"
+                    />
+                  </label>
+
+                  <button
+                    onClick={async () => {
+                      if (!customDomain || !project.deployed_slug) return
+                      
+                      setDomainStatus({ loading: true, error: null, success: false, dns: null, verified: false })
+                      
+                      try {
+                        const res = await fetch('/api/domain', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({
+                            domain: customDomain,
+                            projectSlug: project.deployed_slug,
+                          }),
+                        })
+                        
+                        const data = await res.json()
+                        
+                        if (!res.ok) {
+                          setDomainStatus({
+                            loading: false,
+                            error: data.error || 'Failed to add domain',
+                            success: false,
+                            dns: null,
+                            verified: false,
+                          })
+                          return
+                        }
+                        
+                        setDomainStatus({
+                          loading: false,
+                          error: null,
+                          success: true,
+                          dns: data.dns,
+                          verified: data.verified,
+                        })
+                      } catch {
+                        setDomainStatus({
+                          loading: false,
+                          error: 'Network error',
+                          success: false,
+                          dns: null,
+                          verified: false,
+                        })
+                      }
+                    }}
+                    disabled={domainStatus.loading || !customDomain}
+                    className="w-full py-2.5 px-4 bg-emerald-600 hover:bg-emerald-500 disabled:bg-zinc-700 disabled:text-zinc-500 text-white text-sm font-medium rounded-lg transition-colors flex items-center justify-center gap-2"
+                  >
+                    {domainStatus.loading ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" />
+                        Adding domain...
+                      </>
+                    ) : (
+                      'Add Domain'
+                    )}
+                  </button>
+                </div>
+
+                {/* Error message */}
+                {domainStatus.error && (
+                  <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3">
+                    <p className="text-sm text-red-400">{domainStatus.error}</p>
+                  </div>
+                )}
+
+                {/* DNS Instructions */}
+                {domainStatus.success && domainStatus.dns && (
+                  <div className="bg-emerald-500/5 border border-emerald-500/20 rounded-lg p-4 space-y-4">
+                    <div className="flex items-start gap-2">
+                      <CheckCircle className="w-4 h-4 text-emerald-500 mt-0.5 flex-shrink-0" />
+                      <div>
+                        <p className="text-sm font-medium text-emerald-400">Domain added!</p>
+                        <p className="text-xs text-zinc-400 mt-1">
+                          Now configure your DNS to point to our servers
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="bg-zinc-900/50 rounded-lg p-3 space-y-2">
+                      <p className="text-xs text-zinc-500 font-medium uppercase tracking-wide">
+                        Add this {domainStatus.dns.type} record at your DNS provider:
+                      </p>
+                      
+                      <div className="grid grid-cols-3 gap-2 text-sm">
+                        <div>
+                          <p className="text-xs text-zinc-600">Type</p>
+                          <p className="text-white font-mono">{domainStatus.dns.type}</p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-zinc-600">Name</p>
+                          <p className="text-white font-mono">{domainStatus.dns.name}</p>
+                        </div>
+                        <div>
+                          <p className="text-xs text-zinc-600">Value</p>
+                          <div className="flex items-center gap-1.5">
+                            <p className="text-white font-mono text-xs truncate">{domainStatus.dns.value}</p>
+                            <button
+                              onClick={() => {
+                                navigator.clipboard.writeText(domainStatus.dns!.value)
+                                setCopiedDns(true)
+                                setTimeout(() => setCopiedDns(false), 2000)
+                              }}
+                              className="p-1 hover:bg-zinc-700 rounded transition-colors flex-shrink-0"
+                            >
+                              {copiedDns ? (
+                                <Check className="w-3 h-3 text-emerald-400" />
+                              ) : (
+                                <Copy className="w-3 h-3 text-zinc-500" />
+                              )}
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="text-xs text-zinc-500 space-y-1">
+                      <p>• DNS changes can take up to 48 hours to propagate</p>
+                      <p>• SSL certificate will be automatically provisioned</p>
+                      <p>• Both www and non-www will work after setup</p>
+                    </div>
+
+                    {!domainStatus.verified && (
+                      <button
+                        onClick={async () => {
+                          if (!customDomain || !project.deployed_slug) return
+                          
+                          setDomainStatus(prev => ({ ...prev, loading: true }))
+                          
+                          try {
+                            const res = await fetch(`/api/domain?domain=${customDomain}&projectSlug=${project.deployed_slug}`)
+                            const data = await res.json()
+                            
+                            setDomainStatus(prev => ({
+                              ...prev,
+                              loading: false,
+                              verified: data.verified,
+                            }))
+                          } catch {
+                            setDomainStatus(prev => ({ ...prev, loading: false }))
+                          }
+                        }}
+                        disabled={domainStatus.loading}
+                        className="w-full py-2 px-3 bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-sm rounded-lg transition-colors"
+                      >
+                        {domainStatus.loading ? 'Checking...' : 'Check Verification Status'}
+                      </button>
+                    )}
+
+                    {domainStatus.verified && (
+                      <div className="flex items-center gap-2 text-emerald-400">
+                        <CheckCircle className="w-4 h-4" />
+                        <span className="text-sm font-medium">Domain verified and active!</span>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+
+          {/* Info card */}
+          <div className="border border-zinc-800/50 rounded-md p-4 bg-zinc-900/30">
+            <h4 className="text-xs text-zinc-500 uppercase tracking-wide mb-2">How it works</h4>
+            <ol className="text-sm text-zinc-400 space-y-2 list-decimal list-inside">
+              <li>Enter your domain above (e.g., mysite.com)</li>
+              <li>Copy the DNS record to your domain provider (GoDaddy, Namecheap, Cloudflare, etc.)</li>
+              <li>Wait for DNS propagation (usually 5-30 minutes, up to 48h)</li>
+              <li>Your site will be live at your custom domain with HTTPS</li>
+            </ol>
+          </div>
         </div>
       )}
     </div>
