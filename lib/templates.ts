@@ -606,17 +606,17 @@ export const getOptionalSections = (template: Template): Section[] => {
 // =============================================================================
 
 // Build state for tracking progress
+// SIMPLIFIED: Removed refinement tracking (sectionRefined, sectionChanges)
+// Refinement now just updates sectionCode directly - no separate state machine
 export interface BuildState {
   templateId: string
   currentSectionIndex: number
   completedSections: string[]
   skippedSections: string[]
-  sectionCode: Record<string, string> // sectionId -> generated code
-  sectionRefined: Record<string, boolean> // sectionId -> was it refined by Architect?
-  sectionChanges: Record<string, string[]> // sectionId -> what Architect changed
-  // Gemini final audit (optional, end-of-build)
+  sectionCode: Record<string, string> // sectionId -> generated code (updated on rebuild)
+  // Audit (optional, end-of-build)
   finalAuditComplete: boolean
-  finalAuditChanges: string[] | null // What Gemini found/fixed, null = not run yet
+  finalAuditChanges: string[] | null
   auditScores?: {
     accessibility: number
     performance: number
@@ -632,8 +632,6 @@ export const createInitialBuildState = (templateId: string): BuildState => ({
   completedSections: [],
   skippedSections: [],
   sectionCode: {},
-  sectionRefined: {},
-  sectionChanges: {},
   finalAuditComplete: false,
   finalAuditChanges: null,
 })

@@ -640,8 +640,6 @@ export default function BuildFlowController({ existingProjectId, initialPrompt, 
         if (s.status === 'complete') {
           state.completedSections.push(s.section_id)
           if (s.code) state.sectionCode[s.section_id] = s.code
-          if (s.refined) state.sectionRefined[s.section_id] = true
-          if (s.refinement_changes) state.sectionChanges[s.section_id] = s.refinement_changes
         }
       })
       
@@ -788,8 +786,6 @@ export default function BuildFlowController({ existingProjectId, initialPrompt, 
         if (s.status === 'complete') {
           state.completedSections.push(s.section_id)
           if (s.code) state.sectionCode[s.section_id] = s.code
-          if (s.refined) state.sectionRefined[s.section_id] = true
-          if (s.refinement_changes) state.sectionChanges[s.section_id] = s.refinement_changes
         }
       })
       const firstPending = dbSectionsData.findIndex((s: DbSection) => s.status === 'pending' || s.status === 'building')
@@ -896,8 +892,6 @@ export default function BuildFlowController({ existingProjectId, initialPrompt, 
         if (s.status === 'complete') {
           state.completedSections.push(s.section_id)
           if (s.code) state.sectionCode[s.section_id] = s.code
-          if (s.refined) state.sectionRefined[s.section_id] = true
-          if (s.refinement_changes) state.sectionChanges[s.section_id] = s.refinement_changes
         } else if (s.status === 'skipped') {
           state.skippedSections.push(s.section_id)
         }
@@ -929,34 +923,29 @@ export default function BuildFlowController({ existingProjectId, initialPrompt, 
     return dbSections.find(s => s.section_id === section.id) || null
   }, [getCurrentSection, dbSections])
 
-  const handleSectionComplete = async (
-    code: string,
-    refined: boolean,
-    refinementChanges?: string[]
-  ) => {
+  // SIMPLIFIED: Just takes code - no refinement tracking
+  const handleSectionComplete = async (code: string) => {
     if (!buildState) return
 
     const currentSection = getCurrentSection()
     const dbSection = getCurrentDbSection()
     if (!currentSection || !dbSection) return
 
-    // Save completion state but DON'T auto-advance - let user review first
+    // Mark section complete with the new/updated code
+    // completedSections is a Set-like array - only add if not already present
+    const alreadyCompleted = buildState.completedSections.includes(currentSection.id)
     const newState: BuildState = {
       ...buildState,
-      completedSections: [...buildState.completedSections, currentSection.id],
+      completedSections: alreadyCompleted 
+        ? buildState.completedSections 
+        : [...buildState.completedSections, currentSection.id],
       sectionCode: { ...buildState.sectionCode, [currentSection.id]: code },
-      sectionRefined: { ...buildState.sectionRefined, [currentSection.id]: refined },
-      sectionChanges: refinementChanges 
-        ? { ...buildState.sectionChanges, [currentSection.id]: refinementChanges }
-        : buildState.sectionChanges,
-      // DON'T auto-increment: currentSectionIndex stays the same
-      // User clicks "Next Section" to advance via handleNextSection
     }
 
     setDbSections(prev => 
       prev.map(s => 
         s.id === dbSection.id 
-          ? { ...s, status: 'complete' as const, code, refined, refinement_changes: refinementChanges || null }
+          ? { ...s, status: 'complete' as const, code }
           : s
       )
     )

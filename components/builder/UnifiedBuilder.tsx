@@ -86,8 +86,6 @@ export default function UnifiedBuilder({
       if (s.status === 'complete' && s.code) {
         state.completedSections.push(s.section_id)
         state.sectionCode[s.section_id] = s.code
-        if (s.refined) state.sectionRefined[s.section_id] = true
-        if (s.refinement_changes) state.sectionChanges[s.section_id] = s.refinement_changes
       } else if (s.status === 'skipped') {
         state.skippedSections.push(s.section_id)
       }
@@ -228,17 +226,17 @@ export default function UnifiedBuilder({
     }
   }, [buildState.currentSectionIndex, templateSections.length])
 
-  const handleSectionComplete = useCallback((code: string, refined: boolean, refinementChanges?: string[]) => {
+  // SIMPLIFIED: Just takes code - no refinement tracking
+  const handleSectionComplete = useCallback((code: string) => {
     if (!currentSection || !currentDbSection) return
 
+    const alreadyCompleted = buildState.completedSections.includes(currentSection.id)
     const newState: BuildState = {
       ...buildState,
-      completedSections: [...buildState.completedSections.filter(id => id !== currentSection.id), currentSection.id],
+      completedSections: alreadyCompleted 
+        ? buildState.completedSections 
+        : [...buildState.completedSections, currentSection.id],
       sectionCode: { ...buildState.sectionCode, [currentSection.id]: code },
-      sectionRefined: { ...buildState.sectionRefined, [currentSection.id]: refined },
-      sectionChanges: refinementChanges 
-        ? { ...buildState.sectionChanges, [currentSection.id]: refinementChanges }
-        : buildState.sectionChanges,
     }
 
     setBuildState(newState)
@@ -246,7 +244,7 @@ export default function UnifiedBuilder({
     // Update sections array
     const newSections = sections.map(s => 
       s.id === currentDbSection.id 
-        ? { ...s, status: 'complete' as const, code, refined, refinement_changes: refinementChanges || null }
+        ? { ...s, status: 'complete' as const, code }
         : s
     )
     setSections(newSections)

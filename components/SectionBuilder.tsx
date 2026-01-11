@@ -628,7 +628,7 @@ interface SectionBuilderProps {
   section: Section
   dbSection: DbSection
   projectId: string
-  onComplete: (code: string, refined: boolean, refinementChanges?: string[]) => void
+  onComplete: (code: string) => void  // SIMPLIFIED: Just code, no refinement tracking
   onNextSection: () => void
   isLastSection?: boolean
   allSectionsCode: Record<string, string>
@@ -641,7 +641,8 @@ interface SectionBuilderProps {
   onOpenHatch?: () => void
 }
 
-type BuildStage = 'input' | 'generating' | 'refining' | 'complete'
+// SIMPLIFIED: No more refinement stage - just input/generating/complete
+type BuildStage = 'input' | 'generating' | 'complete'
 
 export default function SectionBuilder({
   section,
@@ -985,7 +986,7 @@ export default function SectionBuilder({
     setRefined(true)
     setRefinementChanges(prev => [`Singularity: ${suggestion.reason}`, ...prev])
     setReasoning(suggestion.reason)
-    onComplete(suggestion.code, true, [`Singularity: ${suggestion.reason}`])
+    onComplete(suggestion.code)
     setSuggestion(null)
   }
 
@@ -1039,7 +1040,7 @@ export default function SectionBuilder({
       const fixMsg = "Auto-fixed crash: " + errorMsg.slice(0, 30) + "..."
       setRefinementChanges(prev => [...prev, fixMsg])
       setHasSelfHealed(true)
-      onComplete(generatedCode, true, [...refinementChanges, fixMsg])
+      onComplete(generatedCode)
       setIsSelfHealing(false)
       onHealingStateChange?.(false, fixMsg)
       return
@@ -1072,7 +1073,7 @@ export default function SectionBuilder({
       const healMessage = `Auto-fixed: ${errorMsg.slice(0, 30)}...`
       setRefinementChanges(prev => [...prev, healMessage])
       setHasSelfHealed(true)
-      onComplete(fixedCode, true, [...refinementChanges, healMessage])
+      onComplete(fixedCode)
       onHealingStateChange?.(false, healMessage)
       
     } catch (err) {
@@ -1168,7 +1169,7 @@ ${code.slice(0, 2000)}`,
     if (updated !== generatedCode) {
       setGeneratedCode(updated)
       setRefinementChanges(prev => [`Text edit: "${oldText.slice(0, 20)}..." → "${newText.slice(0, 20)}..."`, ...prev])
-      onComplete(updated, refined, [`Text edit: ${oldText} → ${newText}`])
+      onComplete(updated)
     }
   }
 
@@ -1407,7 +1408,7 @@ ${code.slice(0, 2000)}`,
       setRefined(mockChanges.length > 0)
       setRefinementChanges(mockChanges)
       setStage('complete')
-      onComplete(mockCode, mockChanges.length > 0, mockChanges)
+      onComplete(mockCode)
       return
     }
     */
@@ -1506,7 +1507,7 @@ ${code.slice(0, 2000)}`,
       }
 
       // Notify parent with generated code
-      onComplete(normalizedCode, false)
+      onComplete(normalizedCode)
       
       // Evolve style DNA (background)
       evolveUserStyle(normalizedCode)
@@ -1599,7 +1600,7 @@ ${code.slice(0, 2000)}`,
       setRefinePrompt('')
       setIsUserRefining(false)
       // NO MORE LIMITS - unlimited refinements
-      onComplete(refinedCode, true, [...refinementChanges, refinePrompt])
+      onComplete(refinedCode)
       return
     }
     */
@@ -1673,7 +1674,7 @@ ${code.slice(0, 2000)}`,
         incrementGuestRefinements()
       }
       
-      onComplete(refinedCode, true, [...refinementChanges, ...(changes || [refinePrompt])])
+      onComplete(refinedCode)
       
       // Evolve style DNA (background)
       evolveUserStyle(refinedCode)
@@ -1700,7 +1701,7 @@ ${code.slice(0, 2000)}`,
       await new Promise(resolve => setTimeout(resolve, 3000))
       setRefined(true)
       setRefinementChanges(['Optimized accessibility', 'Improved contrast', 'Refined spacing'])
-      onComplete(generatedCode, true, ['Optimized accessibility', 'Improved contrast', 'Refined spacing'])
+      onComplete(generatedCode)
       setIsArchitectPolishing(false)
       return
     }
@@ -1746,7 +1747,7 @@ ${code.slice(0, 2000)}`,
 
       setRefined(wasRefined)
       setRefinementChanges(changes || [])
-      onComplete(polishedCode || generatedCode, wasRefined, changes)
+      onComplete(polishedCode || generatedCode)
       // No more limits - unlimited polishes
       
       // Evolve style DNA (background)
@@ -2261,15 +2262,7 @@ ${code.slice(0, 2000)}`,
               </div>
             )}
 
-            {/* Refining State */}
-            {stage === 'refining' && (
-              <div className="bg-zinc-900/70 backdrop-blur-xl border border-zinc-700 rounded-lg p-3">
-                <div className="flex items-center gap-2">
-                  <RefreshCw className="w-4 h-4 text-white animate-spin" />
-                  <p className="text-sm text-white">Refining...</p>
-                </div>
-              </div>
-            )}
+
           </div>
         </div>
 
