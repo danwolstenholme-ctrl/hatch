@@ -53,8 +53,18 @@ import { Template, Section, getTemplateById, getSectionById, createInitialBuildS
 import { DbProject, DbSection, DbBrandConfig } from '@/lib/supabase'
 import { AccountSubscription } from '@/types/subscriptions'
 import { useSubscription } from '@/contexts/SubscriptionContext'
+import type { SitePage } from './builder/LiveSidebar'
 
 const OLD_WELCOME_KEYS = ['hatch_welcome_v1_seen', 'hatch_v1_welcome_seen']
+
+// Multi-page types - each page has its own sections and code
+interface PageData {
+  id: string
+  path: string // URL path e.g. '/' or '/about'
+  name: string // Display name
+  sections: string[] // Section IDs for this page
+  sectionCode: Record<string, string> // Section ID -> code mapping
+}
 
 type ReplicationData = {
   projectName?: string
@@ -195,6 +205,12 @@ export default function BuildFlowController({ existingProjectId, initialPrompt, 
   const [showFirstBuildHint, setShowFirstBuildHint] = useState(false)
   const [syntaxError, setSyntaxError] = useState<{ error: string; line?: number } | null>(null)
   const [isAutoFixing, setIsAutoFixing] = useState(false)
+
+  // Multi-page state
+  const [pages, setPages] = useState<PageData[]>([
+    { id: 'home', path: '/', name: 'Home', sections: [], sectionCode: {} }
+  ])
+  const [currentPageId, setCurrentPageId] = useState('home')
 
   // Reset legacy welcome flags so V2 intro shows for all users (esp. mobile)
   useEffect(() => {
@@ -1405,6 +1421,69 @@ export default function BuildFlowController({ existingProjectId, initialPrompt, 
     setBuildState({ ...buildState, currentSectionIndex: nextIndex })
   }
 
+  // ============================================================================
+  // MULTI-PAGE HANDLERS
+  // ============================================================================
+
+  // Add a new page
+  const handleAddPage = () => {
+    const pageCount = pages.length
+    const newPageId = `page-${Date.now()}`
+    const newPagePath = `/${newPageId.replace('page-', 'page')}`
+    const defaultName = `Page ${pageCount + 1}`
+    
+    const newPage: PageData = {
+      id: newPageId,
+      path: newPagePath,
+      name: defaultName,
+      sections: [],
+      sectionCode: {}
+    }
+    
+    setPages(prev => [...prev, newPage])
+    setCurrentPageId(newPageId)
+    
+    // Track analytics
+    track('Page Added', { pageCount: pageCount + 1 })
+  }
+
+  // Select/switch to a page
+  const handleSelectPage = (pageId: string) => {
+    setCurrentPageId(pageId)
+  }
+
+  // Rename a page
+  const handleRenamePage = (pageId: string, newName: string) => {
+    setPages(prev => prev.map(p => 
+      p.id === pageId 
+        ? { ...p, name: newName, path: pageId === 'home' ? '/' : `/${newName.toLowerCase().replace(/\s+/g, '-')}` }
+        : p
+    ))
+  }
+
+  // Delete a page
+  const handleDeletePage = (pageId: string) => {
+    // Don't delete the home page or the only remaining page
+    if (pageId === 'home' || pages.length <= 1) return
+    
+    setPages(prev => prev.filter(p => p.id !== pageId))
+    
+    // If deleting current page, switch to home
+    if (currentPageId === pageId) {
+      setCurrentPageId('home')
+    }
+  }
+
+  // Convert pages to format expected by sidebar
+  const sidebarPages: SitePage[] = useMemo(() => 
+    pages.map(p => ({
+      id: p.id,
+      path: p.path,
+      name: p.name,
+      isActive: p.id === currentPageId
+    }))
+  , [pages, currentPageId])
+
   // Assemble all section code into a full page for preview
   const assembledCode = useMemo(() => {
     if (!buildState) return ''
@@ -1571,12 +1650,12 @@ export default function BuildFlowController({ existingProjectId, initialPrompt, 
     setError(null)
     setDeploymentStatus({ status: 'deploying', message: 'Preparing deploy...' })
     
-    try {
-      // Process sections to create a valid single-file component
-      const processedSections = sectionsForBuild
-        .filter(s => buildState.sectionCode[s.id])
-        .map((section, index) => {
-          let code = buildState.sectionCode[section.id]
+    // Helper function to process sections into a single page component
+    const processPageSections = (sectionIds: string[], sectionCode: Record<string, string>) => {
+      const processedSections = sectionIds
+        .filter(id => sectionCode[id])
+        .map((id, index) => {
+          let code = sectionCode[id]
           
           // Strip directives and imports
           code = code
@@ -1596,11 +1675,10 @@ export default function BuildFlowController({ existingProjectId, initialPrompt, 
           return { code, index }
         })
 
-      // Extract Lucide icon names from ALL sections
+      // Extract Lucide icon names from sections
       const lucideIconRegex = /<([A-Z][a-zA-Z0-9]*)\s/g
       const potentialIcons = new Set<string>()
       
-      // Non-icon component names to filter out
       const nonIconComponents = [
         'AnimatePresence', 'Image', 'Link', 'Component', 'Fragment',
         'Icon', 'Icons', 'Button', 'Card', 'Section', 'Header', 'Footer',
@@ -1608,8 +1686,7 @@ export default function BuildFlowController({ existingProjectId, initialPrompt, 
         'Text', 'Title', 'Input', 'Form', 'Label', 'Modal', 'Dialog'
       ]
       
-      // Scan original code for icons
-      const fullSource = sectionsForBuild.map(s => buildState.sectionCode[s.id] || '').join('\n')
+      const fullSource = sectionIds.map(id => sectionCode[id] || '').join('\n')
       let match
       while ((match = lucideIconRegex.exec(fullSource)) !== null) {
         const name = match[1]
@@ -1618,12 +1695,11 @@ export default function BuildFlowController({ existingProjectId, initialPrompt, 
         }
       }
       
-      // Build the imports string
       const lucideImports = potentialIcons.size > 0 
         ? `import { ${Array.from(potentialIcons).join(', ')} } from 'lucide-react'\n`
         : ''
       
-      const wrappedCode = `'use client'
+      return `'use client'
 
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
@@ -1642,15 +1718,51 @@ export default function GeneratedPage() {
     </main>
   )
 }`
+    }
+    
+    try {
+      let deployBody: { code?: string; pages?: Array<{ path: string; code: string }>; projectName: string; projectId: string }
+      
+      // Check if we have multiple pages
+      if (pages.length > 1) {
+        // Multi-page deploy - send pages array
+        const deployPages = pages.map(page => {
+          // For each page, get the section code
+          // If page has its own sections, use those. Otherwise use buildState sections.
+          const pageSectionIds = page.sections.length > 0 
+            ? page.sections 
+            : sectionsForBuild.map(s => s.id)
+          const pageSectionCode = Object.keys(page.sectionCode).length > 0
+            ? page.sectionCode
+            : buildState.sectionCode
+          
+          return {
+            path: page.path,
+            code: processPageSections(pageSectionIds, pageSectionCode)
+          }
+        })
+        
+        deployBody = {
+          pages: deployPages,
+          projectName: project.name,
+          projectId: project.id,
+        }
+      } else {
+        // Single page (legacy) - send code directly
+        const sectionIds = sectionsForBuild.map(s => s.id)
+        const wrappedCode = processPageSections(sectionIds, buildState.sectionCode)
+        
+        deployBody = {
+          code: wrappedCode,
+          projectName: project.name,
+          projectId: project.id,
+        }
+      }
       
       const response = await fetch('/api/deploy', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          code: wrappedCode,
-          projectName: project.name,
-          projectId: project.id,
-        }),
+        body: JSON.stringify(deployBody),
       })
       
       const data = await response.json()
@@ -2356,6 +2468,15 @@ export default function GeneratedPage() {
                         isGenerating={false}
                         isHealing={isHealing}
                         lastHealMessage={lastHealMessage ?? undefined}
+                        pages={sidebarPages}
+                        currentPageId={currentPageId}
+                        onSelectPage={(pageId) => {
+                          handleSelectPage(pageId)
+                          setShowMobileSidebar(false)
+                        }}
+                        onAddPage={handleAddPage}
+                        onRenamePage={handleRenamePage}
+                        onDeletePage={handleDeletePage}
                         onAddSection={() => {
                           if (buildState.currentSectionIndex < sectionsForBuild.length - 1) {
                             handleNextSection()
@@ -2400,6 +2521,12 @@ export default function GeneratedPage() {
                 isGenerating={false}
                 isHealing={isHealing}
                 lastHealMessage={lastHealMessage ?? undefined}
+                pages={sidebarPages}
+                currentPageId={currentPageId}
+                onSelectPage={handleSelectPage}
+                onAddPage={handleAddPage}
+                onRenamePage={handleRenamePage}
+                onDeletePage={handleDeletePage}
                 onAddSection={() => {
                   if (buildState.currentSectionIndex < sectionsForBuild.length - 1) {
                     handleNextSection()
