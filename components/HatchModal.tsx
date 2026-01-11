@@ -158,7 +158,7 @@ export default function HatchModal({ isOpen, onClose, reason, projectSlug = '', 
                 <div className="space-y-1.5 flex-1 text-[11px]">
                   {[
                     'Unlimited AI generations',
-                    'Deploy to hatchitsites.dev',
+                    'Deploy to hatchit.dev',
                     'Full Next.js export',
                     'Push to GitHub',
                     '3 projects',

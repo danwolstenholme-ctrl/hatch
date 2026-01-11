@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { auth } from '@clerk/nextjs/server'
-import { updateProjectStatus, getProjectById } from '@/lib/db'
+import { updateProjectStatus, getProjectById, getLatestBuild, updateBuildDeployStatus } from '@/lib/db'
 
 // =============================================================================
 // CONFIRM DEPLOYMENT API
 // Called by the builder after Vercel deployment is confirmed ready
-// This actually sets the project status to 'deployed'
+// This sets the project status to 'deployed' and updates build record
 // =============================================================================
 
 export async function POST(
@@ -35,11 +35,20 @@ export async function POST(
       return NextResponse.json({ error: 'No deployment in progress' }, { status: 400 })
     }
 
+    // Update project status
     await updateProjectStatus(projectId, 'deployed', deployedSlug)
+    
+    // Update the latest build record with success status
+    const latestBuild = await getLatestBuild(projectId)
+    if (latestBuild) {
+      await updateBuildDeployStatus(latestBuild.id, 'ready', {
+        deployedAt: new Date().toISOString()
+      })
+    }
 
     return NextResponse.json({ 
       success: true,
-      url: `https://${deployedSlug}.hatchitsites.dev`
+      url: `https://${deployedSlug}.hatchit.dev`
     })
 
   } catch (error) {

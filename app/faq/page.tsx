@@ -78,7 +78,7 @@ export default function FAQPage() {
       questions: [
         {
           q: 'How does deployment work?',
-          a: 'One click. Your site goes live on a subdomain (yoursite.hatchitsites.dev) instantly. Paid plans can connect custom domains.',
+          a: 'One click. Your site goes live on a subdomain (yoursite.hatchit.dev) instantly. Paid plans can connect custom domains.',
         },
         {
           q: 'Who owns the code?',
@@ -104,7 +104,7 @@ export default function FAQPage() {
         },
         {
           q: 'What do paid plans include?',
-          a: 'Architect ($19/mo): Deploy to hatchitsites.dev, download code, 3 projects. Visionary ($49/mo): Unlimited projects, custom domains, remove branding. Singularity ($199/mo): White-label, API access, website cloning.',
+          a: 'Architect ($19/mo): Deploy to hatchit.dev, download code, 3 projects. Visionary ($49/mo): Unlimited projects, custom domains, remove branding. Singularity ($199/mo): White-label, API access, website cloning.',
         },
         {
           q: 'Can I cancel anytime?',

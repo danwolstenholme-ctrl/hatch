@@ -118,7 +118,7 @@ export default function ProjectsPage() {
                     <td className="px-4 py-3 hidden sm:table-cell">
                       {isDeployed && project.deployed_slug ? (
                         <a 
-                          href={`https://${project.deployed_slug}.hatchitsites.dev`}
+                          href={`https://${project.deployed_slug}.hatchit.dev`}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="inline-flex items-center gap-1 text-[11px] text-emerald-400 hover:text-emerald-300 transition-colors"

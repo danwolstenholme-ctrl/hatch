@@ -37,7 +37,7 @@ const features = [
     items: [
       {
         title: 'One-Click Deploy',
-        description: 'Deploy to hatchitsites.dev with a single click.',
+        description: 'Deploy to hatchit.dev with a single click.',
         status: 'active',
         tier: 'architect'
       },

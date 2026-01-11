@@ -74,7 +74,7 @@ const roadmap: RoadmapSection[] = [
         title: 'Custom Domains',
         description: 'Connect your own domain to deployed sites.',
         status: 'building',
-        details: 'Currently sites deploy to hatchitsites.dev subdomains. Soon you\'ll connect your own domain with automatic SSL.'
+        details: 'Currently sites deploy to hatchit.dev subdomains. Soon you\'ll connect your own domain with automatic SSL.'
       },
       {
         title: 'Visual Editor',

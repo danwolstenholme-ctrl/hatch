@@ -117,7 +117,7 @@ export default function ManifestoPage() {
                     &quot;Make it feel more premium.&quot;
                   </p>
                   <p>
-                    When you&apos;re happy, hit deploy. Your site goes live on hatchitsites.dev in under 30 seconds.
+                    When you&apos;re happy, hit deploy. Your site goes live on hatchit.dev in under 30 seconds.
                     No build pipelines. No server configuration. No DevOps degree required.
                   </p>
                 </div>

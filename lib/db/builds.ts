@@ -110,6 +110,11 @@ export async function createBuild(projectId: string): Promise<DbBuild | null> {
         audit_complete: false,
         audit_changes: null,
         deployed_url: null,
+        deployment_id: null,
+        deploy_status: null,
+        deploy_error: null,
+        deploy_logs_url: null,
+        deployed_at: null,
       })
       .select()
       .single()
@@ -290,23 +295,71 @@ export async function updateBuildAudit(
 }
 
 /**
- * Update build with deployment URL
+ * Update build with deployment info (when deploy is initiated)
  */
 export async function updateBuildDeployment(
   id: string,
-  deployedUrl: string
+  deployedUrl: string,
+  deploymentId?: string
 ): Promise<DbBuild | null> {
   if (!supabaseAdmin) return null
 
   const { data, error } = await supabaseAdmin
     .from('builds')
-    .update({ deployed_url: deployedUrl })
+    .update({ 
+      deployed_url: deployedUrl,
+      deployment_id: deploymentId || null,
+      deploy_status: 'building',
+      deploy_error: null,
+      deploy_logs_url: null,
+    })
     .eq('id', id)
     .select()
     .single()
 
   if (error) {
     console.error('Error updating build deployment:', error)
+    return null
+  }
+
+  return data as DbBuild
+}
+
+/**
+ * Update build deployment status
+ */
+export async function updateBuildDeployStatus(
+  id: string,
+  status: 'pending' | 'building' | 'ready' | 'failed',
+  options?: {
+    error?: string
+    logsUrl?: string
+    deployedAt?: string
+  }
+): Promise<DbBuild | null> {
+  if (!supabaseAdmin) return null
+
+  const updateData: Record<string, unknown> = { deploy_status: status }
+  
+  if (status === 'failed' && options?.error) {
+    updateData.deploy_error = options.error
+    updateData.deploy_logs_url = options.logsUrl || null
+  }
+  
+  if (status === 'ready') {
+    updateData.deployed_at = options?.deployedAt || new Date().toISOString()
+    updateData.deploy_error = null
+  }
+
+  const { data, error } = await supabaseAdmin
+    .from('builds')
+    .update(updateData)
+    .eq('id', id)
+    .select()
+    .single()
+
+  if (error) {
+    console.error('Error updating build deploy status:', error)
     return null
   }
 

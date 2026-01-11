@@ -460,12 +460,12 @@ export default function ProjectConfigPage() {
                   <span className="text-zinc-500">Site</span>
                   {project.status === 'deployed' ? (
                     <a 
-                      href={`https://${project.deployed_slug}.hatchitsites.dev`}
+                      href={`https://${project.deployed_slug}.hatchit.dev`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-emerald-400 hover:text-emerald-300 flex items-center gap-1"
                     >
-                      {project.deployed_slug}.hatchitsites.dev
+                      {project.deployed_slug}.hatchit.dev
                       <ExternalLink className="w-3 h-3" />
                     </a>
                   ) : (
@@ -912,36 +912,154 @@ export default function ProjectConfigPage() {
       )}
 
       {activeTab === 'deployments' && (
-        <div className="space-y-4">
-          {latestBuild?.deployed_url && (
-            <div className="border border-emerald-500/20 rounded-md p-4 bg-emerald-500/5">
-              <h3 className="text-xs text-emerald-400 uppercase tracking-wide mb-2">Live Site</h3>
-              <a
-                href={latestBuild.deployed_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="text-sm text-emerald-400 hover:text-emerald-300 transition-colors"
-              >
-                {latestBuild.deployed_url}
-              </a>
+        <div className="space-y-6">
+          {/* Current Deployment Status */}
+          <div className="border border-zinc-800/50 rounded-md bg-zinc-900/30 overflow-hidden">
+            <div className="px-4 py-3 border-b border-zinc-800/50">
+              <h3 className="text-xs text-zinc-500 uppercase tracking-wide">Production</h3>
             </div>
-          )}
-
-          <div className="border border-zinc-800/50 rounded-md p-4 bg-zinc-900/30">
-            <h3 className="text-xs text-zinc-500 uppercase tracking-wide mb-4">Build History</h3>
-            {builds.length === 0 ? (
-              <p className="text-sm text-zinc-500">No builds yet</p>
-            ) : (
-              <div className="space-y-2">
-                {builds.slice(0, 10).map((build) => (
-                  <div key={build.id} className="flex justify-between text-sm">
-                    <span className="text-zinc-400">v{build.version}</span>
-                    <span className="text-zinc-500">{formatDate(build.created_at)}</span>
+            <div className="p-4">
+              {project.status === 'deployed' && project.deployed_slug ? (
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 bg-emerald-500 rounded-full animate-pulse" />
+                      <span className="text-sm text-emerald-400">Live</span>
+                    </div>
+                    <a
+                      href={`https://${project.deployed_slug}.hatchit.dev`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center gap-1.5 text-sm text-zinc-300 hover:text-white transition-colors"
+                    >
+                      {project.deployed_slug}.hatchit.dev
+                      <ExternalLink className="w-3.5 h-3.5" />
+                    </a>
                   </div>
-                ))}
+                  {latestBuild?.deployed_at && (
+                    <p className="text-xs text-zinc-600">
+                      Last deployed {formatDate(latestBuild.deployed_at)}
+                    </p>
+                  )}
+                </div>
+              ) : project.deployed_slug ? (
+                <div className="space-y-3">
+                  <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 bg-amber-500 rounded-full" />
+                    <span className="text-sm text-amber-400">Deploy in progress</span>
+                  </div>
+                  <p className="text-xs text-zinc-500">
+                    Target: {project.deployed_slug}.hatchit.dev
+                  </p>
+                </div>
+              ) : (
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-zinc-600 rounded-full" />
+                  <span className="text-sm text-zinc-500">Not deployed</span>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Deployment History */}
+          <div className="border border-zinc-800/50 rounded-md bg-zinc-900/30 overflow-hidden">
+            <div className="px-4 py-3 border-b border-zinc-800/50">
+              <h3 className="text-xs text-zinc-500 uppercase tracking-wide">Deployment History</h3>
+            </div>
+            
+            {builds.length === 0 ? (
+              <div className="p-4">
+                <p className="text-sm text-zinc-500">No builds yet</p>
+              </div>
+            ) : (
+              <div className="divide-y divide-zinc-800/50">
+                {builds.slice(0, 10).map((build, index) => {
+                  const isLatest = index === 0
+                  const deployStatus = build.deploy_status
+                  const hasDeployment = build.deployed_url || build.deployment_id
+                  
+                  return (
+                    <div key={build.id} className="px-4 py-3">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-3">
+                          <span className="text-sm font-mono text-zinc-400">v{build.version}</span>
+                          {isLatest && (
+                            <span className="text-[10px] px-1.5 py-0.5 bg-zinc-800 text-zinc-400 rounded">
+                              latest
+                            </span>
+                          )}
+                          {/* Deploy status indicator */}
+                          {hasDeployment && (
+                            <span className={`text-[10px] px-1.5 py-0.5 rounded ${
+                              deployStatus === 'ready' 
+                                ? 'bg-emerald-500/20 text-emerald-400' 
+                                : deployStatus === 'failed'
+                                ? 'bg-red-500/20 text-red-400'
+                                : deployStatus === 'building'
+                                ? 'bg-blue-500/20 text-blue-400'
+                                : 'bg-zinc-800 text-zinc-500'
+                            }`}>
+                              {deployStatus === 'ready' ? 'deployed' : deployStatus || 'pending'}
+                            </span>
+                          )}
+                        </div>
+                        <span className="text-xs text-zinc-600 tabular-nums">
+                          {formatDate(build.created_at)}
+                        </span>
+                      </div>
+                      
+                      {/* Deployment details for this build */}
+                      {hasDeployment && (
+                        <div className="mt-2 pl-[60px] space-y-1">
+                          {build.deployed_url && (
+                            <a
+                              href={build.deployed_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-xs text-zinc-500 hover:text-zinc-300 transition-colors flex items-center gap-1"
+                            >
+                              {build.deployed_url}
+                              <ExternalLink className="w-3 h-3" />
+                            </a>
+                          )}
+                          {build.deploy_error && (
+                            <div className="text-xs text-red-400/80">
+                              Error: {build.deploy_error}
+                            </div>
+                          )}
+                          {build.deploy_logs_url && (
+                            <a
+                              href={build.deploy_logs_url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-xs text-zinc-600 hover:text-zinc-400 transition-colors"
+                            >
+                              View logs →
+                            </a>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  )
+                })}
               </div>
             )}
           </div>
+
+          {/* Deploy from builder CTA */}
+          {project.status !== 'deployed' && (
+            <div className="border border-dashed border-zinc-700/50 rounded-md p-4 text-center">
+              <p className="text-sm text-zinc-500 mb-3">
+                Ready to go live? Deploy your site from the Builder.
+              </p>
+              <Link
+                href={`/builder?project=${project.id}`}
+                className="text-sm text-emerald-400 hover:text-emerald-300 transition-colors"
+              >
+                Open Builder →
+              </Link>
+            </div>
+          )}
         </div>
       )}
     </div>

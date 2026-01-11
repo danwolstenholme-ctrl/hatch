@@ -53,7 +53,7 @@ export default function FeaturesPage() {
     {
       icon: <Globe className="w-6 h-6" />,
       title: 'One-Click Deploy',
-      description: 'Deploy to your own subdomain on hatchitsites.dev instantly. Multi-page sites supported. No server setup, no DNS headaches.',
+      description: 'Deploy to your own subdomain on hatchit.dev instantly. Multi-page sites supported. No server setup, no DNS headaches.',
       tier: 'Architect+',
       tierColor: 'text-emerald-400'
     },

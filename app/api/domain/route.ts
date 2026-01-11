@@ -40,13 +40,13 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Invalid domain format' }, { status: 400 })
   }
 
-  // Block adding hatchitsites.dev subdomains
-  if (domain.endsWith('hatchitsites.dev')) {
-    return NextResponse.json({ error: 'Cannot add hatchitsites.dev domains' }, { status: 400 })
+  // Block adding hatchit.dev subdomains
+  if (domain.endsWith('hatchit.dev')) {
+    return NextResponse.json({ error: 'Cannot add hatchit.dev domains' }, { status: 400 })
   }
 
   const vercelToken = process.env.VERCEL_TOKEN
-  const teamId = 'team_itec4dUtXYYa962mXb7ZnLGg'
+  const teamId = 'team_jFQEvL36dljJxRCn3ekJ9WdF'
 
   try {
     if (action === 'remove') {
@@ -135,7 +135,7 @@ export async function GET(req: NextRequest) {
   }
 
   const vercelToken = process.env.VERCEL_TOKEN
-  const teamId = 'team_itec4dUtXYYa962mXb7ZnLGg'
+  const teamId = 'team_jFQEvL36dljJxRCn3ekJ9WdF'
 
   try {
     // Check domain status

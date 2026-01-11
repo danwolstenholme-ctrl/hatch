@@ -627,7 +627,7 @@ export default function GeneratedPage() {
                             <Rocket className="w-4 h-4 text-emerald-400" />
                             <div className="flex-1">
                               <p className="text-xs font-medium text-white">Deploy</p>
-                              <p className="text-[10px] text-zinc-500">hatchitsites.dev</p>
+                              <p className="text-[10px] text-zinc-500">hatchit.dev</p>
                             </div>
                           </button>
 

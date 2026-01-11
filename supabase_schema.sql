@@ -101,6 +101,13 @@ create table public.builds (
   version_number int not null,
   audit_score int,
   
+  -- Deployment tracking
+  deployment_id text,                                          -- Vercel deployment ID
+  deploy_status text check (deploy_status in ('pending', 'building', 'ready', 'failed')),
+  deploy_error text,                                           -- Error message if failed
+  deploy_logs_url text,                                        -- Link to Vercel logs
+  deployed_at timestamptz,                                     -- When deployment succeeded
+  
   created_at timestamptz default now()
 );
 

@@ -102,6 +102,12 @@ CREATE TABLE builds (
   audit_complete BOOLEAN DEFAULT FALSE,
   audit_changes TEXT[],
   deployed_url TEXT,
+  -- Deployment tracking
+  deployment_id TEXT,                                                    -- Vercel deployment ID
+  deploy_status TEXT DEFAULT NULL CHECK (deploy_status IN ('pending', 'building', 'ready', 'failed')),
+  deploy_error TEXT,                                                     -- Error message if failed
+  deploy_logs_url TEXT,                                                  -- Link to Vercel logs
+  deployed_at TIMESTAMP WITH TIME ZONE,                                  -- When deployment succeeded
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 

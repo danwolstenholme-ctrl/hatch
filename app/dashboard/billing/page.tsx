@@ -1,172 +1,258 @@
 'use client'
 
 import { useUser } from '@clerk/nextjs'
+import { useEffect, useState } from 'react'
+import { CreditCard, Receipt, Calendar, ArrowRight, ExternalLink, Check } from 'lucide-react'
+
+interface BillingInfo {
+  currentPeriodEnd?: string
+  cancelAtPeriodEnd?: boolean
+  paymentMethod?: {
+    brand?: string
+    last4?: string
+  }
+}
 
 export default function BillingPage() {
   const { user } = useUser()
-  const accountSubscription = user?.publicMetadata?.accountSubscription as { tier?: string } | undefined
+  const [billingInfo, setBillingInfo] = useState<BillingInfo | null>(null)
+  const [loadingPortal, setLoadingPortal] = useState(false)
+  
+  const accountSubscription = user?.publicMetadata?.accountSubscription as { 
+    tier?: string
+    stripeCustomerId?: string
+    stripeSubscriptionId?: string
+  } | undefined
   const currentTier = accountSubscription?.tier || 'free'
+  const hasSubscription = currentTier !== 'free'
+
+  // Fetch billing info from Stripe
+  useEffect(() => {
+    if (hasSubscription && accountSubscription?.stripeSubscriptionId) {
+      fetch('/api/subscription/billing-info')
+        .then(res => res.ok ? res.json() : null)
+        .then(data => data && setBillingInfo(data))
+        .catch(() => {})
+    }
+  }, [hasSubscription, accountSubscription?.stripeSubscriptionId])
+
+  const openBillingPortal = async () => {
+    setLoadingPortal(true)
+    try {
+      const res = await fetch('/api/subscription/portal', { method: 'POST' })
+      if (res.ok) {
+        const { url } = await res.json()
+        window.location.href = url
+      }
+    } catch {
+      // Fallback to Stripe direct
+      window.open('https://billing.stripe.com/p/login/test_xxx', '_blank')
+    } finally {
+      setLoadingPortal(false)
+    }
+  }
 
   const plans = [
     {
       id: 'free',
       name: 'Free',
       price: 0,
-      description: 'Explore the builder',
-      features: [
-        { text: 'Unlimited AI generations', included: true },
-        { text: 'Live preview', included: true },
-        { text: '1 project', included: true },
-        { text: 'Deploy to hatchitsites.dev', included: false },
-        { text: 'Download source code', included: false },
-        { text: 'Push to GitHub', included: false },
-      ],
-      cta: currentTier === 'free' ? 'Current plan' : 'Downgrade',
-      current: currentTier === 'free',
-      free: true,
+      features: ['1 project', 'Unlimited AI generations', 'Live preview'],
     },
     {
       id: 'architect',
       name: 'Architect',
       price: 19,
-      description: 'Ship your projects',
-      features: [
-        { text: 'Unlimited AI generations', included: true },
-        { text: 'Live preview', included: true },
-        { text: '3 projects', included: true },
-        { text: 'Deploy to hatchitsites.dev', included: true },
-        { text: 'Download source code (ZIP)', included: true },
-        { text: 'Push to your GitHub', included: true },
-      ],
-      cta: currentTier === 'architect' ? 'Current plan' : 'Get started',
-      current: currentTier === 'architect',
+      features: ['3 projects', 'Deploy to hatchit.dev', 'Download source code', 'Push to GitHub'],
     },
     {
       id: 'visionary',
       name: 'Visionary',
       price: 49,
-      description: 'Professional tools',
-      features: [
-        { text: 'Everything in Architect', included: true },
-        { text: 'Unlimited projects', included: true },
-        { text: 'Custom domain', included: true },
-        { text: 'Remove HatchIt branding', included: true },
-        { text: 'The Auditor (AI quality check)', included: true },
-        { text: 'The Healer (auto-fix errors)', included: true },
-      ],
-      cta: currentTier === 'visionary' ? 'Current plan' : 'Upgrade',
-      current: currentTier === 'visionary',
+      features: ['Unlimited projects', 'Custom domain', 'Remove branding', 'AI Auditor & Healer'],
       recommended: true,
     },
     {
       id: 'singularity',
       name: 'Singularity',
       price: 199,
-      description: 'Agency & teams',
-      features: [
-        { text: 'Everything in Visionary', included: true },
-        { text: 'The Replicator (clone any site)', included: true },
-        { text: 'Commercial / white-label license', included: true },
-        { text: 'API access', included: true },
-        { text: 'Priority support', included: true },
-        { text: 'Early access to new features', included: true },
-      ],
-      cta: currentTier === 'singularity' ? 'Current plan' : 'Upgrade',
-      current: currentTier === 'singularity',
+      features: ['Everything + Replicator', 'White-label license', 'API access', 'Priority support'],
     },
   ]
 
+  const currentPlan = plans.find(p => p.id === currentTier) || plans[0]
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-8 max-w-3xl">
       <div>
         <h1 className="text-lg font-medium text-white">Billing</h1>
-        <p className="text-xs text-zinc-500 mt-1">Manage your subscription and billing</p>
+        <p className="text-xs text-zinc-500 mt-1">Manage your subscription and payment</p>
       </div>
 
-      {/* Current plan info */}
-      <div className="p-4 bg-zinc-900/50 border border-zinc-800/60 rounded-md">
-        <div className="flex items-center justify-between">
-          <div>
-            <p className="text-[10px] text-zinc-500 uppercase tracking-wider font-medium mb-1">Current plan</p>
-            <p className="text-sm font-medium text-zinc-100 capitalize">{currentTier}</p>
+      {/* Current Plan Card */}
+      <div className="border border-zinc-800/50 rounded-lg overflow-hidden">
+        <div className="p-5 bg-zinc-900/50">
+          <div className="flex items-start justify-between">
+            <div>
+              <p className="text-[10px] text-zinc-500 uppercase tracking-wider font-medium mb-1">Current Plan</p>
+              <p className="text-xl font-semibold text-white">{currentPlan.name}</p>
+              <p className="text-sm text-zinc-400 mt-1">
+                ${currentPlan.price}<span className="text-zinc-600">/month</span>
+              </p>
+            </div>
+            {hasSubscription && (
+              <button
+                onClick={openBillingPortal}
+                disabled={loadingPortal}
+                className="text-xs text-zinc-400 hover:text-white transition-colors flex items-center gap-1.5"
+              >
+                {loadingPortal ? 'Loading...' : 'Manage'} <ExternalLink className="w-3 h-3" />
+              </button>
+            )}
           </div>
-          {currentTier !== 'free' && (
-            <a 
-              href="/api/subscription/portal"
-              className="text-[11px] text-zinc-500 hover:text-zinc-300 transition-colors"
+        </div>
+
+        {/* Billing Details */}
+        {hasSubscription && (
+          <div className="border-t border-zinc-800/50 divide-y divide-zinc-800/30">
+            {/* Next Billing */}
+            <div className="p-4 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Calendar className="w-4 h-4 text-zinc-500" />
+                <div>
+                  <p className="text-xs text-zinc-400">Next billing date</p>
+                  <p className="text-sm text-zinc-200">
+                    {billingInfo?.currentPeriodEnd 
+                      ? new Date(billingInfo.currentPeriodEnd).toLocaleDateString('en-US', { 
+                          month: 'long', 
+                          day: 'numeric', 
+                          year: 'numeric' 
+                        })
+                      : 'Loading...'}
+                  </p>
+                </div>
+              </div>
+              {billingInfo?.cancelAtPeriodEnd && (
+                <span className="text-[10px] text-amber-400 bg-amber-400/10 px-2 py-1 rounded">
+                  Cancels at period end
+                </span>
+              )}
+            </div>
+
+            {/* Payment Method */}
+            <div className="p-4 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <CreditCard className="w-4 h-4 text-zinc-500" />
+                <div>
+                  <p className="text-xs text-zinc-400">Payment method</p>
+                  <p className="text-sm text-zinc-200">
+                    {billingInfo?.paymentMethod?.brand 
+                      ? `${billingInfo.paymentMethod.brand.charAt(0).toUpperCase() + billingInfo.paymentMethod.brand.slice(1)} •••• ${billingInfo.paymentMethod.last4}`
+                      : 'Loading...'}
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={openBillingPortal}
+                className="text-[11px] text-zinc-500 hover:text-zinc-300 transition-colors"
+              >
+                Update
+              </button>
+            </div>
+
+            {/* Invoices */}
+            <div className="p-4 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Receipt className="w-4 h-4 text-zinc-500" />
+                <div>
+                  <p className="text-xs text-zinc-400">Invoices</p>
+                  <p className="text-sm text-zinc-200">View billing history</p>
+                </div>
+              </div>
+              <button
+                onClick={openBillingPortal}
+                className="text-[11px] text-zinc-500 hover:text-zinc-300 transition-colors"
+              >
+                View all →
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Free tier upgrade prompt */}
+        {!hasSubscription && (
+          <div className="border-t border-zinc-800/50 p-4 bg-zinc-900/30">
+            <p className="text-xs text-zinc-500 mb-3">
+              Upgrade to deploy your sites and unlock more features.
+            </p>
+            <a
+              href="/pricing"
+              className="inline-flex items-center gap-1.5 text-xs text-emerald-400 hover:text-emerald-300 transition-colors"
             >
-              Manage subscription →
+              View plans <ArrowRight className="w-3 h-3" />
             </a>
-          )}
+          </div>
+        )}
+      </div>
+
+      {/* Quick Compare */}
+      <div>
+        <h2 className="text-sm font-medium text-zinc-300 mb-4">Compare plans</h2>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          {plans.map((plan) => (
+            <div
+              key={plan.id}
+              className={`p-4 rounded-lg border transition-all ${
+                plan.id === currentTier
+                  ? 'border-emerald-500/50 bg-emerald-500/5'
+                  : plan.recommended
+                  ? 'border-zinc-700/60 bg-zinc-900/50'
+                  : 'border-zinc-800/50 bg-zinc-900/30'
+              }`}
+            >
+              <div className="flex items-center justify-between mb-2">
+                <h3 className="text-sm font-medium text-zinc-100">{plan.name}</h3>
+                {plan.id === currentTier && (
+                  <Check className="w-3.5 h-3.5 text-emerald-400" />
+                )}
+              </div>
+              <p className="text-lg font-semibold text-white mb-3">
+                ${plan.price}<span className="text-xs text-zinc-500 font-normal">/mo</span>
+              </p>
+              <ul className="space-y-1">
+                {plan.features.slice(0, 3).map((f, i) => (
+                  <li key={i} className="text-[10px] text-zinc-500">{f}</li>
+                ))}
+              </ul>
+              {plan.id !== currentTier && (
+                <a
+                  href={plan.id === 'free' ? '#' : `/api/checkout?tier=${plan.id}`}
+                  className={`block mt-3 text-center text-[11px] py-1.5 rounded transition-colors ${
+                    plan.id === 'free'
+                      ? 'text-zinc-600 cursor-default'
+                      : currentTier === 'free' || plans.findIndex(p => p.id === plan.id) > plans.findIndex(p => p.id === currentTier)
+                      ? 'text-emerald-400 hover:text-emerald-300'
+                      : 'text-zinc-500 hover:text-zinc-400'
+                  }`}
+                >
+                  {plan.id === 'free' 
+                    ? '—' 
+                    : plans.findIndex(p => p.id === plan.id) > plans.findIndex(p => p.id === currentTier)
+                    ? 'Upgrade'
+                    : 'Downgrade'}
+                </a>
+              )}
+            </div>
+          ))}
         </div>
       </div>
 
-      {/* Plans grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
-        {plans.map((plan) => (
-          <div
-            key={plan.id}
-            className={`relative p-4 rounded-md border transition-all ${
-              plan.current
-                ? 'bg-zinc-900/50 border-zinc-700/60'
-                : plan.recommended
-                ? 'bg-zinc-900/50 border-zinc-700/60 shadow-sm hover:border-zinc-600'
-                : 'bg-zinc-900/50 border-zinc-800/60 hover:border-zinc-700'
-            }`}
-          >
-            {plan.recommended && !plan.current && (
-              <div className="absolute -top-2.5 left-3 px-2 py-0.5 bg-emerald-500 text-white text-[9px] font-medium rounded-sm">
-                RECOMMENDED
-              </div>
-            )}
-
-            <div className="mb-3">
-              <h3 className="text-sm font-medium text-zinc-100">{plan.name}</h3>
-              <p className="text-[10px] text-zinc-500">{plan.description}</p>
-            </div>
-
-            <div className="flex items-baseline gap-0.5 mb-4">
-              <span className="text-xl font-semibold text-white">${plan.price}</span>
-              <span className="text-zinc-500 text-[10px]">/mo</span>
-            </div>
-
-            <ul className="space-y-1.5 mb-4">
-              {plan.features.map((feature, i) => (
-                <li key={i} className={`flex items-start gap-2 text-[11px] ${feature.included ? 'text-zinc-400' : 'text-zinc-600'}`}>
-                  <span className={`mt-0.5 flex-shrink-0 ${feature.included ? 'text-emerald-500' : 'text-zinc-700'}`}>
-                    {feature.included ? '✓' : '—'}
-                  </span>
-                  <span>{feature.text}</span>
-                </li>
-              ))}
-            </ul>
-
-            {plan.current ? (
-              <div className="w-full py-2.5 text-center text-xs text-zinc-400 border border-zinc-700 rounded-md bg-zinc-800/50">
-                Current plan
-              </div>
-            ) : plan.free ? (
-              <div className="w-full py-2.5 text-center text-xs text-zinc-500 border border-zinc-700 rounded-md">
-                Free forever
-              </div>
-            ) : (
-              <a
-                href={`/api/checkout?tier=${plan.id}`}
-                className={`block w-full py-2.5 text-center text-xs font-medium rounded-md transition-colors active:scale-[0.98] ${
-                  plan.recommended
-                    ? 'bg-emerald-500 hover:bg-emerald-400 active:bg-emerald-600 text-white'
-                    : 'bg-zinc-800 hover:bg-zinc-700 active:bg-zinc-600 text-zinc-200'
-                }`}
-              >
-                {plan.cta}
-              </a>
-            )}
-          </div>
-        ))}
-      </div>
-
-      <p className="text-center text-[10px] text-zinc-500">
-        All plans include a 14-day money-back guarantee. Cancel anytime.
+      {/* Footer */}
+      <p className="text-[10px] text-zinc-600 text-center">
+        All plans include a 14-day money-back guarantee. 
+        {hasSubscription && (
+          <> Questions? <a href="/contact" className="text-zinc-500 hover:text-zinc-400">Contact support</a>.</>
+        )}
       </p>
     </div>
   )

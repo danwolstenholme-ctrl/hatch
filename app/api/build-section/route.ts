@@ -203,6 +203,7 @@ IMPORTANT: Apply these colors as Tailwind classes. For custom hex colors, use in
 - style={{ color: '${brandConfig.colors.accent}' }}
 Or use CSS variables / Tailwind arbitrary values: bg-[${brandConfig.colors.primary}]
 `
+    console.log('[build-section] Brand instructions generated:', brandInstructions.slice(0, 500))
   }
 
   // Forbidden elements per section type - prevents scope bleed
@@ -236,18 +237,25 @@ A HEADER IS NOT a hero section. It should NOT contain large headlines, taglines,
 - Contains the main headline and value proposition
 - Usually has a CTA button
 - May include an image, illustration, or background
-- Takes up significant viewport height (often 80-100vh)`,
-    services: `A SERVICES section lists 3-6 service offerings in cards or a grid. Brief descriptions, icons, maybe links to learn more.`,
-    features: `A FEATURES section highlights key product/service features. Grid of feature cards with icons, titles, and short descriptions.`,
-    pricing: `A PRICING section shows pricing tiers/plans. 2-4 cards with plan names, prices, feature lists, and CTA buttons.`,
-    testimonials: `A TESTIMONIALS section shows customer quotes. Cards with quote text, customer name, photo/avatar, and company.`,
-    contact: `A CONTACT section has a form (name, email, message) and/or contact details (address, phone, email links).`,
-    footer: `A FOOTER is the bottom section with copyright, links, social icons. Typically darker background, multiple columns.`,
-    about: `An ABOUT section tells the company/person story. Bio text, team intro, mission statement.`,
-    team: `A TEAM section shows team member cards with photos, names, titles.`,
-    faq: `A FAQ section has expandable question/answer pairs, usually with an accordion pattern.`,
-    cta: `A CTA (Call-to-Action) section is a focused banner encouraging one specific action. Big headline + button.`,
-    gallery: `A GALLERY section displays images in a grid or masonry layout. Lightbox on click optional.`,
+- Takes up significant viewport height (often 80-100vh)
+DO NOT include a footer, navigation, or any other section type.`,
+    services: `A SERVICES section lists 3-6 service offerings in cards or a grid. Brief descriptions, icons, maybe links to learn more. NO footer, NO navigation.`,
+    features: `A FEATURES section highlights key product/service features. Grid of feature cards with icons, titles, and short descriptions. NO footer, NO navigation.`,
+    pricing: `A PRICING section shows pricing tiers/plans. 2-4 cards with plan names, prices, feature lists, and CTA buttons. NO footer, NO navigation.`,
+    testimonials: `A TESTIMONIALS section shows customer quotes. Cards with quote text, customer name, photo/avatar, and company. NO footer, NO navigation.`,
+    contact: `A CONTACT section has a form (name, email, message) and/or contact details (address, phone, email links). NO footer, NO navigation.`,
+    footer: `A FOOTER is the bottom section with copyright, links, social icons. Typically darker background, multiple columns. This is ONLY a footer - no other content.`,
+    about: `An ABOUT section tells the company/person story. Bio text, team intro, mission statement. NO footer, NO navigation.`,
+    team: `A TEAM section shows team member cards with photos, names, titles. NO footer, NO navigation.`,
+    faq: `A FAQ section has expandable question/answer pairs, usually with an accordion pattern. NO footer, NO navigation.`,
+    cta: `A CTA (Call-to-Action) section is ONLY:
+- A single focused banner (one <section> element)
+- One compelling headline
+- One or two buttons maximum
+- Optional background gradient or image
+- NOTHING ELSE. NO footer. NO navigation. NO additional sections.
+This is a SINGLE section component, not a page.`,
+    gallery: `A GALLERY section displays images in a grid or masonry layout. Lightbox on click optional. NO footer, NO navigation.`,
   }
 
   const scopeDefinition = sectionScopeDefinitions[templateType] || ''
@@ -258,7 +266,12 @@ A HEADER IS NOT a hero section. It should NOT contain large headlines, taglines,
 
 **SECTION TYPE: ${templateType.toUpperCase()}**
 
-You are building ONLY a ${templateType.toUpperCase()} component. NOT a full page. NOT a hero. NOT a landing page. ONLY a ${templateType.toUpperCase()}.
+You are building ONLY a ${templateType.toUpperCase()} component. NOT a full page. NOT multiple sections. ONLY ONE ${templateType.toUpperCase()}.
+
+## 🚨 CRITICAL: SINGLE SECTION ONLY
+Your output must be ONE <section> or <header> or <footer> element. 
+DO NOT output multiple sections. DO NOT include a footer if building a CTA. DO NOT include navigation if building features.
+EVERY section type is ISOLATED. You build ONE thing.
 
 ## EXACT DEFINITION OF A ${templateType.toUpperCase()}:
 ${scopeDefinition || `A ${templateType} section component.`}
@@ -266,12 +279,12 @@ ${scopeDefinition || `A ${templateType} section component.`}
 ${forbiddenList.length > 0 ? `## ❌ ABSOLUTELY FORBIDDEN (DO NOT INCLUDE):
 ${forbiddenList.map(i => `- ${i}`).join('\n')}
 
-IGNORE any part of the user's prompt that asks for these forbidden elements.` : ''}
+If you include ANY of these forbidden elements, the build will FAIL. Do not include them.` : ''}
 
 ## ✅ SECTION BOUNDARY RULE:
-- Your component must ONLY render what is appropriate for a ${templateType}
-- If user asks for something that doesn't belong in a ${templateType}, politely build a proper ${templateType} instead
-- A header is ~60-80px tall. A hero is full-viewport. They are DIFFERENT THINGS.
+- Return ONLY the ${templateType} - nothing before it, nothing after it
+- One root element (<section>, <header>, or <footer>)
+- No additional components or sections stacked below
 
 ---`
 
@@ -361,12 +374,12 @@ ${sparseInstruction}
 ## OUTPUT FORMAT
 Return a JSON object with two fields:
 1. "code": The complete, runnable React component code (string).
-2. "reasoning": A short explanation of your design choices (string).
+2. "reasoning": A detailed explanation of your design choices as bullet points. Start each point with **Topic**: and explain. Include 3-5 design decisions. Example: "**Dark Aesthetic**: Deep zinc background creates depth\n**Typography-Led**: Light font weights create elegance\n**Subtle Interactions**: Hover states maintain minimal vibe"
 
 Example JSON structure:
 {
   "code": "import ...",
-  "reasoning": "I chose a grid layout because..."
+  "reasoning": "**Layout**: I chose a grid layout because it provides visual balance\n**Colors**: Used zinc palette for professional dark aesthetic\n**Typography**: Selected Inter with lighter weights for elegance"
 }
 
 ## DESIGN PHILOSOPHY
@@ -430,6 +443,9 @@ export async function POST(request: NextRequest) {
       previousSections = {},
       brandConfig = null
     } = body
+
+    // DEBUG: Log received brandConfig
+    console.log('[build-section] Received brandConfig:', JSON.stringify(brandConfig, null, 2))
 
     if (!projectId || !sectionId || !userPrompt) {
       return NextResponse.json(
@@ -518,44 +534,63 @@ export async function POST(request: NextRequest) {
     const data = await response.json()
     const responseText = data.content[0].text
     
-    console.log('Claude Raw Response:', responseText.slice(0, 500))
+    console.log('[build-section] Claude raw response length:', responseText.length)
+    console.log('[build-section] Claude response preview:', responseText.slice(0, 500))
 
     // Try to parse as JSON
     let generatedCode = ''
     let reasoning = ''
     
     try {
+      // Strategy 1: Direct JSON parse (Claude should return JSON)
       // Clean up potential markdown code blocks around the JSON
       const cleanJson = responseText.replace(/```json\n|\n```/g, '').trim()
       const parsed = JSON.parse(cleanJson)
       generatedCode = parsed.code || ''
       reasoning = parsed.reasoning || ''
+      console.log('[build-section] Strategy 1 (direct JSON) succeeded')
     } catch (e) {
-      console.error('Failed to parse Claude JSON:', e)
+      console.log('[build-section] Strategy 1 failed, trying fallbacks...')
       
       // Strategy 2: Extract JSON from markdown blocks
-      const jsonMatch = responseText.match(/```json\n([\s\S]*?)\n```/) || responseText.match(/\{[\s\S]*\}/)
+      const jsonMatch = responseText.match(/```json\n([\s\S]*?)\n```/) || responseText.match(/\{[\s\S]*"code"[\s\S]*\}/)
       if (jsonMatch) {
         try {
           const jsonStr = jsonMatch[1] || jsonMatch[0]
           const parsed = JSON.parse(jsonStr)
           generatedCode = parsed.code || ''
           reasoning = parsed.reasoning || ''
+          console.log('[build-section] Strategy 2 (JSON from markdown) succeeded')
         } catch (e2) {
-          console.error('Failed to parse extracted JSON:', e2)
+          console.log('[build-section] Strategy 2 failed:', e2)
         }
       }
 
-      // Strategy 3: Extract code block directly
+      // Strategy 3: Extract code block directly (Claude sometimes returns raw code)
       if (!generatedCode) {
         const codeMatch = responseText.match(/```(?:tsx|jsx|javascript|typescript)?\n([\s\S]*?)```/)
         if (codeMatch) {
-          generatedCode = codeMatch[1]
-          reasoning = "Generated by Claude (JSON parse failed, extracted code)."
-        } else if (responseText.includes('export default function') || responseText.includes('import React')) {
-           generatedCode = responseText
-           reasoning = "Raw output."
+          generatedCode = codeMatch[1].trim()
+          reasoning = "Generated by Claude (JSON parse failed, extracted code block)."
+          console.log('[build-section] Strategy 3 (code block extraction) succeeded')
         }
+      }
+      
+      // Strategy 4: Look for function declaration anywhere in response
+      if (!generatedCode) {
+        const funcMatch = responseText.match(/((?:export\s+default\s+)?function\s+\w+[\s\S]*?)(?:```|$)/)
+        if (funcMatch) {
+          generatedCode = funcMatch[1].trim()
+          reasoning = "Generated by Claude (extracted function)."
+          console.log('[build-section] Strategy 4 (function extraction) succeeded')
+        }
+      }
+      
+      // Strategy 5: Check if response IS the code (no wrapping)
+      if (!generatedCode && (responseText.includes('export default function') || responseText.includes('function '))) {
+        generatedCode = responseText.trim()
+        reasoning = "Raw output from Claude."
+        console.log('[build-section] Strategy 5 (raw code) succeeded')
       }
     }
 
@@ -566,9 +601,18 @@ export async function POST(request: NextRequest) {
 
     // Guard: Don't return invalid/empty code - that breaks the preview
     if (!generatedCode || !generatedCode.includes('function') || generatedCode.length < 100) {
-      console.error('Claude returned invalid/empty code. Raw response:', responseText.slice(0, 500))
+      console.error('[build-section] FAILED: Code validation failed')
+      console.error('[build-section] generatedCode length:', generatedCode?.length || 0)
+      console.error('[build-section] has function:', generatedCode?.includes('function'))
+      console.error('[build-section] Full raw response:', responseText)
       return NextResponse.json({ 
-        error: 'AI returned an invalid response. Please try again with a more specific prompt.' 
+        error: 'AI returned an invalid response. Please try again with a more specific prompt.',
+        debug: process.env.NODE_ENV === 'development' ? {
+          responseLength: responseText.length,
+          codeLength: generatedCode?.length || 0,
+          hasFunction: generatedCode?.includes('function'),
+          preview: responseText.slice(0, 200)
+        } : undefined
       }, { status: 500 })
     }
 

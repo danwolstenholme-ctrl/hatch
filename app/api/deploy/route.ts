@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { auth, clerkClient } from '@clerk/nextjs/server'
 import { track } from '@vercel/analytics/server'
 import { AccountSubscription } from '@/types/subscriptions'
-import { getLatestBuild, updateBuildDeployment, updateProjectDeploySlug } from '@/lib/db'
+import { getLatestBuild, updateBuildDeployment, updateProjectDeploySlug, updateBuildDeployStatus } from '@/lib/db'
 
 // =============================================================================
 // DEPLOYMENT API
@@ -20,7 +20,7 @@ export async function GET(req: NextRequest) {
   try {
     // Validate the URL is from our domain
     const url = new URL(checkUrl)
-    if (!url.hostname.endsWith('.hatchitsites.dev')) {
+    if (!url.hostname.endsWith('.hatchit.dev')) {
       return NextResponse.json({ error: 'Invalid URL' }, { status: 400 })
     }
     
@@ -548,6 +548,26 @@ export default function RootLayout({
         prepared = `'use client'\n${prepared}`
       }
       
+      // Handle naming conflicts between next/image and lucide-react
+      // If both are used, rename the Lucide Image to ImageIcon
+      const hasNextImage = prepared.includes("from 'next/image'") || prepared.includes('from "next/image"')
+      const hasLucideImage = /\bImage\b/.test(prepared) && 
+        (prepared.includes("from 'lucide-react'") || prepared.includes('from "lucide-react"'))
+      
+      if (hasNextImage && hasLucideImage) {
+        // Rename Lucide Image to ImageIcon in imports
+        prepared = prepared.replace(
+          /import\s*\{([^}]*)\bImage\b([^}]*)\}\s*from\s*['"]lucide-react['"]/,
+          (match, before, after) => {
+            return `import {${before}Image as ImageIcon${after}} from 'lucide-react'`
+          }
+        )
+        // Replace <Image usage that's NOT from next/image (Lucide icons are used as <Image />)
+        // This is tricky - we look for Image used as a component with Lucide-style props
+        prepared = prepared.replace(/<Image\s+className=/g, '<ImageIcon className=')
+        prepared = prepared.replace(/icon=\{Image\}/g, 'icon={ImageIcon}')
+      }
+      
       // Extract and add Lucide icon imports if needed
       const usedIcons = extractLucideIcons(prepared)
       if (usedIcons.length > 0) {
@@ -637,7 +657,7 @@ export default function Home() {
     }
 
     // Deploy to Vercel (HatchIt Sites team)
-    const response = await fetch('https://api.vercel.com/v13/deployments?teamId=team_itec4dUtXYYa962mXb7ZnLGg', {
+    const response = await fetch('https://api.vercel.com/v13/deployments?teamId=team_jFQEvL36dljJxRCn3ekJ9WdF', {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${process.env.VERCEL_TOKEN}`,
@@ -654,25 +674,43 @@ export default function Home() {
           framework: 'nextjs'
         },
         target: 'production',
-        alias: [`${slug}.hatchitsites.dev`]
+        alias: [`${slug}.hatchit.dev`]
       })
     })
 
     const deployment = await response.json()
 
     if (!response.ok) {
-      console.error('Vercel API error:', deployment)
+      console.error('Vercel API error:', JSON.stringify(deployment, null, 2))
+      console.error('Vercel API status:', response.status)
+      console.error('Deployment slug:', slug)
+      
+      // If we have a projectId, save the error to the build record
+      if (projectId) {
+        try {
+          const latestBuild = await getLatestBuild(projectId)
+          if (latestBuild) {
+            await updateBuildDeployStatus(latestBuild.id, 'failed', {
+              error: deployment.error?.message || deployment.message || 'Vercel API error',
+              logsUrl: `https://vercel.com/hatchitdev`
+            })
+          }
+        } catch (e) {
+          console.error('Failed to save error to build:', e)
+        }
+      }
+      
       return NextResponse.json(
-        { error: deployment.error?.message || 'Deployment failed' },
+        { error: deployment.error?.message || deployment.message || 'Deployment failed' },
         { status: response.status }
       )
     }
 
     // Explicitly assign the alias to ensure it's set
     // The alias in deployment request sometimes doesn't work reliably
-    const aliasUrl = `${slug}.hatchitsites.dev`
+    const aliasUrl = `${slug}.hatchit.dev`
     try {
-      const aliasResponse = await fetch(`https://api.vercel.com/v2/deployments/${deployment.id}/aliases?teamId=team_itec4dUtXYYa962mXb7ZnLGg`, {
+      const aliasResponse = await fetch(`https://api.vercel.com/v2/deployments/${deployment.id}/aliases?teamId=team_jFQEvL36dljJxRCn3ekJ9WdF`, {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${process.env.VERCEL_TOKEN}`,
@@ -685,29 +723,31 @@ export default function Home() {
       
       if (!aliasResponse.ok) {
         const aliasError = await aliasResponse.json()
-        console.error('Failed to assign alias:', aliasError)
-        // Don't fail the deployment, just log
+        console.error('Failed to assign alias:', JSON.stringify(aliasError, null, 2))
+        console.error('Alias URL attempted:', aliasUrl)
+        console.error('Deployment ID:', deployment.id)
+        // This is a critical issue - log it clearly
+        console.error('⚠️ DOMAIN ALIAS FAILED - Site will be on .vercel.app instead of .hatchit.dev')
       } else {
-        console.log(`Alias ${aliasUrl} assigned to deployment ${deployment.id}`)
+        console.log(`✅ Alias ${aliasUrl} assigned to deployment ${deployment.id}`)
       }
     } catch (aliasErr) {
       console.error('Error assigning alias:', aliasErr)
     }
 
     // The deployed URL
-    const url = `https://${slug}.hatchitsites.dev`
+    const url = `https://${slug}.hatchit.dev`
 
     // Store deployment in Supabase (builds table) if projectId provided
-    // NOTE: We set deployed_slug but keep status as 'complete' until Vercel confirms success
-    // The builder will poll /api/deploy/status and call /api/project/[id]/confirm-deploy when ready
+    // Track the deployment ID so we can check status and show errors properly
     if (projectId) {
       try {
         // Get the latest build for this project
         const latestBuild = await getLatestBuild(projectId)
         
         if (latestBuild) {
-          // Update the build with deployed URL (pending confirmation)
-          await updateBuildDeployment(latestBuild.id, url)
+          // Update the build with deployed URL and deployment ID for tracking
+          await updateBuildDeployment(latestBuild.id, url, deployment.id)
         }
         
         // Set deployed_slug so we know a deploy is in progress, but don't set status to 'deployed' yet

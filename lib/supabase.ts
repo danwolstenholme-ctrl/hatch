@@ -122,6 +122,12 @@ export interface DbBuild {
   audit_complete: boolean
   audit_changes: string[] | null
   deployed_url: string | null
+  // Deployment tracking
+  deployment_id: string | null        // Vercel deployment ID
+  deploy_status: 'pending' | 'building' | 'ready' | 'failed' | null
+  deploy_error: string | null         // Error message if failed
+  deploy_logs_url: string | null      // Link to Vercel logs
+  deployed_at: string | null          // When deployment succeeded
   created_at: string
 }
 

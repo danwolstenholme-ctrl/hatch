@@ -33,7 +33,7 @@ const TIERS = [
     description: 'Ship your projects',
     features: [
       'Unlimited AI generations',
-      'Deploy to hatchitsites.dev',
+      'Deploy to hatchit.dev',
       'Download source code (ZIP)',
       'Push to your GitHub',
       '3 projects',

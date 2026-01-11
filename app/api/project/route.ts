@@ -53,7 +53,8 @@ export async function POST(request: NextRequest) {
       templateId, 
       name, 
       sections: customSections, 
-      brand, 
+      brand,
+      brandConfig: wizardBrand,
       initialPrompt, 
       guestSections,
       // Wizard fields
@@ -74,7 +75,8 @@ export async function POST(request: NextRequest) {
     const template = templateId ? getTemplateById(templateId) : null
     
     // Build brand config from wizard data or use provided brand
-    const brandConfig = brand || (siteType ? {
+    // Support both 'brand' (legacy) and 'brandConfig' (wizard) keys
+    const finalBrand = brand || wizardBrand || (siteType ? {
       primaryColor: body.primaryColor || '#10b981',
       secondaryColor: body.secondaryColor || '#059669',
       font: body.bodyFont || 'Inter',
@@ -87,11 +89,17 @@ export async function POST(request: NextRequest) {
       }
     } : null)
 
+    // DEBUG: Log what brand config is being saved
+    console.log('[project/POST] Creating project with finalBrand:', JSON.stringify(finalBrand, null, 2))
+
     // Create project with brand config (use clerkId, not dbUser.id)
-    const project = await createProject(clerkId, name, templateId || 'website', brandConfig)
+    const project = await createProject(clerkId, name, templateId || 'website', finalBrand)
     if (!project) {
       return NextResponse.json({ error: 'Failed to create project' }, { status: 500 })
     }
+    
+    // DEBUG: Log what was saved
+    console.log('[project/POST] Created project with brand_config:', JSON.stringify(project.brand_config, null, 2))
 
     // Determine sections to create
     // Priority: wizard pages > customSections (IDs or objects) > template sections

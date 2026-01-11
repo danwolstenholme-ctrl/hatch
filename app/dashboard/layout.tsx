@@ -40,33 +40,27 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
 
   return (
     <div className="min-h-screen bg-zinc-950 text-white">
-      {/* Mobile Header - Proper height and touch targets */}
+      {/* Mobile Header */}
       <div className="lg:hidden fixed top-0 left-0 right-0 z-40 h-14 border-b border-zinc-800/50 bg-zinc-950/95 backdrop-blur-xl">
         <div className="flex items-center justify-between h-full px-4">
-          <Link href="/" className="flex items-center gap-2.5 hover:opacity-80 transition-opacity">
-            <LogoMark size={20} />
-            <span className="text-base font-semibold text-white">HatchIt</span>
-          </Link>
-          <div className="flex items-center gap-3">
-            <UserButton
-              appearance={{
-                elements: {
-                  avatarBox: "w-8 h-8 ring-1 ring-zinc-700"
-                }
-              }}
-            />
-            <button
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="flex items-center justify-center w-10 h-10 rounded-lg bg-zinc-800/60 hover:bg-zinc-800 text-zinc-400 hover:text-white transition-all active:scale-95"
-              aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
-            >
-              {mobileMenuOpen ? (
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
-              ) : (
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="4" x2="20" y1="12" y2="12"/><line x1="4" x2="20" y1="6" y2="6"/><line x1="4" x2="20" y1="18" y2="18"/></svg>
-              )}
-            </button>
-          </div>
+          <button
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+            className="flex items-center justify-center w-10 h-10 -ml-2 text-zinc-400 hover:text-white transition-all active:scale-95"
+            aria-label={mobileMenuOpen ? 'Close menu' : 'Open menu'}
+          >
+            {mobileMenuOpen ? (
+              <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+            ) : (
+              <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"><line x1="3" x2="21" y1="6" y2="6"/><line x1="3" x2="21" y1="12" y2="12"/><line x1="3" x2="21" y1="18" y2="18"/></svg>
+            )}
+          </button>
+          <UserButton
+            appearance={{
+              elements: {
+                avatarBox: "w-8 h-8 ring-1 ring-zinc-700"
+              }
+            }}
+          />
         </div>
       </div>
 
@@ -122,19 +116,6 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
                   )
                 })}
               </nav>
-              
-              {/* CTA */}
-              <div className="absolute bottom-0 left-0 right-0 p-4 border-t border-zinc-800/50 bg-zinc-900">
-                <button
-                  onClick={() => {
-                    setMobileMenuOpen(false)
-                    handleNewProject()
-                  }}
-                  className="w-full py-3.5 text-base font-medium rounded-lg bg-emerald-500 hover:bg-emerald-400 text-black transition-all active:scale-[0.98]"
-                >
-                  + New Project
-                </button>
-              </div>
             </motion.div>
           </>
         )}
@@ -143,11 +124,8 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
       <div className="relative flex min-h-screen">
         {/* Desktop Sidebar */}
         <aside className="hidden lg:flex w-48 border-r border-zinc-800/50 bg-zinc-950 flex-col fixed h-full">
-          <div className="p-4 border-b border-zinc-800/50">
-            <Link href="/" className="flex items-center gap-2 hover:opacity-80 transition-opacity">
-              <LogoMark size={18} />
-              <span className="text-sm font-medium text-white">HatchIt</span>
-            </Link>
+          <div className="h-14 flex items-center px-4 border-b border-zinc-800/50">
+            <LogoMark size={26} />
           </div>
 
           <nav className="flex-1 p-2">
@@ -167,14 +145,7 @@ export default function DashboardLayout({ children }: { children: ReactNode }) {
             })}
           </nav>
 
-          <div className="p-3 border-t border-zinc-800/50 space-y-3">
-            <button
-              onClick={handleNewProject}
-              className="w-full px-3 py-1.5 text-[13px] text-left text-emerald-400 hover:text-emerald-300 transition-colors"
-            >
-              + New Project
-            </button>
-
+          <div className="p-3 border-t border-zinc-800/50">
             <div className="flex items-center gap-2 px-2">
               <UserButton
                 appearance={{

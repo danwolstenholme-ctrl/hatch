@@ -49,4 +49,5 @@ export {
   getBuildsByProjectId,
   updateBuildAudit,
   updateBuildDeployment,
+  updateBuildDeployStatus,
 } from './builds'

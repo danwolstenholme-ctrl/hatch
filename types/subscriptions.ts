@@ -63,7 +63,7 @@ export const PRICING_TIERS: Record<string, PricingTier> = {
     architectRefinementsPerMonth: -1, // Unlimited
     features: [
       'Unlimited AI generations',
-      'Deploy to hatchitsites.dev',
+      'Deploy to hatchit.dev',
       'Download source code (ZIP)',
       'Push to your GitHub',
       '3 projects',

@@ -486,7 +486,7 @@ export default function BuildFlowController({ existingProjectId, initialPrompt, 
       color: 'emerald',
       icon: Star,
       projectLimit: 3,
-      features: ['3 Active Projects', 'Deploy to hatchitsites.dev', 'Code Download'],
+      features: ['3 Active Projects', 'Deploy to hatchit.dev', 'Code Download'],
       gradient: 'from-emerald-500 to-teal-500',
       badge: {
         wrapper: 'bg-gradient-to-r from-emerald-500/10 to-teal-500/10',
@@ -877,6 +877,9 @@ export default function BuildFlowController({ existingProjectId, initialPrompt, 
       
       const { project: proj, sections } = await response.json()
       
+      // DEBUG: Log brand_config from loaded project
+      console.log('[BuildFlowController] Loaded project brand_config:', JSON.stringify(proj.brand_config, null, 2))
+      
       // Use Singularity template if ID matches, otherwise fallback to website template
       const template = (proj.template_id === 'singularity' || proj.template_id === 'architect') ? SINGULARITY_TEMPLATE : (getTemplateById(proj.template_id) || websiteTemplate)
 
@@ -901,8 +904,12 @@ export default function BuildFlowController({ existingProjectId, initialPrompt, 
       })
       setCustomizedSections(reconstructed)
       
+      // Always set brand_config if it exists (even if empty object)
       if (proj.brand_config) {
+        console.log('[BuildFlowController] Setting brandConfig from project')
         setBrandConfig(proj.brand_config)
+      } else {
+        console.log('[BuildFlowController] WARNING: Project has no brand_config!')
       }
       
       const state = createInitialBuildState(template.id)
@@ -1705,7 +1712,7 @@ export default function GeneratedPage() {
               setDeploymentStatus({ 
                 status: 'failed', 
                 error: 'Deployment timed out. Check Vercel dashboard.',
-                logsUrl: `https://vercel.com/hatchit-sites`
+                logsUrl: `https://vercel.com/hatchitdev`
               })
               setIsDeploying(false)
             }
@@ -2186,7 +2193,7 @@ export default function GeneratedPage() {
                                 </div>
                                 <div className="flex-1 min-w-0">
                                   <p className="text-sm font-medium text-white">Deploy to HatchIt</p>
-                                  <p className="text-[10px] text-zinc-500">Live at yoursite.hatchitsites.dev</p>
+                                  <p className="text-[10px] text-zinc-500">Live at yoursite.hatchit.dev</p>
                                 </div>
                                 {isDeploying && (
                                   <div className="w-4 h-4 border-2 border-emerald-500/30 border-t-emerald-500 rounded-full animate-spin" />
