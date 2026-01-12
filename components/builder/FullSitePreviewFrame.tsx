@@ -10,13 +10,25 @@ const sanitizeSvgDataUrls = (input: string) => {
   })
 }
 
+// Design token interface for live styling
+interface DesignTokens {
+  sectionPadding: number
+  componentGap: number
+  borderRadius: number
+  headingSizeMultiplier: number
+  shadowIntensity: 'none' | 'subtle' | 'medium' | 'strong'
+  fontWeight: 'normal' | 'medium' | 'semibold' | 'bold'
+}
+
 interface FullSitePreviewFrameProps {
   sections: { id: string; code: string }[]
   deviceView: 'mobile' | 'tablet' | 'desktop'
   seo?: { title: string; description: string; keywords: string }
   editMode?: boolean
+  designTokens?: DesignTokens
   onTextEdit?: (oldText: string, newText: string, sectionId: string) => void
   onSyntaxError?: (error: string, lineNumber?: number) => void
+  onRuntimeError?: (error: string, sectionId?: string) => void
 }
 
 // =============================================================================
@@ -24,7 +36,7 @@ interface FullSitePreviewFrameProps {
 // Renders all assembled sections in an iframe - simplified for reliability
 // =============================================================================
 
-const FullSitePreviewFrame = forwardRef<HTMLIFrameElement, FullSitePreviewFrameProps>(function FullSitePreviewFrame({ sections, deviceView, seo, editMode = false, onTextEdit, onSyntaxError }, ref) {
+const FullSitePreviewFrame = forwardRef<HTMLIFrameElement, FullSitePreviewFrameProps>(function FullSitePreviewFrame({ sections, deviceView, seo, editMode = false, designTokens, onTextEdit, onSyntaxError, onRuntimeError }, ref) {
   const internalRef = useRef<HTMLIFrameElement>(null)
   
   // Expose the internal ref to parent
@@ -48,6 +60,13 @@ const FullSitePreviewFrame = forwardRef<HTMLIFrameElement, FullSitePreviewFrameP
         console.log('[Overseer] Received syntax error from iframe:', event.data.error)
         if (onSyntaxError) {
           onSyntaxError(event.data.error, event.data.line)
+        }
+      }
+      // Listen for runtime errors - pass to self-healing
+      if (event.data?.type === 'runtime-error') {
+        console.log('[Self-Healing] Received runtime error from iframe:', event.data.error)
+        if (onRuntimeError) {
+          onRuntimeError(event.data.error, event.data.sectionId)
         }
       }
     }
@@ -141,8 +160,8 @@ const FullSitePreviewFrame = forwardRef<HTMLIFrameElement, FullSitePreviewFrameP
 
     // 3. Create the App component with Error Boundary wrapper
     const appComponent = `
-      // Safe Component Wrapper to catch "got: object" errors
-      function SafeSection({ component: Component }) {
+      // Safe Component Wrapper to catch "got: object" errors and runtime errors
+      function SafeSection({ component: Component, sectionId }) {
         if (!Component) return null;
         try {
           // If it's a function (component), render it
@@ -155,18 +174,41 @@ const FullSitePreviewFrame = forwardRef<HTMLIFrameElement, FullSitePreviewFrameP
           }
           // If it's an object but not an element (likely a module export or mistake), log and skip
           console.warn('Invalid section export type:', typeof Component, Component);
+          const errMsg = 'Invalid export type: ' + typeof Component;
+          window.parent.postMessage({ type: 'runtime-error', error: errMsg, sectionId: sectionId }, '*');
           return <div className="p-4 text-red-500 border border-red-500 rounded bg-red-950/50">
             <p className="font-bold">Section Error</p>
-            <p className="text-sm opacity-75">Invalid export type: {typeof Component}</p>
+            <p className="text-sm opacity-75">{errMsg}</p>
           </div>;
         } catch (err) {
           console.error('Section render error:', err);
+          window.parent.postMessage({ type: 'runtime-error', error: err.message, sectionId: sectionId }, '*');
           return <div className="p-4 text-red-500 border border-red-500 rounded bg-red-950/50">
             <p className="font-bold">Render Error</p>
             <p className="text-sm opacity-75">{err.message}</p>
           </div>;
         }
       }
+      
+      // Global error handler for uncaught runtime errors
+      window.onerror = function(message, source, lineno, colno, error) {
+        console.error('[Preview Runtime Error]', message, error);
+        window.parent.postMessage({ 
+          type: 'runtime-error', 
+          error: String(message), 
+          line: lineno 
+        }, '*');
+        return true;
+      };
+      
+      // Promise rejection handler
+      window.onunhandledrejection = function(event) {
+        console.error('[Preview Unhandled Promise]', event.reason);
+        window.parent.postMessage({ 
+          type: 'runtime-error', 
+          error: 'Promise rejected: ' + String(event.reason)
+        }, '*');
+      };
 
       // Section ID mapping for scroll-to functionality
       const sectionIdMap = {
@@ -203,21 +245,21 @@ const FullSitePreviewFrame = forwardRef<HTMLIFrameElement, FullSitePreviewFrameP
           <div className="min-h-screen bg-zinc-950 text-white flex flex-col">
             {Header ? (
               <div id="section-header" className="shrink-0 scroll-mt-4">
-                <SafeSection component={Header} />
+                <SafeSection component={Header} sectionId="header" />
               </div>
             ) : null}
 
             <div className="flex-1">
               {BodySections.map((item, idx) => (
                 <div key={idx} id={'section-' + item.id} className="scroll-mt-4">
-                  <SafeSection component={item.component} />
+                  <SafeSection component={item.component} sectionId={item.id} />
                 </div>
               ))}
             </div>
 
             {Footer ? (
               <div id="section-footer" className="shrink-0 scroll-mt-4">
-                <SafeSection component={Footer} />
+                <SafeSection component={Footer} sectionId="footer" />
               </div>
             ) : null}
           </div>
@@ -513,6 +555,43 @@ ${Array.from(allLucideImports).map((name) => {
     body { background: #09090b; color: #fff; }
     ::-webkit-scrollbar { width: 0px; background: transparent; }
     a { cursor: pointer; }
+    
+    /* Design Token CSS Variables - Live Styling Controls */
+    :root {
+      --section-padding: ${designTokens?.sectionPadding ?? 80}px;
+      --component-gap: ${designTokens?.componentGap ?? 24}px;
+      --border-radius: ${designTokens?.borderRadius ?? 12}px;
+      --heading-multiplier: ${designTokens?.headingSizeMultiplier ?? 1};
+      --font-weight: ${designTokens?.fontWeight === 'normal' ? 400 : designTokens?.fontWeight === 'medium' ? 500 : designTokens?.fontWeight === 'semibold' ? 600 : designTokens?.fontWeight === 'bold' ? 700 : 500};
+      --shadow: ${designTokens?.shadowIntensity === 'none' ? 'none' : designTokens?.shadowIntensity === 'subtle' ? '0 1px 2px 0 rgb(0 0 0 / 0.05)' : designTokens?.shadowIntensity === 'medium' ? '0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1)' : '0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1)'};
+    }
+    
+    /* Apply design tokens to common patterns */
+    section, [class*="py-"] {
+      padding-top: var(--section-padding) !important;
+      padding-bottom: var(--section-padding) !important;
+    }
+    
+    /* Apply border radius to cards and buttons */
+    [class*="rounded-xl"], [class*="rounded-lg"], [class*="rounded-2xl"] {
+      border-radius: var(--border-radius) !important;
+    }
+    
+    /* Apply gap to flex and grid containers */
+    [class*="gap-"] {
+      gap: var(--component-gap) !important;
+    }
+    
+    /* Apply heading size multiplier */
+    h1 { font-size: calc(2.25rem * var(--heading-multiplier)); }
+    h2 { font-size: calc(1.875rem * var(--heading-multiplier)); }
+    h3 { font-size: calc(1.5rem * var(--heading-multiplier)); }
+    h4 { font-size: calc(1.25rem * var(--heading-multiplier)); }
+    
+    /* Apply shadow */
+    [class*="shadow"] {
+      box-shadow: var(--shadow) !important;
+    }
   </style>
   <script>
     // Block ALL navigation in preview - it's a preview, not a live site

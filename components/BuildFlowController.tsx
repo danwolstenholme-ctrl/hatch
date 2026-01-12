@@ -28,7 +28,10 @@ import {
   Tablet,
   Monitor,
   AlertCircle,
-  RefreshCw
+  RefreshCw,
+  Wand2,
+  Maximize2,
+  Minimize2
 } from 'lucide-react'
 import { track } from '@vercel/analytics'
 import SectionProgress from './SectionProgress'
@@ -54,6 +57,7 @@ import { DbProject, DbSection, DbBrandConfig } from '@/lib/supabase'
 import { AccountSubscription } from '@/types/subscriptions'
 import { useSubscription } from '@/contexts/SubscriptionContext'
 import type { SitePage } from './builder/LiveSidebar'
+import { DesignTokens, defaultTokens, tokensToCSS } from '@/lib/tokens'
 
 const OLD_WELCOME_KEYS = ['hatch_welcome_v1_seen', 'hatch_v1_welcome_seen']
 
@@ -205,12 +209,27 @@ export default function BuildFlowController({ existingProjectId, initialPrompt, 
   const [showFirstBuildHint, setShowFirstBuildHint] = useState(false)
   const [syntaxError, setSyntaxError] = useState<{ error: string; line?: number } | null>(null)
   const [isAutoFixing, setIsAutoFixing] = useState(false)
+  const [isFullscreenPreview, setIsFullscreenPreview] = useState(false) // Fullscreen preview mode
+  
+  // Page-wide refiner state
+  const [pageRefinePrompt, setPageRefinePrompt] = useState('')
+  const [isPageRefining, setIsPageRefining] = useState(false)
+
+  // Design tokens for live styling controls
+  const [designTokens, setDesignTokens] = useState<DesignTokens>(defaultTokens)
+  
+  // Refinement feedback - show what the refiner changed
+  const [lastRefinementChanges, setLastRefinementChanges] = useState<string[] | null>(null)
 
   // Multi-page state
   const [pages, setPages] = useState<PageData[]>([
     { id: 'home', path: '/', name: 'Home', sections: [], sectionCode: {} }
   ])
   const [currentPageId, setCurrentPageId] = useState('home')
+  
+  // Add Page modal state
+  const [showAddPageModal, setShowAddPageModal] = useState(false)
+  const [newPageName, setNewPageName] = useState('')
 
   // Reset legacy welcome flags so V2 intro shows for all users (esp. mobile)
   useEffect(() => {
@@ -1280,6 +1299,155 @@ export default function BuildFlowController({ existingProjectId, initialPrompt, 
     }
   }, [isAutoFixing, syntaxError, buildState, project, sectionsForBuild, dbSections])
 
+  // Handle runtime errors from preview - auto-fix via refiner (self-healing)
+  const handleRuntimeError = useCallback(async (error: string, sectionId?: string) => {
+    // Debounce - don't spam the refiner
+    if (isAutoFixing) return
+    
+    console.log('[Self-Healing] Runtime error detected:', error, 'in section:', sectionId)
+    setIsAutoFixing(true)
+    
+    if (!buildState || !project) {
+      setIsAutoFixing(false)
+      return
+    }
+    
+    // Find which section has the error - use provided sectionId or current section
+    const targetSectionId = sectionId || sectionsForBuild[buildState.currentSectionIndex]?.id
+    const currentCode = targetSectionId ? buildState.sectionCode[targetSectionId] : null
+    
+    if (!currentCode || !targetSectionId) {
+      console.log('[Self-Healing] No code found for section:', targetSectionId)
+      setIsAutoFixing(false)
+      return
+    }
+    
+    // Find the dbSection
+    const dbSection = dbSections.find(s => s.section_id === targetSectionId)
+    if (!dbSection) {
+      console.log('[Self-Healing] No dbSection found for:', targetSectionId)
+      setIsAutoFixing(false)
+      return
+    }
+    
+    try {
+      // Call refine API with runtime error fix prompt
+      const fixPrompt = `FIX RUNTIME ERROR: ${error}. The component crashed with this error. Fix the code so it renders correctly. Do not change the design, just fix the crash.`
+      
+      const response = await fetch('/api/refine-section', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          projectId: project.id,
+          sectionId: dbSection.id,
+          code: currentCode,
+          refineRequest: fixPrompt,
+          sectionType: targetSectionId,
+          sectionName: sectionsForBuild.find(s => s.id === targetSectionId)?.name || targetSectionId
+        })
+      })
+      
+      if (response.ok) {
+        const data = await response.json()
+        if (data.code) {
+          // Update the section code
+          setBuildState(prev => {
+            if (!prev) return prev
+            return {
+              ...prev,
+              sectionCode: {
+                ...prev.sectionCode,
+                [targetSectionId]: data.code
+              }
+            }
+          })
+          // Force preview refresh
+          setPreviewKey(k => k + 1)
+          console.log('[Self-Healing] Auto-fix applied successfully for', targetSectionId)
+        }
+      } else {
+        console.error('[Self-Healing] Auto-fix failed:', await response.text())
+      }
+    } catch (err) {
+      console.error('[Self-Healing] Auto-fix error:', err)
+    } finally {
+      // Reset after a delay to allow re-detection if fix didn't work
+      setTimeout(() => {
+        setIsAutoFixing(false)
+      }, 5000) // 5 second cooldown for runtime errors
+    }
+  }, [isAutoFixing, buildState, project, sectionsForBuild, dbSections])
+
+  // Handle page-wide refinement - applies changes to all sections at once
+  const handlePageRefine = useCallback(async () => {
+    if (!pageRefinePrompt.trim() || !buildState || !project || isPageRefining) return
+    
+    const sections = Object.entries(buildState.sectionCode)
+      .filter(([id, code]) => code && code.length > 50)
+      .map(([id, code]) => ({ id, code }))
+    
+    if (sections.length === 0) {
+      console.log('[Page Refiner] No sections to refine')
+      return
+    }
+    
+    setIsPageRefining(true)
+    
+    try {
+      const response = await fetch('/api/refine-page', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          projectId: project.id,
+          sections,
+          refineRequest: pageRefinePrompt,
+          brandConfig: brandConfig
+        })
+      })
+      
+      if (response.ok) {
+        const data = await response.json()
+        if (data.sections) {
+          // Update all section codes at once
+          setBuildState(prev => {
+            if (!prev) return prev
+            const updatedSectionCode = { ...prev.sectionCode }
+            Object.entries(data.sections).forEach(([sectionId, code]) => {
+              if (typeof code === 'string' && updatedSectionCode[sectionId]) {
+                updatedSectionCode[sectionId] = code
+              }
+            })
+            return {
+              ...prev,
+              sectionCode: updatedSectionCode
+            }
+          })
+          // Refresh preview
+          setPreviewKey(k => k + 1)
+          setPageRefinePrompt('')
+          // Show refinement feedback
+          if (data.summary) {
+            setLastRefinementChanges([data.summary])
+            // Auto-hide after 5 seconds
+            setTimeout(() => setLastRefinementChanges(null), 5000)
+          }
+          console.log('[Page Refiner] Applied:', data.summary)
+        }
+      } else {
+        const error = await response.json()
+        console.error('[Page Refiner] Failed:', error)
+        if (error.upgrade) {
+          setHatchModalReason('proactive')
+          setShowHatchModal(true)
+        }
+      }
+    } catch (err) {
+      console.error('[Page Refiner] Error:', err)
+    } finally {
+      setIsPageRefining(false)
+    }
+  }, [pageRefinePrompt, buildState, project, isPageRefining, brandConfig])
+
   const handleNextSection = () => {
     if (!buildState) return
 
@@ -1426,26 +1594,36 @@ export default function BuildFlowController({ existingProjectId, initialPrompt, 
   // MULTI-PAGE HANDLERS
   // ============================================================================
 
-  // Add a new page
+  // Open add page modal
   const handleAddPage = () => {
+    setNewPageName('')
+    setShowAddPageModal(true)
+  }
+  
+  // Create the new page from modal
+  const confirmAddPage = () => {
+    if (!newPageName.trim()) return
+    
     const pageCount = pages.length
     const newPageId = `page-${Date.now()}`
-    const newPagePath = `/${newPageId.replace('page-', 'page')}`
-    const defaultName = `Page ${pageCount + 1}`
+    const slug = newPageName.trim().toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')
+    const newPagePath = `/${slug}`
     
     const newPage: PageData = {
       id: newPageId,
       path: newPagePath,
-      name: defaultName,
+      name: newPageName.trim(),
       sections: [],
       sectionCode: {}
     }
     
     setPages(prev => [...prev, newPage])
     setCurrentPageId(newPageId)
+    setShowAddPageModal(false)
+    setNewPageName('')
     
     // Track analytics
-    track('Page Added', { pageCount: pageCount + 1 })
+    track('Page Added', { pageCount: pageCount + 1, pageName: newPageName.trim() })
   }
 
   // Select/switch to a page
@@ -2143,6 +2321,36 @@ export default function GeneratedPage() {
 
   return (
     <div className="min-h-screen bg-zinc-950">
+      {/* Refinement Feedback Toast - Shows what the refiner changed */}
+      <AnimatePresence>
+        {lastRefinementChanges && lastRefinementChanges.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 20, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 10, scale: 0.95 }}
+            className="fixed bottom-4 left-1/2 -translate-x-1/2 z-[60] max-w-md px-4"
+          >
+            <div className="bg-emerald-950/90 backdrop-blur-xl border border-emerald-500/30 rounded-xl p-3 shadow-2xl shadow-emerald-500/10">
+              <div className="flex items-start gap-3">
+                <div className="p-1.5 bg-emerald-500/20 rounded-lg flex-shrink-0">
+                  <Check className="w-4 h-4 text-emerald-400" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-medium text-emerald-300 mb-1">Page Refined</p>
+                  <p className="text-xs text-emerald-400/80">{lastRefinementChanges[0]}</p>
+                </div>
+                <button
+                  onClick={() => setLastRefinementChanges(null)}
+                  className="p-1 text-emerald-400/50 hover:text-emerald-300 transition-colors"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Paywall Transition - Full screen immersive */}
       {showPaywallTransition && (
         <PaywallTransition
@@ -2471,6 +2679,12 @@ export default function GeneratedPage() {
                         lastHealMessage={lastHealMessage ?? undefined}
                         pages={sidebarPages}
                         currentPageId={currentPageId}
+                        designTokens={designTokens}
+                        onDesignTokensChange={setDesignTokens}
+                        onUpgrade={(tier) => {
+                          setHatchModalReason('proactive')
+                          setShowHatchModal(true)
+                        }}
                         onSelectPage={(pageId) => {
                           handleSelectPage(pageId)
                           setShowMobileSidebar(false)
@@ -2524,6 +2738,12 @@ export default function GeneratedPage() {
                 lastHealMessage={lastHealMessage ?? undefined}
                 pages={sidebarPages}
                 currentPageId={currentPageId}
+                designTokens={designTokens}
+                onDesignTokensChange={setDesignTokens}
+                onUpgrade={(tier) => {
+                  setHatchModalReason('proactive')
+                  setShowHatchModal(true)
+                }}
                 onSelectPage={handleSelectPage}
                 onAddPage={handleAddPage}
                 onRenamePage={handleRenamePage}
@@ -2633,8 +2853,10 @@ export default function GeneratedPage() {
                         sections={previewSections}
                         deviceView="mobile"
                         editMode={previewEditMode}
+                        designTokens={designTokens}
                         onTextEdit={handleTextEdit}
                         onSyntaxError={handleSyntaxError}
+                        onRuntimeError={handleRuntimeError}
                         seo={brandConfig?.seo ? {
                           title: brandConfig.seo.title || '',
                           description: brandConfig.seo.description || '',
@@ -2834,6 +3056,15 @@ export default function GeneratedPage() {
                             <Monitor className="w-3.5 h-3.5" />
                           </button>
                         </div>
+                        
+                        {/* Fullscreen Toggle */}
+                        <button
+                          onClick={() => setIsFullscreenPreview(true)}
+                          className="p-1.5 rounded text-zinc-500 hover:text-zinc-300 bg-zinc-800/50 hover:bg-zinc-700/50 transition-all"
+                          title="Fullscreen Preview"
+                        >
+                          <Maximize2 className="w-3.5 h-3.5" />
+                        </button>
                       </div>
                     )}
                   </div>
@@ -2850,8 +3081,10 @@ export default function GeneratedPage() {
                           deviceView={previewDevice}
                           ref={previewIframeRef}
                           editMode={previewEditMode}
+                          designTokens={designTokens}
                           onTextEdit={handleTextEdit}
                           onSyntaxError={handleSyntaxError}
+                          onRuntimeError={handleRuntimeError}
                           seo={brandConfig?.seo ? {
                             title: brandConfig.seo.title || '',
                             description: brandConfig.seo.description || '',
@@ -2868,6 +3101,36 @@ export default function GeneratedPage() {
                       </div>
                     )}
                   </div>
+                  
+                  {/* Page-Wide Refine Bar - Below preview */}
+                  {previewSections.length > 1 && (
+                    <div className="flex-shrink-0 px-3 pb-3">
+                      <div className="flex items-center gap-2 bg-zinc-900/80 border border-zinc-800/50 rounded-lg p-2">
+                        <Wand2 className="w-4 h-4 text-purple-400 flex-shrink-0" />
+                        <input
+                          type="text"
+                          value={pageRefinePrompt}
+                          onChange={(e) => setPageRefinePrompt(e.target.value)}
+                          onKeyDown={(e) => e.key === 'Enter' && handlePageRefine()}
+                          placeholder="Refine all sections: e.g. 'make it darker', 'add more spacing', 'use emerald accents'"
+                          className="flex-1 bg-transparent text-sm text-white placeholder-zinc-500 focus:outline-none"
+                          disabled={isPageRefining}
+                        />
+                        <button
+                          onClick={handlePageRefine}
+                          disabled={!pageRefinePrompt.trim() || isPageRefining}
+                          className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all ${
+                            pageRefinePrompt.trim() && !isPageRefining
+                              ? 'bg-purple-500/20 text-purple-300 hover:bg-purple-500/30 border border-purple-500/30'
+                              : 'bg-zinc-800 text-zinc-500 cursor-not-allowed'
+                          }`}
+                        >
+                          {isPageRefining ? 'Refining...' : 'Refine All'}
+                        </button>
+                      </div>
+                      <p className="text-[10px] text-zinc-600 mt-1 ml-6">Visionary+ • Applies changes across all sections for visual consistency</p>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -2876,12 +3139,173 @@ export default function GeneratedPage() {
         ) : null}
       </AnimatePresence>
 
+      {/* Fullscreen Preview Modal */}
+      <AnimatePresence>
+        {isFullscreenPreview && previewSections.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 bg-zinc-950"
+          >
+            {/* Fullscreen Header */}
+            <div className="absolute top-0 left-0 right-0 h-12 bg-zinc-900/80 backdrop-blur-xl border-b border-zinc-800/50 flex items-center justify-between px-4 z-10">
+              <div className="flex items-center gap-3">
+                <button
+                  onClick={() => setIsFullscreenPreview(false)}
+                  className="p-2 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800 transition-all"
+                  title="Exit Fullscreen"
+                >
+                  <Minimize2 className="w-4 h-4" />
+                </button>
+                <div className="flex items-center gap-2">
+                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                  <span className="text-sm text-zinc-400 font-medium">Fullscreen Preview</span>
+                </div>
+              </div>
+              
+              <div className="flex items-center gap-3">
+                {/* Device Toggle */}
+                <div className="flex items-center gap-1 bg-zinc-800/50 rounded-md p-0.5">
+                  <button
+                    onClick={() => setPreviewDevice('mobile')}
+                    className={`p-1.5 rounded transition-all ${
+                      previewDevice === 'mobile' 
+                        ? 'bg-zinc-700 text-white' 
+                        : 'text-zinc-500 hover:text-zinc-300'
+                    }`}
+                    title="Mobile"
+                  >
+                    <Smartphone className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() => setPreviewDevice('tablet')}
+                    className={`p-1.5 rounded transition-all ${
+                      previewDevice === 'tablet' 
+                        ? 'bg-zinc-700 text-white' 
+                        : 'text-zinc-500 hover:text-zinc-300'
+                    }`}
+                    title="Tablet"
+                  >
+                    <Tablet className="w-4 h-4" />
+                  </button>
+                  <button
+                    onClick={() => setPreviewDevice('desktop')}
+                    className={`p-1.5 rounded transition-all ${
+                      previewDevice === 'desktop' 
+                        ? 'bg-zinc-700 text-white' 
+                        : 'text-zinc-500 hover:text-zinc-300'
+                    }`}
+                    title="Desktop"
+                  >
+                    <Monitor className="w-4 h-4" />
+                  </button>
+                </div>
+                
+                <button
+                  onClick={() => setIsFullscreenPreview(false)}
+                  className="px-3 py-1.5 text-sm font-medium text-zinc-400 hover:text-white bg-zinc-800 hover:bg-zinc-700 rounded-lg transition-all"
+                >
+                  Exit
+                </button>
+              </div>
+            </div>
+            
+            {/* Fullscreen Preview Content */}
+            <div className="absolute inset-0 pt-12 bg-zinc-900">
+              <div className={`h-full mx-auto transition-all duration-300 ${
+                previewDevice === 'mobile' ? 'max-w-[375px] border-x border-zinc-700' : 
+                previewDevice === 'tablet' ? 'max-w-[768px] border-x border-zinc-700' : 
+                'max-w-full'
+              }`}>
+                <FullSitePreviewFrame 
+                  key={`fullscreen-${previewKey}`}
+                  sections={previewSections}
+                  deviceView={previewDevice}
+                  editMode={previewEditMode}
+                  designTokens={designTokens}
+                  onTextEdit={handleTextEdit}
+                  onSyntaxError={handleSyntaxError}
+                  onRuntimeError={handleRuntimeError}
+                  seo={brandConfig?.seo ? {
+                    title: brandConfig.seo.title || '',
+                    description: brandConfig.seo.description || '',
+                    keywords: brandConfig.seo.keywords || ''
+                  } : undefined}
+                />
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Hatch Modal - paywall for deploy */}
       <HatchModal
         isOpen={showHatchModal}
         onClose={() => setShowHatchModal(false)}
         reason={hatchModalReason}
       />
+
+      {/* Add Page Modal - proper UX for adding new pages */}
+      <AnimatePresence>
+        {showAddPageModal && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            onClick={() => setShowAddPageModal(false)}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="w-full max-w-sm bg-zinc-900 border border-zinc-800 rounded-2xl p-6 shadow-2xl"
+              onClick={(e) => e.stopPropagation()}
+            >
+              <h3 className="text-lg font-semibold text-white mb-2">Add New Page</h3>
+              <p className="text-sm text-zinc-400 mb-4">
+                Create a new page for your site. You can add sections to it after.
+              </p>
+              
+              <input
+                type="text"
+                value={newPageName}
+                onChange={(e) => setNewPageName(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter' && newPageName.trim()) confirmAddPage()
+                  if (e.key === 'Escape') setShowAddPageModal(false)
+                }}
+                placeholder="Page name (e.g. About, Services, Contact)"
+                className="w-full px-4 py-3 bg-zinc-950 border border-zinc-700 rounded-xl text-white placeholder-zinc-500 focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/20 mb-2"
+                autoFocus
+              />
+              
+              {newPageName.trim() && (
+                <p className="text-xs text-zinc-500 mb-4">
+                  URL: /{newPageName.trim().toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '')}
+                </p>
+              )}
+              
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setShowAddPageModal(false)}
+                  className="flex-1 px-4 py-2.5 text-sm text-zinc-400 hover:text-white transition-colors rounded-xl hover:bg-zinc-800"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={confirmAddPage}
+                  disabled={!newPageName.trim()}
+                  className="flex-1 px-4 py-2.5 bg-emerald-500/15 border border-emerald-500/40 hover:bg-emerald-500/20 hover:border-emerald-500/50 text-white font-medium text-sm rounded-xl transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-[0_0_15px_rgba(16,185,129,0.15)]"
+                >
+                  Create Page
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Builder Welcome - first-time orientation for authenticated users */}
       {showBuilderWelcome && (

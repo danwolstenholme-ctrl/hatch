@@ -357,6 +357,33 @@ ${getComponentReference(templateType)}
   These hooks are NOT available in the preview environment and WILL crash.
 - Next.js Image (Optimization) - import Image from 'next/image'
 
+## 🚨 CRITICAL: VALID JAVASCRIPT/JSX ONLY - NO TYPESCRIPT
+Output PLAIN JavaScript/JSX. The preview uses Babel which does NOT support TypeScript.
+DO NOT include ANY of these - they will cause Babel transform errors:
+
+❌ FORBIDDEN SYNTAX:
+- Type annotations: \`: string\`, \`: number\`, \`: boolean\`, \`: any\`
+- Interface definitions: \`interface Props { ... }\`
+- Type definitions: \`type MyType = ...\`
+- Generic type parameters: \`<T>\`, \`<Props>\`
+- Optional chaining in params: \`{ foo?: string }\` (use \`{ foo }\` and check with \`if (foo)\`)
+- Return type annotations: \`): JSX.Element\`, \`): React.ReactNode\`
+- Type assertions: \`as string\`, \`as const\`
+- React.FC or React.FunctionComponent
+
+✅ CORRECT PATTERNS:
+- Props: function Component({ title, onClick }) { ... }
+- Default props: function Component({ title = 'Default' }) { ... }
+- Arrays: const items = ['a', 'b', 'c']
+- Objects: const config = { key: 'value' }
+
+## 🚨 TERNARY OPERATORS - MUST BE COMPLETE
+Every ternary MUST have both branches: \`condition ? trueValue : falseValue\`
+❌ WRONG: \`{isOpen && <div>...</div>}\` inside motion props
+❌ WRONG: \`{condition ? { opacity: 1 }}\` (missing : falseValue)
+✅ RIGHT: \`{condition ? { opacity: 1 } : { opacity: 0 }}\`
+✅ RIGHT: \`{isOpen ? <motion.div>...</motion.div> : null}\`
+
 ## COMPONENT SPEC
 - Export a default function named "${componentName}".
 - Use "use client" directive at the top.
