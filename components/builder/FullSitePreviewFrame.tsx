@@ -416,6 +416,53 @@ const FullSitePreviewFrame = forwardRef<HTMLIFrameElement, FullSitePreviewFrameP
           target.style.cursor = '';
         }
       }, true);
+      
+      // ============================================
+      // LINK INTERCEPTION - Prevent navigation in preview
+      // ============================================
+      // Stop ALL link clicks from navigating the iframe
+      // This prevents the iframe from loading the real HatchIt app
+      document.addEventListener('click', (e) => {
+        // Find if click target is inside an anchor or is an anchor
+        const link = e.target.closest ? e.target.closest('a') : null;
+        if (link || e.target.tagName === 'A') {
+          const anchor = link || e.target;
+          const href = anchor.getAttribute('href');
+          
+          // Allow anchor links within the page (scroll to section)
+          if (href && href.startsWith('#')) {
+            const targetId = href.slice(1);
+            const targetEl = document.getElementById(targetId) || document.querySelector('[id="section-' + targetId + '"]');
+            if (targetEl) {
+              e.preventDefault();
+              targetEl.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }
+            return;
+          }
+          
+          // Block all other navigation
+          e.preventDefault();
+          e.stopPropagation();
+          
+          // Show a brief toast indicating link was clicked but not followed
+          const toast = document.createElement('div');
+          toast.style.cssText = 'position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:rgba(39,39,42,0.95);color:#a1a1aa;padding:8px 16px;border-radius:8px;font-size:12px;z-index:99999;font-family:system-ui;border:1px solid rgba(63,63,70,0.5);backdrop-filter:blur(8px);';
+          toast.textContent = 'Link: ' + (href || 'none') + ' (disabled in preview)';
+          document.body.appendChild(toast);
+          setTimeout(() => toast.remove(), 2000);
+        }
+      }, true);
+      
+      // Also intercept form submissions
+      document.addEventListener('submit', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        const toast = document.createElement('div');
+        toast.style.cssText = 'position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:rgba(39,39,42,0.95);color:#a1a1aa;padding:8px 16px;border-radius:8px;font-size:12px;z-index:99999;font-family:system-ui;border:1px solid rgba(63,63,70,0.5);backdrop-filter:blur(8px);';
+        toast.textContent = 'Form submission disabled in preview';
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 2000);
+      }, true);
     `;
 
     // 4. Construct the script

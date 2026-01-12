@@ -1,8 +1,8 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Sliders, ChevronDown, ChevronUp, Lock } from 'lucide-react'
+import { Sliders, ChevronDown, ChevronUp, Lock, Check } from 'lucide-react'
 import { DesignTokens, defaultTokens, tokenPresets } from '@/lib/tokens'
 
 interface DesignPanelProps {
@@ -12,8 +12,31 @@ interface DesignPanelProps {
   onUpgrade?: () => void
 }
 
+// Detect which preset matches current tokens (if any)
+function detectActivePreset(tokens: DesignTokens): string | null {
+  for (const [name, preset] of Object.entries(tokenPresets)) {
+    let matches = true
+    for (const [key, value] of Object.entries(preset)) {
+      if (tokens[key as keyof DesignTokens] !== value) {
+        matches = false
+        break
+      }
+    }
+    if (matches) return name
+  }
+  return null
+}
+
 export default function DesignPanel({ tokens, onChange, isLocked = false, onUpgrade }: DesignPanelProps) {
   const [isExpanded, setIsExpanded] = useState(false)
+  const [activePreset, setActivePreset] = useState<string | null>(null)
+  const [justApplied, setJustApplied] = useState<string | null>(null)
+  const presetsRef = useRef<HTMLDivElement>(null)
+
+  // Detect active preset when tokens change
+  useEffect(() => {
+    setActivePreset(detectActivePreset(tokens))
+  }, [tokens])
 
   const updateToken = <K extends keyof DesignTokens>(key: K, value: DesignTokens[K]) => {
     if (isLocked) return
@@ -25,6 +48,8 @@ export default function DesignPanel({ tokens, onChange, isLocked = false, onUpgr
     const preset = tokenPresets[presetName]
     if (preset) {
       onChange({ ...tokens, ...preset })
+      setJustApplied(presetName)
+      setTimeout(() => setJustApplied(null), 600)
     }
   }
 
@@ -71,32 +96,61 @@ export default function DesignPanel({ tokens, onChange, isLocked = false, onUpgr
                 </button>
               </div>
             ) : (
-              <div className="px-4 pb-4 space-y-4">
-                {/* Presets */}
+              <div className="px-4 pb-4 space-y-5">
+                {/* Presets - Horizontal Scroll */}
                 <div>
                   <label className="text-[10px] uppercase tracking-wider text-zinc-500 mb-2 block">
                     Quick Presets
                   </label>
-                  <div className="flex gap-1.5">
-                    {Object.keys(tokenPresets).map((name) => (
-                      <button
-                        key={name}
-                        onClick={() => applyPreset(name)}
-                        className="px-2.5 py-1.5 text-xs rounded-md bg-zinc-800 border border-zinc-700 text-zinc-300 hover:border-emerald-500/50 hover:text-white transition-all capitalize"
-                      >
-                        {name}
-                      </button>
-                    ))}
+                  <div 
+                    ref={presetsRef}
+                    className="flex gap-2 overflow-x-auto pb-1 -mx-1 px-1 scrollbar-hide"
+                    style={{ scrollbarWidth: 'none', msOverflowStyle: 'none' }}
+                  >
+                    {Object.keys(tokenPresets).map((name) => {
+                      const isActive = activePreset === name
+                      const wasJustApplied = justApplied === name
+                      
+                      return (
+                        <motion.button
+                          key={name}
+                          onClick={() => applyPreset(name)}
+                          whileTap={{ scale: 0.95 }}
+                          animate={wasJustApplied ? { 
+                            scale: [1, 1.05, 1],
+                            transition: { duration: 0.3 }
+                          } : {}}
+                          className={`relative flex-shrink-0 px-3 py-2 text-xs rounded-lg border transition-all capitalize ${
+                            isActive
+                              ? 'bg-emerald-500/15 border-emerald-500/50 text-emerald-400'
+                              : 'bg-zinc-800/80 border-zinc-700/50 text-zinc-400 hover:border-zinc-600 hover:text-zinc-300'
+                          }`}
+                        >
+                          <span className="flex items-center gap-1.5">
+                            {isActive && <Check className="w-3 h-3" />}
+                            {name}
+                          </span>
+                          {wasJustApplied && (
+                            <motion.div
+                              initial={{ opacity: 0.8, scale: 1 }}
+                              animate={{ opacity: 0, scale: 1.5 }}
+                              transition={{ duration: 0.5 }}
+                              className="absolute inset-0 rounded-lg bg-emerald-500/30"
+                            />
+                          )}
+                        </motion.button>
+                      )
+                    })}
                   </div>
                 </div>
 
-                {/* Section Padding */}
+                {/* Section Padding - Smooth 1px steps */}
                 <SliderControl
                   label="Section Padding"
                   value={tokens.sectionPadding}
-                  min={40}
-                  max={120}
-                  step={8}
+                  min={32}
+                  max={128}
+                  step={1}
                   unit="px"
                   onChange={(v) => updateToken('sectionPadding', v)}
                 />
@@ -107,7 +161,7 @@ export default function DesignPanel({ tokens, onChange, isLocked = false, onUpgr
                   value={tokens.borderRadius}
                   min={0}
                   max={32}
-                  step={2}
+                  step={1}
                   unit="px"
                   onChange={(v) => updateToken('borderRadius', v)}
                 />
@@ -116,9 +170,9 @@ export default function DesignPanel({ tokens, onChange, isLocked = false, onUpgr
                 <SliderControl
                   label="Component Gap"
                   value={tokens.componentGap}
-                  min={8}
+                  min={4}
                   max={48}
-                  step={4}
+                  step={1}
                   unit="px"
                   onChange={(v) => updateToken('componentGap', v)}
                 />
@@ -127,11 +181,12 @@ export default function DesignPanel({ tokens, onChange, isLocked = false, onUpgr
                 <SliderControl
                   label="Heading Size"
                   value={tokens.headingSizeMultiplier}
-                  min={0.8}
-                  max={1.5}
-                  step={0.1}
+                  min={0.7}
+                  max={1.6}
+                  step={0.05}
                   unit="x"
-                  onChange={(v) => updateToken('headingSizeMultiplier', v)}
+                  onChange={(v) => updateToken('headingSizeMultiplier', Math.round(v * 100) / 100)}
+                  formatValue={(v) => v.toFixed(2)}
                 />
 
                 {/* Shadow Intensity */}
@@ -139,15 +194,15 @@ export default function DesignPanel({ tokens, onChange, isLocked = false, onUpgr
                   <label className="text-[10px] uppercase tracking-wider text-zinc-500 mb-2 block">
                     Shadow
                   </label>
-                  <div className="flex gap-1.5">
+                  <div className="flex gap-1.5 overflow-x-auto scrollbar-hide">
                     {(['none', 'subtle', 'medium', 'strong'] as const).map((level) => (
                       <button
                         key={level}
                         onClick={() => updateToken('shadowIntensity', level)}
-                        className={`flex-1 px-2 py-1.5 text-xs rounded-md border transition-all capitalize ${
+                        className={`flex-1 min-w-[60px] px-2 py-2 text-xs rounded-lg border transition-all capitalize ${
                           tokens.shadowIntensity === level
                             ? 'bg-emerald-500/15 border-emerald-500/50 text-emerald-400'
-                            : 'bg-zinc-800 border-zinc-700 text-zinc-400 hover:border-zinc-600'
+                            : 'bg-zinc-800/80 border-zinc-700/50 text-zinc-500 hover:border-zinc-600 hover:text-zinc-400'
                         }`}
                       >
                         {level}
@@ -161,15 +216,15 @@ export default function DesignPanel({ tokens, onChange, isLocked = false, onUpgr
                   <label className="text-[10px] uppercase tracking-wider text-zinc-500 mb-2 block">
                     Font Weight
                   </label>
-                  <div className="flex gap-1.5">
+                  <div className="flex gap-1.5 overflow-x-auto scrollbar-hide">
                     {(['normal', 'medium', 'semibold', 'bold'] as const).map((weight) => (
                       <button
                         key={weight}
                         onClick={() => updateToken('fontWeight', weight)}
-                        className={`flex-1 px-2 py-1.5 text-xs rounded-md border transition-all capitalize ${
+                        className={`flex-1 min-w-[60px] px-2 py-2 text-xs rounded-lg border transition-all capitalize ${
                           tokens.fontWeight === weight
                             ? 'bg-emerald-500/15 border-emerald-500/50 text-emerald-400'
-                            : 'bg-zinc-800 border-zinc-700 text-zinc-400 hover:border-zinc-600'
+                            : 'bg-zinc-800/80 border-zinc-700/50 text-zinc-500 hover:border-zinc-600 hover:text-zinc-400'
                         }`}
                       >
                         {weight}
@@ -186,7 +241,7 @@ export default function DesignPanel({ tokens, onChange, isLocked = false, onUpgr
   )
 }
 
-// Reusable slider component
+// Polished slider with custom styling
 function SliderControl({
   label,
   value,
@@ -195,6 +250,7 @@ function SliderControl({
   step,
   unit,
   onChange,
+  formatValue,
 }: {
   label: string
   value: number
@@ -203,26 +259,48 @@ function SliderControl({
   step: number
   unit: string
   onChange: (value: number) => void
+  formatValue?: (value: number) => string
 }) {
+  const percentage = ((value - min) / (max - min)) * 100
+  const displayValue = formatValue ? formatValue(value) : value.toString()
+
   return (
     <div>
       <div className="flex items-center justify-between mb-2">
         <label className="text-[10px] uppercase tracking-wider text-zinc-500">
           {label}
         </label>
-        <span className="text-xs text-zinc-400 font-mono">
-          {value}{unit}
+        <span className="text-xs text-emerald-400/80 font-mono tabular-nums">
+          {displayValue}{unit}
         </span>
       </div>
-      <input
-        type="range"
-        min={min}
-        max={max}
-        step={step}
-        value={value}
-        onChange={(e) => onChange(parseFloat(e.target.value))}
-        className="w-full h-1.5 bg-zinc-800 rounded-lg appearance-none cursor-pointer accent-emerald-500"
-      />
+      <div className="relative h-6 flex items-center">
+        {/* Track Background */}
+        <div className="absolute inset-x-0 h-1.5 bg-zinc-800 rounded-full" />
+        
+        {/* Filled Track */}
+        <div 
+          className="absolute left-0 h-1.5 bg-gradient-to-r from-emerald-600 to-emerald-500 rounded-full transition-all duration-75"
+          style={{ width: `${percentage}%` }}
+        />
+        
+        {/* Native Input (for dragging) */}
+        <input
+          type="range"
+          min={min}
+          max={max}
+          step={step}
+          value={value}
+          onChange={(e) => onChange(parseFloat(e.target.value))}
+          className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+        />
+        
+        {/* Thumb */}
+        <div 
+          className="absolute w-4 h-4 bg-emerald-500 rounded-full shadow-lg shadow-emerald-500/30 pointer-events-none transition-all duration-75"
+          style={{ left: `calc(${percentage}% - 8px)` }}
+        />
+      </div>
     </div>
   )
 }
