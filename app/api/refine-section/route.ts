@@ -426,9 +426,16 @@ ${code}`
     })
 
     if (!response.ok) {
-      const error = await response.json()
-      console.error('Anthropic API error:', error)
-      return NextResponse.json({ error: 'Refinement failed' }, { status: 500 })
+      const errorText = await response.text()
+      console.error('Anthropic API error:', response.status, errorText)
+      let errorMessage = 'Refinement failed'
+      try {
+        const errorJson = JSON.parse(errorText)
+        errorMessage = errorJson.error?.message || errorJson.error || errorMessage
+      } catch {
+        errorMessage = `AI service error: ${response.status}`
+      }
+      return NextResponse.json({ error: errorMessage }, { status: 500 })
     }
 
     const data = await response.json()

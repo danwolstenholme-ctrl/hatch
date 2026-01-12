@@ -1565,7 +1565,17 @@ ${code.slice(0, 2000)}`,
       })
 
       if (!response.ok) {
-        throw new Error('Refinement failed')
+        let errorMessage = 'Refinement failed'
+        try {
+          const errorData = await response.json()
+          errorMessage = errorData.error || errorMessage
+          if (errorData.limitReached) {
+            errorMessage = `${errorMessage} (${errorData.used}/${errorData.limit} used)`
+          }
+        } catch {
+          errorMessage = `Refinement failed with status ${response.status}`
+        }
+        throw new Error(errorMessage)
       }
 
       const { code: rawRefinedCode, changes } = await response.json()
