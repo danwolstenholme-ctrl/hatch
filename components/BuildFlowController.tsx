@@ -1438,20 +1438,36 @@ export default function BuildFlowController({ existingProjectId, initialPrompt, 
           console.log('[Page Refiner] Applied:', data.summary)
         }
       } else {
-        // Try to get error details
-        let error: { error?: string; upgrade?: boolean } = {}
+        // Try to get error details from response
+        let errorMessage = `Request failed with status ${response.status}`
+        let shouldUpgrade = false
+        
         try {
-          error = await response.json()
+          const errorData = await response.json()
+          if (errorData.error) {
+            errorMessage = errorData.error
+          }
+          if (errorData.upgrade) {
+            shouldUpgrade = true
+          }
         } catch {
-          error = { error: `Request failed with status ${response.status}` }
+          // Response wasn't JSON, use status-based message
+          if (response.status === 403) {
+            errorMessage = 'Page-wide refinement requires Visionary tier or higher'
+            shouldUpgrade = true
+          } else if (response.status === 401) {
+            errorMessage = 'Please sign in to use this feature'
+          }
         }
-        console.error('[Page Refiner] Failed:', error)
-        if (error.upgrade) {
+        
+        console.error('[Page Refiner] Failed:', errorMessage)
+        
+        if (shouldUpgrade) {
           setHatchModalReason('proactive')
           setShowHatchModal(true)
         } else {
           // Show user-friendly error
-          alert(error.error || 'Page refinement failed. Please try again.')
+          alert(errorMessage)
         }
       }
     } catch (err) {
