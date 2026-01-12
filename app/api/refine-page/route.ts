@@ -207,7 +207,7 @@ export async function POST(request: NextRequest) {
     console.error('Error in page-wide refiner:', error)
     return NextResponse.json({ 
       error: 'Failed to refine page', 
-      details: error instanceof Error ? error.message : 'Unknown error' 
+      details: error instanceof Error ? error.message : String(error)
     }, { status: 500 })
   }
 }

@@ -1434,11 +1434,20 @@ export default function BuildFlowController({ existingProjectId, initialPrompt, 
           console.log('[Page Refiner] Applied:', data.summary)
         }
       } else {
-        const error = await response.json()
+        // Try to get error details
+        let error: { error?: string; upgrade?: boolean } = {}
+        try {
+          error = await response.json()
+        } catch {
+          error = { error: `Request failed with status ${response.status}` }
+        }
         console.error('[Page Refiner] Failed:', error)
         if (error.upgrade) {
           setHatchModalReason('proactive')
           setShowHatchModal(true)
+        } else {
+          // Show user-friendly error
+          alert(error.error || 'Page refinement failed. Please try again.')
         }
       }
     } catch (err) {
