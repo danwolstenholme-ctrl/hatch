@@ -9,6 +9,32 @@ export const size = {
 }
  
 export const contentType = 'image/png'
+
+// Inline the favicon SVG as a data URL
+const faviconSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#18181b"/>
+      <stop offset="100%" stop-color="#09090b"/>
+    </linearGradient>
+    <linearGradient id="emerald" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#10b981"/>
+      <stop offset="50%" stop-color="#34d399"/>
+      <stop offset="100%" stop-color="#6ee7b7"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="50%" cy="55%" r="45%">
+      <stop offset="0%" stop-color="#10b981" stop-opacity="0.4"/>
+      <stop offset="70%" stop-color="#10b981" stop-opacity="0.1"/>
+      <stop offset="100%" stop-color="#10b981" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+  <rect width="32" height="32" rx="8" fill="url(#bg)"/>
+  <rect x="0.5" y="0.5" width="31" height="31" rx="7.5" fill="none" stroke="#27272a" stroke-opacity="0.8"/>
+  <ellipse cx="16" cy="17" rx="11" ry="9" fill="url(#glow)"/>
+  <text x="16" y="21" text-anchor="middle" font-family="system-ui, sans-serif" font-weight="700" font-size="15" letter-spacing="-0.5" fill="url(#emerald)">It</text>
+</svg>`
+
+const faviconDataUrl = `data:image/svg+xml,${encodeURIComponent(faviconSvg)}`
  
 export default async function Image() {
   return new ImageResponse(
@@ -26,39 +52,13 @@ export default async function Image() {
           position: 'relative',
         }}
       >
-        {/* Grid Background Pattern */}
+        {/* Subtle glow */}
         <div
           style={{
             position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            bottom: 0,
-            backgroundImage: 'linear-gradient(to right, #18181b 1px, transparent 1px), linear-gradient(to bottom, #18181b 1px, transparent 1px)',
-            backgroundSize: '50px 50px',
-            opacity: 0.3,
-          }}
-        />
-
-        {/* Top accent line */}
-        <div
-          style={{
-            position: 'absolute',
-            top: 0,
-            left: 0,
-            right: 0,
-            height: '4px',
-            background: 'linear-gradient(to right, transparent, #10b981, transparent)',
-          }}
-        />
-
-        {/* Glow Effect */}
-        <div
-          style={{
-            position: 'absolute',
-            width: '500px',
-            height: '500px',
-            background: 'radial-gradient(circle, rgba(16, 185, 129, 0.12) 0%, transparent 70%)',
+            width: '600px',
+            height: '400px',
+            background: 'radial-gradient(circle, rgba(16, 185, 129, 0.08) 0%, transparent 70%)',
             top: '50%',
             left: '50%',
             transform: 'translate(-50%, -50%)',
@@ -74,69 +74,40 @@ export default async function Image() {
             zIndex: 10,
           }}
         >
-          {/* "It" Logo */}
-          <div
+          {/* Actual favicon */}
+          <img
+            src={faviconDataUrl}
+            width={80}
+            height={80}
             style={{
-              width: '100px',
-              height: '100px',
-              background: '#18181b',
+              marginBottom: '32px',
+              boxShadow: '0 0 80px rgba(16, 185, 129, 0.3)',
               borderRadius: '20px',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              marginBottom: '40px',
-              border: '1px solid #27272a',
-              boxShadow: '0 0 60px rgba(16, 185, 129, 0.2)',
             }}
-          >
-            <span
-              style={{
-                fontSize: '48px',
-                fontWeight: 700,
-                color: '#10b981',
-                fontFamily: 'ui-monospace, monospace',
-              }}
-            >
-              It
-            </span>
-          </div>
+          />
 
           {/* Title */}
           <div
             style={{
-              fontSize: '72px',
+              fontSize: '64px',
               fontWeight: 700,
-              color: 'white',
-              marginBottom: '20px',
+              marginBottom: '16px',
               letterSpacing: '-0.02em',
+              display: 'flex',
             }}
           >
-            HatchIt
+            <span style={{ color: 'white' }}>Hatch</span>
+            <span style={{ color: '#10b981' }}>It</span>
           </div>
 
           {/* Tagline */}
           <div
             style={{
-              fontSize: '28px',
-              color: '#a1a1aa',
-              marginBottom: '40px',
+              fontSize: '24px',
+              color: '#71717a',
             }}
           >
             Describe it. Build it. Ship it.
-          </div>
-
-          {/* Subtext */}
-          <div
-            style={{
-              fontSize: '20px',
-              color: '#10b981',
-              background: 'rgba(16, 185, 129, 0.1)',
-              padding: '12px 32px',
-              borderRadius: '100px',
-              border: '1px solid rgba(16, 185, 129, 0.2)',
-            }}
-          >
-            AI-assisted React websites → Your GitHub → Live
           </div>
         </div>
       </div>
