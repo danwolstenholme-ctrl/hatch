@@ -163,6 +163,31 @@ export default function SectionPreview({ code, darkMode = true, onRuntimeError, 
         }
       }
 
+      // =============================================================================
+      // JSX SYNTAX FIXER - Fix common JSX syntax issues from Claude
+      // =============================================================================
+      
+      // Fix: `) }` → `)}` - stray space between closing paren and brace in JSX
+      cleanCode = cleanCode.replace(/\)\s+\}/g, ')}')
+      
+      // Fix: `{ }` in JSX expressions that should be `{}` (empty object)
+      cleanCode = cleanCode.replace(/\{\s+\}/g, '{}')
+      
+      // Fix: `( )` that should be `()` (empty parens)
+      cleanCode = cleanCode.replace(/\(\s+\)/g, '()')
+      
+      // Fix: `} )` → `})` - stray space between brace and paren
+      cleanCode = cleanCode.replace(/\}\s+\)/g, '})')
+      
+      // Fix: `( {` → `({` - stray space in object destructuring
+      cleanCode = cleanCode.replace(/\(\s+\{/g, '({')
+      
+      // Fix: `} ,` → `},` - stray space before comma
+      cleanCode = cleanCode.replace(/\}\s+,/g, '},')
+      
+      // Fix: `] )` → `])` - stray space in array closing
+      cleanCode = cleanCode.replace(/\]\s+\)/g, '])')
+
       const sanitizedCode = sanitizeSvgDataUrls(cleanCode)
 
       // Use Babel to transform the code safely (No more Regex!)

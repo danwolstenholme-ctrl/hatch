@@ -177,6 +177,31 @@ const FullSitePreviewFrame = forwardRef<HTMLIFrameElement, FullSitePreviewFrameP
         }
       )
 
+      // =============================================================================
+      // JSX SYNTAX FIXER - Fix common JSX syntax issues from Claude
+      // =============================================================================
+      
+      // Fix: `) }` → `)}` - stray space between closing paren and brace in JSX
+      code = code.replace(/\)\s+\}/g, ')}')
+      
+      // Fix: `{ }` in JSX expressions that should be `{}` (empty object)
+      code = code.replace(/\{\s+\}/g, '{}')
+      
+      // Fix: `( )` that should be `()` (empty parens)
+      code = code.replace(/\(\s+\)/g, '()')
+      
+      // Fix: `} )` → `})` - stray space between brace and paren
+      code = code.replace(/\}\s+\)/g, '})')
+      
+      // Fix: `( {` → `({` - stray space in object destructuring
+      code = code.replace(/\(\s+\{/g, '({')
+      
+      // Fix: `} ,` → `},` - stray space before comma
+      code = code.replace(/\}\s+,/g, '},')
+      
+      // Fix: `] )` → `])` - stray space in array closing
+      code = code.replace(/\]\s+\)/g, '])')
+
       // Transform exports
       // Replace "export default function Name" -> "const Section_i = function Name"
       code = code.replace(/export\s+default\s+function\s+(\w+)?/g, (match, name) => {
