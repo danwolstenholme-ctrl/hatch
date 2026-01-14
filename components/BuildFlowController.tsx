@@ -2823,39 +2823,19 @@ export default function GeneratedPage() {
                     )}
                   </button>
                 </div>
-                {/* Edit Mode Toggle - Mobile */}
+                {/* Edit Mode Toggle - Mobile (simplified - just edit text) */}
                 {buildMobileTab === 'preview' && previewSections.length > 0 && (
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => setPreviewEditMode(!previewEditMode)}
-                      className={`p-2.5 rounded-xl border transition-all ${
-                        previewEditMode 
-                          ? 'bg-purple-500/20 text-purple-400 border-purple-500/50' 
-                          : 'bg-zinc-900/80 text-zinc-400 border-zinc-800/50 active:bg-zinc-800'
-                      }`}
-                      title={previewEditMode ? 'Exit Edit Mode' : 'Edit Text'}
-                    >
-                      <Edit3 className="w-4 h-4" />
-                    </button>
-                    <button
-                      onClick={() => {
-                        setPreviewInspectMode(!previewInspectMode)
-                        if (!previewInspectMode) {
-                          setPreviewEditMode(false)
-                        } else {
-                          setSelectedElement(null)
-                        }
-                      }}
-                      className={`p-2.5 rounded-xl border transition-all ${
-                        previewInspectMode 
-                          ? 'bg-cyan-500/20 text-cyan-400 border-cyan-500/50' 
-                          : 'bg-zinc-900/80 text-zinc-400 border-zinc-800/50 active:bg-zinc-800'
-                      }`}
-                      title={previewInspectMode ? 'Exit Inspect Mode' : 'Inspect Elements'}
-                    >
-                      <MousePointer2 className="w-4 h-4" />
-                    </button>
-                  </div>
+                  <button
+                    onClick={() => setPreviewEditMode(!previewEditMode)}
+                    className={`p-2.5 rounded-xl border transition-all ${
+                      previewEditMode 
+                        ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/50' 
+                        : 'bg-zinc-900/80 text-zinc-400 border-zinc-800/50 active:bg-zinc-800'
+                    }`}
+                    title={previewEditMode ? 'Exit Edit Mode' : 'Edit Text'}
+                  >
+                    <Edit3 className="w-4 h-4" />
+                  </button>
                 )}
               </div>
               
@@ -3017,6 +2997,35 @@ export default function GeneratedPage() {
                         </motion.div>
                       )}
                     </AnimatePresence>
+                  
+                  {/* Mobile Page-Wide Refine Bar */}
+                  {previewSections.length > 1 && buildMobileTab === 'preview' && (
+                    <div className="flex-shrink-0 px-3 pb-3 pt-2 border-t border-zinc-800/30 bg-zinc-900/50">
+                      <div className="flex items-center gap-2 bg-zinc-800/50 border border-zinc-700/50 rounded-xl p-2.5">
+                        <Wand2 className="w-4 h-4 text-emerald-400 flex-shrink-0" />
+                        <input
+                          type="text"
+                          value={pageRefinePrompt}
+                          onChange={(e) => setPageRefinePrompt(e.target.value)}
+                          onKeyDown={(e) => e.key === 'Enter' && handlePageRefine()}
+                          placeholder="Refine all: 'darker', 'more spacing'..."
+                          className="flex-1 bg-transparent text-sm text-white placeholder-zinc-500 focus:outline-none"
+                          disabled={isPageRefining}
+                        />
+                        <button
+                          onClick={handlePageRefine}
+                          disabled={!pageRefinePrompt.trim() || isPageRefining}
+                          className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-all ${
+                            pageRefinePrompt.trim() && !isPageRefining
+                              ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                              : 'bg-zinc-700 text-zinc-500 cursor-not-allowed'
+                          }`}
+                        >
+                          {isPageRefining ? '...' : 'All'}
+                        </button>
+                      </div>
+                    </div>
+                  )}
                   </div>
                 
 
@@ -3218,13 +3227,13 @@ export default function GeneratedPage() {
                   {previewSections.length > 1 && (
                     <div className="flex-shrink-0 px-3 pb-3">
                       <div className="flex items-center gap-2 bg-zinc-900/80 border border-zinc-800/50 rounded-lg p-2">
-                        <Wand2 className="w-4 h-4 text-purple-400 flex-shrink-0" />
+                        <Wand2 className="w-4 h-4 text-emerald-400 flex-shrink-0" />
                         <input
                           type="text"
                           value={pageRefinePrompt}
                           onChange={(e) => setPageRefinePrompt(e.target.value)}
                           onKeyDown={(e) => e.key === 'Enter' && handlePageRefine()}
-                          placeholder="Refine all sections: e.g. 'make it darker', 'add more spacing', 'use emerald accents'"
+                          placeholder="Refine all sections: e.g. 'make it darker', 'add more spacing'"
                           className="flex-1 bg-transparent text-sm text-white placeholder-zinc-500 focus:outline-none"
                           disabled={isPageRefining}
                         />
@@ -3233,7 +3242,7 @@ export default function GeneratedPage() {
                           disabled={!pageRefinePrompt.trim() || isPageRefining}
                           className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all ${
                             pageRefinePrompt.trim() && !isPageRefining
-                              ? 'bg-purple-500/20 text-purple-300 hover:bg-purple-500/30 border border-purple-500/30'
+                              ? 'bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30 border border-emerald-500/30'
                               : 'bg-zinc-800 text-zinc-500 cursor-not-allowed'
                           }`}
                         >

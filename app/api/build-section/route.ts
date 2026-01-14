@@ -392,6 +392,31 @@ Every ternary MUST have both branches: \`condition ? trueValue : falseValue\`
 - Modern, clean design with generous whitespace.
 - Use <${templateType === 'header' || templateType === 'nav' ? 'header' : 'section'}> as the root element.
 - Use placeholder images from "https://placehold.co/600x400/e2e8f0/1e293b?text=Image" if needed.
+
+## 🚨 SIZING GUIDELINES - CRITICAL
+Components must be appropriately sized. Oversized elements look amateurish.
+
+BUTTONS:
+- Standard buttons: px-4 py-2 or px-6 py-2.5 (NEVER px-8 py-4 or larger)
+- Small buttons: px-3 py-1.5
+- Text: text-sm or text-base (NEVER text-lg or text-xl for button text)
+- Rounded: rounded-lg or rounded-xl (not rounded-3xl)
+
+CARDS & CONTAINERS:
+- Padding: p-4 to p-6 (not p-8 or p-10)
+- Border radius: rounded-xl or rounded-2xl (not rounded-3xl)
+- Max width for cards: max-w-sm or max-w-md
+
+TYPOGRAPHY:
+- Headings: text-2xl to text-4xl (use text-5xl sparingly)
+- Body: text-sm or text-base
+- Subtext: text-xs or text-sm
+
+ICONS:
+- Standard: w-4 h-4 or w-5 h-5
+- Large/hero: w-6 h-6 or w-8 h-8 max
+- NEVER use w-12 h-12 or larger for interface icons
+
 ${mobileNavInstructions}
 ${brandInstructions}
 ${chronosphereContext}
