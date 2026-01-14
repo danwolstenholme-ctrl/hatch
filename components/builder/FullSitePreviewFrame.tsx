@@ -103,8 +103,11 @@ const FullSitePreviewFrame = forwardRef<HTMLIFrameElement, FullSitePreviewFrameP
   
   const srcDoc = useMemo(() => {
     if (!sections || sections.length === 0) {
+      console.log('[FullSitePreviewFrame] No sections to render')
       return ''
     }
+    
+    console.log('[FullSitePreviewFrame] Generating srcDoc for', sections.length, 'sections:', sections.map(s => s.id))
 
     // 1. Extract all Lucide imports to ensure they are available
     const allLucideImports = new Set<string>();
@@ -294,7 +297,14 @@ const FullSitePreviewFrame = forwardRef<HTMLIFrameElement, FullSitePreviewFrameP
       }
 
       const root = ReactDOM.createRoot(document.getElementById('root'));
-      root.render(<App />);
+      try {
+        root.render(<App />);
+        console.log('[Preview] Render complete!');
+      } catch (err) {
+        console.error('[Preview] Render failed:', err);
+        document.getElementById('root').innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;color:#ef4444;font-family:ui-monospace,monospace;flex-direction:column;gap:12px;padding:20px;text-align:center;"><div style="font-size:14px;font-weight:600;">Render Error</div><div style="font-size:12px;color:#fca5a5;max-width:400px;word-break:break-word;">' + String(err.message || err).slice(0, 200) + '</div></div>';
+        window.parent.postMessage({ type: 'runtime-error', error: String(err.message || err) }, '*');
+      }
       
       // ============================================
       // EDIT MODE - Double-click to edit text inline
@@ -674,19 +684,46 @@ ${Array.from(allLucideImports).map((name) => {
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Load React first and expose globally IMMEDIATELY -->
   <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-  <script>window.React = React; window.react = React;</script>
+  <script>window.React = React; window.react = React; console.log('[Preview] React loaded');</script>
   <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-  <script>window.ReactDOM = ReactDOM; window['react-dom'] = ReactDOM;</script>
+  <script>window.ReactDOM = ReactDOM; window['react-dom'] = ReactDOM; console.log('[Preview] ReactDOM loaded');</script>
   <!-- Now load framer-motion and lucide (they can find React on window) -->
   <script src="https://unpkg.com/framer-motion@10.16.4/dist/framer-motion.js"></script>
+  <script>console.log('[Preview] framer-motion loaded, Motion:', typeof Motion, 'motion:', typeof motion);</script>
   <script src="https://unpkg.com/lucide-react@0.294.0/dist/umd/lucide-react.js"></script>
+  <script>console.log('[Preview] lucide-react loaded:', typeof lucideReact);</script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <script>console.log('[Preview] Babel loaded:', typeof Babel);</script>
   <script>
+    // Show loading indicator until Babel runs
+    window._previewLoading = true;
+    setTimeout(function() {
+      if (window._previewLoading) {
+        var root = document.getElementById('root');
+        if (root && !root.innerHTML) {
+          root.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;color:#ef4444;font-family:system-ui;flex-direction:column;gap:12px;padding:20px;text-align:center;"><div style="font-size:14px;font-weight:600;">Preview Failed to Load</div><div style="font-size:12px;color:#a1a1aa;max-width:300px;">Check browser console for errors. Try refreshing.</div></div>';
+          window.parent.postMessage({ type: 'runtime-error', error: 'Preview failed to load - check console' }, '*');
+        }
+      }
+    }, 3000);
+    
     // Global error handler - notify parent of syntax errors for auto-fix
     window.onerror = function(message, source, lineno, colno, error) {
+      console.error('[Preview Error]', message, 'at line', lineno);
+      // Show error in root
+      var root = document.getElementById('root');
+      if (root) {
+        root.innerHTML = '<div style="display:flex;align-items:center;justify-content:center;height:100vh;color:#ef4444;font-family:ui-monospace,monospace;flex-direction:column;gap:12px;padding:20px;text-align:center;"><div style="font-size:14px;font-weight:600;">Runtime Error</div><div style="font-size:12px;color:#fca5a5;max-width:400px;word-break:break-word;">' + String(message).slice(0, 200) + '</div><div style="font-size:11px;color:#71717a;">Line: ' + lineno + '</div></div>';
+      }
       if (message && (message.includes('SyntaxError') || message.includes('Unexpected token'))) {
         window.parent.postMessage({
           type: 'syntax-error',
+          error: String(message),
+          line: lineno
+        }, '*');
+      } else {
+        window.parent.postMessage({
+          type: 'runtime-error',
           error: String(message),
           line: lineno
         }, '*');
@@ -978,6 +1015,10 @@ ${Array.from(allLucideImports).map((name) => {
     };
 
     // We do NOT use Object.assign for icons anymore, we use destructuring in the generated code.
+    
+    // Mark preview as loaded (clears timeout fallback)
+    window._previewLoading = false;
+    console.log('[Preview] Starting render...');
     
     ${fullScript}
   </script>
