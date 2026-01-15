@@ -1,6 +1,6 @@
 'use client'
 
-import { useMemo, forwardRef, useEffect, useImperativeHandle, useRef } from 'react'
+import { useMemo, forwardRef, useEffect, useImperativeHandle, useRef, useState } from 'react'
 import type { DesignTokens } from '@/lib/tokens'
 
 // Sanitize SVG data URLs to prevent XSS
@@ -9,6 +9,15 @@ const sanitizeSvgDataUrls = (input: string) => {
     const safe = data.replace(/"/g, '%22').replace(/'/g, '%27')
     return `url("${safe}")`
   })
+}
+
+// Deep compare sections to prevent unnecessary re-renders
+const sectionsAreEqual = (a: { id: string; code: string }[], b: { id: string; code: string }[]) => {
+  if (a.length !== b.length) return false
+  for (let i = 0; i < a.length; i++) {
+    if (a[i].id !== b[i].id || a[i].code !== b[i].code) return false
+  }
+  return true
 }
 
 interface FullSitePreviewFrameProps {
@@ -51,6 +60,18 @@ export interface SelectedElement {
 
 const FullSitePreviewFrame = forwardRef<HTMLIFrameElement, FullSitePreviewFrameProps>(function FullSitePreviewFrame({ sections, deviceView, seo, editMode = false, inspectMode = false, designTokens, onTextEdit, onElementSelect, onSyntaxError, onRuntimeError }, ref) {
   const internalRef = useRef<HTMLIFrameElement>(null)
+  
+  // Stabilize sections reference to prevent infinite re-renders
+  // Only update when actual content changes, not just array reference
+  const stableSectionsRef = useRef(sections)
+  const [stableSections, setStableSections] = useState(sections)
+  
+  useEffect(() => {
+    if (!sectionsAreEqual(sections, stableSectionsRef.current)) {
+      stableSectionsRef.current = sections
+      setStableSections(sections)
+    }
+  }, [sections])
   
   // Expose the internal ref to parent
   useImperativeHandle(ref, () => internalRef.current as HTMLIFrameElement)
@@ -102,16 +123,13 @@ const FullSitePreviewFrame = forwardRef<HTMLIFrameElement, FullSitePreviewFrameP
   }, [onTextEdit, onSyntaxError])
   
   const srcDoc = useMemo(() => {
-    if (!sections || sections.length === 0) {
+    if (!stableSections || stableSections.length === 0) {
       return ''
     }
-    
-    // Debug logging disabled to prevent console spam during re-renders
-    // console.log('[FullSitePreviewFrame] Generating srcDoc for', sections.length, 'sections:', sections.map(s => s.id))
 
     // 1. Extract all Lucide imports to ensure they are available
     const allLucideImports = new Set<string>();
-    const processedSections = sections.map((section, index) => {
+    const processedSections = stableSections.map((section, index) => {
       let code = sanitizeSvgDataUrls(section.code || '')
       
       // Extract imports
@@ -1106,7 +1124,7 @@ ${Array.from(allLucideImports).map((name) => {
 </html>`;
 
     return html
-  }, [sections, seo, designTokens])
+  }, [stableSections, seo, designTokens])
 
   return (
     <div className={`w-full h-full bg-zinc-950 transition-all duration-300 mx-auto ${
