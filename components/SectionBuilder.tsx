@@ -23,7 +23,9 @@ import {
   Lock,
   MessageSquare,
   Check,
-  ChevronDown
+  ChevronDown,
+  RotateCcw,
+  History
 } from 'lucide-react'
 import GeneratingModal from './builder/GeneratingModal'
 import { LogoMark } from './Logo'
@@ -641,6 +643,40 @@ export default function SectionBuilder({
     savedPreview ? 'complete' : (dbSection.status === 'complete' ? 'complete' : (hasInitialPrompt ? 'generating' : 'input'))
   )
   const [generatedCode, setGeneratedCode] = useState(savedPreview?.code || dbSection.code || '')
+  
+  // Version history for undo functionality
+  const [codeHistory, setCodeHistory] = useState<Array<{ code: string; label: string; timestamp: number }>>([])
+  const [historyIndex, setHistoryIndex] = useState(-1) // -1 means "at current", 0+ means viewing history
+  const [showHistory, setShowHistory] = useState(false)
+  
+  // Push code to history (call this before major changes)
+  const pushToHistory = (label: string) => {
+    if (!generatedCode) return
+    setCodeHistory(prev => {
+      // Don't push duplicates
+      if (prev.length > 0 && prev[prev.length - 1].code === generatedCode) return prev
+      // Keep last 10 versions
+      const newHistory = [...prev, { code: generatedCode, label, timestamp: Date.now() }].slice(-10)
+      return newHistory
+    })
+    setHistoryIndex(-1) // Reset to current
+  }
+  
+  // Undo to previous version
+  const handleUndo = () => {
+    if (codeHistory.length === 0) return
+    const lastVersion = codeHistory[codeHistory.length - 1]
+    // Save current before undoing
+    const currentEntry = { code: generatedCode, label: 'Before undo', timestamp: Date.now() }
+    setCodeHistory(prev => [...prev.slice(0, -1)]) // Remove last (we're reverting to it)
+    setGeneratedCode(lastVersion.code)
+    // Store the "undone" version so we can redo
+    setHistoryIndex(codeHistory.length - 1)
+  }
+  
+  // Check if undo is available
+  const canUndo = codeHistory.length > 0
+  
   const [, setIsPreviewReady] = useState(false)
   const [streamingCode, setStreamingCode] = useState('') // For real-time display
   const [reasoning, setReasoning] = useState(savedPreview?.reasoning || '') // AI's design reasoning
@@ -1400,6 +1436,11 @@ ${code.slice(0, 2000)}`,
       
       buildProgress.complete() // Build finished - show complete state
       
+      // Push previous code to history before updating (if rebuilding)
+      if (generatedCode) {
+        pushToHistory('Before rebuild')
+      }
+      
       // Architect is done! No auto-polish - user can opt-in later
       setGeneratedCode(normalizedCode)
       setStreamingCode('')
@@ -1588,6 +1629,9 @@ ${code.slice(0, 2000)}`,
         codeEndRef.current?.scrollIntoView({ behavior: 'auto', block: 'end' })
       }
 
+      // Save to history before applying refinement
+      pushToHistory(`Before: ${refinePrompt.slice(0, 30)}...`)
+      
       setGeneratedCode(refinedCode)
       setStreamingCode('')
       setRefined(true)
@@ -1660,6 +1704,9 @@ ${code.slice(0, 2000)}`,
       const polishedCode = unwrapCodePayload(rawPolishedCode)
 
       if (wasRefined && polishedCode !== generatedCode) {
+        // Save to history before polish
+        pushToHistory('Before polish')
+        
         // Show polished code streaming
         setStreamingCode('')
         for (let i = 0; i < polishedCode.length; i += 20) {
@@ -2077,8 +2124,66 @@ ${code.slice(0, 2000)}`,
             {/* Command Bar - unified for both demo and auth */}
             {(stage === 'input' || stage === 'complete') && (
               <div className="bg-zinc-900/70 backdrop-blur-xl border border-zinc-800/50 rounded-lg p-2.5 space-y-2">
-                {/* Gentle ephemeral reminder - only for demo */}
-                {isDemo && <p className="text-[10px] text-zinc-600 text-center">Demo mode — progress resets on refresh</p>}
+                {/* Undo Button + Gentle ephemeral reminder */}
+                <div className="flex items-center justify-between">
+                  {canUndo ? (
+                    <button
+                      onClick={handleUndo}
+                      className="flex items-center gap-1.5 px-2 py-1 text-[11px] text-zinc-400 hover:text-white bg-zinc-800/50 hover:bg-zinc-800 rounded-md transition-colors"
+                      title="Undo last change"
+                    >
+                      <RotateCcw className="w-3 h-3" />
+                      Undo
+                    </button>
+                  ) : (
+                    <div /> // Spacer
+                  )}
+                  {isDemo && <p className="text-[10px] text-zinc-600">Demo mode — progress resets on refresh</p>}
+                  {!isDemo && codeHistory.length > 0 && (
+                    <button
+                      onClick={() => setShowHistory(!showHistory)}
+                      className="flex items-center gap-1 px-2 py-1 text-[10px] text-zinc-500 hover:text-zinc-300 transition-colors"
+                    >
+                      <History className="w-3 h-3" />
+                      {codeHistory.length} version{codeHistory.length !== 1 ? 's' : ''}
+                    </button>
+                  )}
+                </div>
+                
+                {/* Version History Dropdown */}
+                <AnimatePresence>
+                  {showHistory && codeHistory.length > 0 && (
+                    <motion.div
+                      initial={{ opacity: 0, height: 0 }}
+                      animate={{ opacity: 1, height: 'auto' }}
+                      exit={{ opacity: 0, height: 0 }}
+                      className="border border-zinc-800 rounded-md overflow-hidden"
+                    >
+                      <div className="p-2 bg-zinc-900/50 border-b border-zinc-800">
+                        <p className="text-[10px] text-zinc-500 font-medium">Version History</p>
+                      </div>
+                      <div className="max-h-32 overflow-y-auto">
+                        {codeHistory.slice().reverse().map((entry, i) => (
+                          <button
+                            key={entry.timestamp}
+                            onClick={() => {
+                              pushToHistory('Before restore')
+                              setGeneratedCode(entry.code)
+                              setShowHistory(false)
+                            }}
+                            className="w-full flex items-center justify-between px-2 py-1.5 text-left hover:bg-zinc-800/50 transition-colors border-b border-zinc-800/50 last:border-0"
+                          >
+                            <span className="text-[11px] text-zinc-300 truncate flex-1">{entry.label}</span>
+                            <span className="text-[9px] text-zinc-600 ml-2">
+                              {new Date(entry.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            </span>
+                          </button>
+                        ))}
+                      </div>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+                
                 {/* Refining Progress Bar */}
                 {isUserRefining && (
                   <div className="relative h-1 bg-zinc-800 rounded-full overflow-hidden">
