@@ -178,6 +178,18 @@ html, body {
   }
 }
 
+/* On mobile touch devices, prevent opacity:0 animation flash by making elements visible faster */
+/* This acts as a CSS fallback while JS hydrates */
+@media (hover: none) and (pointer: coarse) {
+  /* Target Framer Motion animated elements before JS hydrates */
+  [style*="opacity: 0"],
+  [style*="opacity:0"] {
+    opacity: 1 !important;
+    transform: none !important;
+    transition-duration: 0ms !important;
+  }
+}
+
 /* Prevent zoom on mobile input focus */
 input, textarea, select {
   font-size: 16px;

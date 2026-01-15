@@ -498,7 +498,10 @@ Example JSON structure:
 ## DESIGN PHILOSOPHY
 - "God is in the details." - Mies van der Rohe
 - Make it feel expensive.
-- Use subtle animations (fade-in, slide-up) with Framer Motion.
+- Use subtle animations (fade-in, slide-up) with Framer Motion - but keep them simple.
+- ANIMATION BEST PRACTICE for mobile: Use instant animations on mount (initial + animate), NOT scroll-triggered.
+  ✅ GOOD: initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
+  ❌ BAD: whileInView - causes stutter on mobile as elements pop in while scrolling.
 - Ensure high contrast and readability.
 - AVOID: Generic centered hero + gradient background + 3 cards layout
 

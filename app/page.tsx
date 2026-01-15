@@ -1,25 +1,50 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useRef, useState, useEffect } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useUser } from '@clerk/nextjs'
-import { motion, useInView, AnimatePresence } from 'framer-motion'
+import { motion, useInView, AnimatePresence, useReducedMotion } from 'framer-motion'
 import { Terminal, Layers, Shield, Zap, Code2, Globe, ArrowRight, CheckCircle2, Layout, Smartphone } from 'lucide-react'
 import HomepageWelcome from '@/components/HomepageWelcome'
 
+// Hook to detect mobile/touch devices where animations can cause stutter
+function useIsMobile() {
+  const [isMobile, setIsMobile] = useState(false)
+  
+  useEffect(() => {
+    // Check for touch capability and small screen
+    const checkMobile = () => {
+      const hasTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0
+      const isSmallScreen = window.innerWidth < 768
+      setIsMobile(hasTouch && isSmallScreen)
+    }
+    checkMobile()
+    window.addEventListener('resize', checkMobile)
+    return () => window.removeEventListener('resize', checkMobile)
+  }, [])
+  
+  return isMobile
+}
+
 // Section wrapper - staggered fade-in with depth
+// On mobile, animations start visible to prevent flash/stutter
 function Section({ children, className = '', id = '', delay = 0 }: { children: React.ReactNode; className?: string; id?: string; delay?: number }) {
   const ref = useRef(null)
   const isInView = useInView(ref, { once: true, margin: "-100px" })
+  const prefersReducedMotion = useReducedMotion()
+  const isMobile = useIsMobile()
+  
+  // Skip heavy animations on mobile or when user prefers reduced motion
+  const shouldReduceMotion = prefersReducedMotion || isMobile
   
   return (
     <motion.section
       ref={ref}
       id={id}
-      initial={{ opacity: 0, y: 40 }}
-      animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 40 }}
-      transition={{ duration: 0.6, delay, ease: [0.16, 1, 0.3, 1] }}
+      initial={shouldReduceMotion ? { opacity: 1, y: 0 } : { opacity: 0, y: 40 }}
+      animate={shouldReduceMotion ? { opacity: 1, y: 0 } : (isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 40 })}
+      transition={shouldReduceMotion ? { duration: 0 } : { duration: 0.6, delay, ease: [0.16, 1, 0.3, 1] }}
       className={className}
     >
       {children}
@@ -30,10 +55,36 @@ function Section({ children, className = '', id = '', delay = 0 }: { children: R
 export default function Home() {
   const { isSignedIn } = useUser()
   const router = useRouter()
+  const prefersReducedMotion = useReducedMotion()
+  const isMobile = useIsMobile()
+  
+  // Skip heavy animations on mobile or when user prefers reduced motion
+  // This prevents the "flash of invisible content" caused by opacity:0 initial states
+  const shouldReduceMotion = prefersReducedMotion || isMobile
 
   const handleStart = () => {
     router.push(isSignedIn ? '/builder' : '/demo')
   }
+  
+  // Easing curve for smooth animations (cubic-bezier equivalent)
+  const smoothEase = [0.16, 1, 0.3, 1] as const
+  
+  // Animation props - disabled on mobile to prevent stutter
+  const fadeUp = shouldReduceMotion 
+    ? { initial: { opacity: 1, y: 0 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0 } }
+    : { initial: { opacity: 0, y: 40 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0.8, ease: smoothEase } }
+  
+  const fadeUpSmall = (delay: number = 0) => shouldReduceMotion
+    ? { initial: { opacity: 1, y: 0 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0 } }
+    : { initial: { opacity: 0, y: 20 }, animate: { opacity: 1, y: 0 }, transition: { delay, duration: 0.8, ease: smoothEase } }
+  
+  const fadeIn = (delay: number = 0) => shouldReduceMotion
+    ? { initial: { opacity: 1 }, animate: { opacity: 1 }, transition: { duration: 0 } }
+    : { initial: { opacity: 0 }, animate: { opacity: 1 }, transition: { delay, duration: 0.6 } }
+  
+  const fadeScale = (delay: number = 0) => shouldReduceMotion
+    ? { initial: { opacity: 1, scale: 1 }, animate: { opacity: 1, scale: 1 }, transition: { duration: 0 } }
+    : { initial: { opacity: 0, scale: 0.9 }, animate: { opacity: 1, scale: 1 }, transition: { delay, duration: 0.6 } }
   
   return (
     <main className="min-h-screen bg-zinc-950 text-zinc-200">
@@ -54,19 +105,15 @@ export default function Home() {
         <div className="relative z-10 max-w-5xl mx-auto w-full text-center">
 
             <motion.div
-            initial={{ opacity: 0, y: 40 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+            {...fadeUp}
             className="space-y-8"
           >
             <motion.div
-              initial={{ opacity: 0, scale: 0.9 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.1, duration: 0.6 }}
+              {...fadeScale(0.1)}
               className="inline-flex items-center gap-2 px-4 py-2 bg-zinc-900/50 border border-zinc-800 rounded-full text-xs text-zinc-400 backdrop-blur-sm"
             >
               <motion.span 
-                animate={{ scale: [1, 1.2, 1], opacity: [0.5, 1, 0.5] }}
+                animate={shouldReduceMotion ? {} : { scale: [1, 1.2, 1], opacity: [0.5, 1, 0.5] }}
                 transition={{ duration: 2, repeat: Infinity }}
                 className="w-1.5 h-1.5 bg-emerald-400 rounded-full" 
               />
@@ -74,14 +121,12 @@ export default function Home() {
             </motion.div>
 
             <motion.h1 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.2, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
+              {...fadeUpSmall(0.2)}
               className="text-4xl sm:text-5xl md:text-6xl font-bold tracking-tight text-white leading-[1.15]"
             >
               Ship{' '}
               <motion.span
-                animate={{ 
+                animate={shouldReduceMotion ? {} : { 
                   boxShadow: [
                     '0 0 20px rgba(16,185,129,0.1)',
                     '0 0 30px rgba(16,185,129,0.2)',
@@ -96,9 +141,7 @@ export default function Home() {
                 </span>
               </motion.span><br />
               <motion.span 
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.4, duration: 0.8 }}
+                {...fadeUpSmall(0.4)}
                 className="bg-gradient-to-r from-zinc-200 via-zinc-400 to-zinc-500 bg-clip-text text-transparent"
               >
                 in minutes.
@@ -106,31 +149,29 @@ export default function Home() {
             </motion.h1>
 
             <motion.p 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5, duration: 0.6 }}
+              {...fadeUpSmall(0.5)}
               className="text-base sm:text-lg text-zinc-400 max-w-2xl mx-auto leading-relaxed"
             >
               An AI builder that actually gives you the code — your GitHub, your rules, no lock-in.
             </motion.p>
 
             <motion.div 
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.7, duration: 0.6 }}
+              {...fadeUpSmall(0.7)}
               className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-8"
             >
               <motion.button
-                whileTap={{ scale: 0.98 }}
+                whileTap={shouldReduceMotion ? {} : { scale: 0.98 }}
                 onClick={handleStart}
                 className="group relative inline-flex justify-center items-center gap-2 px-5 py-2.5 bg-emerald-500/15 backdrop-blur-2xl border border-emerald-500/40 hover:bg-emerald-500/20 hover:border-emerald-500/50 text-white text-sm font-medium rounded-lg transition-all shadow-[0_0_15px_rgba(16,185,129,0.15)] overflow-hidden"
               >
                 <div className="absolute inset-0 bg-gradient-to-br from-white/[0.08] via-transparent to-transparent rounded-xl pointer-events-none" />
-                <motion.div
-                  className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0"
-                  animate={{ x: ['-200%', '200%'] }}
-                  transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
-                />
+                {!shouldReduceMotion && (
+                  <motion.div
+                    className="absolute inset-0 bg-gradient-to-r from-white/0 via-white/20 to-white/0"
+                    animate={{ x: ['-200%', '200%'] }}
+                    transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
+                  />
+                )}
                 <span className="relative">{isSignedIn ? 'Start Building' : 'Try the Demo'}</span>
                 <ArrowRight className="relative w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
               </motion.button>
@@ -152,9 +193,7 @@ export default function Home() {
             </motion.div>
 
             <motion.div 
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.9, duration: 0.6 }}
+              {...fadeIn(0.9)}
               className="flex flex-wrap items-center justify-center gap-6 text-xs text-zinc-500 pt-12"
             >
               {[
@@ -165,9 +204,10 @@ export default function Home() {
               ].map((item, i) => (
                 <motion.div
                   key={item.label}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 1 + item.delay, duration: 0.4 }}
+                  {...(shouldReduceMotion 
+                    ? { initial: { opacity: 1, y: 0 }, animate: { opacity: 1, y: 0 }, transition: { duration: 0 } }
+                    : { initial: { opacity: 0, y: 10 }, animate: { opacity: 1, y: 0 }, transition: { delay: 1 + item.delay, duration: 0.4 } }
+                  )}
                   className="flex items-center gap-2"
                 >
                   <CheckCircle2 className="w-4 h-4 text-emerald-400" />
