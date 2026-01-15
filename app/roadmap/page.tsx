@@ -31,45 +31,46 @@ const roadmap: RoadmapSection[] = [
     title: 'Recently Shipped',
     items: [
       {
-        title: 'Device Preview Toggle',
-        description: 'Phone, tablet, and desktop preview buttons in the builder.',
+        title: 'Usage Analytics Dashboard',
+        description: 'Track your generations, builds, and deployments.',
         status: 'shipped',
         date: 'Jan 2026',
-        details: 'See how your site looks at 375px, 768px, or full width. Click the device buttons in the preview header.'
+        details: 'New dashboard pages showing your activity feed, usage stats, and build history. See exactly how you\'re using HatchIt.'
       },
       {
-        title: '5-Step Project Wizard',
-        description: 'Guided setup: Info, Brand, Homepage, Pages, Review.',
+        title: 'Project Duplication',
+        description: 'Clone any project with one click.',
         status: 'shipped',
         date: 'Jan 2026',
-        details: 'Plan your entire site structure before building. Pick your pages, choose your sections, set your brand. Then build with confidence.'
+        details: 'Duplicate existing projects including all sections and code. Great for creating variations or starting from a proven base.'
+      },
+      {
+        title: 'Undo / Version History',
+        description: 'Restore previous versions of any section.',
+        status: 'shipped',
+        date: 'Jan 2026',
+        details: 'Every rebuild and refinement is saved. Click the history button to see all versions and restore any previous state.'
       },
       {
         title: 'Multi-Page Sites',
-        description: 'Add About, Services, Pricing, Contact, FAQ, and Portfolio pages.',
+        description: 'Build complete websites with multiple pages.',
         status: 'shipped',
         date: 'Jan 2026',
-        details: 'Each page comes with preset sections. Build a complete site, not just a landing page.'
+        details: 'Add About, Services, Pricing, Contact, FAQ, and Portfolio pages. Each page comes with preset sections.'
       },
       {
-        title: 'AI Prompt Helper',
-        description: 'Get help writing better prompts for each section.',
+        title: 'One-Click Deploy',
+        description: 'Deploy to hatchit.dev subdomains instantly.',
         status: 'shipped',
-        date: 'Dec 2025',
-        details: 'Click the sparkle icon and describe what you want. The helper rewrites your prompt to get better results from the builder.'
+        date: 'Jan 2026',
+        details: 'Click Publish and your site goes live in seconds. Get a shareable URL immediately.'
       },
     ]
   },
   {
     quarter: 'Q1 2026',
-    title: 'Coming Soon',
+    title: 'In Progress',
     items: [
-      {
-        title: 'Website Cloner',
-        description: 'Paste any URL and rebuild it with your branding.',
-        status: 'building',
-        details: 'Analyze existing websites and recreate them in your stack. Great for "I want something like this" moments.'
-      },
       {
         title: 'Custom Domains',
         description: 'Connect your own domain to deployed sites.',
@@ -77,10 +78,16 @@ const roadmap: RoadmapSection[] = [
         details: 'Currently sites deploy to hatchit.dev subdomains. Soon you\'ll connect your own domain with automatic SSL.'
       },
       {
-        title: 'Visual Editor',
-        description: 'Click and drag to adjust layouts.',
+        title: 'Site Cloner (Replicator)',
+        description: 'Paste any URL and rebuild it with your branding.',
+        status: 'building',
+        details: 'Analyze existing websites and recreate them as editable HatchIt projects. Singularity tier feature.'
+      },
+      {
+        title: 'API Access',
+        description: 'Programmatic access to the build system.',
         status: 'planned',
-        details: 'Move sections around, resize elements, tweak spacing without touching code. AI-generated, human-refined.'
+        details: 'Build and deploy sites via API. Perfect for agencies and automation workflows.'
       },
     ]
   },
@@ -89,22 +96,22 @@ const roadmap: RoadmapSection[] = [
     title: 'On the Horizon',
     items: [
       {
-        title: 'Backend Generation',
-        description: 'Generate API routes, database schemas, and auth flows.',
+        title: 'Team Workspaces',
+        description: 'Collaborate with your team on projects.',
         status: 'planned',
-        details: 'Describe your app\'s data model and get working Supabase schemas, API endpoints, and authentication.'
+        details: 'Invite team members, share projects, and build together. Singularity tier feature.'
+      },
+      {
+        title: 'Visual Editor',
+        description: 'Click and drag to adjust layouts.',
+        status: 'planned',
+        details: 'Move sections around, resize elements, tweak spacing without touching code.'
       },
       {
         title: 'Component Library',
         description: 'Save and reuse your favorite generated sections.',
         status: 'planned',
-        details: 'Build once, use everywhere. Create your own library of components.'
-      },
-      {
-        title: 'Team Collaboration',
-        description: 'Work together on projects.',
-        status: 'planned',
-        details: 'Invite team members, share projects, and build together.'
+        details: 'Build once, use everywhere. Create your own library of reusable components.'
       },
     ]
   },
