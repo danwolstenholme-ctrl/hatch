@@ -1590,6 +1590,9 @@ ${code.slice(0, 2000)}`,
         finalRefineRequest = `TARGET ELEMENT: <${selectedElement.tagName} class="${selectedElement.className}">${selectedElement.text}</${selectedElement.tagName}>. USER REQUEST: ${refinePrompt}. Focus changes specifically on this element.`
       }
 
+      // Save to history BEFORE the API call - so we can undo even if API fails
+      pushToHistory(`Before: ${refinePrompt.slice(0, 30)}...`)
+      
       const response = await fetch('/api/refine-section', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -1628,9 +1631,6 @@ ${code.slice(0, 2000)}`,
         setStreamingCode(refinedCode.slice(0, i + 20))
         codeEndRef.current?.scrollIntoView({ behavior: 'auto', block: 'end' })
       }
-
-      // Save to history before applying refinement
-      pushToHistory(`Before: ${refinePrompt.slice(0, 30)}...`)
       
       setGeneratedCode(refinedCode)
       setStreamingCode('')

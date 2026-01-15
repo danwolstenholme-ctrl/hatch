@@ -477,6 +477,21 @@ BUTTONS:
 - Text: text-sm or text-base (NEVER text-lg or text-xl for button text)
 - Rounded: rounded-lg or rounded-xl (not rounded-3xl)
 
+## 🚨 CONTAINER WIDTH CONSISTENCY (CRITICAL)
+ALL sections must use the SAME container pattern for visual consistency:
+- Inner content wrapper: max-w-7xl mx-auto px-4 sm:px-6 lg:px-8
+- This creates a consistent 1280px max-width container with responsive padding
+- NEVER use max-w-6xl, max-w-5xl, or max-w-4xl for main section containers
+- NEVER use different padding values (px-8, px-10, etc.)
+- The only exception is full-bleed backgrounds (section itself is full-width, inner content uses container)
+
+Pattern:
+<section className="py-16 bg-zinc-950">
+  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    {/* Content here */}
+  </div>
+</section>
+
 CARDS & CONTAINERS:
 - Padding: p-4 to p-6 (not p-8 or p-10)
 - Border radius: rounded-xl or rounded-2xl (not rounded-3xl)
