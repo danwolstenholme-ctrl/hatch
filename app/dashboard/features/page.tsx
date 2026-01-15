@@ -88,6 +88,18 @@ const features = [
         description: 'Reverse-engineer any site into build prompts.',
         status: 'active',
         tier: 'singularity'
+      },
+      {
+        title: 'Priority Queue',
+        description: 'Your AI requests are processed first, always.',
+        status: 'active',
+        tier: 'singularity'
+      },
+      {
+        title: 'Bulk Export',
+        description: 'Export all your projects at once.',
+        status: 'active',
+        tier: 'singularity'
       }
     ]
   },

@@ -98,6 +98,43 @@ export default function DashboardPage() {
     if (res.ok) setProjects(prev => prev.filter(p => p.id !== id))
   }
 
+  const handleDuplicate = async (e: MouseEvent<HTMLButtonElement>, id: string) => {
+    e.preventDefault()
+    e.stopPropagation()
+    
+    // Check if at limit first
+    if (isAtLimit) {
+      router.push('/dashboard/billing')
+      return
+    }
+    
+    try {
+      const res = await fetch('/api/project/duplicate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ projectId: id })
+      })
+      
+      const data = await res.json()
+      
+      if (data.requiresUpgrade) {
+        router.push('/dashboard/billing')
+        return
+      }
+      
+      if (res.ok && data.project) {
+        // Refresh project list
+        const listRes = await fetch('/api/project/list')
+        if (listRes.ok) {
+          const listData = await listRes.json()
+          setProjects(listData.projects || [])
+        }
+      }
+    } catch (err) {
+      console.error('Failed to duplicate:', err)
+    }
+  }
+
   if (!isLoaded || !isSignedIn || isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[60vh]">
@@ -181,6 +218,14 @@ export default function DashboardPage() {
                     >
                       View site
                     </a>
+                  )}
+                  {tier !== 'free' && (
+                    <button
+                      onClick={(e) => handleDuplicate(e, project.id)}
+                      className="text-[11px] text-zinc-700 hover:text-zinc-400 transition-colors opacity-0 group-hover:opacity-100"
+                    >
+                      Duplicate
+                    </button>
                   )}
                   <button
                     onClick={(e) => handleDelete(e, project.id)}

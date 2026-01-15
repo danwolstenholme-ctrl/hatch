@@ -90,6 +90,8 @@ export const PRICING_TIERS: Record<string, PricingTier> = {
     features: [
       'Everything in Visionary',
       'Site cloning (replicate any URL)',
+      'Priority AI queue',
+      'Bulk export all projects',
       'Commercial / white-label license',
     ],
   },

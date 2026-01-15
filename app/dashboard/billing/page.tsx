@@ -76,7 +76,7 @@ export default function BillingPage() {
       id: 'singularity',
       name: 'Singularity',
       price: 199,
-      features: ['Site cloning', 'White-label license', 'Commercial use'],
+      features: ['Site cloning', 'Priority AI queue', 'Bulk export', 'White-label license'],
     },
   ]
 

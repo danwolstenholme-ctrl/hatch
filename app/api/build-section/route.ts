@@ -525,14 +525,16 @@ export async function POST(request: NextRequest) {
     // Check generation limits for authenticated users
     let isPaid = false
     let dbUser = null
+    let isSingularity = false
     if (userId) {
       const clerkUser = await currentUser()
       const email = clerkUser?.emailAddresses?.[0]?.emailAddress
       dbUser = await getOrCreateUser(userId, email)
       
       // Check if paid
-      const accountSub = clerkUser?.publicMetadata?.accountSubscription as { status?: string } | undefined
+      const accountSub = clerkUser?.publicMetadata?.accountSubscription as { status?: string; tier?: string } | undefined
       isPaid = accountSub?.status === 'active'
+      isSingularity = accountSub?.tier === 'singularity'
       
       // Enforce generation limit for free users
       const genCheck = await checkAndIncrementGeneration(userId, isPaid)
@@ -740,7 +742,8 @@ export async function POST(request: NextRequest) {
       success: true, 
       code: generatedCode,
       reasoning: reasoning,
-      model: 'claude-sonnet-4-5-20250929'
+      model: 'claude-sonnet-4-5-20250929',
+      priorityQueue: isSingularity
     })
 
   } catch (error) {
