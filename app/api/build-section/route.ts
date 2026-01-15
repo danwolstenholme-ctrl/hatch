@@ -132,13 +132,27 @@ function buildSystemPrompt(
 The user provided a vague/generic prompt: "${userPrompt}"
 
 DO NOT create something bland or generic. Instead:
-1. Pick ONE compelling use case: A luxury travel agency, a cutting-edge AI startup, a boutique design studio, or a high-end restaurant.
-2. INVENT specific, premium content: Company name, specific services, real-sounding testimonials, concrete pricing.
+1. Pick ONE compelling business from this list and commit to it fully:
+   - "Meridian" - A luxury travel agency specializing in private jet experiences
+   - "Nexus AI" - A cutting-edge machine learning platform for enterprises  
+   - "Atelier Studio" - A boutique brand design agency in Brooklyn
+   - "Ember & Oak" - A high-end farm-to-table restaurant
+   - "Vertex Capital" - A fintech startup revolutionizing payments
+   - "Lumina Health" - A premium wellness and fitness studio
+   
+2. INVENT specific, premium content:
+   - Real-sounding company name, tagline, and mission
+   - Concrete services with actual pricing (e.g., "$2,499/month")
+   - Specific testimonials with names and companies
+   - Real metrics (e.g., "Trusted by 500+ enterprises", "4.9★ rating")
+   
 3. Make it look like a $10,000 custom website - not a template.
-4. Use SPECIFIC text, not "Lorem ipsum" or "[Your Text Here]".
 
-Example: Instead of "Welcome to our website", write "Redefining Luxury Travel Since 2019" with actual trip packages and prices.
-The goal is to WOW the user with specificity, not show them a blank template.`
+4. Use SPECIFIC text throughout:
+   ❌ "Welcome to our website" 
+   ✅ "Private Aviation, Perfected. — Meridian connects discerning travelers with the world's finest aircraft."
+   
+The goal is to WOW the user with specificity. Show them what's possible.`
     : '';
 
   const componentName = sectionName
@@ -478,6 +492,42 @@ ICONS:
 - Large/hero: w-6 h-6 or w-8 h-8 max
 - NEVER use w-12 h-12 or larger for interface icons
 
+IMAGES:
+- Always use aspect-ratio classes to prevent layout shift: aspect-video, aspect-square, aspect-[4/3]
+- Use object-cover to prevent stretching: className="object-cover"
+- Wrap in a container with overflow-hidden for rounded corners
+- For placeholder images, use: https://placehold.co/WIDTHxHEIGHT/BGCOLOR/TEXTCOLOR?text=Label
+
+## LINKS & NAVIGATION
+- For demo/preview links, use href="#" to prevent 404 errors
+- Add cursor-pointer to clickable elements
+- Use onClick handlers for demo functionality if needed
+- Social media links should use: href="#" with aria-label="Visit our Twitter"
+
+## TEXT CONTRAST (CRITICAL)
+On dark backgrounds (zinc-900, zinc-950, black):
+- Primary text: text-white or text-zinc-100 (NEVER text-zinc-400 for main content)
+- Secondary text: text-zinc-300 or text-zinc-400
+- Muted/labels: text-zinc-500
+- NEVER use text-zinc-600+ on dark backgrounds - it's unreadable
+
+On light backgrounds (white, zinc-50, zinc-100):
+- Primary text: text-zinc-900 or text-black
+- Secondary text: text-zinc-600 or text-zinc-700
+- NEVER use text-zinc-400 on light backgrounds
+
+## BUTTON HIERARCHY
+- Primary CTA: Filled with brand color, high contrast (bg-emerald-500 text-white)
+- Secondary CTA: Outlined or subtle fill (border border-zinc-700 text-white)
+- Ghost/Tertiary: Text only with hover state (text-zinc-400 hover:text-white)
+- NEVER make two CTAs side-by-side look identical
+
+## GRADIENTS (USE SPARINGLY)
+- Subtle text gradients: bg-gradient-to-r from-white to-zinc-400 bg-clip-text text-transparent
+- Background gradients should be SUBTLE: from-zinc-900 to-zinc-950 (not from-purple-500 to-pink-500)
+- Avoid rainbow/multicolor gradients unless explicitly requested
+- Glassmorphism: bg-white/5 backdrop-blur-xl border border-white/10
+
 ${mobileNavInstructions}
 ${brandInstructions}
 ${chronosphereContext}
@@ -504,6 +554,26 @@ Example JSON structure:
   ❌ BAD: whileInView - causes stutter on mobile as elements pop in while scrolling.
 - Ensure high contrast and readability.
 - AVOID: Generic centered hero + gradient background + 3 cards layout
+
+## COMMON MISTAKES TO AVOID
+1. **Empty State Hell**: Don't render empty containers. If no data, don't render the section.
+2. **Centered Everything**: Left-align body text. Only center headlines and CTAs when appropriate.
+3. **Icon Soup**: Don't use icons just to fill space. Each icon should have meaning.
+4. **Wall of Text**: Break up long paragraphs. Use bullet points, cards, or visual hierarchy.
+5. **Click Here Syndrome**: Write descriptive link/button text. "Get Started Free" not "Click Here".
+6. **Zombie Forms**: Forms MUST have visible labels and clear submit buttons. Never hide the submit.
+7. **Infinite Scroll Trap**: Avoid overflow-y-auto on sections. Let the page scroll naturally.
+8. **Sticky Chaos**: Only ONE sticky element per page (usually the header). Don't make everything sticky.
+9. **Z-Index Wars**: Use sensible z-index values (10, 20, 50). Don't use z-[9999].
+10. **Touch Target Fail**: Buttons/links must be at least 44x44px for mobile touch targets.
+
+## POLISH DETAILS (What separates good from great)
+- Add subtle box-shadow to cards: shadow-lg shadow-black/5
+- Use transition-all duration-200 for hover states
+- Add focus-visible:ring-2 focus-visible:ring-emerald-500 for keyboard navigation
+- Rounded corners should be consistent within a section
+- Use tracking-tight on large headlines, tracking-wide on small caps
+- Add a subtle border to dark cards: border border-zinc-800/50
 
 Now build the ${sectionName} section.`
 }
