@@ -236,12 +236,20 @@ These hooks crash in the preview. If the code uses them, REMOVE them and use CSS
 
 ## OUTPUT FORMAT
 
-Return ONLY valid JSON (no markdown code blocks, no explanation):
+Return your response using these EXACT markers (not JSON - avoids escaping issues):
 
-{
-  "refinedCode": "function ComponentName() { return ( <section>...</section> ) }",
-  "changes": ["Made buttons larger with py-4 px-8", "Changed primary color to emerald-500"]
-}
+<code>
+'use client'
+// Your complete refined React component code here
+// Quotes don't need escaping - just write normal code
+</code>
+
+<changes>
+- Change 1: What you modified
+- Change 2: What you modified
+</changes>
+
+IMPORTANT: Put ONLY raw code between <code> and </code>. No markdown fences inside.
 `
 
 export async function POST(request: NextRequest) {
@@ -532,35 +540,59 @@ ${code}`
     const responseText = textBlock?.text || ''
     console.log('[refine-section] Raw response:', responseText.slice(0, 500))
 
-    // Parse JSON response
+    // Parse using marker-based format (no JSON escaping issues)
     let refinedCode = code
     let changes: string[] = []
     let wasRefined = false
 
-    try {
-      const cleanedResponse = responseText
-        .replace(/^```(?:json)?\n?/gm, '')
-        .replace(/\n?```$/gm, '')
-        .trim()
-
-      const jsonMatch = cleanedResponse.match(/\{[\s\S]*\}/)
-      if (jsonMatch) {
-        const parsed = JSON.parse(jsonMatch[0])
-        refinedCode = parsed.refinedCode || code
-        changes = parsed.changes || []
-        wasRefined = changes.length > 0
+    // Strategy 1: Extract from <code> and <changes> markers (PRIMARY - no escaping)
+    const codeMarkerMatch = responseText.match(/<code>\s*([\s\S]*?)\s*<\/code>/)
+    const changesMarkerMatch = responseText.match(/<changes>\s*([\s\S]*?)\s*<\/changes>/)
+    
+    if (codeMarkerMatch) {
+      refinedCode = codeMarkerMatch[1].trim()
+      if (changesMarkerMatch) {
+        // Parse bullet points from changes section
+        changes = changesMarkerMatch[1]
+          .split('\n')
+          .map((line: string) => line.replace(/^[-*•]\s*/, '').trim())
+          .filter((line: string) => line.length > 0)
       }
-    } catch (parseError) {
-      console.error('[refine-section] Failed to parse response:', parseError)
-      
-      // Fallback: Extract code block directly
-      if (!wasRefined) {
-         const codeMatch = responseText.match(/```(?:tsx|jsx|javascript|typescript)?\n([\s\S]*?)```/)
-         if (codeMatch) {
-            refinedCode = codeMatch[1]
-            changes = ["Extracted code from raw output"]
-            wasRefined = true
-         }
+      wasRefined = refinedCode !== code
+      console.log('[refine-section] Strategy 1 (marker extraction) succeeded')
+    }
+    
+    // Strategy 2: Legacy JSON support
+    if (!wasRefined || refinedCode === code) {
+      try {
+        const cleanedResponse = responseText
+          .replace(/^```(?:json)?\n?/gm, '')
+          .replace(/\n?```$/gm, '')
+          .trim()
+
+        const jsonMatch = cleanedResponse.match(/\{[\s\S]*\}/)
+        if (jsonMatch) {
+          const parsed = JSON.parse(jsonMatch[0])
+          if (parsed.refinedCode) {
+            refinedCode = parsed.refinedCode
+            changes = parsed.changes || []
+            wasRefined = changes.length > 0 || refinedCode !== code
+            console.log('[refine-section] Strategy 2 (JSON) succeeded')
+          }
+        }
+      } catch {
+        console.log('[refine-section] Strategy 2 (JSON) failed')
+      }
+    }
+    
+    // Strategy 3: Extract code from markdown blocks
+    if (!wasRefined || refinedCode === code) {
+      const codeMatch = responseText.match(/```(?:tsx|jsx|javascript|typescript)?\n([\s\S]*?)```/)
+      if (codeMatch) {
+        refinedCode = codeMatch[1].trim()
+        changes = ["Extracted refined code"]
+        wasRefined = true
+        console.log('[refine-section] Strategy 3 (markdown code block) succeeded')
       }
     }
 
