@@ -651,7 +651,11 @@ export default function SectionBuilder({
   const [generatedCode, setGeneratedCode] = useState(savedPreview?.code || dbSection.code || '')
   
   // Version history for undo functionality
-  const [codeHistory, setCodeHistory] = useState<Array<{ code: string; label: string; timestamp: number }>>([])
+  // Initialize with existing code if we have any (so undo works from first refinement)
+  const initialHistory = (savedPreview?.code || dbSection.code) 
+    ? [{ code: savedPreview?.code || dbSection.code || '', label: 'Initial build', timestamp: Date.now() - 1000 }]
+    : []
+  const [codeHistory, setCodeHistory] = useState<Array<{ code: string; label: string; timestamp: number }>>(initialHistory)
   const [historyIndex, setHistoryIndex] = useState(-1) // -1 means "at current", 0+ means viewing history
   const [showHistory, setShowHistory] = useState(false)
   
@@ -672,12 +676,11 @@ export default function SectionBuilder({
   const handleUndo = () => {
     if (codeHistory.length === 0) return
     const lastVersion = codeHistory[codeHistory.length - 1]
-    // Save current before undoing
-    const currentEntry = { code: generatedCode, label: 'Before undo', timestamp: Date.now() }
-    setCodeHistory(prev => [...prev.slice(0, -1)]) // Remove last (we're reverting to it)
+    // Remove the version we're reverting to from history
+    setCodeHistory(prev => prev.slice(0, -1))
     setGeneratedCode(lastVersion.code)
-    // Store the "undone" version so we can redo
-    setHistoryIndex(codeHistory.length - 1)
+    // Call onComplete to update parent state
+    onComplete(lastVersion.code)
   }
   
   // Check if undo is available
