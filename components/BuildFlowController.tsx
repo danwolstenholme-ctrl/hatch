@@ -972,6 +972,16 @@ export default function BuildFlowController({ existingProjectId, initialPrompt, 
         }
       })
       
+      // DEBUG: Log what we loaded
+      console.log('[loadExistingProject] Sections from DB:', sections.map((s: DbSection) => ({
+        id: s.section_id,
+        status: s.status,
+        hasCode: !!s.code,
+        codeLength: s.code?.length || 0
+      })))
+      console.log('[loadExistingProject] Completed sections:', state.completedSections)
+      console.log('[loadExistingProject] Section codes loaded:', Object.keys(state.sectionCode))
+      
       const firstPending = sections.findIndex((s: DbSection) => s.status === 'pending' || s.status === 'building')
       state.currentSectionIndex = firstPending === -1 ? Math.max(0, reconstructed.length - 1) : firstPending
       
@@ -1843,15 +1853,25 @@ Fix the syntax error while preserving all functionality. Output plain JavaScript
 
   // Prepare sections for the preview frame (array format for Babel processing)
   const previewSections = useMemo(() => {
-    if (!buildState) return []
+    if (!buildState) {
+      console.log('[previewSections] No buildState, returning empty')
+      return []
+    }
     
-    return sectionsForBuild
+    const result = sectionsForBuild
       .filter(s => buildState.completedSections.includes(s.id))
       .map(s => ({
         id: s.id,
         code: buildState.sectionCode[s.id]
       }))
       .filter(s => !!s.code)
+    
+    console.log('[previewSections] sectionsForBuild:', sectionsForBuild.map(s => s.id))
+    console.log('[previewSections] completedSections:', buildState.completedSections)
+    console.log('[previewSections] sectionCode keys:', Object.keys(buildState.sectionCode))
+    console.log('[previewSections] result count:', result.length)
+    
+    return result
   }, [buildState, sectionsForBuild])
 
   const completedModuleCount = buildState?.completedSections.length ?? 0
@@ -2684,9 +2704,9 @@ export default function GeneratedPage() {
                       </button>
                     )}
                     
-                    {/* Deploy Options Dropdown */}
+                    {/* Deploy Options Dropdown - only show when NOT in failed state (failed has its own dropdown) */}
                     <AnimatePresence>
-                      {showDeployOptions && (
+                      {showDeployOptions && deploymentStatus.status !== 'failed' && (
                         <>
                           <motion.div
                             initial={{ opacity: 0 }}
