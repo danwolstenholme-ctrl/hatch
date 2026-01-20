@@ -100,7 +100,7 @@ export default function HatchModal({
     setTimeout(() => setCopiedIndex(null), 2000)
   }
 
-  const useAsPrompt = (text: string) => {
+  const applyAsPrompt = (text: string) => {
     if (onUsePrompt) {
       onUsePrompt(text)
       onClose()
@@ -284,7 +284,7 @@ export default function HatchModal({
                             </button>
                             {onUsePrompt && (
                               <button
-                                onClick={() => useAsPrompt(msg.content)}
+                                onClick={() => applyAsPrompt(msg.content)}
                                 className="text-[10px] text-emerald-600 hover:text-emerald-400 flex items-center gap-1"
                               >
                                 <Sparkles className="w-3 h-3" />

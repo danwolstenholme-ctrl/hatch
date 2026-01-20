@@ -120,8 +120,9 @@ const FullSitePreviewFrame = forwardRef<HTMLIFrameElement, FullSitePreviewFrameP
     }
     window.addEventListener('message', handleMessage)
     return () => window.removeEventListener('message', handleMessage)
-  }, [onTextEdit, onSyntaxError])
+  }, [onTextEdit, onSyntaxError, onElementSelect, onRuntimeError])
   
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- stableSections is intentionally used instead of sections to prevent re-renders
   const srcDoc = useMemo(() => {
     if (!stableSections || stableSections.length === 0) {
       return ''
