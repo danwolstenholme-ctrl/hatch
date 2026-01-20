@@ -397,6 +397,15 @@ ${getComponentReference(templateType)}
 - React 19 (Functional Components)
 - Tailwind CSS 4 (Utility-first)
 - Lucide React (Icons) - import { IconName } from 'lucide-react'
+  VALID ICON NAMES (use ONLY these - other names will break):
+  General: Check, X, Plus, Minus, ChevronRight, ChevronLeft, ChevronDown, ChevronUp, ArrowRight, ArrowLeft, ArrowUp, ArrowDown, Menu, Search, Settings, Home, User, Users, Mail, Phone, MapPin, Calendar, Clock, Star, Heart, Share, Download, Upload, Link, ExternalLink, Copy, Trash, Edit, Eye, EyeOff, Lock, Unlock, Key
+  Business: Building, Briefcase, CreditCard, DollarSign, TrendingUp, BarChart, PieChart, Activity, Target, Award, Gift, ShoppingCart, ShoppingBag, Package, Truck, Store
+  Tech: Code, Terminal, Database, Server, Cloud, Wifi, Monitor, Smartphone, Tablet, Laptop, Cpu, HardDrive, Globe, Zap, Shield, Lock, Key, Fingerprint, QrCode
+  Communication: MessageCircle, MessageSquare, Send, Bell, BellRing, Inbox, AtSign, Hash, Megaphone, Radio, Podcast, Video, Mic, Headphones, Volume, VolumeX
+  Media: Image, Camera, Film, Music, Play, Pause, SkipForward, SkipBack, Maximize, Minimize, RotateCw, RotateCcw, ZoomIn, ZoomOut, Layers, Layout, Grid, List
+  Files: File, FileText, Folder, FolderOpen, Archive, Clipboard, BookOpen, Bookmark, Tag, Flag
+  Misc: Sun, Moon, CloudRain, Umbrella, Thermometer, Compass, Map, Navigation, Rocket, Plane, Car, Bike, Coffee, Utensils, Apple, Leaf, Tree, Flame, Droplet, Wind, Mountain, Waves, Sparkles, Wand, Lightbulb, Palette, PenTool, Wrench, Hammer, Cog
+  ❌ DO NOT USE: HeadsetIcon, Icons with "Icon" suffix - they don't exist
 - Framer Motion (Animations) - ONLY use: motion, AnimatePresence, variants
   ❌ DO NOT USE: useScroll, useSpring, useTransform, useMotionValue, useInView, useAnimation
   These hooks are NOT available in the preview environment and WILL crash.
