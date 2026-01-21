@@ -3250,12 +3250,15 @@ export default function GeneratedPage() {
                         <button
                           onClick={handlePageRefine}
                           disabled={!pageRefinePrompt.trim() || isPageRefining}
-                          className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-all ${
+                          className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-all flex items-center gap-1.5 ${
                             pageRefinePrompt.trim() && !isPageRefining
                               ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
                               : 'bg-zinc-700 text-zinc-500 cursor-not-allowed'
                           }`}
                         >
+                          {isPageRefining && (
+                            <div className="w-3 h-3 border-2 border-emerald-500/30 border-t-emerald-400 rounded-full animate-spin" />
+                          )}
                           {isPageRefining ? '...' : 'All'}
                         </button>
                       </div>
@@ -3407,7 +3410,7 @@ export default function GeneratedPage() {
                   {/* Preview Content - Scales to fit */}
                   <div className="flex-1 overflow-hidden relative bg-gradient-to-br from-zinc-900/50 via-zinc-900/30 to-zinc-950/50 p-3">
                     {previewSections.length > 0 ? (
-                      <div className={`h-full mx-auto rounded-xl overflow-hidden bg-white shadow-2xl shadow-black/50 ring-1 ring-white/10 transition-all duration-300 ${
+                      <div className={`h-full mx-auto rounded-xl overflow-hidden bg-white shadow-2xl shadow-black/50 ring-1 ring-white/10 transition-all duration-300 relative ${
                         previewDevice === 'mobile' ? 'w-[375px]' : previewDevice === 'tablet' ? 'w-[768px]' : 'w-full'
                       }`}>
                         <FullSitePreviewFrame 
@@ -3430,6 +3433,29 @@ export default function GeneratedPage() {
                             keywords: brandConfig.seo.keywords || ''
                           } : undefined}
                         />
+                        
+                        {/* Page-Wide Refining Overlay */}
+                        <AnimatePresence>
+                          {isPageRefining && (
+                            <motion.div
+                              initial={{ opacity: 0 }}
+                              animate={{ opacity: 1 }}
+                              exit={{ opacity: 0 }}
+                              className="absolute inset-0 bg-zinc-950/80 backdrop-blur-sm flex flex-col items-center justify-center z-20"
+                            >
+                              <motion.div
+                                initial={{ scale: 0.9, opacity: 0 }}
+                                animate={{ scale: 1, opacity: 1 }}
+                                transition={{ delay: 0.1 }}
+                                className="text-center"
+                              >
+                                <div className="w-12 h-12 mx-auto mb-4 rounded-full border-2 border-emerald-500/30 border-t-emerald-400 animate-spin" />
+                                <p className="text-emerald-400 font-medium mb-1">Refining all sections...</p>
+                                <p className="text-zinc-500 text-sm">Applying &quot;{pageRefinePrompt}&quot; across your site</p>
+                              </motion.div>
+                            </motion.div>
+                          )}
+                        </AnimatePresence>
                         
                         {/* Element Editor - positioned over preview */}
                         {previewInspectMode && selectedElement && (
@@ -3477,12 +3503,15 @@ export default function GeneratedPage() {
                         <button
                           onClick={handlePageRefine}
                           disabled={!pageRefinePrompt.trim() || isPageRefining}
-                          className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all ${
+                          className={`px-3 py-1.5 text-xs font-medium rounded-md transition-all flex items-center gap-1.5 ${
                             pageRefinePrompt.trim() && !isPageRefining
                               ? 'bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30 border border-emerald-500/30'
                               : 'bg-zinc-800 text-zinc-500 cursor-not-allowed'
                           }`}
                         >
+                          {isPageRefining && (
+                            <div className="w-3 h-3 border-2 border-emerald-500/30 border-t-emerald-400 rounded-full animate-spin" />
+                          )}
                           {isPageRefining ? 'Refining...' : 'Refine All'}
                         </button>
                       </div>
